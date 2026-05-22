@@ -1,40 +1,3 @@
-# Template for Hackathon
-이 레파지토리는 참여자들이 해커톤 결과물을 위한 레파지토리 생성시에 참고할 내용들을 담고 있습니다.
-1. 레파지토리 생성
-2. 레파지토리 구성
-3. README.md 가이드라인
-4. README.md 작성팁
-<br/>
-
-테스트 2
-안녕하세여ㅎㅎ
-
-## 1. 레파지토리 생성
-- https://classroom.github.com/a/VDJSvmVC
-- 위 Github Classroom 링크에 접속해 본인 조의 github 레파지토리를 생성하세요.
-<img width="1125" height="790" alt="image" src="https://github.com/user-attachments/assets/7377b191-d36a-43bd-ba16-9742be532ecf" />
-
-
-- 레파지토리 생성 시 팀 이름은 `{트랙}-{팀번호}-{팀명}` 형식으로 생성하세요.
-- 트랙 란에는 융합트랙은 'A', 지정과제 트랙은 'B', 창업트랙은 'C'를 기입합니다.
-- 예를 들어, 융합트랙 3조의 팀명은 `A-03-ExampleTeamName` 입니다.
-- 이 경우 `PNUAI-A-03-ExampleTeamName`이라는 이름으로 레포지토리가 생성됩니다.
-<br/>
-
-
-
-## 2. 레파지토리 구성
-- 레파지토리 내에 `README.md` 파일 생성하고 아래의 가이드라인과 작성팁을 참고하여 파일을 작성하세요.
-- 레파지토리 내에 `docs` 폴더를 생성하고 폴더 내에는 과제 수행 하면서 작성한 각종 보고서, 발표자료를 올려둡니다.
-- 그 밖에 레파지토리의 폴더 구성은 과제 결과물에 따라 자유롭게 구성하되 가급적 코드의 목적이나 기능에 따라 폴더를 나누어 구성하세요.  
-<br/>
-
-
-## 3. README.md 가이드라인
-- README 파일 작성시에 아래의 5가지 항목의 내용은 필수적으로 포함해야 합니다.
-- 아래의 7가지 항목이외에 프로젝트의 이해를 돕기위한 내용을 추가해도 됩니다.
-- `SAMPLE_README.md`가 단순한 형태의 예제이니 참고하세요.
-```markdown
 ### 1. 프로젝트 소개
 #### 1.1. 개발배경 및 필요성
 > 프로젝트를 실행하게 된 배경 및 필요성을 작성하세요.
@@ -103,137 +66,18 @@
 > 프로젝트에 대한 소개와 시연 영상을 넣으세요.
 > 프로젝트 소개 동영상을 교육원 메일(swedu@pusan.ac.kr)로 제출 이후 센터에서 부여받은 youtube URL주소를 넣으세요.
 
-### 6. 팀 소개
-> 팀원 소개 & 구성원 별 역할 분담 & 간단한 연락처를 작성하세요.
+## 6. 팀 소개
+
+> 팀명: POTG (Programmers Of The Geumjeong)  
+> 프로젝트명: 모이라 (모두가 이어지는 라이브러리)
+> 지도교수: 이도훈 교수님 (부산대학교 정보컴퓨터공학부)
+
+| 이름 | 역할 | 소속 | 주요 역량 및 경험 | 연락처 |
+|---|---|---|---|---|
+| **박현아 (팀장)** | AI · 프론트엔드 · 프로젝트 총괄 | 부산대학교 정보컴퓨터공학부 인공지능전공 3학년 | - AI Booster 1, QuERA Quantum Festival 참여<br>- 부산대학교 AI 동아리 AID 인공지능 스터디 활동<br>- 2024 오픈소스 소프트웨어 특강 이수<br>- PCCP Level 3 보유<br>- 학습플러스 코칭동아리 최우수상<br>- 다중전공 아이디어 공모전 우수상<br>- Flutter 기반 앱 개발 및 출시 경험 | nandarina7@pusan.ac.kr |
+| **권아영** | 서비스 기획 · 데이터 분석 · UX 기획 | 부산대학교 문헌정보학과 4학년 | - SW융합트랙 및 SODA 2.0 융합교육 프로그램 이수<br>- 도서관 참고정보서비스 개발 프로젝트 경험<br>- 문헌정보학과 데이터분석 공모전 최우수상<br>- 학습플러스 코칭동아리 최우수상<br>- 다중전공 아이디어 공모전 우수상 | lpovsc23@pusan.ac.kr |
+| **윤상현** | 프론트엔드 · 백엔드 개발 | 부산대학교 의생명융합공학부 데이터사이언스전공 3학년 | - 제5회 창의융합 소프트웨어 해커톤 수상<br>- 의생명융합공학과 코딩대회 우수상<br>- PNU 미니 부트캠프 중급 과정 수료<br>- 문화콘텐츠개발원 신청 플랫폼 개발 경험<br>- Photoshop / Premiere Pro / After Effects 활용 가능 | ggagga132@pusan.ac.kr |
+| **양현서** | UX/UI · 3D 모델링 · 서비스 디자인 | 부산대학교 의생명융합공학부 2학년 | - 의생명융합공학과 코딩대회 우수상<br>- ACSL(American Computer Science League) 출전<br>- 블리자드 후원 캘리포니아 학생 코딩대회 출전<br>- 학술동아리 ‘조물딱’ 활동<br>- FreeCAD 및 Blender 기반 3D 모델링 경험 | ibuilder05@gmail.com |
 
 ### 7. 해커톤 참여 후기
 > 팀원 별 해커톤 참여 후기를 작성하세요.
-```
-<br/>
-
-
-## 4. README.md 작성 팁
-- 마크다운 언어를 이용해 README.md 파일을 작성할 때 참고할 수 있는 마크다운 언어 문법을 공유합니다.
-- 다양한 예제와 보다 자세한 문법은 [이 문서](https://www.markdownguide.org/basic-syntax/)를 참고하세요.
-
-### 4.1. 헤더 Header
-```
-# This is a Header 1
-## This is a Header 2
-### This is a Header 3
-#### This is a Header 4
-##### This is a Header 5
-###### This is a Header 6
-####### This is a Header 7 은 지원되지 않습니다.
-```
-
-# This is a Header 1
-## This is a Header 2
-### This is a Header 3
-#### This is a Header 4
-##### This is a Header 5
-###### This is a Header 6
-####### This is a Header 7 은 지원되지 않습니다.
-<br />
-
-### 4.2. 인용문 BlockQuote
-```
-> This is a first blockqute.
->	> This is a second blockqute.
->	>	> This is a third blockqute.
-```
-> This is a first blockqute.
->	> This is a second blockqute.
->	>	> This is a third blockqute.
-<br />
-
-### 4.3. 목록 List
-* **Ordered List**
-```
-1. first
-2. second
-3. third  
-```
-1. first
-2. second
-3. third
-<br />
-
-* **Unordered List**
-```
-* 하나
-  * 둘
-
-+ 하나
-  + 둘
-
-- 하나
-  - 둘
-```
-* 하나
-  * 둘
-
-+ 하나
-  + 둘
-
-- 하나
-  - 둘
-<br />
-
-### 4.4. 코드 CodeBlock
-* 코드 블럭 이용 '``'
-```
-여러줄 주석 "```" 이용
-"```
-#include <stdio.h>
-int main(void){
-  printf("Hello world!");
-  return 0;
-}
-```"
-
-단어 주석 "`" 이용
-"`Hello world`"
-
-* 큰 따옴표(") 없이 사용하세요.
-``` 
-<br />
-
-### 4.5. 링크 Link
-```
-[Title](link)
-[부산대학교 AI융합교육원](https://swedu.pusan.ac.kr/swedu/index.do)
-
-<link>
-<https://swedu.pusan.ac.kr>
-``` 
-[부산대학교 AI융합교육원](https://swedu.pusan.ac.kr)
-
-<https://swedu.pusan.ac.kr>  
-<br />
-
-### 4.6. 강조 Highlighting
-```
-*single asterisks*
-_single underscores_
-**double asterisks**
-__double underscores__
-~~cancelline~~<img width="1994" height="253" alt="KakaoTalk_20260520_160616446_01" src="https://github.com/user-attachments/assets/9269b8bd-7539-4120-a97c-705f96fd5e71" />
-
-```
-*single asterisks* <br />
-_single underscores_ <br />
-**double asterisks** <br />
-__double underscores__ <br />
-~~cancelline~~  <br />
-<br />
-
-### 4.7. 이미지 Image
-```
-<img src="/path/to/img.jpg" width="600px" title="Title" alt="Alt text"></img>
-![Alt text](/path/to/img.jpg "Optional title")
-```
-<img src="https://github.com/user-attachments/assets/3c717ecf-6e22-487b-ae12-72d11e8af5ff" width="600px" title="부산대학교 AI융합교육원" alt="부산대학교 AI융합교육원"></img>
-<br/>
-![부산대학교 AI융합교육원](https://github.com/user-attachments/assets/3c717ecf-6e22-487b-ae12-72d11e8af5ff "부산대학교 AI융합교육원")
-<br/>
