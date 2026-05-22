@@ -6,6 +6,8 @@
 4. README.md 작성팁
 <br/>
 
+테스트 2
+
 
 ## 1. 레파지토리 생성
 - https://classroom.github.com/a/VDJSvmVC
