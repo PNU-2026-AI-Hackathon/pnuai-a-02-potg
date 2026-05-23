@@ -26,6 +26,11 @@ body {
   font-family: Arial, "Noto Sans KR", sans-serif;
 }
 
+input,
+button {
+  font: inherit;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -33,6 +38,121 @@ a {
 
 button {
   font: inherit;
+}
+
+.loginPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(43, 95, 158, 0.16), transparent 42%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+}
+
+.loginShell {
+  width: min(100%, 440px);
+}
+
+.loginCard {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 45px rgba(31, 63, 105, 0.12);
+  padding: 32px;
+}
+
+.loginEyebrow {
+  margin: 0 0 8px;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.loginTitle {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+  color: var(--deep);
+}
+
+.loginDescription {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.loginForm {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.loginField {
+  display: grid;
+  gap: 8px;
+}
+
+.loginField span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.loginField input {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px 16px;
+  color: var(--text);
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.loginField input::placeholder {
+  color: #94a3b8;
+}
+
+.loginField input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(43, 95, 158, 0.12);
+}
+
+.loginNote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.loginButton {
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.loginButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #224f84;
+}
+
+.loginButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .page {
