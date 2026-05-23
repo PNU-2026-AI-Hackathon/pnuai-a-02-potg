@@ -1,4 +1,43 @@
-export default function Home() {
+type Summary = {
+  libraries: number;
+  programs: number;
+  agendaItems: number;
+  volunteerMatches: number;
+};
+
+type Announcement = {
+  id: string | number;
+  title: string;
+  date: string;
+};
+
+const backendUrl = 'http://localhost:4000';
+
+async function getSummary(): Promise<Summary> {
+  const res = await fetch(`${backendUrl}/api/summary`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to fetch summary');
+  }
+  return res.json();
+}
+
+async function getAnnouncements(): Promise<Announcement[]> {
+  const res = await fetch(`${backendUrl}/api/announcements`, { cache: 'no-store' });
+  if (!res.ok) {
+    throw new Error('Failed to fetch announcements');
+  }
+  return res.json();
+}
+
+export default async function Home() {
+  const summary = await getSummary().catch(() => ({
+    libraries: 40,
+    programs: 24,
+    agendaItems: 18,
+    volunteerMatches: 7,
+  }));
+  const announcements = await getAnnouncements().catch(() => []);
+
   return (
     <main className="page">
       <div className="topBar">
@@ -104,19 +143,19 @@ export default function Home() {
                 <div className="statsList">
                   <div className="statRow">
                     <span>운영 중 작은도서관</span>
-                    <strong>총 40개관</strong>
+                    <strong>총 {summary.libraries}개관</strong>
                   </div>
                   <div className="statRow">
                     <span>이번 주 프로그램</span>
-                    <strong>24건</strong>
+                    <strong>{summary.programs}건</strong>
                   </div>
                   <div className="statRow">
                     <span>주민 제안 의제</span>
-                    <strong>18건</strong>
+                    <strong>{summary.agendaItems}건</strong>
                   </div>
                   <div className="statRow">
                     <span>봉사자 연계 가능 프로그램</span>
-                    <strong>7건</strong>
+                    <strong>{summary.volunteerMatches}건</strong>
                   </div>
                 </div>
 
@@ -174,26 +213,19 @@ export default function Home() {
               </button>
             </div>
             <div className="listBox">
-              <div className="rowItem">
-                <span>[공지] 2026년 금정구 작은도서관 협력 프로그램 운영 안내</span>
-                <span>2026.05.09</span>
-              </div>
-              <div className="rowItem">
-                <span>[안내] 지역 아동 대상 AI 독서 멘토링 참가자 모집</span>
-                <span>2026.05.08</span>
-              </div>
-              <div className="rowItem">
-                <span>[안내] 주민 제안 의제 기반 6월 문화프로그램 수요조사</span>
-                <span>2026.05.07</span>
-              </div>
-              <div className="rowItem">
-                <span>[모집] 대학생 전공 봉사자 모집 및 매칭 신청 안내</span>
-                <span>2026.05.06</span>
-              </div>
-              <div className="rowItem">
-                <span>[알림] 작은도서관 운영지원 플랫폼 시범서비스 오픈</span>
-                <span>2026.05.03</span>
-              </div>
+              {announcements.length > 0 ? (
+                announcements.map((item) => (
+                  <div className="rowItem" key={item.id}>
+                    <span>{item.title}</span>
+                    <span>{item.date}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="rowItem">
+                  <span>공지사항을 불러오는 중입니다.</span>
+                  <span>잠시만 기다려 주세요.</span>
+                </div>
+              )}
             </div>
           </section>
 
