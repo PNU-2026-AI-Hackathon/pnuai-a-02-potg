@@ -144,14 +144,12 @@
 
 ### 2.1. 시스템 구성도
 
-> TODO: 시스템 구성도 이미지 삽입
-
 ```mermaid
 flowchart LR
-    User[지역 주민 / 사서 / 대학생 봉사자] --> Frontend[Frontend<br/>Next.js + React]
+    User[지역 주민  /  사서  /  대학생 봉사자] --> Frontend[Frontend<br/>Next.js + React]
     Frontend --> Backend[Backend<br/>NestJS]
     Backend --> DB[(PostgreSQL<br/>Prisma ORM)]
-    Backend --> AI[AI API<br/>의제 분류 / 요약 / 기획안 생성]
+    Backend --> AI[AI API<br/>의제 분류  /  요약  /  기획안 생성]
     Backend --> Auth[인증 및 권한 관리]
 ```
 
@@ -226,8 +224,6 @@ flowchart LR
 
 ### 3.1. 전체시스템 흐름도
 
-> TODO: 실제 구현 완료 후 흐름도 이미지 또는 시연 흐름 캡처 삽입
-
 ```mermaid
 flowchart TD
     A[사용자 접속] --> B[홈 화면]
@@ -243,11 +239,11 @@ flowchart TD
 
     C -->|대학생 봉사자| J[봉사자 정보 등록]
     J --> K[전공 / 관심 분야 / 가능 시간 입력]
-    K --> L[프로그램 조건 기반 봉사자 매칭]
+    K --> L[프로그램 조건 기반 봉사자  매칭]
 
     I --> M[프로그램 공개]
     L --> M
-    M --> N[지역 주민 참여 및 도서관 운영 활성화]
+    M --> N[지역 주민 참여 및 도서관<br/>운영 활성화]
 ```
 
 ---
