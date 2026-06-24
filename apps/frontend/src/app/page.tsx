@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 type Summary = {
   libraries: number;
   programs: number;
@@ -43,10 +45,10 @@ export default async function Home() {
       <div className="topBar">
         <div className="shell">
           <p>모이라 | 모두가 이어지는 라이브러리</p>
-          <div className="topActions" aria-hidden="true">
-            <button type="button" disabled>
+          <div className="topActions">
+            <Link href="/login">
               로그인
-            </button>
+            </Link>
             <button type="button" disabled>
               회원가입
             </button>
