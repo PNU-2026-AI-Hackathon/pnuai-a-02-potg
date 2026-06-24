@@ -183,6 +183,7 @@ button {
   gap: 16px;
 }
 
+.topActions a,
 .topActions button,
 .nav button,
 .panelBar button,
@@ -190,8 +191,18 @@ button {
   border: 0;
   background: transparent;
   color: inherit;
-  cursor: not-allowed;
   padding: 0;
+}
+
+.topActions a {
+  cursor: pointer;
+}
+
+.topActions button,
+.nav button,
+.panelBar button,
+.footerLinks button {
+  cursor: not-allowed;
 }
 
 .header {
