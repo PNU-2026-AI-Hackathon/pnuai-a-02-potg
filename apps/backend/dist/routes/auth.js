@@ -8,7 +8,12 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const mockData_1 = require("../data/mockData");
 const router = (0, express_1.Router)();
-const JWT_SECRET = process.env.JWT_SECRET ?? 'pnuai-secret-key';
+// Mock authentication backend: users are stored in-memory for local/demo use only.
+// This implementation is not persistent and is not suitable for a production auth flow.
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('Environment variable JWT_SECRET is required and must not be empty.');
+}
 const JWT_EXPIRES_IN = '1h';
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -35,6 +40,8 @@ router.post('/login', async (req, res) => {
 });
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
+    // NOTE: registration is handled by an in-memory mock data store.
+    // New users are not persisted across server restarts.
     if (!name || !email || !password) {
         return res.status(400).json({ error: 'name, email, and password are required' });
     }
