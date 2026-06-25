@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { users } from '../data/mockData';
+import { prisma } from '../lib/prisma';
 
 const router = Router();
 
@@ -31,7 +31,9 @@ router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Respon
     return res.status(400).json({ error: 'email and password are required' });
   }
 
-  const user = users.find((item) => item.email === email);
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
 
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials' });
@@ -68,15 +70,22 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: 
     return res.status(400).json({ error: 'name, email, and password are required' });
   }
 
-  const exists = users.some((item) => item.email === email);
+  const exists = await prisma.user.findUnique({
+    where: { email },
+  });
 
   if (exists) {
     return res.status(409).json({ error: 'User already exists' });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = { id: `u${users.length + 1}`, name, email, password: hashedPassword };
-  users.push(newUser);
+  const newUser = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+    },
+  });
 
   const token = jwt.sign(
     { sub: newUser.id, email: newUser.email, name: newUser.name },
