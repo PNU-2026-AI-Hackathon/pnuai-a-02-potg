@@ -787,6 +787,171 @@ button {
   margin-bottom: 12px;
 }
 
+.boardPage {
+  min-height: 100vh;
+  padding: 40px 16px;
+  background: #f5f6f8;
+}
+
+.boardShell {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.boardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--soft);
+}
+
+.boardHeader h1 {
+  margin: 0;
+  color: var(--deep);
+  font-size: 30px;
+  line-height: 1.25;
+}
+
+.boardHeader p {
+  margin: 10px 0 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.boardEyebrow {
+  margin: 0 0 8px;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.boardWriteButton {
+  flex: 0 0 auto;
+  border: 0;
+  background: var(--blue);
+  color: #fff;
+  padding: 12px 20px;
+  font-weight: 800;
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.boardToolbar {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) auto;
+  align-items: end;
+  gap: 20px;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--line);
+}
+
+.boardSearch {
+  display: grid;
+  gap: 8px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.boardSearch input {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  background: #fff;
+  padding: 12px 14px;
+  color: var(--text);
+}
+
+.boardSearch input::placeholder {
+  color: #94a3b8;
+}
+
+.boardFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.boardFilters button {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: #444;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+.boardFilters button.active {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+
+.boardList {
+  padding: 0 32px 32px;
+}
+
+.boardListHeader,
+.boardRow {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) 160px;
+  gap: 16px;
+  align-items: center;
+}
+
+.boardListHeader {
+  padding: 16px 0;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 800;
+  border-bottom: 1px solid #e5e8ec;
+}
+
+.boardRow {
+  min-height: 92px;
+  padding: 18px 0;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.boardCategory {
+  width: fit-content;
+  border: 1px solid #c9d8ea;
+  background: #eef4fb;
+  color: #1f5a99;
+  padding: 5px 9px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.boardPostText h2 {
+  margin: 0;
+  color: #222;
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.boardPostText p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.boardMeta {
+  color: #777;
+  font-size: 13px;
+  text-align: right;
+}
+
 @media (max-width: 980px) {
   .headerInner,
   .heroBody {
@@ -820,9 +985,32 @@ button {
   .panelHeading,
   .panelBar,
   .rowItem,
+  .boardHeader,
   .topBar .shell,
   .footer {
     display: block;
+  }
+
+  .boardWriteButton {
+    margin-top: 20px;
+  }
+
+  .boardToolbar,
+  .boardListHeader,
+  .boardRow {
+    grid-template-columns: 1fr;
+  }
+
+  .boardFilters {
+    justify-content: flex-start;
+  }
+
+  .boardListHeader {
+    display: none;
+  }
+
+  .boardMeta {
+    text-align: left;
   }
 }
 
@@ -847,5 +1035,25 @@ button {
 
   .quickGrid {
     grid-template-columns: 1fr;
+  }
+
+  .boardPage {
+    padding: 20px 10px;
+  }
+
+  .boardHeader,
+  .boardToolbar,
+  .boardList {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .boardHeader h1 {
+    font-size: 26px;
+  }
+
+  .boardFilters button,
+  .boardWriteButton {
+    width: 100%;
   }
 }
