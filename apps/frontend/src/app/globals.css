@@ -27,7 +27,9 @@ body {
 }
 
 input,
-button {
+button,
+select,
+textarea {
   font: inherit;
 }
 
@@ -840,8 +842,97 @@ button {
   color: #fff;
   padding: 12px 20px;
   font-weight: 800;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.boardWriteButton:hover {
+  background: #224f84;
+  transform: translateY(-1px);
+}
+
+.boardWriteForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 16px;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.boardField {
+  display: grid;
+  gap: 8px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.boardField input,
+.boardField select,
+.boardField textarea {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  background: #fff;
+  padding: 12px 14px;
+  color: var(--text);
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.boardField textarea {
+  min-height: 128px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.boardField input:focus,
+.boardField select:focus,
+.boardField textarea:focus,
+.boardSearch input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(43, 95, 158, 0.12);
+}
+
+.boardFieldWide,
+.boardMessage,
+.boardFormActions {
+  grid-column: 1 / -1;
+}
+
+.boardMessage {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.boardMessage.error,
+.boardState.error {
+  color: #dc2626;
+}
+
+.boardFormActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.boardFormActions button,
+.boardSearchRow button {
+  border: 0;
+  background: var(--blue);
+  color: #fff;
+  padding: 12px 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boardFormActions button:disabled {
   cursor: not-allowed;
-  opacity: 0.68;
+  opacity: 0.55;
 }
 
 .boardToolbar {
@@ -861,12 +952,18 @@ button {
   font-weight: 800;
 }
 
+.boardSearchRow {
+  display: flex;
+}
+
 .boardSearch input {
   width: 100%;
   border: 1px solid #cfd8e3;
+  border-right: 0;
   background: #fff;
   padding: 12px 14px;
   color: var(--text);
+  outline: none;
 }
 
 .boardSearch input::placeholder {
@@ -887,7 +984,7 @@ button {
   padding: 10px 14px;
   font-size: 14px;
   font-weight: 700;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 .boardFilters button.active {
@@ -949,7 +1046,16 @@ button {
 .boardMeta {
   color: #777;
   font-size: 13px;
+  line-height: 1.6;
   text-align: right;
+}
+
+.boardState {
+  margin: 0;
+  padding: 28px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 @media (max-width: 980px) {
@@ -996,6 +1102,7 @@ button {
   }
 
   .boardToolbar,
+  .boardWriteForm,
   .boardListHeader,
   .boardRow {
     grid-template-columns: 1fr;
@@ -1003,6 +1110,14 @@ button {
 
   .boardFilters {
     justify-content: flex-start;
+  }
+
+  .boardFormActions {
+    justify-content: stretch;
+  }
+
+  .boardFormActions button {
+    width: 100%;
   }
 
   .boardListHeader {
@@ -1043,6 +1158,7 @@ button {
 
   .boardHeader,
   .boardToolbar,
+  .boardWriteForm,
   .boardList {
     padding-left: 18px;
     padding-right: 18px;
@@ -1055,5 +1171,14 @@ button {
   .boardFilters button,
   .boardWriteButton {
     width: 100%;
+  }
+
+  .boardSearchRow {
+    display: grid;
+  }
+
+  .boardSearch input {
+    border-right: 1px solid #cfd8e3;
+    border-bottom: 0;
   }
 }
