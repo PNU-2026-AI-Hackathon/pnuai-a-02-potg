@@ -157,6 +157,128 @@ button {
   opacity: 0.55;
 }
 
+.signupPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+  background:
+    radial-gradient(circle at top, rgba(43, 95, 158, 0.16), transparent 42%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+}
+
+.signupShell {
+  width: min(100%, 520px);
+}
+
+.signupCard {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 45px rgba(31, 63, 105, 0.12);
+  padding: 32px;
+}
+
+.signupEyebrow {
+  margin: 0 0 8px;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.signupTitle {
+  margin: 0;
+  color: var(--deep);
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.signupDescription {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.signupForm {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.signupField {
+  display: grid;
+  gap: 8px;
+}
+
+.signupField span {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.signupField input,
+.signupField select {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px 16px;
+  color: var(--text);
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.signupField input::placeholder,
+.signupField select:invalid {
+  color: #94a3b8;
+}
+
+.signupField input:focus,
+.signupField select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(43, 95, 158, 0.12);
+}
+
+.signupButton {
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.signupButton:hover {
+  transform: translateY(-1px);
+  background: #224f84;
+}
+
+.signupLoginPrompt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.signupLoginPrompt a {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.signupLoginPrompt a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .page {
   min-height: 100vh;
 }
@@ -1130,6 +1252,19 @@ button {
 }
 
 @media (max-width: 640px) {
+  .signupPage {
+    align-items: start;
+    padding: 20px 12px;
+  }
+
+  .signupCard {
+    padding: 24px 20px;
+  }
+
+  .signupTitle {
+    font-size: 26px;
+  }
+
   .shell {
     width: min(100% - 20px, 1280px);
   }
