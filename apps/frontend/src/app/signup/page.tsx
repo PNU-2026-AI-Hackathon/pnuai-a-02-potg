@@ -34,6 +34,19 @@ const accountTypes: AccountType[] = [
 const steps = ['계정 유형', '계정 정보', '이름', '기본 정보', '지역', '연락처', '관심분야', '완료'] as const;
 const regions = ['금정구', '부산진구', '동래구', '해운대구', '북구', '남구'];
 const genders = ['선택 안 함', '여성', '남성', '기타'];
+const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth() + 1;
+const currentDay = today.getDate();
+const birthYears = Array.from({ length: 121 }, (_, index) => currentYear - index);
+
+function getDaysInMonth(year: string, month: string) {
+  if (!year || !month) {
+    return 31;
+  }
+
+  return new Date(Number(year), Number(month), 0).getDate();
+}
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
@@ -42,9 +55,10 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
-  const [age, setAge] = useState('');
   const [gender, setGender] = useState('선택 안 함');
-  const [birthDate, setBirthDate] = useState('');
+  const [birthYear, setBirthYear] = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthDay, setBirthDay] = useState('');
   const [region, setRegion] = useState('금정구');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -57,6 +71,20 @@ export default function SignupPage() {
   const isStepOneValid = Boolean(accountType);
   const isStepTwoValid = userId.trim().length > 0 && password.trim().length > 0 && password === confirmPassword;
   const isStepThreeValid = name.trim().length > 0;
+  const isPasswordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+  const availableMonths =
+    birthYear === String(currentYear) ? currentMonth : 12;
+  const availableDays = birthYear && birthMonth
+    ? Math.min(
+        getDaysInMonth(birthYear, birthMonth),
+        birthYear === String(currentYear) && Number(birthMonth) === currentMonth ? currentDay : 31,
+      )
+    : 31;
+  const birthDate =
+    birthYear && birthMonth && birthDay
+      ? `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`
+      : '';
+  const isStepFourValid = Boolean(birthDate);
   const isStepFiveValid = region.trim().length > 0;
   const isStepSixValid = email.trim().length > 0;
   const isStepSevenValid = selectedInterests.length > 0;
@@ -82,12 +110,19 @@ export default function SignupPage() {
     }
 
     if (step === 2 && !isStepTwoValid) {
-      setStatusMessage('회원 아이디와 비밀번호를 확인해 주세요.');
+      setStatusMessage(
+        isPasswordMismatch ? '비밀번호와 비밀번호 확인이 다릅니다.' : '회원 아이디와 비밀번호를 모두 입력해 주세요.',
+      );
       return;
     }
 
     if (step === 3 && !isStepThreeValid) {
       setStatusMessage('이름을 입력해 주세요.');
+      return;
+    }
+
+    if (step === 4 && !isStepFourValid) {
+      setStatusMessage('생년월일을 모두 선택해 주세요.');
       return;
     }
 
@@ -202,9 +237,19 @@ export default function SignupPage() {
                     id="signup-password-confirm"
                     type="password"
                     value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    onChange={(event) => {
+                      setConfirmPassword(event.target.value);
+                      setStatusMessage('');
+                    }}
                     placeholder="비밀번호를 다시 입력하세요"
+                    aria-invalid={isPasswordMismatch}
+                    aria-describedby={isPasswordMismatch ? 'signup-password-error' : undefined}
                   />
+                  {isPasswordMismatch ? (
+                    <small id="signup-password-error" className="signupFieldError" role="alert">
+                      비밀번호와 비밀번호 확인이 다릅니다.
+                    </small>
+                  ) : null}
                 </label>
               </div>
             ) : null}
@@ -224,17 +269,6 @@ export default function SignupPage() {
 
             {step === 4 ? (
               <div className="signupFieldGrid">
-                <label className="signupField" htmlFor="signup-age">
-                  <span>나이</span>
-                  <input
-                    id="signup-age"
-                    type="number"
-                    value={age}
-                    onChange={(event) => setAge(event.target.value)}
-                    placeholder="선택"
-                  />
-                </label>
-
                 <label className="signupField" htmlFor="signup-gender">
                   <span>성별</span>
                   <select id="signup-gender" value={gender} onChange={(event) => setGender(event.target.value)}>
@@ -246,15 +280,80 @@ export default function SignupPage() {
                   </select>
                 </label>
 
-                <label className="signupField signupFieldWide" htmlFor="signup-birthdate">
-                  <span>생년월일</span>
-                  <input
-                    id="signup-birthdate"
-                    type="date"
-                    value={birthDate}
-                    onChange={(event) => setBirthDate(event.target.value)}
-                  />
-                </label>
+                <div className="signupField signupFieldWide">
+                  <span id="signup-birthdate-label">생년월일</span>
+                  <div className="signupBirthDate" role="group" aria-labelledby="signup-birthdate-label">
+                    <select
+                      id="signup-birth-year"
+                      value={birthYear}
+                      onChange={(event) => {
+                        const nextYear = event.target.value;
+                        setBirthYear(nextYear);
+
+                        if (nextYear === String(currentYear) && Number(birthMonth) > currentMonth) {
+                          setBirthMonth('');
+                          setBirthDay('');
+                        } else if (
+                          nextYear === String(currentYear) &&
+                          Number(birthMonth) === currentMonth &&
+                          Number(birthDay) > currentDay
+                        ) {
+                          setBirthDay('');
+                        }
+                      }}
+                      aria-label="출생 연도"
+                    >
+                      <option value="">연도</option>
+                      {birthYears.map((year) => (
+                        <option key={year} value={year}>
+                          {year}년
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      id="signup-birth-month"
+                      value={birthMonth}
+                      onChange={(event) => {
+                        const nextMonth = event.target.value;
+                        setBirthMonth(nextMonth);
+
+                        const lastDay = nextMonth
+                          ? Math.min(
+                              getDaysInMonth(birthYear, nextMonth),
+                              birthYear === String(currentYear) && Number(nextMonth) === currentMonth
+                                ? currentDay
+                                : 31,
+                            )
+                          : 31;
+                        if (Number(birthDay) > lastDay) {
+                          setBirthDay('');
+                        }
+                      }}
+                      aria-label="출생 월"
+                    >
+                      <option value="">월</option>
+                      {Array.from({ length: availableMonths }, (_, index) => index + 1).map((month) => (
+                        <option key={month} value={month}>
+                          {month}월
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      id="signup-birth-day"
+                      value={birthDay}
+                      onChange={(event) => setBirthDay(event.target.value)}
+                      aria-label="출생 일"
+                    >
+                      <option value="">일</option>
+                      {Array.from({ length: availableDays }, (_, index) => index + 1).map((day) => (
+                        <option key={day} value={day}>
+                          {day}일
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <small className="signupFieldHint">오늘 이전의 날짜만 선택할 수 있습니다.</small>
+                </div>
               </div>
             ) : null}
 
@@ -380,6 +479,8 @@ export default function SignupPage() {
                       ? !isStepTwoValid
                       : step === 3
                         ? !isStepThreeValid
+                        : step === 4
+                          ? !isStepFourValid
                         : step === 5
                           ? !isStepFiveValid
                           : step === 6

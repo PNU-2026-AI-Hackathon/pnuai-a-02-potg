@@ -326,6 +326,30 @@ button {
   box-shadow: 0 0 0 4px rgba(43, 95, 158, 0.12);
 }
 
+.signupField input[aria-invalid='true'] {
+  border-color: #dc2626;
+}
+
+.signupBirthDate {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  gap: 8px;
+}
+
+.signupFieldError,
+.signupFieldHint {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.signupFieldError {
+  color: #dc2626;
+}
+
+.signupFieldHint {
+  color: #64748b;
+}
+
 .signupChoiceGrid {
   display: grid;
   gap: 12px;
