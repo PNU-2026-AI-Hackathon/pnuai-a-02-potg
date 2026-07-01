@@ -305,6 +305,31 @@ button {
 .topActions {
   display: flex;
   gap: 16px;
+  align-items: center;
+}
+
+.authActions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.authUser {
+  font-weight: 700;
+}
+
+.topActions .logoutButton {
+  cursor: pointer;
+}
+
+.topActions .logoutButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.authError {
+  color: #b91c1c;
+  font-size: 12px;
 }
 
 .topActions a,
