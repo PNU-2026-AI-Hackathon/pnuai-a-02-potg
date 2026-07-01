@@ -8,6 +8,12 @@ type InterestCategory = {
   title: string;
 };
 
+type AccountType = {
+  id: string;
+  title: string;
+  description: string;
+};
+
 const interestCategories: InterestCategory[] = [
   { id: 'reading', title: '독서/인문' },
   { id: 'culture', title: '문화/예술' },
@@ -19,12 +25,22 @@ const interestCategories: InterestCategory[] = [
   { id: 'volunteer', title: '봉사/나눔' },
 ];
 
-const steps = ['이름', '기본 정보', '지역', '연락처', '관심분야'] as const;
+const accountTypes: AccountType[] = [
+  { id: 'resident', title: '일반 사용자', description: '마을 주민으로 가입해요' },
+  { id: 'librarian', title: '사서', description: '도서관 운영자 계정이에요' },
+  { id: 'admin', title: '관리자', description: '전체 관리 권한 계정이에요' },
+];
+
+const steps = ['계정 유형', '계정 정보', '이름', '기본 정보', '지역', '연락처', '관심분야', '완료'] as const;
 const regions = ['금정구', '부산진구', '동래구', '해운대구', '북구', '남구'];
 const genders = ['선택 안 함', '여성', '남성', '기타'];
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
+  const [accountType, setAccountType] = useState('resident');
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('선택 안 함');
@@ -35,13 +51,20 @@ export default function SignupPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [statusMessage, setStatusMessage] = useState('');
 
-  const progress = Math.round((step / steps.length) * 100);
+  const progress = Math.round(((step - 1) / (steps.length - 1)) * 100);
   const stepTitle = useMemo(() => steps[step - 1], [step]);
 
-  const isStepOneValid = name.trim().length > 0;
-  const isStepThreeValid = region.trim().length > 0;
-  const isStepFourValid = email.trim().length > 0;
-  const isStepFiveValid = selectedInterests.length > 0;
+  const isStepOneValid = Boolean(accountType);
+  const isStepTwoValid = userId.trim().length > 0 && password.trim().length > 0 && password === confirmPassword;
+  const isStepThreeValid = name.trim().length > 0;
+  const isStepFiveValid = region.trim().length > 0;
+  const isStepSixValid = email.trim().length > 0;
+  const isStepSevenValid = selectedInterests.length > 0;
+  const selectedAccountTypeLabel =
+    accountTypes.find((item) => item.id === accountType)?.title || '일반 사용자';
+  const selectedInterestLabels = interestCategories.filter((item) =>
+    selectedInterests.includes(item.id),
+  );
 
   function toggleInterest(interestId: string) {
     setStatusMessage('');
@@ -54,16 +77,26 @@ export default function SignupPage() {
     setStatusMessage('');
 
     if (step === 1 && !isStepOneValid) {
-      setStatusMessage('이름을 입력해 주세요.');
+      setStatusMessage('계정 유형을 선택해 주세요.');
+      return;
+    }
+
+    if (step === 2 && !isStepTwoValid) {
+      setStatusMessage('회원 아이디와 비밀번호를 확인해 주세요.');
       return;
     }
 
     if (step === 3 && !isStepThreeValid) {
+      setStatusMessage('이름을 입력해 주세요.');
+      return;
+    }
+
+    if (step === 5 && !isStepFiveValid) {
       setStatusMessage('지역을 선택해 주세요.');
       return;
     }
 
-    if (step === 4 && !isStepFourValid) {
+    if (step === 6 && !isStepSixValid) {
       setStatusMessage('이메일은 필수입니다.');
       return;
     }
@@ -77,12 +110,13 @@ export default function SignupPage() {
   }
 
   function handleComplete() {
-    if (!isStepFiveValid) {
+    if (!isStepSevenValid) {
       setStatusMessage('관심분야를 하나 이상 선택해 주세요.');
       return;
     }
 
-    setStatusMessage('회원가입과 관심분야 선택을 합친 화면 스켈레톤입니다. 실제 저장은 연결하지 않았습니다.');
+    setStep(8);
+    setStatusMessage('');
   }
 
   return (
@@ -100,12 +134,8 @@ export default function SignupPage() {
 
           <p className="signupEyebrow">모이라 회원가입</p>
           <h1 id="signup-title" className="signupTitle">
-            {step === 5 ? '관심분야까지 선택해 주세요' : `${stepTitle}을 입력해 주세요`}
+            {step === 8 ? '환영합니다' : `${stepTitle}을 입력해 주세요`}
           </h1>
-          <p className="signupDescription">
-            회원가입과 관심분야 선택을 하나의 흐름으로 묶은 화면입니다. 입력한 내용은 화면에서만
-            상태로 관리하는 스켈레톤입니다.
-          </p>
 
           <div className="signupProgressWrap" aria-label="진행률">
             <div className="signupProgressTrack">
@@ -119,6 +149,67 @@ export default function SignupPage() {
 
           <div className="signupStage">
             {step === 1 ? (
+              <div className="signupChoiceGrid signupChoiceGridThree">
+                {accountTypes.map((item) => {
+                  const isSelected = accountType === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`signupChoiceCard ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        setAccountType(item.id);
+                        setStatusMessage('');
+                      }}
+                      aria-pressed={isSelected}
+                    >
+                      <span>{item.title}</span>
+                      <em>{item.description}</em>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            {step === 2 ? (
+              <div className="signupFieldGrid">
+                <label className="signupField signupFieldWide" htmlFor="signup-userid">
+                  <span>회원 아이디</span>
+                  <input
+                    id="signup-userid"
+                    type="text"
+                    value={userId}
+                    onChange={(event) => setUserId(event.target.value)}
+                    placeholder="모이라에서 사용할 아이디"
+                  />
+                </label>
+
+                <label className="signupField" htmlFor="signup-password">
+                  <span>비밀번호</span>
+                  <input
+                    id="signup-password"
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="비밀번호를 입력하세요"
+                  />
+                </label>
+
+                <label className="signupField signupFieldWide" htmlFor="signup-password-confirm">
+                  <span>비밀번호 확인</span>
+                  <input
+                    id="signup-password-confirm"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="비밀번호를 다시 입력하세요"
+                  />
+                </label>
+              </div>
+            ) : null}
+
+            {step === 3 ? (
               <label className="signupField" htmlFor="signup-name">
                 <span>이름</span>
                 <input
@@ -131,7 +222,7 @@ export default function SignupPage() {
               </label>
             ) : null}
 
-            {step === 2 ? (
+            {step === 4 ? (
               <div className="signupFieldGrid">
                 <label className="signupField" htmlFor="signup-age">
                   <span>나이</span>
@@ -167,7 +258,7 @@ export default function SignupPage() {
               </div>
             ) : null}
 
-            {step === 3 ? (
+            {step === 5 ? (
               <label className="signupField" htmlFor="signup-region">
                 <span>지역</span>
                 <select id="signup-region" value={region} onChange={(event) => setRegion(event.target.value)}>
@@ -180,7 +271,7 @@ export default function SignupPage() {
               </label>
             ) : null}
 
-            {step === 4 ? (
+            {step === 6 ? (
               <div className="signupFieldGrid">
                 <label className="signupField signupFieldWide" htmlFor="signup-email">
                   <span>이메일 *</span>
@@ -206,7 +297,7 @@ export default function SignupPage() {
               </div>
             ) : null}
 
-            {step === 5 ? (
+            {step === 7 ? (
               <div className="signupInterestWrap">
                 <div className="signupInterestHeader">
                   <span>관심분야</span>
@@ -232,6 +323,38 @@ export default function SignupPage() {
                 </div>
               </div>
             ) : null}
+
+            {step === 8 ? (
+              <div className="signupWelcome">
+                <p className="signupWelcomeEyebrow">환영합니다</p>
+                <h2 className="signupWelcomeTitle">{name || '새로운 이용자'}님, 모이라 가입이 완료되었습니다.</h2>
+                <p className="signupWelcomeText">
+                  {selectedAccountTypeLabel} 계정으로 시작합니다. 선택한 관심분야는 추후 추천과 주민 참여 흐름에
+                  활용됩니다.
+                </p>
+
+                <div className="signupWelcomeSummary">
+                  <div>
+                    <span>계정 유형</span>
+                    <strong>{selectedAccountTypeLabel}</strong>
+                  </div>
+                  <div>
+                    <span>아이디</span>
+                    <strong>{userId || '미입력'}</strong>
+                  </div>
+                  <div>
+                    <span>관심분야</span>
+                    <strong>{selectedInterestLabels.length}개</strong>
+                  </div>
+                </div>
+
+                <div className="signupWelcomeChips">
+                  {selectedInterestLabels.map((item) => (
+                    <span key={item.id}>{item.title}</span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {statusMessage ? (
@@ -245,19 +368,40 @@ export default function SignupPage() {
               이전
             </button>
 
-            {step < steps.length ? (
+            {step < 7 ? (
               <button
                 type="button"
                 className="signupPrimaryButton"
                 onClick={handleNext}
-                disabled={step === 1 ? !isStepOneValid : step === 3 ? !isStepThreeValid : step === 4 ? !isStepFourValid : false}
+                disabled={
+                  step === 1
+                    ? !isStepOneValid
+                    : step === 2
+                      ? !isStepTwoValid
+                      : step === 3
+                        ? !isStepThreeValid
+                        : step === 5
+                          ? !isStepFiveValid
+                          : step === 6
+                            ? !isStepSixValid
+                            : false
+                }
               >
                 다음
               </button>
-            ) : (
-              <button type="button" className="signupPrimaryButton" onClick={handleComplete} disabled={!isStepFiveValid}>
-                가입 완료
+            ) : step === 7 ? (
+              <button
+                type="button"
+                className="signupPrimaryButton"
+                onClick={handleComplete}
+                disabled={!isStepSevenValid}
+              >
+                완료
               </button>
+            ) : (
+              <Link href="/" className="signupPrimaryButton">
+                시작하기
+              </Link>
             )}
           </div>
         </div>
