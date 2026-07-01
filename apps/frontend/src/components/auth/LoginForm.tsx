@@ -1,20 +1,24 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export default function LoginForm() {
+type LoginFormProps = {
+  redirectTo?: string;
+};
+
+export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   const isSubmitDisabled = !email.trim() || !password.trim() || isSubmitting;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage('');
-    setSuccessMessage('');
     setIsSubmitting(true);
 
     try {
@@ -33,8 +37,8 @@ export default function LoginForm() {
         return;
       }
 
-      setSuccessMessage('로그인에 성공했습니다. 응답 데이터를 콘솔에서 확인하세요.');
-      console.log('로그인 응답:', data);
+      router.replace(redirectTo);
+      router.refresh();
     } catch (error) {
       console.error(error);
       setErrorMessage('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.');
@@ -70,7 +74,7 @@ export default function LoginForm() {
       </label>
 
       <p className="loginNote">
-        로그인 정보는 화면 상태를 관리하며, 백엔드 로그인 API 호출로 연동합니다.
+        로그인 상태는 보안 쿠키로 안전하게 유지됩니다.
       </p>
 
       {errorMessage ? (
@@ -78,12 +82,6 @@ export default function LoginForm() {
           {errorMessage}
         </p>
       ) : null}
-      {successMessage ? (
-        <p className="loginMessage success" aria-live="polite">
-          {successMessage}
-        </p>
-      ) : null}
-
       <button type="submit" className="loginButton" disabled={isSubmitDisabled}>
         {isSubmitting ? '로그인 중...' : '로그인'}
       </button>
