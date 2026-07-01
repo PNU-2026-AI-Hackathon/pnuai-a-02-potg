@@ -1,0 +1,6 @@
+# Keep environment variables out of version control
+.env
+global-bundle.pem
+dist
+node_modules
+/src/generated/prisma
