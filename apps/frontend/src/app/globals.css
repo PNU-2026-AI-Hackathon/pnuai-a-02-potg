@@ -157,18 +157,30 @@ button {
   opacity: 0.55;
 }
 
+.loginSignupLink {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.loginSignupLink a {
+  color: var(--blue);
+  font-weight: 700;
+}
+
 .signupPage {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 40px 24px;
+  padding: 24px;
   background:
     radial-gradient(circle at top, rgba(43, 95, 158, 0.16), transparent 42%),
     linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
 }
 
 .signupShell {
-  width: min(100%, 520px);
+  width: min(100%, 760px);
 }
 
 .signupCard {
@@ -176,7 +188,34 @@ button {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 18px 45px rgba(31, 63, 105, 0.12);
-  padding: 32px;
+  padding: 36px;
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
+}
+
+.signupTopRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.signupBackLink {
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.signupStepBadge {
+  border: 1px solid #d0d8e3;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #4b5563;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .signupEyebrow {
@@ -190,9 +229,9 @@ button {
 
 .signupTitle {
   margin: 0;
-  color: var(--deep);
   font-size: 30px;
   line-height: 1.2;
+  color: var(--deep);
 }
 
 .signupDescription {
@@ -202,21 +241,65 @@ button {
   line-height: 1.6;
 }
 
-.signupForm {
+.signupProgressWrap {
   display: grid;
-  gap: 16px;
-  margin-top: 28px;
+  gap: 10px;
+  margin-top: 24px;
 }
 
-.signupField {
+.signupProgressTrack {
+  height: 10px;
+  border-radius: 999px;
+  background: #e5edf6;
+  overflow: hidden;
+}
+
+.signupProgressBar {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--blue);
+}
+
+.signupProgressMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #516072;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.signupProgressMeta strong {
+  color: var(--deep);
+}
+
+.signupStage {
+  margin-top: 28px;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: center;
+}
+
+.signupField,
+.signupFieldGrid {
   display: grid;
   gap: 8px;
 }
 
-.signupField span {
-  color: #334155;
+.signupFieldGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.signupFieldWide {
+  grid-column: 1 / -1;
+}
+
+.signupField span,
+.signupInterestHeader span {
   font-size: 14px;
   font-weight: 700;
+  color: #334155;
 }
 
 .signupField input,
@@ -233,8 +316,7 @@ button {
     box-shadow 0.2s ease;
 }
 
-.signupField input::placeholder,
-.signupField select:invalid {
+.signupField input::placeholder {
   color: #94a3b8;
 }
 
@@ -244,39 +326,564 @@ button {
   box-shadow: 0 0 0 4px rgba(43, 95, 158, 0.12);
 }
 
-.signupButton {
-  border: 0;
-  border-radius: 12px;
-  padding: 14px 18px;
-  background: var(--blue);
-  color: #fff;
-  font-weight: 700;
+.signupField input[aria-invalid='true'] {
+  border-color: #dc2626;
+}
+
+.signupBirthDate {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  gap: 8px;
+}
+
+.signupFieldError,
+.signupFieldHint {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.signupFieldError {
+  color: #dc2626;
+}
+
+.signupFieldHint {
+  color: #64748b;
+}
+
+.signupChoiceGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.signupChoiceGridThree {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.signupChoiceCard {
+  min-height: 132px;
+  border: 1px solid #d0d8e3;
+  border-radius: 14px;
+  background: #fafbfd;
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  text-align: left;
   cursor: pointer;
   transition:
     transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
     background-color 0.2s ease;
 }
 
-.signupButton:hover {
+.signupChoiceCard span {
+  color: var(--deep);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.signupChoiceCard em {
+  font-style: normal;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.signupChoiceCard:hover {
   transform: translateY(-1px);
-  background: #224f84;
 }
 
-.signupLoginPrompt {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  text-align: center;
+.signupChoiceCard.selected {
+  border-color: var(--blue);
+  background: #eff5fc;
+  box-shadow: 0 0 0 1px rgba(43, 95, 158, 0.08);
 }
 
-.signupLoginPrompt a {
+.signupChoiceCard.selected em {
   color: var(--blue);
   font-weight: 700;
 }
 
-.signupLoginPrompt a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.signupInterestWrap {
+  display: grid;
+  gap: 14px;
+}
+
+.signupInterestHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.signupInterestHeader strong {
+  color: var(--deep);
+  font-size: 13px;
+}
+
+.signupInterestGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  grid-auto-rows: 1fr;
+}
+
+.signupInterestButton {
+  min-height: 96px;
+  border: 1px solid #d0d8e3;
+  border-radius: 14px;
+  background: #fafbfd;
+  padding: 14px 16px;
+  text-align: left;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.signupInterestButton span {
+  color: var(--deep);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.signupInterestButton em {
+  font-style: normal;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.signupInterestButton:hover {
+  transform: translateY(-1px);
+}
+
+.signupInterestButton.selected {
+  border-color: var(--blue);
+  background: #eff5fc;
+  box-shadow: 0 0 0 1px rgba(43, 95, 158, 0.08);
+}
+
+.signupInterestButton.selected em {
+  color: var(--blue);
+}
+
+.signupMessage {
+  margin: 16px 0 0;
+  color: var(--deep);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.signupWelcome {
+  display: grid;
+  gap: 16px;
+  padding: 12px 0 4px;
+}
+
+.signupWelcomeEyebrow {
+  margin: 0;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.signupWelcomeTitle {
+  margin: 0;
+  color: var(--deep);
+  font-size: 28px;
+  line-height: 1.25;
+}
+
+.signupWelcomeText {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.signupWelcomeSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.signupWelcomeSummary div {
+  border: 1px solid #d0d8e3;
+  border-radius: 14px;
+  background: #fafbfd;
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.signupWelcomeSummary span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.signupWelcomeSummary strong {
+  color: var(--deep);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.signupWelcomeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.signupWelcomeChips span {
+  border: 1px solid #d0d8e3;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--deep);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.signupActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.signupGhostButton,
+.signupPrimaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.signupGhostButton {
+  background: #eef3f8;
+  color: var(--deep);
+}
+
+.signupPrimaryButton {
+  background: var(--blue);
+  color: #fff;
+  margin-left: auto;
+}
+
+.signupGhostButton:hover:not(:disabled),
+.signupPrimaryButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.signupGhostButton:disabled,
+.signupPrimaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.signupGhostButton:focus-visible,
+.signupPrimaryButton:focus-visible,
+.signupBackLink:focus-visible {
+  outline: 3px solid rgba(43, 95, 158, 0.18);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .signupPage {
+    padding: 16px;
+  }
+
+  .signupCard {
+    padding: 20px;
+    border-radius: 18px;
+    min-height: auto;
+  }
+
+  .signupTopRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .signupFieldGrid,
+  .signupChoiceGridThree,
+  .signupWelcomeSummary,
+  .signupInterestGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .signupActions {
+    flex-direction: column;
+  }
+
+  .signupPrimaryButton {
+    margin-left: 0;
+  }
+}
+
+.interestPage {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(43, 95, 158, 0.16), transparent 42%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+}
+
+.interestShell {
+  width: min(100%, 880px);
+  margin: 0 auto;
+}
+
+.interestCardShell {
+  border: 1px solid rgba(31, 63, 105, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 40px rgba(31, 63, 105, 0.08);
+}
+
+.interestCardShell {
+  padding: 32px;
+}
+
+.interestEyebrow {
+  margin: 0 0 10px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.interestCardHead h1 {
+  margin: 0;
+  color: var(--deep);
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.interestLead {
+  margin: 16px 0 0;
+  max-width: 54ch;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.interestSelectionBar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #dce4ec;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: var(--deep);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.interestSelectionBar span:last-child {
+  color: #5d6b7f;
+  font-weight: 600;
+}
+
+.interestGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.interestCard {
+  min-height: 184px;
+  border: 1px solid #dbe3ec;
+  border-radius: 20px;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.interestCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 24px rgba(31, 63, 105, 0.08);
+}
+
+.interestCard.selected {
+  border-color: transparent;
+  box-shadow: 0 16px 30px rgba(31, 63, 105, 0.16);
+}
+
+.interestIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.interestTitle {
+  color: var(--deep);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.interestDescription {
+  color: #566273;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.interestState {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.interestTintWarm {
+  background: linear-gradient(180deg, #fff8ef 0%, #fff 100%);
+}
+
+.interestTintSun {
+  background: linear-gradient(180deg, #fff9ea 0%, #fff 100%);
+}
+
+.interestTintSky {
+  background: linear-gradient(180deg, #f2f8ff 0%, #fff 100%);
+}
+
+.interestTintMint {
+  background: linear-gradient(180deg, #f1fbf8 0%, #fff 100%);
+}
+
+.interestTintIndigo {
+  background: linear-gradient(180deg, #f3f5ff 0%, #fff 100%);
+}
+
+.interestTintRose {
+  background: linear-gradient(180deg, #fff4f4 0%, #fff 100%);
+}
+
+.interestTintViolet {
+  background: linear-gradient(180deg, #f7f4ff 0%, #fff 100%);
+}
+
+.interestTintGold {
+  background: linear-gradient(180deg, #fff8e9 0%, #fff 100%);
+}
+
+.interestCard.selected .interestState {
+  color: #0f4c81;
+}
+
+.interestCard.selected .interestIcon {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.interestActionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.interestGhostButton,
+.interestPrimaryButton {
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 22px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.interestGhostButton {
+  background: #eef3f8;
+  color: var(--deep);
+}
+
+.interestPrimaryButton {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 12px 22px rgba(43, 95, 158, 0.2);
+}
+
+.interestGhostButton:hover,
+.interestPrimaryButton:hover {
+  transform: translateY(-1px);
+}
+
+.interestGhostButton:focus-visible,
+.interestPrimaryButton:focus-visible,
+.interestCard:focus-visible,
+.interestCardShell:focus-visible {
+  outline: 3px solid rgba(43, 95, 158, 0.25);
+  outline-offset: 3px;
+}
+
+@media (max-width: 960px) {
+  .interestGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .interestPage {
+    padding: 16px;
+  }
+
+  .interestCardShell {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .interestGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .interestActionRow {
+    flex-direction: column;
+    justify-content: stretch;
+  }
+
+  .interestGhostButton,
+  .interestPrimaryButton {
+    width: 100%;
+  }
 }
 
 .page {
