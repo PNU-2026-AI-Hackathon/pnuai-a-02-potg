@@ -1835,6 +1835,19 @@ button {
 }
 
 @media (max-width: 640px) {
+  .signupPage {
+    align-items: start;
+    padding: 20px 12px;
+  }
+
+  .signupCard {
+    padding: 24px 20px;
+  }
+
+  .signupTitle {
+    font-size: 26px;
+  }
+
   .shell {
     width: min(100% - 20px, 1280px);
   }
