@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import LoginForm from '../../components/auth/LoginForm';
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ registered?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { registered } = await searchParams;
+
   return (
     <main className="loginPage">
       <section className="loginShell" aria-labelledby="login-title">
@@ -13,6 +19,12 @@ export default function LoginPage() {
           <p className="loginDescription">
             이메일과 비밀번호를 입력해 로그인하세요. 테스트 계정은 <strong>test@example.com / password123</strong>입니다.
           </p>
+
+          {registered === 'true' ? (
+            <p className="loginRegistrationMessage" role="status">
+              회원가입이 완료되었습니다. 가입한 정보로 로그인해 주세요.
+            </p>
+          ) : null}
 
           <LoginForm />
 

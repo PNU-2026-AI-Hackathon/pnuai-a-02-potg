@@ -64,12 +64,13 @@ export default function SignupPage() {
   const [phone, setPhone] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [statusMessage, setStatusMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const progress = Math.round(((step - 1) / (steps.length - 1)) * 100);
   const stepTitle = useMemo(() => steps[step - 1], [step]);
 
   const isStepOneValid = Boolean(accountType);
-  const isStepTwoValid = userId.trim().length > 0 && password.trim().length > 0 && password === confirmPassword;
+  const isStepTwoValid = /^[a-zA-Z0-9_-]{4,30}$/.test(userId.trim()) && password.length >= 8 && password === confirmPassword;
   const isStepThreeValid = name.trim().length > 0;
   const isPasswordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
   const availableMonths =
@@ -86,7 +87,7 @@ export default function SignupPage() {
       : '';
   const isStepFourValid = Boolean(birthDate);
   const isStepFiveValid = region.trim().length > 0;
-  const isStepSixValid = email.trim().length > 0;
+  const isStepSixValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const isStepSevenValid = selectedInterests.length > 0;
   const selectedAccountTypeLabel =
     accountTypes.find((item) => item.id === accountType)?.title || '일반 사용자';
@@ -144,14 +145,50 @@ export default function SignupPage() {
     setStep((current) => Math.max(current - 1, 1));
   }
 
-  function handleComplete() {
+  async function handleComplete() {
     if (!isStepSevenValid) {
       setStatusMessage('관심분야를 하나 이상 선택해 주세요.');
       return;
     }
 
-    setStep(8);
     setStatusMessage('');
+    setIsSubmitting(true);
+
+    const genderValue =
+      gender === '여성' ? 'female' : gender === '남성' ? 'male' : gender === '기타' ? 'other' : 'none';
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountType,
+          userId: userId.trim(),
+          password,
+          name: name.trim(),
+          gender: genderValue,
+          birthDate,
+          region,
+          email: email.trim(),
+          phone: phone.trim() || null,
+          interestIds: selectedInterests,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setStatusMessage(data?.error || '회원가입에 실패했습니다. 다시 시도해 주세요.');
+        return;
+      }
+
+      setStep(8);
+      setStatusMessage('회원가입이 완료되었습니다. 확인을 누르면 로그인 페이지로 이동합니다.');
+    } catch (error) {
+      console.error(error);
+      setStatusMessage('회원가입 서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -463,7 +500,7 @@ export default function SignupPage() {
           ) : null}
 
           <div className="signupActions">
-            <button type="button" className="signupGhostButton" onClick={handlePrevious} disabled={step === 1}>
+            <button type="button" className="signupGhostButton" onClick={handlePrevious} disabled={step === 1 || isSubmitting}>
               이전
             </button>
 
@@ -495,13 +532,13 @@ export default function SignupPage() {
                 type="button"
                 className="signupPrimaryButton"
                 onClick={handleComplete}
-                disabled={!isStepSevenValid}
+                disabled={!isStepSevenValid || isSubmitting}
               >
-                완료
+                {isSubmitting ? '가입 처리 중...' : '완료'}
               </button>
             ) : (
-              <Link href="/" className="signupPrimaryButton">
-                시작하기
+              <Link href="/login?registered=true" className="signupPrimaryButton">
+                확인
               </Link>
             )}
           </div>
