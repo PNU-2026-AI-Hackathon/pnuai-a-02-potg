@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import LoginForm from '../../components/auth/LoginForm';
 
 export default function LoginPage() {
@@ -14,6 +15,10 @@ export default function LoginPage() {
           </p>
 
           <LoginForm />
+
+          <p className="loginSignupLink">
+            아직 회원이 아니신가요? <Link href="/signup">회원가입</Link>
+          </p>
         </div>
       </section>
     </main>
