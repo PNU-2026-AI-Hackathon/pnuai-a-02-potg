@@ -87,6 +87,16 @@ button {
   line-height: 1.6;
 }
 
+.loginRegistrationMessage {
+  margin: 16px 0 0;
+  border-radius: 10px;
+  background: #ecfdf5;
+  padding: 12px 14px;
+  color: #166534;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .loginForm {
   display: grid;
   gap: 16px;

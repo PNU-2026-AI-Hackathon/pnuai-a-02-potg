@@ -6,11 +6,48 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AccountType {
+  RESIDENT
+  LIBRARIAN
+  ADMIN
+}
+
+enum Gender {
+  FEMALE
+  MALE
+  OTHER
+}
+
 model User {
-  id        String   @id @default(uuid())
+  id          String         @id @default(uuid())
+  userId      String?        @unique
+  name        String
+  email       String         @unique
+  password    String
+  accountType AccountType    @default(RESIDENT)
+  gender      Gender?
+  birthDate   DateTime?
+  region      String?
+  phone       String?
+  interests   UserInterest[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Interest {
+  id        String         @id
   name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  users     UserInterest[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model UserInterest {
+  userId     String
+  interestId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interest   Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, interestId])
 }
