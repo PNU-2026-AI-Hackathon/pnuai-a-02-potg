@@ -5,13 +5,17 @@ import { prisma } from '../lib/prisma';
 
 const router = Router();
 
-// Mock authentication backend: users are stored in-memory for local/demo use only.
-// This implementation is not persistent and is not suitable for a production auth flow.
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error('Environment variable JWT_SECRET is required and must not be empty.');
 }
 const JWT_EXPIRES_IN = '1h';
+
+type AuthTokenPayload = jwt.JwtPayload & {
+  sub: string;
+  email: string;
+  name: string;
+};
 
 type LoginRequestBody = {
   email?: string;
@@ -23,6 +27,16 @@ type RegisterRequestBody = {
   email?: string;
   password?: string;
 };
+
+function getBearerToken(req: Request) {
+  const authorization = req.header('authorization');
+
+  if (!authorization?.startsWith('Bearer ')) {
+    return null;
+  }
+
+  return authorization.slice('Bearer '.length).trim() || null;
+}
 
 router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Response) => {
   const { email, password } = req.body;
@@ -61,11 +75,47 @@ router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Respon
   });
 });
 
+router.get('/me', async (req: Request, res: Response) => {
+  const token = getBearerToken(req);
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
+
+    if (typeof payload.sub !== 'string') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    console.error('Current user lookup failed:', error);
+    return res.status(500).json({ error: 'Unable to load current user' });
+  }
+});
+
 router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: Response) => {
   const { name, email, password } = req.body;
 
-  // NOTE: registration is handled by an in-memory mock data store.
-  // New users are not persisted across server restarts.
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'name, email, and password are required' });
   }
