@@ -1,12 +1,41 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import LoginForm from '../../components/auth/LoginForm';
+import { getCurrentUser } from '@/lib/server-auth';
 
 type LoginPageProps = {
-  searchParams: Promise<{ registered?: string }>;
+  searchParams: Promise<{ next?: string | string[] }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { registered } = await searchParams;
+  const params = await searchParams;
+  const requestedPath = typeof params.next === 'string' ? params.next : '/';
+  const redirectTo =
+    requestedPath.startsWith('/') && !requestedPath.startsWith('//') ? requestedPath : '/';
+  const user = await getCurrentUser();
+
+  if (user) {
+    redirect(redirectTo);
+  }
+
+type LoginPageProps = {
+  searchParams: Promise<{
+    next?: string | string[];
+    registered?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const requestedPath = typeof params.next === 'string' ? params.next : '/';
+  const redirectTo =
+    requestedPath.startsWith('/') && !requestedPath.startsWith('//') ? requestedPath : '/';
+  const registered = params.registered;
+  const user = await getCurrentUser();
+
+  if (user) {
+    redirect(redirectTo);
+  }
 
   return (
     <main className="loginPage">
@@ -26,6 +55,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
           ) : null}
 
+          <LoginForm redirectTo={redirectTo} />
           <LoginForm />
 
           <p className="loginSignupLink">

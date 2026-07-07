@@ -12,6 +12,12 @@ if (!JWT_SECRET) {
 }
 const JWT_EXPIRES_IN = '1h';
 
+type AuthTokenPayload = jwt.JwtPayload & {
+  sub: string;
+  email: string;
+  name: string;
+};
+
 type LoginRequestBody = {
   email?: string;
   password?: string;
@@ -51,6 +57,16 @@ function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function getBearerToken(req: Request) {
+  const authorization = req.header('authorization');
+
+  if (!authorization?.startsWith('Bearer ')) {
+    return null;
+  }
+
+  return authorization.slice('Bearer '.length).trim() || null;
+}
+
 router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Response) => {
   const { email, password } = req.body;
 
@@ -86,6 +102,44 @@ router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Respon
       email: user.email,
     },
   });
+});
+
+router.get('/me', async (req: Request, res: Response) => {
+  const token = getBearerToken(req);
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
+
+    if (typeof payload.sub !== 'string') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    console.error('Current user lookup failed:', error);
+    return res.status(500).json({ error: 'Unable to load current user' });
+  }
 });
 
 router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: Response) => {
