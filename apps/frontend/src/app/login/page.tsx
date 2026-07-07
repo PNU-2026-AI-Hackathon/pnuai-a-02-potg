@@ -4,21 +4,6 @@ import LoginForm from '../../components/auth/LoginForm';
 import { getCurrentUser } from '@/lib/server-auth';
 
 type LoginPageProps = {
-  searchParams: Promise<{ next?: string | string[] }>;
-};
-
-export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const params = await searchParams;
-  const requestedPath = typeof params.next === 'string' ? params.next : '/';
-  const redirectTo =
-    requestedPath.startsWith('/') && !requestedPath.startsWith('//') ? requestedPath : '/';
-  const user = await getCurrentUser();
-
-  if (user) {
-    redirect(redirectTo);
-  }
-
-type LoginPageProps = {
   searchParams: Promise<{
     next?: string | string[];
     registered?: string;
@@ -56,7 +41,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           ) : null}
 
           <LoginForm redirectTo={redirectTo} />
-          <LoginForm />
 
           <p className="loginSignupLink">
             아직 회원이 아니신가요? <Link href="/signup">회원가입</Link>
