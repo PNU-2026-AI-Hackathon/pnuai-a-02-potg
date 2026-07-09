@@ -36,7 +36,7 @@ model User {
 
 model Interest {
   id        String         @id
-  name      String
+  name      String         @unique
   users     UserInterest[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
@@ -50,4 +50,5 @@ model UserInterest {
   createdAt  DateTime @default(now())
 
   @@id([userId, interestId])
+  @@index([interestId])
 }
