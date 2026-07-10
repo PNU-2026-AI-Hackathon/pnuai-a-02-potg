@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import CommunityBoardView from '@/components/community/CommunityBoardView';
 import {
   getCommunityBoard,
-  getCommunityBoardList,
   getCommunityPosts,
 } from '@/lib/community-boards';
 
@@ -17,7 +16,6 @@ export default function FreeBoardPage() {
   return (
     <CommunityBoardView
       board={board}
-      boardLinks={getCommunityBoardList()}
       posts={getCommunityPosts(board.slug)}
     />
   );

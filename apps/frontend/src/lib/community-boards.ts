@@ -24,12 +24,6 @@ export type CommunityPost = {
   tags: string[];
 };
 
-export const communityBoardOrder: CommunityBoardSlug[] = [
-  'library-news',
-  'free',
-  'proposals',
-];
-
 export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
   'library-news': {
     slug: 'library-news',
@@ -209,10 +203,6 @@ export const communityPosts: CommunityPost[] = [
 
 export function getCommunityBoard(slug: CommunityBoardSlug) {
   return communityBoards[slug];
-}
-
-export function getCommunityBoardList() {
-  return communityBoardOrder.map((slug) => communityBoards[slug]);
 }
 
 export function getCommunityPosts(slug: CommunityBoardSlug) {
