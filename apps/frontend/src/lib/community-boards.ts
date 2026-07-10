@@ -211,6 +211,10 @@ export function getCommunityBoard(slug: CommunityBoardSlug) {
   return communityBoards[slug];
 }
 
+export function getCommunityBoardList() {
+  return communityBoardOrder.map((slug) => communityBoards[slug]);
+}
+
 export function getCommunityPosts(slug: CommunityBoardSlug) {
   return communityPosts
     .filter((post) => post.boardSlug === slug)
