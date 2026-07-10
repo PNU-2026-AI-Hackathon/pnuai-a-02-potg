@@ -942,7 +942,9 @@ button {
 .topActions a,
 .topActions button,
 .nav button,
+.nav a,
 .panelBar button,
+.panelBar a,
 .footerLinks button {
   border: 0;
   background: transparent;
@@ -1063,17 +1065,25 @@ button {
   padding: 15px 0;
 }
 
-.nav button {
+.nav button,
+.nav a {
   font-size: 15px;
   font-weight: 600;
   padding: 0 0 6px;
   color: #333;
+  text-decoration: none;
 }
 
-.nav button.active {
+.nav button.active,
+.nav a.active {
   color: #0b5cab;
   border-bottom: 2px solid #0b5cab;
   font-weight: 800;
+}
+
+.nav a:hover,
+.nav a:focus-visible {
+  color: #0b5cab;
 }
 
 .content {
@@ -1127,9 +1137,20 @@ button {
   font-size: 13px;
 }
 
-.panelBar button {
+.panelBar button,
+.panelBar a {
   font-size: 13px;
   color: #666;
+  text-decoration: none;
+}
+
+.panelBar a {
+  font-weight: 700;
+}
+
+.panelBar a:hover,
+.panelBar a:focus-visible {
+  color: #0b5cab;
 }
 
 .heroBody {
@@ -1267,7 +1288,8 @@ button {
   grid-template-columns: 1fr 1fr;
 }
 
-.quickGrid button {
+.quickGrid button,
+.quickGrid a {
   min-height: 88px;
   border-bottom: 1px solid #e5e8ec;
   border-right: 1px solid #e5e8ec;
@@ -1278,9 +1300,18 @@ button {
   gap: 8px;
   font-size: 14px;
   width: 100%;
+  color: #444;
+  text-decoration: none;
 }
 
-.quickGrid button span:first-child {
+.quickGrid a:hover,
+.quickGrid a:focus-visible {
+  color: #0b5cab;
+  background: #f7fbff;
+}
+
+.quickGrid button span:first-child,
+.quickGrid a span:first-child {
   font-size: 22px;
   color: var(--blue);
 }
