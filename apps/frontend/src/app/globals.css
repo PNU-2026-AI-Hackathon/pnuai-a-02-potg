@@ -827,22 +827,6 @@ button {
   margin-top: 24px;
 }
 
-.interestStatus,
-.interestMessage {
-  margin: 18px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.interestMessage.error {
-  color: #dc2626;
-}
-
-.interestMessage.success {
-  color: #166534;
-}
-
 .interestGhostButton,
 .interestPrimaryButton {
   border: 0;
@@ -855,9 +839,6 @@ button {
     transform 0.2s ease,
     box-shadow 0.2s ease,
     opacity 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .interestGhostButton {
@@ -872,13 +853,8 @@ button {
 }
 
 .interestGhostButton:hover,
-.interestPrimaryButton:hover:not(:disabled) {
+.interestPrimaryButton:hover {
   transform: translateY(-1px);
-}
-
-.interestPrimaryButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
 }
 
 .interestGhostButton:focus-visible,
