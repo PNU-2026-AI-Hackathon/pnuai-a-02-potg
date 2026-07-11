@@ -13,7 +13,44 @@ This backend is a minimal Express + TypeScript server that provides API endpoint
 - `GET /api/agenda`
 - `GET /api/search?q=...&type=...`
 - `POST /api/auth/login`
-- `POST /api/auth/register` (mock-only, in-memory; no persistence across restarts)
+- `POST /api/auth/register`
+- `GET /api/auth/me` (requires JWT)
+- `GET /api/interests`
+- `GET /api/interests/me` (requires JWT)
+- `PUT /api/interests/me` (requires JWT)
+- `POST /api/interests/me` (requires JWT)
+
+## Authentication and authorization
+
+JWT authentication uses the `Authorization: Bearer <token>` header. The backend verifies the token, loads the current user from the database, and attaches the authenticated user to `req.user`.
+
+User roles are based on `User.accountType`:
+
+- `RESIDENT`: regular user
+- `LIBRARIAN`: librarian
+- `ADMIN`: administrator
+
+Protected API policy:
+
+- `GET /api/auth/me`: authenticated users
+- `GET /api/interests/me`: authenticated users
+- `PUT /api/interests/me`: authenticated users
+- `POST /api/interests/me`: authenticated users
+- `GET /api/interests/users/:userId`: librarians and admins
+- `PUT /api/interests/users/:userId`: librarians and admins
+- `POST /api/interests/users/:userId`: librarians and admins
+
+Authentication errors use HTTP `401` with:
+
+```json
+{ "code": "AUTHENTICATION_REQUIRED", "error": "Authentication required." }
+```
+
+Authorization errors use HTTP `403` with:
+
+```json
+{ "code": "FORBIDDEN", "error": "You do not have permission to access this resource." }
+```
 
 ## Run locally
 

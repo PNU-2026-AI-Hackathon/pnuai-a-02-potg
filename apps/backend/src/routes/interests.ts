@@ -1,43 +1,12 @@
 import { Router, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
+import { authenticateJwt, requireStaffRole } from '../middleware/auth';
 
 const router = Router();
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('Environment variable JWT_SECRET is required and must not be empty.');
-}
-const REQUIRED_JWT_SECRET: string = JWT_SECRET;
-
-type AuthTokenPayload = jwt.JwtPayload & {
-  sub: string;
-};
 
 type SaveUserInterestsBody = {
   interestIds?: unknown;
 };
-
-function getBearerToken(req: Request) {
-  const authorization = req.header('authorization');
-
-  if (!authorization?.startsWith('Bearer ')) {
-    return null;
-  }
-
-  return authorization.slice('Bearer '.length).trim() || null;
-}
-
-function getAuthenticatedUserId(req: Request) {
-  const token = getBearerToken(req);
-
-  if (!token) {
-    return null;
-  }
-
-  const payload = jwt.verify(token, REQUIRED_JWT_SECRET) as AuthTokenPayload;
-  return typeof payload.sub === 'string' ? payload.sub : null;
-}
 
 function readInterestIds(value: unknown) {
   if (!Array.isArray(value)) {
@@ -117,26 +86,20 @@ async function saveUserInterests(userId: string, interestIds: string[]) {
 }
 
 async function saveAuthenticatedUserInterests(req: Request<{}, {}, SaveUserInterestsBody>, res: Response) {
+  if (!req.user) {
+    return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
+  }
+
   try {
-    const userId = getAuthenticatedUserId(req);
-
-    if (!userId) {
-      return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
-    }
-
     const interestIds = readInterestIds(req.body.interestIds);
 
     if (!interestIds) {
       return res.status(400).json({ code: 'INVALID_BODY', error: 'interestIds must be an array.' });
     }
 
-    const result = await saveUserInterests(userId, interestIds);
+    const result = await saveUserInterests(req.user.id, interestIds);
     return res.status(result.status).json(result.body);
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({ code: 'INVALID_TOKEN', error: 'Invalid or expired token.' });
-    }
-
     console.error('User interest save failed:', error);
     return res.status(500).json({ code: 'USER_INTEREST_SAVE_FAILED', error: 'Unable to save user interests.' });
   }
@@ -178,16 +141,14 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
-router.get('/me', async (req: Request, res: Response) => {
+router.get('/me', authenticateJwt, async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
+  }
+
   try {
-    const userId = getAuthenticatedUserId(req);
-
-    if (!userId) {
-      return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
-    }
-
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: req.user.id },
       select: {
         id: true,
         interests: {
@@ -213,19 +174,15 @@ router.get('/me', async (req: Request, res: Response) => {
       interests: user.interests.map(({ interest }) => interest),
     });
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({ code: 'INVALID_TOKEN', error: 'Invalid or expired token.' });
-    }
-
     console.error('User interest lookup failed:', error);
     return res.status(500).json({ code: 'USER_INTEREST_LOOKUP_FAILED', error: 'Unable to load user interests.' });
   }
 });
 
-router.put('/me', saveAuthenticatedUserInterests);
-router.post('/me', saveAuthenticatedUserInterests);
+router.put('/me', authenticateJwt, saveAuthenticatedUserInterests);
+router.post('/me', authenticateJwt, saveAuthenticatedUserInterests);
 
-router.get('/users/:userId', async (req: Request<{ userId: string }>, res: Response) => {
+router.get('/users/:userId', authenticateJwt, requireStaffRole, async (req: Request<{ userId: string }>, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.userId },
@@ -259,7 +216,7 @@ router.get('/users/:userId', async (req: Request<{ userId: string }>, res: Respo
   }
 });
 
-router.put('/users/:userId', saveUserInterestsByParam);
-router.post('/users/:userId', saveUserInterestsByParam);
+router.put('/users/:userId', authenticateJwt, requireStaffRole, saveUserInterestsByParam);
+router.post('/users/:userId', authenticateJwt, requireStaffRole, saveUserInterestsByParam);
 
 export default router;
