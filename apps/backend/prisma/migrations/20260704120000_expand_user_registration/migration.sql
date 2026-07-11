@@ -38,13 +38,11 @@ ALTER TABLE "UserInterest"
   FOREIGN KEY ("interestId") REFERENCES "Interest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 INSERT INTO "Interest" ("id", "name", "updatedAt") VALUES
-  ('reading', '독서', CURRENT_TIMESTAMP),
-  ('children', '아동', CURRENT_TIMESTAMP),
-  ('youth', '청소년', CURRENT_TIMESTAMP),
-  ('senior', '노년층', CURRENT_TIMESTAMP),
-  ('digital-education', '디지털 교육', CURRENT_TIMESTAMP),
-  ('environment', '환경', CURRENT_TIMESTAMP),
-  ('culture-art', '문화예술', CURRENT_TIMESTAMP),
-  ('career', '진로', CURRENT_TIMESTAMP),
-  ('writing', '글쓰기', CURRENT_TIMESTAMP),
-  ('local-issues', '지역문제', CURRENT_TIMESTAMP);
+  ('reading', '독서/인문', CURRENT_TIMESTAMP),
+  ('culture', '문화/예술', CURRENT_TIMESTAMP),
+  ('digital', '디지털/AI', CURRENT_TIMESTAMP),
+  ('children', '아동/가족', CURRENT_TIMESTAMP),
+  ('youth', '청소년/진로', CURRENT_TIMESTAMP),
+  ('senior', '시니어/복지', CURRENT_TIMESTAMP),
+  ('community', '지역참여', CURRENT_TIMESTAMP),
+  ('volunteer', '봉사/나눔', CURRENT_TIMESTAMP);
