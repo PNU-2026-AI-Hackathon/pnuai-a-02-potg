@@ -161,10 +161,16 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: 
     ),
   ];
 
-  if (!accountType || !userId || !name || !email || !password || !birthDate || !region || interestIds.length === 0) {
+  if (!accountType || !userId || !name || !email || !password || !birthDate || !region) {
     return res.status(400).json({
       code: 'MISSING_REQUIRED_FIELDS',
       error: '필수 회원가입 정보를 모두 입력해 주세요.',
+    });
+  }
+  if (interestIds.length === 0) {
+    return res.status(400).json({
+      code: 'MISSING_INTERESTS',
+      error: '관심분야를 하나 이상 선택해 주세요.',
     });
   }
 
@@ -237,7 +243,6 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: 
         select: { id: true, userId: true, name: true, email: true },
       }),
     );
-
     return res.status(201).json({ message: '회원가입이 완료되었습니다.', user: newUser });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

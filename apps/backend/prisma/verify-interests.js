@@ -8,16 +8,14 @@ const { PrismaClient } = require('@prisma/client');
 dotenv.config();
 
 const expectedInterests = [
-  { id: 'reading', name: '독서' },
-  { id: 'children', name: '아동' },
-  { id: 'youth', name: '청소년' },
-  { id: 'senior', name: '노년층' },
-  { id: 'digital-education', name: '디지털 교육' },
-  { id: 'environment', name: '환경' },
-  { id: 'culture-art', name: '문화예술' },
-  { id: 'career', name: '진로' },
-  { id: 'writing', name: '글쓰기' },
-  { id: 'local-issues', name: '지역문제' },
+  { id: 'reading', name: '독서/인문' },
+  { id: 'culture', name: '문화/예술' },
+  { id: 'digital', name: '디지털/AI' },
+  { id: 'children', name: '아동/가족' },
+  { id: 'youth', name: '청소년/진로' },
+  { id: 'senior', name: '시니어/복지' },
+  { id: 'community', name: '지역참여' },
+  { id: 'volunteer', name: '봉사/나눔' },
 ];
 
 function createPool() {
@@ -75,7 +73,7 @@ async function main() {
         interests: {
           create: [
             { interestId: 'reading' },
-            { interestId: 'local-issues' },
+            { interestId: 'community' },
           ],
         },
       },
@@ -97,7 +95,7 @@ async function main() {
     });
     const savedInterestIds = savedUser.interests.map(({ interest }) => interest.id);
 
-    if (savedInterestIds.join(',') !== 'local-issues,reading') {
+    if (savedInterestIds.join(',') !== 'community,reading') {
       throw new Error(`Unexpected saved interests: ${savedInterestIds.join(', ')}`);
     }
 
