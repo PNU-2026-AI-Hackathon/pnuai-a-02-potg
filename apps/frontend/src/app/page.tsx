@@ -49,6 +49,9 @@ export default async function Home() {
             <Link href="/login">
               로그인
             </Link>
+            <Link href="/mypage">
+              마이페이지
+            </Link>
             <button type="button" disabled>
               회원가입
             </button>
