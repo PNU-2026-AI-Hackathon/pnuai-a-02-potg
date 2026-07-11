@@ -1913,34 +1913,35 @@ button {
 .communityBoardHeader {
   display: block;
   border: 0;
-  background: transparent;
+  border-left: 4px solid #0b5cab;
+  background: #f8fafc;
   box-shadow: none;
-  padding: 14px 0 26px;
-  text-align: center;
+  margin-bottom: 18px;
+  padding: 22px 26px;
+  text-align: left;
 }
 
 .communityEyebrow {
-  display: none;
+  display: block;
+  margin: 0 0 8px;
+  color: #0b5cab;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .communityBoardHeader h1 {
   margin: 0;
-  color: #222;
-  font-size: 32px;
+  color: #1f3f69;
+  font-size: 30px;
   line-height: 1.25;
 }
 
 .communityBoardHeader h1::after {
-  content: "";
-  display: block;
-  width: 56px;
-  height: 3px;
-  margin: 18px auto 0;
-  background: #0b5cab;
+  content: none;
 }
 
 .communityBoardHeader p {
-  margin: 18px auto 0;
+  margin: 10px 0 0;
   max-width: 720px;
   color: #666;
   font-size: 15px;
@@ -2592,14 +2593,6 @@ button {
   .communityBoardHeader h1,
   .boardHeader h1 {
     font-size: 26px;
-  }
-
-  .communityBoardHeader {
-    text-align: left;
-  }
-
-  .communityBoardHeader h1::after {
-    margin-left: 0;
   }
 
   .communityBoardCardStats,
