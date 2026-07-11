@@ -5,6 +5,7 @@ import cors from 'cors';
 import announcementsRouter from './routes/announcements';
 import authRouter from './routes/auth';
 import librariesRouter from './routes/libraries';
+import interestsRouter from './routes/interests';
 import programsRouter from './routes/programs';
 import postsRouter from './routes/posts';
 import volunteersRouter from './routes/volunteers';
@@ -33,6 +34,7 @@ app.get('/api/summary', (_req: Request, res: Response) => {
 
 app.use('/api/announcements', announcementsRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/interests', interestsRouter);
 app.use('/api/libraries', librariesRouter);
 app.use('/api/programs', programsRouter);
 app.use('/api/posts', postsRouter);
