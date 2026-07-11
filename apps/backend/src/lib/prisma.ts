@@ -12,13 +12,16 @@ if (!connectionString) {
 }
 
 const caPath = path.resolve(process.cwd(), 'global-bundle.pem');
+const ssl = fs.existsSync(caPath)
+  ? {
+      ca: fs.readFileSync(caPath, 'utf8'),
+      rejectUnauthorized: true,
+    }
+  : false;
 
 const pool = new Pool({
   connectionString,
-  ssl: {
-    ca: fs.readFileSync(caPath, 'utf8'),
-    rejectUnauthorized: true,
-  },
+  ssl,
 });
 
 const adapter = new PrismaPg(pool);
