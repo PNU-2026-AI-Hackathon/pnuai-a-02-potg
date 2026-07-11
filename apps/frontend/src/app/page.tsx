@@ -1,3 +1,5 @@
+import AuthActions from '@/components/auth/AuthActions';
+import { getCurrentUser } from '@/lib/server-auth';
 import Link from 'next/link';
 
 type Summary = {
@@ -32,6 +34,7 @@ async function getAnnouncements(): Promise<Announcement[]> {
 }
 
 export default async function Home() {
+  const user = await getCurrentUser();
   const summary = await getSummary().catch(() => ({
     libraries: 40,
     programs: 24,
@@ -46,15 +49,7 @@ export default async function Home() {
         <div className="shell">
           <p>모이라 | 모두가 이어지는 라이브러리</p>
           <div className="topActions">
-            <Link href="/login">
-              로그인
-            </Link>
-            <Link href="/mypage">
-              마이페이지
-            </Link>
-            <button type="button" disabled>
-              회원가입
-            </button>
+            <AuthActions initialUser={user} />
             <button type="button" disabled>
               사이트맵
             </button>
@@ -109,9 +104,7 @@ export default async function Home() {
           <button type="button" disabled className="active">
             우리동네 도서관
           </button>
-          <button type="button" disabled>
-            지역 의제
-          </button>
+          <Link href="/community">지역 커뮤니티</Link>
           <button type="button" disabled>
             봉사자 연계
           </button>
@@ -180,7 +173,7 @@ export default async function Home() {
             <div className="panelBar">
               <h2>바로가기</h2>
             </div>
-            <div className="quickGrid" aria-hidden="true">
+            <div className="quickGrid">
               <button type="button" disabled>
                 <span>▣</span>
                 <span>통합자료검색</span>
@@ -197,14 +190,14 @@ export default async function Home() {
                 <span>▣</span>
                 <span>도서관 찾기</span>
               </button>
-              <button type="button" disabled>
+              <Link href="/community">
                 <span>▣</span>
-                <span>이용안내</span>
-              </button>
-              <button type="button" disabled>
+                <span>지역 커뮤니티</span>
+              </Link>
+              <Link href="/community/proposals">
                 <span>▣</span>
-                <span>공지사항</span>
-              </button>
+                <span>지역 제안</span>
+              </Link>
             </div>
           </aside>
         </section>
@@ -315,6 +308,7 @@ export default async function Home() {
           <section className="panel">
             <div className="panelBar">
               <h2>주민 제안 의제 요약</h2>
+              <Link href="/community/proposals">제안 게시판 +</Link>
             </div>
             <div className="agendaBox">
               <article className="agendaCard">

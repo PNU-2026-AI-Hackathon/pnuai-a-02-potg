@@ -8,12 +8,28 @@ type BoardPost = {
   category: string;
   author: string;
   createdAt: string;
+  updatedAt?: string;
+};
+
+type BoardComment = {
+  id: string;
+  postId: string;
+  content: string;
+  author: string;
+  createdAt: string;
 };
 
 type CreatePostBody = {
   title?: string;
   content?: string;
   category?: string;
+  author?: string;
+};
+
+type UpdatePostBody = Partial<CreatePostBody>;
+
+type CreateCommentBody = {
+  content?: string;
   author?: string;
 };
 
@@ -52,7 +68,32 @@ const posts: BoardPost[] = [
   },
 ];
 
+const comments: BoardComment[] = [
+  {
+    id: 'comment-1',
+    postId: 'post-1',
+    content: '\uC88B\uC740 \uC81C\uC548\uC785\uB2C8\uB2E4. \uC8FC\uB9D0\uC5D0 \uCC38\uC5EC\uD560 \uC218 \uC788\uB294 \uC2DC\uAC04\uB300\uB3C4 \uD568\uAED8 \uACF5\uC720\uB418\uBA74 \uC88B\uACA0\uC5B4\uC694.',
+    author: '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790',
+    createdAt: '2026-06-26T10:15:00.000Z',
+  },
+  {
+    id: 'comment-2',
+    postId: 'post-3',
+    content: '\uAC8C\uC2DC\uD310 \uBD84\uB958\uAC00 \uC788\uC5B4\uC11C \uC18C\uC2DD\uC744 \uCC3E\uAE30 \uD3B8\uD558\uB124\uC694.',
+    author: '\uC774\uC6A9\uC790',
+    createdAt: '2026-06-24T03:20:00.000Z',
+  },
+];
+
 const router = Router();
+
+function findPost(postId: string) {
+  return posts.find((post) => post.id === postId);
+}
+
+function findPostIndex(postId: string) {
+  return posts.findIndex((post) => post.id === postId);
+}
 
 router.get('/', (req, res) => {
   const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : '';
@@ -97,5 +138,125 @@ router.post('/', (req: Request<{}, {}, CreatePostBody>, res: Response) => {
 
   return res.status(201).json({ post });
 });
+
+router.get('/:postId', (req, res) => {
+  const post = findPost(req.params.postId);
+
+  if (!post) {
+    return res.status(404).json({ error: 'post not found' });
+  }
+
+  return res.json({ post });
+});
+
+router.put(
+  '/:postId',
+  (req: Request<{ postId: string }, {}, UpdatePostBody>, res: Response) => {
+    const post = findPost(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ error: 'post not found' });
+    }
+
+    const title = req.body.title?.trim();
+    const content = req.body.content?.trim();
+    const category = req.body.category?.trim();
+    const author = req.body.author?.trim();
+
+    if (req.body.title !== undefined && !title) {
+      return res.status(400).json({ error: 'title cannot be empty' });
+    }
+
+    if (req.body.content !== undefined && !content) {
+      return res.status(400).json({ error: 'content cannot be empty' });
+    }
+
+    if (req.body.category !== undefined && !category) {
+      return res.status(400).json({ error: 'category cannot be empty' });
+    }
+
+    if (title) {
+      post.title = title;
+    }
+
+    if (content) {
+      post.content = content;
+    }
+
+    if (category) {
+      post.category = category;
+    }
+
+    if (author) {
+      post.author = author;
+    }
+
+    post.updatedAt = new Date().toISOString();
+
+    return res.json({ post });
+  },
+);
+
+router.delete('/:postId', (req, res) => {
+  const postIndex = findPostIndex(req.params.postId);
+
+  if (postIndex === -1) {
+    return res.status(404).json({ error: 'post not found' });
+  }
+
+  const [deletedPost] = posts.splice(postIndex, 1);
+
+  for (let index = comments.length - 1; index >= 0; index -= 1) {
+    if (comments[index].postId === deletedPost.id) {
+      comments.splice(index, 1);
+    }
+  }
+
+  return res.json({ post: deletedPost });
+});
+
+router.get('/:postId/comments', (req, res) => {
+  const post = findPost(req.params.postId);
+
+  if (!post) {
+    return res.status(404).json({ error: 'post not found' });
+  }
+
+  const postComments = comments
+    .filter((comment) => comment.postId === post.id)
+    .sort((left, right) => Date.parse(left.createdAt) - Date.parse(right.createdAt));
+
+  return res.json({ comments: postComments });
+});
+
+router.post(
+  '/:postId/comments',
+  (req: Request<{ postId: string }, {}, CreateCommentBody>, res: Response) => {
+    const post = findPost(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ error: 'post not found' });
+    }
+
+    const content = req.body.content?.trim();
+    const author = req.body.author?.trim() || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
+
+    if (!content) {
+      return res.status(400).json({ error: 'content is required' });
+    }
+
+    const comment: BoardComment = {
+      id: randomUUID(),
+      postId: post.id,
+      content,
+      author,
+      createdAt: new Date().toISOString(),
+    };
+
+    comments.push(comment);
+
+    return res.status(201).json({ comment });
+  },
+);
 
 export default router;
