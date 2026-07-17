@@ -9,9 +9,10 @@
 1. `AGENTS.md`: 저장소 공통 작업 규칙
 2. `.ai/PROJECT.md`: 프로젝트 목적과 핵심 사용자 흐름
 3. `.ai/CURRENT_SCOPE.md`: 현재 MVP 범위와 개발 우선순위
-4. `.ai/ARCHITECTURE.md`: 코드 및 운영 구조
-5. `.ai/IMPLEMENTATION_STATUS.md`: 기능별 구현 근거와 검증 상태
-6. `.ai/DECISIONS.md`: 확정된 결정과 그 이유·영향
+4. `.ai/ROADMAP.md`: 완료한 기반과 향후 개발 순서
+5. `.ai/ARCHITECTURE.md`: 코드 및 운영 구조
+6. `.ai/IMPLEMENTATION_STATUS.md`: 기능별 구현 근거와 검증 상태
+7. `.ai/DECISIONS.md`: 확정된 결정과 그 이유·영향
 
 README는 프로젝트 진입 문서다. 상세 범위가 충돌하면 위 문서와 실제 코드를 함께 확인한다.
 
@@ -55,6 +56,7 @@ README는 프로젝트 진입 문서다. 상세 범위가 충돌하면 위 문�
 ## 문서 동기화
 
 - MVP 범위나 우선순위가 바뀌면 `CURRENT_SCOPE.md`를 수정한다.
+- 개발 단계와 향후 순서가 바뀌면 `ROADMAP.md`를 수정한다.
 - 기능 상태가 바뀌면 `IMPLEMENTATION_STATUS.md`와 관련 Issue/PR을 갱신한다.
 - 구조가 바뀌면 `ARCHITECTURE.md`를 수정한다.
 - 장기적으로 영향을 주는 결정은 `DECISIONS.md`에 결정·이유·영향 형식으로 추가한다.

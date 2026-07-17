@@ -512,6 +512,7 @@ PNUAI-A-02-POTG/
 * [AGENTS.md](AGENTS.md)
 * [.ai/PROJECT.md](.ai/PROJECT.md)
 * [.ai/CURRENT_SCOPE.md](.ai/CURRENT_SCOPE.md)
+* [.ai/ROADMAP.md](.ai/ROADMAP.md)
 * [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md)
 * [.ai/IMPLEMENTATION_STATUS.md](.ai/IMPLEMENTATION_STATUS.md)
 * [.ai/DECISIONS.md](.ai/DECISIONS.md)
