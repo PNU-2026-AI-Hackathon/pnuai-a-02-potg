@@ -541,6 +541,7 @@ npm run dev
 * [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md)
 * [.ai/IMPLEMENTATION_STATUS.md](.ai/IMPLEMENTATION_STATUS.md)
 * [.ai/DECISIONS.md](.ai/DECISIONS.md)
+* [원본 개발계획 및 설계 명세](docs/DEVELOPMENT_PLAN.md)
 
 README는 외부 사용자를 위한 프로젝트 소개와 진입 문서 역할을 하며, 세부 개발 범위와 AI 에이전트 규칙은 위 문서에서 관리합니다.
 

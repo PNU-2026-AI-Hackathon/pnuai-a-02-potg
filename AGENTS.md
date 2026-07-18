@@ -9,20 +9,36 @@
 1. `AGENTS.md`: 저장소 공통 작업 규칙
 2. `.ai/PROJECT.md`: 프로젝트 목적과 핵심 사용자 흐름
 3. `.ai/CURRENT_SCOPE.md`: 현재 MVP 범위와 개발 우선순위
-4. `.ai/ROADMAP.md`: 완료한 기반과 향후 개발 순서
-5. `.ai/ARCHITECTURE.md`: 코드 및 운영 구조
-6. `.ai/IMPLEMENTATION_STATUS.md`: 기능별 구현 근거와 검증 상태
-7. `.ai/DECISIONS.md`: 확정된 결정과 그 이유·영향
+4. `.ai/DECISIONS.md`: 확정된 결정과 그 이유·영향
+5. `.ai/IMPLEMENTATION_STATUS.md`: 기능별 실제 구현 근거와 검증 상태
+6. `.ai/ARCHITECTURE.md`: 현재 코드 및 운영 구조
+7. `.ai/ROADMAP.md`: 프로젝트 일정, 진행 상황과 향후 개발 계획
+8. `docs/DEVELOPMENT_PLAN.md`: 원본 개발계획의 기획 의도와 상세 요구사항
 
-README는 프로젝트 진입 문서다. 상세 범위가 충돌하면 위 문서와 실제 코드를 함께 확인한다.
+README는 프로젝트 진입 문서다. 상세 범위가 충돌하면 위 문서와 실제 코드를 함께 확인한다. `DEVELOPMENT_PLAN.md`는 모든 단순 수정에서 반드시 읽는 문서가 아니라 원본 기획 근거가 필요한 작업에서 참조한다.
+
+`DEVELOPMENT_PLAN.md`는 원본 개발계획을 보존하는 문서다. 현재 구현 내용과 범위는 `.ai/CURRENT_SCOPE.md`와 `.ai/IMPLEMENTATION_STATUS.md`를 우선한다.
+
+다음 경우에는 `docs/DEVELOPMENT_PLAN.md`를 우선 확인한다.
+
+- 새로운 기능을 설계할 때
+- 기능 의도나 해결하려는 사용자 문제를 확인할 때
+- AI 기능 또는 데이터 파이프라인을 설계할 때
+- 현재 문서에 충분한 기획 근거가 없을 때
+- 원본 요구사항과 현재 결정의 차이를 확인할 때
 
 ## 사실 우선순위
 
 1. 현재 저장소의 실제 코드와 설정
 2. 최근 팀 결정 및 `.ai/DECISIONS.md`
 3. 현재 범위인 `.ai/CURRENT_SCOPE.md`
-4. README와 기타 저장소 문서
-5. `docs/`의 원본 개발계획서
+4. `.ai/IMPLEMENTATION_STATUS.md`
+5. `.ai/ARCHITECTURE.md`
+6. `.ai/ROADMAP.md`
+7. `.ai/PROJECT.md`
+8. README
+9. `docs/DEVELOPMENT_PLAN.md`
+10. `docs/`의 원본 PDF/HWP 개발계획서
 
 코드와 문서가 충돌하면 추측으로 정리하지 말고 충돌을 보고한다. 확인하지 않은 기능을 구현 완료 또는 동작 검증 완료로 표현하지 않는다.
 
@@ -60,4 +76,5 @@ README는 프로젝트 진입 문서다. 상세 범위가 충돌하면 위 문�
 - 기능 상태가 바뀌면 `IMPLEMENTATION_STATUS.md`와 관련 Issue/PR을 갱신한다.
 - 구조가 바뀌면 `ARCHITECTURE.md`를 수정한다.
 - 장기적으로 영향을 주는 결정은 `DECISIONS.md`에 결정·이유·영향 형식으로 추가한다.
+- 원본 기획 의도와 상세 요구사항을 확인하거나 보존할 때 `DEVELOPMENT_PLAN.md`를 참조한다.
 - README에는 진입에 필요한 요약만 유지하고 상세 내용은 `.ai` 문서로 연결한다.

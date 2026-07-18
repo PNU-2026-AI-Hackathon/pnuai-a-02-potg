@@ -61,3 +61,8 @@ Issue/PR 템플릿, package.json, 기능 코드, workflow, 자동화 설정은 �
 5. 프로그램 관리
 
 이 순서는 현재 MVP 기준이며 기획 변경 시 함께 수정한다.
+
+이 문서는 현재 개발 범위의 최종 기준이다.
+
+PROJECT.md는 프로젝트 목적을 설명하며,
+IMPLEMENTATION_STATUS.md는 실제 구현 상태를 설명한다.
