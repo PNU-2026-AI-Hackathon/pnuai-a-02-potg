@@ -1,3 +1,5 @@
+import AuthActions from '@/components/auth/AuthActions';
+import { getCurrentUser } from '@/lib/server-auth';
 import Link from 'next/link';
 
 type Summary = {
@@ -32,6 +34,7 @@ async function getAnnouncements(): Promise<Announcement[]> {
 }
 
 export default async function Home() {
+  const user = await getCurrentUser();
   const summary = await getSummary().catch(() => ({
     libraries: 40,
     programs: 24,
@@ -46,8 +49,7 @@ export default async function Home() {
         <div className="shell">
           <p>모이라 | 모두가 이어지는 라이브러리</p>
           <div className="topActions">
-            <Link href="/login">로그인</Link>
-            <Link href="/signup">회원가입</Link>
+            <AuthActions initialUser={user} />
             <Link href="/mypage">마이페이지</Link>
             <button type="button" disabled>
               사이트맵
