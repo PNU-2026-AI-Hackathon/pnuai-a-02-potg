@@ -5,4 +5,5 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
+  accountType?: 'RESIDENT' | 'LIBRARIAN' | 'ADMIN';
 };
