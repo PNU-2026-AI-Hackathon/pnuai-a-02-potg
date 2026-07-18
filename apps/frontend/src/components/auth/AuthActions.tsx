@@ -40,14 +40,21 @@ export default function AuthActions({ initialUser }: AuthActionsProps) {
     return (
       <div className="authActions">
         <Link href="/login">로그인</Link>
-        <Link href="/signup">회원가입</Link>
+        <Link className="signupLink" href="/signup">회원가입</Link>
       </div>
     );
   }
 
   return (
     <div className="authActions">
-      <span className="authUser">{user.name}님</span>
+      <button
+        type="button"
+        className="mypageButton"
+        disabled
+        title="마이페이지는 준비 중입니다."
+      >
+        마이페이지
+      </button>
       <button
         type="button"
         className="logoutButton"
