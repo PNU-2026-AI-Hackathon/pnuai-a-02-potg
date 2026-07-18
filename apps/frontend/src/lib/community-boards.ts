@@ -201,12 +201,35 @@ export const communityPosts: CommunityPost[] = [
   },
 ];
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+
 export function getCommunityBoard(slug: CommunityBoardSlug) {
   return communityBoards[slug];
 }
 
-export function getCommunityPosts(slug: CommunityBoardSlug) {
+function getMockCommunityPosts(slug: CommunityBoardSlug) {
   return communityPosts
     .filter((post) => post.boardSlug === slug)
     .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+}
+
+export async function getCommunityPosts(slug: CommunityBoardSlug) {
+  try {
+    const params = new URLSearchParams({ boardSlug: slug });
+    const response = await fetch(`${BACKEND_URL}/api/posts?${params.toString()}`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      return getMockCommunityPosts(slug);
+    }
+
+    const data = await response.json();
+    const posts = Array.isArray(data.posts) ? data.posts : [];
+
+    return posts as CommunityPost[];
+  } catch (error) {
+    console.error('Community posts request failed:', error);
+    return getMockCommunityPosts(slug);
+  }
 }
