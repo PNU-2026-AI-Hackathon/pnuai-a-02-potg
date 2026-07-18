@@ -119,6 +119,12 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: 
       error: '필수 회원가입 정보를 모두 입력해 주세요.',
     });
   }
+  if (interestIds.length === 0) {
+    return res.status(400).json({
+      code: 'MISSING_INTERESTS',
+      error: '관심분야를 하나 이상 선택해 주세요.',
+    });
+  }
 
   if (!Object.prototype.hasOwnProperty.call(accountTypeMap, accountType)) {
     return res.status(400).json({ code: 'INVALID_ACCOUNT_TYPE', error: '유효하지 않은 계정 유형입니다.' });
@@ -161,14 +167,12 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: 
       return res.status(409).json({ code: 'EMAIL_TAKEN', error: '이미 사용 중인 이메일입니다.' });
     }
 
-    if (interestIds.length > 0) {
-      const validInterests = await prisma.interest.findMany({
-        where: { id: { in: interestIds } },
-        select: { id: true },
-      });
-      if (validInterests.length !== interestIds.length) {
-        return res.status(400).json({ code: 'INVALID_INTERESTS', error: '유효하지 않은 관심분야가 포함되어 있습니다.' });
-      }
+    const validInterests = await prisma.interest.findMany({
+      where: { id: { in: interestIds } },
+      select: { id: true },
+    });
+    if (validInterests.length !== interestIds.length) {
+      return res.status(400).json({ code: 'INVALID_INTERESTS', error: '유효하지 않은 관심분야가 포함되어 있습니다.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -184,18 +188,13 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: 
           birthDate: parsedBirthDate,
           region,
           phone,
-          ...(interestIds.length > 0
-            ? {
-                interests: {
-                  create: interestIds.map((interestId) => ({ interestId })),
-                },
-              }
-            : {}),
+          interests: {
+            create: interestIds.map((interestId) => ({ interestId })),
+          },
         },
         select: { id: true, userId: true, name: true, email: true, accountType: true },
       }),
     );
-
     const token = jwt.sign(
       { sub: newUser.id, email: newUser.email, name: newUser.name, accountType: newUser.accountType },
       JWT_SECRET,
