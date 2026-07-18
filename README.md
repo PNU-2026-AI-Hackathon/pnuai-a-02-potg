@@ -541,9 +541,10 @@ npm run dev
 * [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md)
 * [.ai/IMPLEMENTATION_STATUS.md](.ai/IMPLEMENTATION_STATUS.md)
 * [.ai/DECISIONS.md](.ai/DECISIONS.md)
+* [프로젝트 문서 체계 및 참조 규칙](docs/DOCUMENTATION_GUIDE.md)
 * [원본 개발계획 및 설계 명세](docs/DEVELOPMENT_PLAN.md)
 
-README는 외부 사용자를 위한 프로젝트 소개와 진입 문서 역할을 하며, 세부 개발 범위와 AI 에이전트 규칙은 위 문서에서 관리합니다.
+README는 외부 사용자를 위한 프로젝트 소개와 진입 문서 역할을 합니다. `DOCUMENTATION_GUIDE.md`는 전체 문서 체계와 관리 규칙을 설명하며, `DEVELOPMENT_PLAN.md`는 원본 개발계획을 Markdown으로 재구성한 문서입니다. 현재 범위와 구현 상태는 `.ai/CURRENT_SCOPE.md`, `.ai/IMPLEMENTATION_STATUS.md` 등 `.ai` 문서를 우선합니다.
 
 ---
 
