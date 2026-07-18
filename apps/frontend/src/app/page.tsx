@@ -6,12 +6,14 @@ import PopularAgendaSection from '@/components/home/PopularAgendaSection';
 import ProgramSurveySection from '@/components/home/ProgramSurveySection';
 import RecruitingProgramSection from '@/components/home/RecruitingProgramSection';
 import LibraryFinderSection from '@/components/home/LibraryFinderSection';
+import HomeExperience from '@/components/home/HomeExperience';
 
 export default async function Home() {
   const user = await getCurrentUser();
 
   return (
     <div className="moiraPage">
+      <HomeExperience />
       <SiteHeader user={user} activeMenu="home" />
       <main>
         <HeroSection />

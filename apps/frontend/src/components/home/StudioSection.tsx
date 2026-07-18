@@ -28,22 +28,28 @@ export default function StudioSection() {
     <section className="homeSection studioSection" id="moira-studio">
       <div className="uiContainer">
         <div className="studioSectionHeader">
-          <div>
+          <div className="studioSectionIntro">
             <p className="uiEyebrow">LIBRARIAN PLANNING TOOL</p>
-            <h2>MOIRA Studio</h2>
-            <p className="studioSectionClaim">주민의 의견을 프로그램 기획안으로</p>
+            <h2>
+              <span className="studioTitleIcon" aria-hidden="true">✦</span>
+              MOIRA Studio
+            </h2>
+            <p className="studioSectionClaim">
+              주민의 의견을 작은도서관 프로그램 기획안으로
+            </p>
             <p className="studioSectionDescription">
-              모이라 스튜디오는 주민 제안과 수요조사 결과를 분석하여
-              <br />
-              사서가 프로그램 초안을 빠르게 작성할 수 있도록 돕습니다.
+              모이라 스튜디오는 주민 제안과 수요조사 결과를 분석하여 사서가 프로그램 초안을 빠르게 작성할 수 있도록 돕습니다.
             </p>
           </div>
-          <div className="studioSectionCta">
-            <Link className="uiButton uiButtonPrimary" href="#studio-details">
-              모이라 스튜디오 알아보기 <span aria-hidden="true">↓</span>
+          <aside className="studioSectionCta" aria-label="모이라 스튜디오 사서 안내">
+            <span className="studioCtaEyebrow">사서라면 지금 바로</span>
+            <strong>AI 프로그램 기획을 시작해보세요.</strong>
+            <Link className="uiButton studioBrandButton" href="#studio-details">
+              <span className="studioBrandButtonIcon" aria-hidden="true">✦</span>
+              MOIRA Studio 시작하기
+              <span className="studioBrandButtonArrow" aria-hidden="true">→</span>
             </Link>
-            <p>모이라 스튜디오는 작은도서관 사서를 위한 프로그램 기획 도구입니다.</p>
-          </div>
+          </aside>
         </div>
 
         <div className="studioShowcase" id="studio-details">

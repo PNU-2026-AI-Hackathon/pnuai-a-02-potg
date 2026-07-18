@@ -20,6 +20,7 @@
   --moira-radius-md: 20px;
   --moira-radius-lg: 32px;
   --moira-shadow: 0 18px 48px rgba(33, 70, 61, 0.1);
+  --site-header-height: 88px;
 }
 
 * {
@@ -2870,9 +2871,32 @@ button {
 }
 
 .moiraPage {
-  overflow: hidden;
+  overflow-x: clip;
   background: #fff;
   color: var(--moira-ink);
+}
+
+.moiraPage .siteHeader {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html:has(.moiraPage) {
+  scroll-padding-top: var(--site-header-height);
+  scroll-snap-type: y proximity;
+}
+
+html.isFullPageScroll:has(.moiraPage) {
+  scroll-snap-type: none;
+}
+
+.moiraPage main > section {
+  min-height: calc(100svh - var(--site-header-height));
+  scroll-margin-top: var(--site-header-height);
+  scroll-snap-align: start;
 }
 
 .siteHeader {
@@ -2894,25 +2918,36 @@ button {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 12px;
+  gap: 13px;
 }
 
 .siteBrand > span:last-child {
   display: grid;
+  align-content: center;
+  justify-items: start;
+  text-align: left;
+  transform: translateY(2px);
 }
 
 .siteBrand strong {
-  color: var(--moira-ink);
-  font-size: 24px;
-  letter-spacing: -0.05em;
+  color: #2f2f2f;
+  font-family: var(--font-moira-wordmark), "Noto Sans KR", sans-serif;
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  line-height: 1;
 }
 
 .siteBrand small {
-  margin-top: 2px;
-  color: #71807b;
+  margin-top: 8px;
+  color: #66725f;
+  font-family:
+    "Pretendard Variable", Pretendard, SUIT, "Wanted Sans", "Noto Sans KR",
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-weight: 650;
+  letter-spacing: 0.055em;
+  line-height: 1.25;
 }
 
 .siteBrandLogo {
@@ -3152,6 +3187,34 @@ button {
   color: var(--moira-green);
 }
 
+@media (min-width: 1101px) {
+  .siteHeaderInner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .siteBrand {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .siteNav {
+    display: contents;
+  }
+
+  .siteNavPrimary {
+    grid-column: 2;
+    align-self: stretch;
+    justify-self: center;
+  }
+
+  .siteNav .authActions {
+    grid-column: 3;
+    justify-self: end;
+  }
+}
+
 .homeHero {
   position: relative;
   background:
@@ -3185,11 +3248,11 @@ button {
   position: relative;
   z-index: 1;
   display: grid;
-  min-height: 630px;
+  min-height: calc(100svh - var(--site-header-height));
   grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.8fr);
   gap: clamp(72px, 7vw, 104px);
   align-items: center;
-  padding-block: 76px 72px;
+  padding-block: clamp(64px, 8vh, 92px);
 }
 
 .homeHeroCopy h1 {
@@ -3269,11 +3332,23 @@ button {
 }
 
 .moiraServicePath {
+  position: relative;
   display: grid;
   gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.moiraServicePath::before {
+  position: absolute;
+  top: 30px;
+  bottom: 30px;
+  left: 35px;
+  width: 1px;
+  background: rgba(22, 116, 95, 0.22);
+  content: "";
+  transform-origin: top;
 }
 
 .moiraServicePath li {
@@ -3288,18 +3363,12 @@ button {
 }
 
 .moiraServicePath li:not(:last-child)::after {
-  position: absolute;
-  bottom: -9px;
-  left: 26px;
-  z-index: 2;
-  color: #86a99f;
-  content: "↓";
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1;
+  display: none;
 }
 
 .moiraServicePath li > span {
+  position: relative;
+  z-index: 1;
   display: grid;
   width: 42px;
   height: 42px;
@@ -3507,67 +3576,135 @@ button {
     #f7faf8;
 }
 
+.studioSection.homeSection {
+  padding-block: clamp(48px, 6vh, 68px);
+}
+
 .studioSectionHeader {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 52px;
-  margin-bottom: 58px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 310px);
+  align-items: start;
+  gap: clamp(44px, 6vw, 76px);
+  margin-bottom: 34px;
+}
+
+.studioSectionIntro {
+  min-width: 0;
 }
 
 .studioSectionHeader h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0;
   color: var(--moira-ink);
-  font-size: clamp(42px, 5vw, 64px);
+  font-size: clamp(40px, 4.4vw, 56px);
   letter-spacing: -0.055em;
   line-height: 1.05;
 }
 
+.studioTitleIcon {
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(241, 168, 91, 0.2);
+  color: #a65317;
+  font-size: 20px;
+  line-height: 1;
+}
+
 .studioSectionClaim {
-  margin: 18px 0 0;
+  margin: 12px 0 0;
   color: var(--moira-green);
-  font-size: clamp(23px, 2.4vw, 32px);
+  font-size: clamp(22px, 2.2vw, 28px);
   font-weight: 850;
   letter-spacing: -0.04em;
 }
 
 .studioSectionDescription {
-  margin: 17px 0 0;
+  margin: 10px 0 0;
   color: var(--moira-muted);
   font-size: 16px;
-  line-height: 1.75;
+  line-height: 1.65;
+  white-space: nowrap;
 }
 
 .studioSectionCta {
   display: grid;
-  max-width: 310px;
-  flex: 0 0 auto;
-  gap: 12px;
-  justify-items: start;
+  align-self: end;
+  gap: 10px;
 }
 
-.studioSectionCta p {
-  margin: 0;
-  color: #71807b;
-  font-size: 11px;
-  line-height: 1.6;
+.studioCtaEyebrow {
+  color: var(--moira-ink);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.45;
+}
+
+.studioSectionCta > strong {
+  color: var(--moira-ink);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.45;
+}
+
+.uiButton.studioBrandButton {
+  width: fit-content;
+  gap: 8px;
+  margin-top: 10px;
+  border: 1px solid rgba(241, 168, 91, 0.58);
+  border-radius: 999px;
+  background: #fff4e5;
+  color: #914812;
+  padding-inline: 17px;
+}
+
+.studioBrandButtonIcon {
+  color: #a65317;
+  font-size: 13px;
+}
+
+.studioBrandButtonArrow {
+  display: inline-block;
+  margin-left: 2px;
+  transition: transform 0.18s ease;
+}
+
+.uiButton.studioBrandButton:hover:not(:disabled),
+.uiButton.studioBrandButton:focus-visible:not(:disabled) {
+  transform: none;
+}
+
+.uiButton.studioBrandButton:hover:not(:disabled) .studioBrandButtonArrow,
+.uiButton.studioBrandButton:focus-visible:not(:disabled) .studioBrandButtonArrow {
+  transform: translateX(4px);
 }
 
 .studioShowcase {
   display: grid;
   grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
-  align-items: center;
-  gap: clamp(42px, 6vw, 78px);
-  scroll-margin-top: 130px;
+  align-items: stretch;
+  gap: clamp(32px, 5vw, 56px);
+  scroll-margin-top: calc(var(--site-header-height) + 16px);
 }
 
 .studioShowcasePreview {
   width: 100%;
+  height: 100%;
   background: rgba(255, 255, 255, 0.9);
+  padding: 22px;
 }
 
 .studioFeatureList {
   display: grid;
+  height: 100%;
+  grid-template-rows: repeat(4, 1fr);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -3576,13 +3713,18 @@ button {
 .studioFeatureList li {
   display: grid;
   grid-template-columns: 42px 1fr;
-  gap: 17px;
+  align-items: center;
+  gap: 14px;
   border-bottom: 1px solid #dce7e1;
-  padding: 20px 0;
+  padding: 14px 0;
 }
 
 .studioFeatureList li:first-child {
-  padding-top: 0;
+  padding-top: 14px;
+}
+
+.studioFeatureList li:last-child {
+  border-bottom: 0;
 }
 
 .studioFeatureList li > span {
@@ -3608,14 +3750,35 @@ button {
 }
 
 .studioFeatureList p {
-  margin: 7px 0 0;
+  margin: 5px 0 0;
   color: var(--moira-muted);
   font-size: 13px;
   line-height: 1.65;
 }
 
+.studioSection .studioAgenda {
+  margin-top: 16px;
+  padding: 13px 16px;
+}
+
+.studioSection .studioDocument {
+  margin-top: 10px;
+  padding: 18px;
+}
+
+.studioSection .studioDocument dl {
+  margin-block: 16px;
+}
+
+.studioSection .studioPreviewNote {
+  margin-top: 12px;
+}
+
 .homeSection {
-  padding-block: 112px;
+  display: flex;
+  min-height: calc(100svh - var(--site-header-height));
+  align-items: center;
+  padding-block: clamp(72px, 8vh, 96px);
 }
 
 .homeSectionHeading {
@@ -4067,6 +4230,302 @@ button {
   text-align: center;
 }
 
+@keyframes homeRevealUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes studioSparkIn {
+  from {
+    opacity: 0;
+    transform: scale(0.84) rotate(-8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes heroUnderlineIn {
+  from {
+    opacity: 0;
+    transform: scaleX(0) rotate(-1deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1) rotate(-1deg);
+  }
+}
+
+@keyframes heroFlowLineIn {
+  from {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes heroNumberIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes heroAmbientIn {
+  from {
+    opacity: 0;
+    transform: translate(16px, -12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+.isRevealReady :is(
+    .homeHeroCopy > .uiEyebrow,
+    .homeHeroCopy > h1,
+    .homeHeroLead,
+    .homeHeroActions,
+    .moiraServicePreviewHeader,
+    .homeSectionHeading,
+    .studioSectionHeader,
+    .moiraServicePath li,
+    .studioShowcasePreview,
+    .studioFeatureList li,
+    .agendaItem,
+    .surveyCard,
+    .recruitingCard,
+    .libraryResults article
+  ) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.isRevealReady.isInView :is(
+    .homeHeroCopy > .uiEyebrow,
+    .homeHeroCopy > h1,
+    .homeHeroLead,
+    .homeHeroActions,
+    .moiraServicePreviewHeader,
+    .homeSectionHeading,
+    .studioSectionHeader,
+    .moiraServicePath li,
+    .studioShowcasePreview,
+    .studioFeatureList li,
+    .agendaItem,
+    .surveyCard,
+    .recruitingCard,
+    .libraryResults article
+  ) {
+  opacity: 1;
+  transform: translateY(0);
+  animation: homeRevealUp 0.52s ease-out backwards;
+}
+
+.isRevealReady.isInView .homeHeroCopy > h1,
+.isRevealReady.isInView .homeHeroLead,
+.isRevealReady.isInView .studioSectionHeader {
+  animation-delay: 0.06s;
+}
+
+.isRevealReady.isInView :is(.homeHeroActions, .moiraServicePreviewHeader) {
+  animation-delay: 0.12s;
+}
+
+.isRevealReady.isInView :is(
+    .moiraServicePath li,
+    .studioFeatureList li,
+    .agendaItem,
+    .surveyCard,
+    .recruitingCard,
+    .libraryResults article
+  ):nth-child(1) {
+  animation-delay: 0.12s;
+}
+
+.isRevealReady.isInView :is(
+    .moiraServicePath li,
+    .studioFeatureList li,
+    .agendaItem,
+    .surveyCard,
+    .recruitingCard,
+    .libraryResults article
+  ):nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.isRevealReady.isInView :is(
+    .moiraServicePath li,
+    .studioFeatureList li,
+    .agendaItem,
+    .surveyCard,
+    .recruitingCard,
+    .libraryResults article
+  ):nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+.isRevealReady.isInView :is(
+    .moiraServicePath li,
+    .studioFeatureList li,
+    .recruitingCard,
+    .libraryResults article
+  ):nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.isRevealReady.isInView .moiraServicePath li:nth-child(5) {
+  animation-delay: 0.36s;
+}
+
+.isRevealReady.isInView .studioShowcasePreview {
+  animation-delay: 0.12s;
+}
+
+.isRevealReady.isInView .studioTitleIcon {
+  animation: studioSparkIn 0.38s ease-out 0.18s backwards;
+}
+
+.homeHero.isHeroIntro:not(.isInView)::before,
+.homeHero.isHeroIntro:not(.isInView)::after,
+.homeHero.isHeroIntro:not(.isInView) .moiraServicePath::before {
+  opacity: 0;
+}
+
+.homeHero.isHeroIntro.isInView .homeHeroCopy > .uiEyebrow {
+  animation: homeRevealUp 0.38s ease-out 0s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .homeHeroCopy > h1 {
+  animation: homeRevealUp 0.4s ease-out 0.1s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .homeHeroTitleAccent::after {
+  transform-origin: left center;
+  animation: heroUnderlineIn 0.38s ease-out 0.24s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .homeHeroLead {
+  animation: homeRevealUp 0.38s ease-out 0.34s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .homeHeroActions {
+  animation: homeRevealUp 0.38s ease-out 0.46s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePreviewHeader {
+  animation: homeRevealUp 0.38s ease-out 0.56s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath::before {
+  animation: heroFlowLineIn 0.72s ease-out 0.58s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(1) {
+  animation: homeRevealUp 0.32s ease-out 0.66s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(2) {
+  animation: homeRevealUp 0.32s ease-out 0.75s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(3) {
+  animation: homeRevealUp 0.32s ease-out 0.84s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(4) {
+  animation: homeRevealUp 0.32s ease-out 0.93s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(5) {
+  animation: homeRevealUp 0.32s ease-out 1.02s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(1) > span {
+  animation: heroNumberIn 0.28s ease-out 0.66s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(2) > span {
+  animation: heroNumberIn 0.28s ease-out 0.75s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(3) > span {
+  animation: heroNumberIn 0.28s ease-out 0.84s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(4) > span {
+  animation: heroNumberIn 0.28s ease-out 0.93s backwards;
+}
+
+.homeHero.isHeroIntro.isInView .moiraServicePath li:nth-child(5) > span {
+  animation: heroNumberIn 0.28s ease-out 1.02s backwards;
+}
+
+.homeHero.isHeroIntro.isInView::before {
+  animation: heroAmbientIn 1.1s ease-out 0.02s backwards;
+}
+
+.homeHero.isHeroIntro.isInView::after {
+  animation: heroAmbientIn 1.1s ease-out 0.1s backwards;
+}
+
+.homeHeroActions .uiButton span[aria-hidden="true"],
+.uiTextLink span[aria-hidden="true"] {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 721px) {
+  :is(
+      .agendaItem,
+      .surveyCard,
+      .studioPreview,
+      .recruitingCard,
+      .libraryResults article
+    ) {
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  :is(
+      .agendaItem,
+      .surveyCard,
+      .studioPreview,
+      .recruitingCard,
+      .libraryResults article
+    ):hover {
+    box-shadow: 0 18px 42px rgba(33, 70, 61, 0.12);
+    transform: translateY(-4px);
+  }
+
+  .homeHeroActions .uiButton:hover:not(:disabled) span[aria-hidden="true"],
+  .uiTextLink:hover span[aria-hidden="true"] {
+    transform: translateX(4px);
+  }
+}
+
 .moiraFooter {
   background: #142e28;
   color: rgba(255, 255, 255, 0.7);
@@ -4260,7 +4719,17 @@ button {
   line-height: 1.7;
 }
 
+@media (max-width: 1100px) {
+  .studioSectionDescription {
+    white-space: normal;
+  }
+}
+
 @media (max-width: 980px) {
+  :root {
+    --site-header-height: 76px;
+  }
+
   .siteHeaderInner {
     min-height: 76px;
     gap: 18px;
@@ -4305,18 +4774,25 @@ button {
     width: min(100%, 680px);
   }
 
+  .studioShowcase {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
   .studioSectionHeader {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 30px;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 28px;
   }
 
   .studioSectionCta {
-    max-width: 420px;
+    width: min(100%, 620px);
   }
 
-  .studioShowcase {
-    grid-template-columns: 1fr;
+  .studioFeatureList {
+    width: 100%;
+    height: auto;
+    grid-template-rows: none;
   }
 
   .studioPreview {
@@ -4344,6 +4820,19 @@ button {
 }
 
 @media (max-width: 720px) {
+  :root {
+    --site-header-height: 64px;
+  }
+
+  html:has(.moiraPage) {
+    scroll-snap-type: none;
+  }
+
+  .moiraPage main > section {
+    min-height: 0;
+    scroll-snap-align: none;
+  }
+
   .uiContainer {
     width: min(100% - 32px, 1180px);
   }
@@ -4443,6 +4932,10 @@ button {
     left: 21px;
   }
 
+  .moiraServicePath::before {
+    left: 28px;
+  }
+
   .moiraServicePath li > span {
     width: 38px;
     height: 38px;
@@ -4477,6 +4970,14 @@ button {
     width: 100%;
   }
 
+  .studioSectionCta {
+    padding: 0;
+  }
+
+  .studioSectionCta .uiButton {
+    width: fit-content;
+  }
+
   .studioPreview {
     border-radius: 24px;
     padding: 18px;
@@ -4488,6 +4989,8 @@ button {
   }
 
   .homeSection {
+    display: block;
+    min-height: 0;
     padding-block: 78px;
   }
 
@@ -4581,5 +5084,44 @@ button {
 
   .surveyTimeOptions {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .isRevealReady :is(
+      .homeHeroCopy > .uiEyebrow,
+      .homeHeroCopy > h1,
+      .homeHeroLead,
+      .homeHeroActions,
+      .moiraServicePreviewHeader,
+      .homeSectionHeading,
+      .studioSectionHeader,
+      .moiraServicePath li,
+      .studioShowcasePreview,
+      .studioFeatureList li,
+      .agendaItem,
+      .surveyCard,
+      .recruitingCard,
+      .libraryResults article
+    ) {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .isRevealReady.isInView .studioTitleIcon {
+    animation: none;
+  }
+
+  .homeHero.isHeroIntro.isInView::before,
+  .homeHero.isHeroIntro.isInView::after,
+  .homeHero.isHeroIntro.isInView .homeHeroTitleAccent::after,
+  .homeHero.isHeroIntro.isInView .moiraServicePath::before,
+  .homeHero.isHeroIntro.isInView .moiraServicePath li > span {
+    animation: none;
   }
 }
