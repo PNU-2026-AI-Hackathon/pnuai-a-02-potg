@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+import { getBackendUrl } from '@/lib/backend-url';
 
 type RouteContext = {
   params: Promise<{
@@ -19,7 +18,7 @@ async function readBackendResponse(response: Response) {
 async function getPostUrl(context: RouteContext) {
   const { postId } = await context.params;
 
-  return `${BACKEND_URL}/api/posts/${encodeURIComponent(postId)}`;
+  return getBackendUrl(`/api/posts/${encodeURIComponent(postId)}`);
 }
 
 export async function GET(_request: Request, context: RouteContext) {

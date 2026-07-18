@@ -1,5 +1,6 @@
 import AuthActions from '@/components/auth/AuthActions';
 import { getCurrentUser } from '@/lib/server-auth';
+import { getBackendUrl } from '@/lib/backend-url';
 import Link from 'next/link';
 
 type Summary = {
@@ -15,10 +16,8 @@ type Announcement = {
   date: string;
 };
 
-const backendUrl = 'http://localhost:4000';
-
 async function getSummary(): Promise<Summary> {
-  const res = await fetch(`${backendUrl}/api/summary`, { cache: 'no-store' });
+  const res = await fetch(getBackendUrl('/api/summary'), { cache: 'no-store' });
   if (!res.ok) {
     throw new Error('Failed to fetch summary');
   }
@@ -26,7 +25,7 @@ async function getSummary(): Promise<Summary> {
 }
 
 async function getAnnouncements(): Promise<Announcement[]> {
-  const res = await fetch(`${backendUrl}/api/announcements`, { cache: 'no-store' });
+  const res = await fetch(getBackendUrl('/api/announcements'), { cache: 'no-store' });
   if (!res.ok) {
     throw new Error('Failed to fetch announcements');
   }
