@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+import { getBackendUrl } from '@/lib/backend-url';
 
 export async function GET() {
   try {
-    const backendResponse = await fetch(`${BACKEND_URL}/api/interests`, {
+    const backendResponse = await fetch(getBackendUrl('/api/interests'), {
       cache: 'no-store',
     });
     const contentType = backendResponse.headers.get('content-type');

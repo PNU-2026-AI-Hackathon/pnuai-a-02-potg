@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { AUTH_COOKIE_NAME } from '@/lib/auth-config';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+import { getBackendUrl } from '@/lib/backend-url';
 
 export async function GET() {
   const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;
@@ -12,7 +11,7 @@ export async function GET() {
   }
 
   try {
-    const backendResponse = await fetch(`${BACKEND_URL}/api/auth/me`, {
+    const backendResponse = await fetch(getBackendUrl('/api/auth/me'), {
       headers: {
         Authorization: `Bearer ${token}`,
       },
