@@ -172,22 +172,11 @@ export type RunAttachmentExtractionOptions = {
   dryRun: boolean;
 };
 
-export async function runAttachmentExtraction(
-  options: RunAttachmentExtractionOptions,
+export async function processSelectedPdfAttachments(
+  selected: ProgramCaseAttachment[],
+  options: Pick<RunAttachmentExtractionOptions, 'dryRun' | 'retryFailed'>,
   dependencies: AttachmentProcessorDependencies = {},
 ) {
-  const statuses: AttachmentExtractionStatus[] = options.retryFailed ? ['PENDING', 'FAILED'] : ['PENDING'];
-  const selected = await prisma.programCaseAttachment.findMany({
-    where: {
-      ...(options.attachmentId ? { id: options.attachmentId } : {}),
-      isActive: true,
-      extractionStatus: { in: statuses },
-      fileType: { equals: 'pdf', mode: 'insensitive' },
-    },
-    orderBy: { createdAt: 'asc' },
-    take: options.limit,
-  });
-
   const results: AttachmentProcessingResult[] = [];
   for (const attachment of selected) {
     try {
@@ -226,4 +215,22 @@ export async function runAttachmentExtraction(
     ocrRequired: results.filter((result) => result.classification === 'OCR_REQUIRED').length,
     results,
   };
+}
+
+export async function runAttachmentExtraction(
+  options: RunAttachmentExtractionOptions,
+  dependencies: AttachmentProcessorDependencies = {},
+) {
+  const statuses: AttachmentExtractionStatus[] = options.retryFailed ? ['PENDING', 'FAILED'] : ['PENDING'];
+  const selected = await prisma.programCaseAttachment.findMany({
+    where: {
+      ...(options.attachmentId ? { id: options.attachmentId } : {}),
+      isActive: true,
+      extractionStatus: { in: statuses },
+      fileType: { equals: 'pdf', mode: 'insensitive' },
+    },
+    orderBy: { createdAt: 'asc' },
+    take: options.limit,
+  });
+  return processSelectedPdfAttachments(selected, options, dependencies);
 }
