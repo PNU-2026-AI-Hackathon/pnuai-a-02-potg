@@ -10,6 +10,8 @@
 
 모이라는 이러한 문제를 해결하기 위해 주민이 지역 의제와 프로그램 아이디어를 제안할 수 있는 공간을 제공하고, AI가 이를 분석하여 사서의 프로그램 기획을 지원합니다. 또한 금정구 작은도서관의 행사와 공지 정보를 통합 제공하여 주민이 가까운 도서관의 참여 기회를 쉽게 확인할 수 있도록 합니다.
 
+AI 프로그램 기획 기능의 공식 명칭은 **모이라 스튜디오**입니다. 이 문서의 AI 의제 분석과 프로그램 기획 내용은 서비스가 지향하는 목표이며, 현재 저장소에는 pgvector, LangChain.js, RAG 및 AI API 연동이 구현되어 있지 않습니다. 실제 구현 상태는 [구현 상태 문서](.ai/IMPLEMENTATION_STATUS.md)를 기준으로 확인합니다.
+
 ---
 
 ## 2. 개발 배경 및 필요성
@@ -144,41 +146,29 @@ AI 기반 프로그램 기획 기능을 통해 사서의 업무 부담을 완화
 
 ```mermaid
 flowchart LR
-    User[지역 주민 / 사서 / 관리자] --> Frontend[Frontend<br/>Next.js + React]
-    Frontend --> Backend[Backend<br/>NestJS]
-    Backend --> DB[(PostgreSQL<br/>Prisma ORM)]
-    Backend --> VectorDB[(pgvector<br/>Program Embeddings)]
-    Backend --> AI[AI API<br/>RAG 기반 기획안 생성]
-    Backend --> Auth[인증 및 권한 관리]
-
-    DB --> VectorDB
-    VectorDB --> AI
+    User[지역 주민 / 사서 / 관리자] --> Frontend[Vercel<br/>Next.js + React]
+    Frontend --> Server[Next.js 서버 계층<br/>Server Component / API Route]
+    Server --> Backend[AWS EC2<br/>Express + TypeScript]
+    Backend --> DB[(AWS RDS PostgreSQL<br/>Prisma ORM)]
 ```
 
-시스템은 크게 프론트엔드, 백엔드, 데이터베이스, 벡터 검색, AI 기능 모듈로 구성됩니다.
+현재 운영 구조는 팀이 확인한 정보입니다. 저장소에는 Vercel, EC2, RDS 배포를 재현하는 설정 파일이나 자동화 구성이 없으므로 저장소 파일만으로 운영 배포를 검증할 수는 없습니다.
 
 ### Frontend
 
-사용자 화면을 제공합니다.
-지역 의제 등록, 프로그램 조회, 로그인, 관리자 기능 등의 UI를 담당합니다.
+Next.js App Router와 React로 사용자 화면을 제공합니다. 브라우저 요청을 처리하는 API Route와 서버 컴포넌트도 포함합니다.
 
 ### Backend
 
-사용자 요청을 처리하고 데이터베이스 및 AI 기능과 연동합니다.
-인증, 게시판, 프로그램, 의제, 수요조사, AI 기획안 관련 API를 제공합니다.
+Express가 사용자 인증과 관심분야의 Prisma 연동을 처리합니다. 도서관, 공지, 프로그램, 게시글, 의제, 검색 API는 현재 mock 또는 메모리 데이터를 사용합니다.
 
 ### Database
 
-사용자 정보, 지역 의제, 프로그램 정보, 게시글, 댓글, 수요조사 데이터를 저장합니다.
+PostgreSQL과 Prisma ORM을 사용합니다. 현재 Prisma 모델은 `User`, `Interest`, `UserInterest`이며 게시글, 댓글, 의제, 프로그램 모델은 아직 없습니다.
 
-### Vector Search
+### AI 및 Vector Search
 
-기존 프로그램 사례의 텍스트 정보를 임베딩하여 저장하고, 사서의 기획 요청과 유사한 프로그램 사례를 검색합니다.
-
-### AI 기능
-
-검색된 기존 프로그램 사례와 주민 의제를 바탕으로 프로그램 기획안 초안을 생성합니다.
-생성된 기획안은 사서가 검토하고 수정할 수 있는 초안 형태로 제공됩니다.
+AI 의제 분석과 모이라 스튜디오는 목표 기능입니다. pgvector 기반 유사 사례 검색, LangChain.js, RAG, AI API 연동은 현재 구현되지 않았으며 도입 기술과 구조는 별도 이슈에서 결정합니다.
 
 ---
 
@@ -191,18 +181,18 @@ flowchart LR
 | TypeScript         | 정적 타입 기반 프론트엔드 개발     |
 | Next.js App Router | 페이지 라우팅 및 웹 애플리케이션 구성 |
 | React              | 컴포넌트 기반 UI 개발         |
-| CSS / CSS Module   | 화면 스타일링               |
+| 전역 CSS            | 현재 화면 스타일링 방식          |
 
 ### Backend
 
 | 기술           | 설명              |
 | ------------ | --------------- |
 | TypeScript   | 정적 타입 기반 백엔드 개발 |
-| NestJS       | 서버 애플리케이션 프레임워크 |
+| Express      | 서버 애플리케이션 프레임워크 |
 | Prisma ORM   | 데이터베이스 ORM      |
 | PostgreSQL   | 관계형 데이터베이스      |
-| pgvector     | 프로그램 사례 벡터 검색   |
-| LangChain.js | RAG 기반 AI 기능 구성 |
+| bcryptjs     | 비밀번호 해싱          |
+| JSON Web Token | 인증 토큰 발급 및 검증   |
 
 ### Collaboration / DevOps
 
@@ -212,7 +202,7 @@ flowchart LR
 | GitHub Issues        | 기능 단위 작업 관리    |
 | GitHub Pull Requests | 코드 리뷰 및 병합 관리  |
 | GitHub Projects      | 프로젝트 진행 상황 관리  |
-| GitHub Actions       | CI/CD 워크플로우 관리 |
+| GitHub Actions       | 현재 미구현, 별도 PR에서 구성 예정 |
 | VS Code              | 개발 환경          |
 | Figma                | UI/UX 설계       |
 
@@ -229,19 +219,20 @@ flowchart LR
 
 ## 9. 전체 시스템 흐름
 
+아래 흐름은 모이라가 지향하는 **목표 사용자 흐름**입니다. 현재는 회원가입·로그인·관심분야를 제외한 지역 제안 DB 연동, AI 의제 분석, 모이라 스튜디오, 프로그램 생성 흐름이 아직 완성되지 않았습니다.
+
 ```mermaid
 flowchart TD
     A[사용자 접속] --> B[홈 화면]
     B --> C{사용자 유형}
 
     C -->|지역 주민| D[지역 의제 등록]
-    D --> E[공감 / 댓글 / 수요조사 참여]
+    D --> E[AI 의제 분석]
     E --> F[사서 관리자 화면에서 확인]
 
     C -->|사서 / 관리자| G[주민 의제 및 관심 주제 확인]
-    G --> H[AI 프로그램 기획 요청 입력]
-    H --> I[유사 프로그램 사례 검색]
-    I --> J[RAG 기반 AI 기획안 생성]
+    G --> H[모이라 스튜디오 기획 요청]
+    H --> J[프로그램 기획안 생성]
     J --> K[사서 검토 및 수정]
     K --> L[프로그램 등록 및 공개]
 
@@ -255,6 +246,8 @@ flowchart TD
 
 ## 10. 주요 기능
 
+이 절은 현재 구현과 목표 기능을 함께 설명합니다. 각 기능의 정확한 상태는 11절의 표와 [구현 상태 문서](.ai/IMPLEMENTATION_STATUS.md)를 함께 확인합니다.
+
 ### 10.1. 홈 화면
 
 * 사용자는 서비스 소개와 주요 기능을 확인할 수 있습니다.
@@ -265,7 +258,9 @@ flowchart TD
 
 * 일반 사용자와 사서/관리자 계정을 구분합니다.
 * 사서 및 관리자 계정은 관리자 기능에 접근할 수 있습니다.
-* 실제 인증 API 연동은 추후 구현 예정입니다.
+* Express JWT 인증과 Next.js HTTP-only 쿠키 연동 코드 경로가 구현되어 있습니다.
+* 회원가입 시 사용자 정보와 관심분야를 Prisma로 저장합니다.
+* 빌드, 실제 DB 연결 및 API 실행 검증은 별도로 필요합니다.
 
 ### 10.3. 지역 의제 등록
 
@@ -279,7 +274,7 @@ flowchart TD
 * 일정 공감 수 이상을 받은 게시글은 인기 의제로 분류됩니다.
 * 사서는 인기 의제를 통해 주민 요구를 쉽게 파악할 수 있습니다.
 
-### 10.5. AI 프로그램 기획안 생성
+### 10.5. 모이라 스튜디오 — AI 프로그램 기획안 생성
 
 * 사서가 프로그램 기획 요청을 입력하면 AI가 기획안 초안을 생성합니다.
 * 기존 작은도서관 프로그램 사례와 주민 의제를 참고하여 기획안을 작성합니다.
@@ -294,6 +289,8 @@ flowchart TD
   * 홍보문
   * 기대 효과
   * 운영 시 유의점
+
+> 현재 목표 기능이며 AI API, 유사 사례 검색, 기획안 생성 코드는 아직 구현되지 않았습니다.
 
 ### 10.6. AI 기획안 수정
 
@@ -310,6 +307,7 @@ flowchart TD
 
 * 금정구 공공예약서비스와 금정구 작은도서관 공지사항에 공개된 행사 정보를 제공합니다.
 * 프로그램명, 대상, 일정, 장소, 모집 인원, 안내사항, 출처, 공식 신청 링크 등을 확인할 수 있습니다.
+* 현재 Backend는 mock 데이터 기반 조회 API를 제공합니다.
 
 ### 10.9. 프로그램 및 게시판 관리
 
@@ -317,23 +315,33 @@ flowchart TD
 * 사용자는 프로그램 목록 및 상세 정보를 확인할 수 있습니다.
 * 관리자는 게시글의 공개 여부, 인기 의제 여부, 부적절한 댓글 및 게시글을 관리할 수 있습니다.
 
+현재 게시판의 최종 기준은 다음 `/community/*` 구조입니다.
+
+* `/community/library-news`: 작은도서관 행사 및 소식
+* `/community/free`: 자유게시판
+* `/community/proposals`: 지역 제안 게시판
+
+위 화면은 현재 정적 데이터 기반 UI 골격입니다. `/board`와 `/api/posts`는 초기 연동 실험 또는 레거시 구현이며 이번 작업에서 삭제하거나 통합하지 않습니다.
+
 ---
 
 ## 11. 기능 명세 요약
 
-| 기능             | 사용자     | 설명                           | 상태    |
-| -------------- | ------- | ---------------------------- | ----- |
-| 회원가입 / 로그인     | 전체 사용자  | 사용자 인증 및 권한 구분               | 개발 예정 |
-| 홈 화면           | 전체 사용자  | 서비스 소개 및 주요 정보 제공            | 개발 중  |
-| 지역 의제 등록       | 지역 주민   | 지역 문제 및 프로그램 아이디어 제안         | 개발 예정 |
-| 공감 / 댓글        | 지역 주민   | 다른 주민의 의제에 의견 표현             | 개발 예정 |
-| 의제 관리          | 사서, 관리자 | 등록된 의제 확인, 수정, 삭제            | 개발 예정 |
-| AI 프로그램 기획안 생성 | 사서, 관리자 | 선택 의제 및 기획 요청 기반 프로그램 기획안 생성 | 개발 예정 |
-| AI 기획안 부분 수정   | 사서, 관리자 | 생성된 기획안의 특정 항목 수정            | 개발 예정 |
-| 사전 수요조사        | 지역 주민   | AI 기획안에 대한 관심도 및 참여 의사 표현    | 개발 예정 |
-| 행사 및 공지 정보 제공  | 전체 사용자  | 작은도서관 행사 정보 확인               | 개발 예정 |
-| 프로그램 관리        | 사서, 관리자 | 프로그램 등록, 수정, 삭제              | 개발 예정 |
-| 게시판 관리         | 사서, 관리자 | 게시글 및 댓글 관리                  | 개발 예정 |
+| 기능 | 사용자 | 설명 | 현재 상태 |
+|---|---|---|---|
+| 회원가입 / 로그인 | 전체 사용자 | 사용자 등록, JWT 인증, HTTP-only 쿠키 | 코드 경로 구현됨·실행 검증 필요 |
+| 관심분야 | 전체 사용자 | 회원가입 선택 및 사용자 관심분야 저장 | 코드 경로 구현됨·실행 검증 필요 |
+| 홈 화면 | 전체 사용자 | 서비스 소개와 mock 기반 요약·공지 제공 | 부분 구현 |
+| 작은도서관 행사 및 소식 | 전체 사용자 | `/community/library-news` | UI 골격 |
+| 자유게시판 | 지역 주민 | `/community/free` | UI 골격 |
+| 지역 제안 게시판 | 지역 주민 | `/community/proposals` | UI 골격 |
+| 게시판 DB 연동 | 전체 사용자 | `/community/*` 게시글 영속 저장 | 미구현 |
+| 레거시 게시판 | 전체 사용자 | `/board`, `/api/posts` 검색·작성 실험 | 부분 구현 / mock |
+| AI 의제 분석 | 사서, 관리자 | 주민 제안 분석 | 미구현 |
+| 모이라 스튜디오 | 사서, 관리자 | AI 기반 프로그램 기획안 생성·수정 | 미구현 |
+| 행사 및 공지 정보 | 전체 사용자 | 도서관·공지·프로그램 조회 API | mock |
+| 프로그램 관리 | 사서, 관리자 | 프로그램 등록, 수정, 삭제 | 미구현 |
+| 대학생 봉사자 모집·매칭 | - | 과거 계획의 잔여 API와 mock 존재 | MVP 제외 |
 
 ---
 
@@ -342,43 +350,54 @@ flowchart TD
 ```bash
 PNUAI-A-02-POTG/
 ├── .github/
-│
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
+├── .ai/
+│   ├── PROJECT.md
+│   ├── CURRENT_SCOPE.md
+│   ├── ARCHITECTURE.md
+│   ├── IMPLEMENTATION_STATUS.md
+│   └── DECISIONS.md
 ├── apps/
 │   ├── backend/
+│   │   ├── prisma/
+│   │   │   ├── migrations/
+│   │   │   ├── schema.prisma
+│   │   │   └── seed.js
 │   │   ├── src/
 │   │   │   ├── data/
 │   │   │   │   └── mockData.ts
+│   │   │   ├── lib/
 │   │   │   ├── routes/
 │   │   │   └── index.ts
-│   │   ├── .gitkeep
 │   │   ├── package-lock.json
 │   │   ├── package.json
-│   │   ├── README.md
+│   │   ├── prisma.config.ts
 │   │   └── tsconfig.json
 │   │
 │   └── frontend/
 │       ├── src/
-│       │   └── app/
-│       │       ├── globals.css
-│       │       ├── layout.tsx
-│       │       └── page.tsx
-│       ├── .gitignore
-│       ├── .gitkeep
+│       │   ├── app/
+│       │   │   ├── api/
+│       │   │   ├── community/
+│       │   │   ├── login/
+│       │   │   └── signup/
+│       │   ├── components/
+│       │   └── lib/
 │       ├── eslint.config.mjs
-│       ├── next-env.d.ts
 │       ├── next.config.ts
 │       ├── package-lock.json
 │       ├── package.json
-│       ├── README.md
 │       └── tsconfig.json
 │
 ├── docs/
-│   └── .gitkeep
+│   └── 수정개발계획서 원본 자료
 │
 ├── packages/
 │   └── types/
 │       └── .gitkeep
 │
+├── AGENTS.md
 ├── CONTRIBUTING.md
 └── README.md
 ```
@@ -406,13 +425,13 @@ PNUAI-A-02-POTG/
 * GitHub Copilot을 활용하여 반복적인 코드 작성과 컴포넌트 구조 생성을 보조했습니다.
 * TypeScript 기반 코드 작성, 리팩토링, 오류 수정, 주석 작성 등에 활용했습니다.
 * 프론트엔드에서는 Next.js와 React 기반 화면 컴포넌트 구현을 보조했습니다.
-* 백엔드에서는 NestJS, Prisma 기반 API 및 데이터베이스 연동 코드 작성을 보조할 예정입니다.
+* 백엔드에서는 Express, TypeScript, Prisma 기반 API 및 데이터베이스 연동 코드 작성을 보조했습니다.
 
 ### 13.4. AI 기능 구현
 
-* LangChain.js를 활용하여 RAG 기반 프로그램 기획안 생성 구조를 설계합니다.
-* 기존 프로그램 사례를 임베딩하여 유사 프로그램 검색에 활용합니다.
-* OpenAI API 또는 Gemini API를 활용하여 프로그램 기획안 초안을 생성합니다.
+* AI 의제 분석과 모이라 스튜디오는 향후 구현할 목표 기능입니다.
+* pgvector, LangChain.js, RAG 및 AI API는 현재 구현 기술이 아닙니다.
+* 구체적인 AI 기술 선택과 데이터 구조는 별도 이슈와 의사결정 기록을 통해 확정합니다.
 
 ### 13.5. 테스트 데이터 생성
 
@@ -469,24 +488,67 @@ http://localhost:3000
 ```bash
 cd apps/backend
 npm install
-npm run start:dev
+npm run dev
 ```
 
 ---
 
 ### 14.5. 환경 변수 설정
 
-프로젝트 루트 또는 백엔드 디렉토리에 `.env` 파일을 생성하고 다음 값을 설정합니다.
+민감한 값과 실제 운영 주소는 저장소나 문서에 기록하지 않습니다. 현재 코드에서 사용하는 환경변수는 다음과 같습니다.
 
-```env
-DATABASE_URL=
-AI_API_KEY=
-JWT_SECRET=
-```
+| 영역 | 변수 | 용도 |
+|---|---|---|
+| Frontend | `BACKEND_URL` | Next.js 서버 계층이 호출할 Express Backend 주소 |
+| Backend | `DATABASE_URL` | PostgreSQL 연결 문자열 |
+| Backend | `JWT_SECRET` | JWT 서명 및 검증 비밀값 |
+| Backend | `PORT` | Express 서버 포트, 기본값 `4000` |
+| Backend | `DATABASE_SSL_REJECT_UNAUTHORIZED` | 데이터베이스 인증서 검증 정책 제어 |
+
+백엔드 실행 디렉터리에 `global-bundle.pem`이 있으면 Prisma 런타임과 seed 스크립트가 해당 CA 인증서를 사용합니다. 인증서 파일은 Git에 포함하지 않습니다.
 
 ---
 
-## 15. 소개 및 시연 영상
+## 15. 운영 및 배포
+
+팀이 확인한 현재 운영 구성은 다음과 같습니다.
+
+* Frontend: Vercel
+* Backend: AWS EC2
+* Database: AWS RDS PostgreSQL
+
+```text
+사용자 브라우저
+  → Vercel Next.js 서버 계층 및 API Route
+  → BACKEND_URL
+  → AWS EC2 Express Backend
+  → DATABASE_URL
+  → AWS RDS PostgreSQL
+```
+
+저장소에는 Vercel 설정, EC2 프로세스 관리, RDS 프로비저닝, IaC 또는 배포 workflow가 없습니다. 따라서 저장소 파일만으로 배포 구성을 재현하거나 검증할 수 없으며 GitHub Actions 기반 배포 자동화도 현재 없습니다.
+
+---
+
+## 16. 프로젝트 문서
+
+프로젝트의 상세 기획과 AI 개발 기준은 다음 문서를 참고합니다.
+
+* [AGENTS.md](AGENTS.md)
+* [.ai/PROJECT.md](.ai/PROJECT.md)
+* [.ai/CURRENT_SCOPE.md](.ai/CURRENT_SCOPE.md)
+* [.ai/ROADMAP.md](.ai/ROADMAP.md)
+* [.ai/ARCHITECTURE.md](.ai/ARCHITECTURE.md)
+* [.ai/IMPLEMENTATION_STATUS.md](.ai/IMPLEMENTATION_STATUS.md)
+* [.ai/DECISIONS.md](.ai/DECISIONS.md)
+* [프로젝트 문서 체계 및 참조 규칙](docs/DOCUMENTATION_GUIDE.md)
+* [원본 개발계획 및 설계 명세](docs/DEVELOPMENT_PLAN.md)
+
+README는 외부 사용자를 위한 프로젝트 소개와 진입 문서 역할을 합니다. `DOCUMENTATION_GUIDE.md`는 전체 문서 체계와 관리 규칙을 설명하며, `DEVELOPMENT_PLAN.md`는 원본 개발계획을 Markdown으로 재구성한 문서입니다. 현재 범위와 구현 상태는 `.ai/CURRENT_SCOPE.md`, `.ai/IMPLEMENTATION_STATUS.md` 등 `.ai` 문서를 우선합니다.
+
+---
+
+## 17. 소개 및 시연 영상
 
 * 소개 영상: TODO
 * 시연 영상: TODO
@@ -496,7 +558,7 @@ JWT_SECRET=
 
 ---
 
-## 16. 팀 소개
+## 18. 팀 소개
 
 ### Team POTG
 
@@ -511,7 +573,7 @@ JWT_SECRET=
 
 ---
 
-## 17. 해커톤 참여 후기
+## 19. 해커톤 참여 후기
 
 ### 박현아
 
