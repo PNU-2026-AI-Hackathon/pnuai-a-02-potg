@@ -1,5 +1,12 @@
 import type { Metadata } from 'next';
+import { Do_Hyeon } from 'next/font/google';
 import './globals.css';
+
+const doHyeon = Do_Hyeon({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-moira-wordmark',
+});
 
 export const metadata: Metadata = {
   title: '모이라 | 모두가 이어지는 라이브러리',
@@ -13,7 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body suppressHydrationWarning>{children}</body>
+      <body className={doHyeon.variable} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
