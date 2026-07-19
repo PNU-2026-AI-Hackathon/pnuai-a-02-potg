@@ -168,6 +168,48 @@ dry-run 전후 전체 스냅샷을 비교한 결과 다음 값과 6개 표본의
 
 각 실행 뒤 작업용 `job-*` 임시 디렉터리가 남지 않은 것도 확인한다.
 
+## 실제 DB 저장 검증
+
+2026-07-20에 대표 표본 2건만 `--dry-run` 없이 각각 실행하여 PostgreSQL 저장 결과를 검증했다. 실행 직전 두 레코드는 모두 활성 PDF, `PENDING`, `attemptCount = 0`이었고 추출 텍스트·파일 메타데이터·실패 정보·시각 필드는 모두 `null`이었다. 당시 전체 237개 첨부파일도 모두 `PENDING`이었다.
+
+| 구분 | TEXT PDF | MIXED PDF |
+| --- | ---: | ---: |
+| attachment ID | `6c0f8395-8a53-4a60-9043-a422e7ad12a8` | `5d305e9c-2529-48c6-9ff0-f9c324bf83d7` |
+| 상태 전이 | `PENDING → PROCESSING → COMPLETED` | `PENDING → PROCESSING → COMPLETED` |
+| `attemptCount` | 1 | 1 |
+| 페이지 | 3 | 4 |
+| 공백 제외 추출 문자 | 4,830 | 1,635 |
+| `rawText` 문자 수 | 5,927 | 2,518 |
+| `cleanedText` 문자 수 | 5,871 | 2,378 |
+| 파일 크기(byte) | 65,067 | 1,157,777 |
+| SHA-256 저장 | 64자, 앞 12자리 `0aa35e432d7d` | 64자, 앞 12자리 `062f1a06a928` |
+| 판별 형식·MIME | `PDF`, `application/pdf` | `PDF`, `application/pdf` |
+| 추출기 | `PDFJS_TEXT`, `6.1.200` | `PDFJS_TEXT_PARTIAL`, `6.1.200` |
+| OCR 후보 페이지 | 없음 | 4 |
+| 실패 정보 | `failureCode = null`, 메시지 없음 | `failureCode = null`, 메시지 없음 |
+| 시각 필드 | `lastAttemptedAt`, `extractedAt` 저장 | `lastAttemptedAt`, `extractedAt` 저장 |
+
+`PROCESSING` claim과 시도 횟수 증가는 상태 전이 테스트로 검증했으며, 실제 실행도 최종 `COMPLETED`와 시각 저장을 확인했다. 빠르게 끝나는 실제 작업을 관찰하기 위해 프로덕션 코드에 인위적인 지연을 추가하지 않았다.
+
+저장 완료 후 동일한 두 CLI 명령을 강제 재처리 옵션 없이 각각 한 번 더 실행했다. 두 실행 모두 `selected = 0`이었고 `attemptCount = 1`, 텍스트 길이, checksum, `lastAttemptedAt`, `extractedAt`이 그대로 유지됐다.
+
+실행 후 DB 불변성 검증 결과는 다음과 같다.
+
+| 항목 | 결과 |
+| --- | ---: |
+| `ProgramCase` | 349 |
+| `ProgramCaseSession` | 20 |
+| 전체·활성 `ProgramCaseAttachment` | 237 / 237 |
+| `COMPLETED` / `PENDING` / `PROCESSING` / `FAILED` | 2 / 235 / 0 / 0 |
+| 대상 외 235건의 상태와 시도 횟수 | 모두 `PENDING`, 0 |
+| 대상 외 235건의 추출 필드 | 모두 기존 빈 상태 |
+| `(programCaseId, fileUrl)` 중복 | 0 |
+| 세션 논리 관계 중복·고아 관계 | 0 / 0 |
+
+필수 회귀 테스트는 349개 프로그램을 보존형으로 다시 동기화하므로 세션 행의 내부 ID는 재생성될 수 있다. 검증에서는 내부 ID가 아니라 `(programCaseId, sessionNumber)` 논리 관계, 20건의 전체 건수, 중복·고아 관계 부재를 확인했다. 프로그램 ID와 첨부파일 ID·소속·URL·활성 상태는 유지됐고, 실제 추출 실행이 변경한 레코드는 지정한 두 첨부파일뿐이다.
+
+각 다운로드가 끝난 뒤 `job-*`와 `attachment.bin`이 남지 않았고 저장소에도 원본 PDF나 파싱 중간 파일이 생성되지 않았다. 전체 URL, 쿼리 값, 추출 원문, DB 연결 정보와 임시 디렉터리 전체 경로는 기록하지 않았다.
+
 ## 테스트
 
 `npm run test:attachment-extraction`은 로컬 HTTP 응답과 직접 생성한 작은 PDF fixture를 사용한다. 실제 금정구청 원본 파일을 저장소에 넣지 않는다.
