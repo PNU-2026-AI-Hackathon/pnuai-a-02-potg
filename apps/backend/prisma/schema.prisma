@@ -68,3 +68,68 @@ model CommunityPost {
   @@index([type])
   @@index([createdAt])
 }
+
+model ProgramCase {
+  id                     String                  @id @default(uuid())
+  sourceType             String
+  sourcePostId           String
+  sourceUrl              String
+  title                  String
+  targetAudience         String
+  instructor             String
+  capacity               Int
+  currentApplicants      Int
+  applicationStatus      String
+  educationStartDate     DateTime
+  educationEndDate       DateTime
+  educationStartDateText String
+  educationEndDateText   String
+  location               String?
+  feeText                String?
+  preparationText        String?
+  contactText            String?
+  notices                String                  @db.Text
+  rawText                String                  @db.Text
+  hasUnparsedAttachments Boolean
+  crawledAt              DateTime
+  requestSucceeded       Boolean
+  parseWarnings          Json
+  sessions               ProgramCaseSession[]
+  attachments            ProgramCaseAttachment[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  @@unique([sourceType, sourcePostId])
+  @@index([applicationStatus])
+  @@index([educationStartDate])
+  @@index([educationEndDate])
+}
+
+model ProgramCaseSession {
+  id            String      @id @default(uuid())
+  programCaseId String
+  sessionNumber Int
+  sessionDate   DateTime?
+  dateText      String
+  activity      String      @db.Text
+  sortOrder     Int
+  programCase   ProgramCase @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([programCaseId, sessionNumber])
+}
+
+model ProgramCaseAttachment {
+  id               String      @id @default(uuid())
+  programCaseId    String
+  fileName         String
+  fileUrl          String
+  fileType         String
+  extractionStatus String
+  programCase      ProgramCase @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@unique([programCaseId, fileUrl])
+}
