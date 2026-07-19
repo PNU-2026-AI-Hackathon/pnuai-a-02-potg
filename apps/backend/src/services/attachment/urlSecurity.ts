@@ -66,6 +66,9 @@ export async function validateAttachmentUrl(
   if (!allowedHosts.some((allowed) => hostname === allowed.toLowerCase())) {
     throw new AttachmentProcessingError('HOST_NOT_ALLOWED', 'Attachment host is not allowed.');
   }
+  if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
+    throw new AttachmentProcessingError('PRIVATE_ADDRESS_BLOCKED', 'Attachment host resolves to a private or reserved address.');
+  }
 
   const literalVersion = net.isIP(hostname);
   const addresses = literalVersion ? [{ address: hostname }] : await resolver(hostname).catch(() => {
