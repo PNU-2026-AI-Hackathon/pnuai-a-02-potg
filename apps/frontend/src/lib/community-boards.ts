@@ -1,3 +1,5 @@
+import { getBackendUrl } from './backend-url';
+
 export type CommunityBoardSlug = 'library-news' | 'free' | 'proposals';
 
 export type CommunityPostType = 'notice' | 'normal';
@@ -201,8 +203,6 @@ export const communityPosts: CommunityPost[] = [
   },
 ];
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
-
 export function getCommunityBoard(slug: CommunityBoardSlug) {
   return communityBoards[slug];
 }
@@ -236,7 +236,7 @@ function isCommunityPost(value: unknown): value is CommunityPost {
 export async function getCommunityPosts(slug: CommunityBoardSlug) {
   try {
     const params = new URLSearchParams({ boardSlug: slug });
-    const response = await fetch(`${BACKEND_URL}/api/posts?${params.toString()}`, {
+    const response = await fetch(getBackendUrl(`/api/posts?${params.toString()}`), {
       cache: 'no-store',
     });
 
