@@ -12,6 +12,10 @@ export type AttachmentProcessingResult = {
   pageCount: number | null;
   extractedCharacterCount: number;
   ocrCandidatePages: number[];
+  detectedFileType: string | null;
+  detectedMimeType: string | null;
+  byteSize: number | null;
+  checksumSha256: string | null;
   errorCode: string | null;
   dryRun: boolean;
 };
@@ -128,6 +132,10 @@ export async function processPdfAttachment(
       pageCount: extraction?.pageCount || null,
       extractedCharacterCount: extraction?.totalNonWhitespaceCharacterCount || 0,
       ocrCandidatePages: extraction?.ocrCandidatePages || [],
+      detectedFileType: detection?.detectedFileType || null,
+      detectedMimeType: detection?.detectedMimeType || null,
+      byteSize: downloaded?.byteSize || null,
+      checksumSha256: downloaded?.checksumSha256 || null,
       errorCode: error.code,
       dryRun: options.dryRun,
     };
@@ -159,6 +167,10 @@ export async function processPdfAttachment(
     pageCount: extraction.pageCount,
     extractedCharacterCount: extraction.totalNonWhitespaceCharacterCount,
     ocrCandidatePages: extraction.ocrCandidatePages,
+    detectedFileType: detection.detectedFileType,
+    detectedMimeType: detection.detectedMimeType,
+    byteSize: downloaded.byteSize,
+    checksumSha256: downloaded.checksumSha256,
     errorCode: null,
     dryRun: options.dryRun,
   };
@@ -200,6 +212,10 @@ export async function processSelectedPdfAttachments(
         pageCount: null,
         extractedCharacterCount: 0,
         ocrCandidatePages: [],
+        detectedFileType: null,
+        detectedMimeType: null,
+        byteSize: null,
+        checksumSha256: null,
         errorCode: error.code,
         dryRun: options.dryRun,
       });
