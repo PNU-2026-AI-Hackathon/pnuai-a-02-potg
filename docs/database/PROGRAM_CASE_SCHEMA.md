@@ -79,6 +79,11 @@
 ## 적용 및 확인 상태
 
 - 생성 마이그레이션: `20260719233000_add_program_case_models`
-- 개발 DB 적용: 미적용. 설정된 RDS가 안전한 개발 DB인지 확인할 수 없고 `prisma migrate status`도 스키마 엔진 오류로 완료되지 않아 데이터 보호를 우선했다.
+- DB 적용 확인일: 2026-07-20
+- 적용 대상: `mo***` PostgreSQL의 `public` 스키마. `User`, `Interest`, `UserInterest`, `CommunityPost`가 존재해 현재 프로젝트 DB로 판단했다.
+- 개발 DB 적용: 미적용. DB에는 로컬에 없는 `20260719090000_create_board_post` 마이그레이션 이력과 `BoardPost` 테이블이 있어 로컬 migration history와 일치하지 않는다. 이력 충돌 상태에서 `prisma migrate deploy`를 실행하지 않았다.
+- 신규 테이블 검증: `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment`가 아직 존재하지 않으므로 외래키, Cascade, unique, index 및 PostgreSQL 타입의 실제 DB 검증도 수행하지 않았다.
 - Prisma Studio 확인: 미실행. 마이그레이션이 적용된 안전한 DB를 확인한 뒤 수행해야 한다.
-- 정적 확인: `prisma format`, `prisma validate`, `prisma generate`, TypeScript 빌드 성공
+- 대체 검증: `prisma migrate status`와 PostgreSQL `information_schema`, `_prisma_migrations`를 읽기 전용으로 조회했다.
+- 정적 확인: `prisma validate`, `prisma generate`, TypeScript 빌드 성공
+- 데이터 적재: 실제 크롤링 JSON은 DB에 삽입하지 않았다.
