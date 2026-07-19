@@ -24,6 +24,7 @@ type CreateCommunityPostBody = {
 
 const DEFAULT_BOARD_SLUG = 'library-news';
 const DEFAULT_POST_TYPE = 'normal';
+const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'proposals']);
 const VALID_POST_TYPES = new Set(['notice', 'normal']);
 
 const router = Router();
@@ -73,6 +74,20 @@ router.get('/', async (req: Request, res: Response) => {
   const boardSlug = readString(req.query.boardSlug) || DEFAULT_BOARD_SLUG;
   const search = readString(req.query.search);
   const type = readString(req.query.type);
+
+  if (!VALID_BOARD_SLUGS.has(boardSlug)) {
+    return res.status(400).json({
+      code: 'INVALID_BOARD_SLUG',
+      error: 'boardSlug must be library-news, free, or proposals.',
+    });
+  }
+
+  if (type && !VALID_POST_TYPES.has(type)) {
+    return res.status(400).json({
+      code: 'INVALID_POST_TYPE',
+      error: 'type must be notice or normal.',
+    });
+  }
 
   const where: Prisma.CommunityPostWhereInput = {
     boardSlug,
@@ -126,6 +141,13 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
   const content = readString(req.body.content);
   const author = readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
   const tags = readTags(req.body.tags);
+
+  if (!VALID_BOARD_SLUGS.has(boardSlug)) {
+    return res.status(400).json({
+      code: 'INVALID_BOARD_SLUG',
+      error: 'boardSlug must be library-news, free, or proposals.',
+    });
+  }
 
   if (!VALID_POST_TYPES.has(requestedType)) {
     return res.status(400).json({ code: 'INVALID_POST_TYPE', error: 'type must be notice or normal.' });

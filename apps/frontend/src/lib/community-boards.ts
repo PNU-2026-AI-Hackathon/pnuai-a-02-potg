@@ -213,6 +213,26 @@ function getMockCommunityPosts(slug: CommunityBoardSlug) {
     .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
 }
 
+function isCommunityPost(value: unknown): value is CommunityPost {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const post = value as Record<string, unknown>;
+
+  return (
+    typeof post.id === 'string' &&
+    (post.boardSlug === 'library-news' || post.boardSlug === 'free' || post.boardSlug === 'proposals') &&
+    (post.type === 'notice' || post.type === 'normal') &&
+    typeof post.title === 'string' &&
+    typeof post.content === 'string' &&
+    typeof post.author === 'string' &&
+    typeof post.createdAt === 'string' &&
+    Array.isArray(post.tags) &&
+    post.tags.every((tag) => typeof tag === 'string')
+  );
+}
+
 export async function getCommunityPosts(slug: CommunityBoardSlug) {
   try {
     const params = new URLSearchParams({ boardSlug: slug });
@@ -224,10 +244,17 @@ export async function getCommunityPosts(slug: CommunityBoardSlug) {
       return getMockCommunityPosts(slug);
     }
 
-    const data = await response.json();
-    const posts = Array.isArray(data.posts) ? data.posts : [];
+    const data: unknown = await response.json();
 
-    return posts as CommunityPost[];
+    if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).posts)) {
+      return getMockCommunityPosts(slug);
+    }
+
+    const posts = (data as { posts: unknown[] }).posts.filter(
+      (post): post is CommunityPost => isCommunityPost(post) && post.boardSlug === slug,
+    );
+
+    return posts.length > 0 ? posts : getMockCommunityPosts(slug);
   } catch (error) {
     console.error('Community posts request failed:', error);
     return getMockCommunityPosts(slug);
