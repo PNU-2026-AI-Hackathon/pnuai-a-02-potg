@@ -12,6 +12,7 @@
     "test:program-case-sync": "npm run build && node scripts/test-program-case-sync.js",
     "test:attachment-preservation": "npm run build && node scripts/test-attachment-preservation.js",
     "test:attachment-regression": "npm run build && node scripts/test-attachment-regression.js",
+    "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
+    "pdfjs-dist": "^6.1.200",
     "pg": "^8.22.0"
   },
   "devDependencies": {
