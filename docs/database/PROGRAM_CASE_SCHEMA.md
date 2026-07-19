@@ -78,7 +78,7 @@
 
 ## 적용 및 확인 상태
 
-- 예정 마이그레이션: `add_program_case_models`
-- 개발 DB 적용: 구현 후 기록
-- Prisma Studio 확인: 구현 후 기록
-
+- 생성 마이그레이션: `20260719233000_add_program_case_models`
+- 개발 DB 적용: 미적용. 설정된 RDS가 안전한 개발 DB인지 확인할 수 없고 `prisma migrate status`도 스키마 엔진 오류로 완료되지 않아 데이터 보호를 우선했다.
+- Prisma Studio 확인: 미실행. 마이그레이션이 적용된 안전한 DB를 확인한 뒤 수행해야 한다.
+- 정적 확인: `prisma format`, `prisma validate`, `prisma generate`, TypeScript 빌드 성공
