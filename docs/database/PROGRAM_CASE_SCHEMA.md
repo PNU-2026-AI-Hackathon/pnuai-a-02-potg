@@ -81,9 +81,11 @@
 - 생성 마이그레이션: `20260719233000_add_program_case_models`
 - DB 적용 확인일: 2026-07-20
 - 적용 대상: `mo***` PostgreSQL의 `public` 스키마. `User`, `Interest`, `UserInterest`, `CommunityPost`가 존재해 현재 프로젝트 DB로 판단했다.
-- 개발 DB 적용: 미적용. DB에는 로컬에 없는 `20260719090000_create_board_post` 마이그레이션 이력과 `BoardPost` 테이블이 있어 로컬 migration history와 일치하지 않는다. 이력 충돌 상태에서 `prisma migrate deploy`를 실행하지 않았다.
-- 신규 테이블 검증: `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment`가 아직 존재하지 않으므로 외래키, Cascade, unique, index 및 PostgreSQL 타입의 실제 DB 검증도 수행하지 않았다.
-- Prisma Studio 확인: 미실행. 마이그레이션이 적용된 안전한 DB를 확인한 뒤 수행해야 한다.
-- 대체 검증: `prisma migrate status`와 PostgreSQL `information_schema`, `_prisma_migrations`를 읽기 전용으로 조회했다.
+- 이력 정상화: DB에만 있던 `20260719090000_create_board_post` SQL을 `BoardPost` 메타데이터로 재구성했고, DB에 기록된 SHA-256 체크섬과 정확히 일치함을 확인한 뒤 로컬 migration history에 복원했다.
+- 개발 DB 적용: `prisma migrate deploy`로 `20260719233000_add_program_case_models` 적용 성공. 이후 `prisma migrate status`에서 5개 마이그레이션이 모두 적용된 상태를 확인했다.
+- 신규 테이블 검증: `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment` 생성 확인. 기존 `User`, `Interest`, `UserInterest`, `CommunityPost`도 유지됨을 확인했다.
+- 제약조건 및 타입: 회차·첨부 외래키의 `ON DELETE CASCADE`, 복합 unique 3개, 조회 index 3개, `TEXT`, `JSONB`, timestamp 및 nullable 설정을 PostgreSQL 메타데이터로 확인했다.
+- Prisma Studio 확인: 실행을 시도했으나 현재 CLI 환경에서 로컬 포트가 열리지 않아 UI를 직접 확인하지 못했다. 장시간 프로세스를 유지하지 않고 종료했다.
+- 대체 검증: `prisma migrate status`와 PostgreSQL `information_schema`, `pg_catalog`, `_prisma_migrations`를 읽기 전용으로 조회하고 Prisma Client 생성을 확인했다.
 - 정적 확인: `prisma validate`, `prisma generate`, TypeScript 빌드 성공
 - 데이터 적재: 실제 크롤링 JSON은 DB에 삽입하지 않았다.
