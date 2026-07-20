@@ -1,7 +1,11 @@
 const fs = require('fs');
 
 function pdfString(value) {
-  return value.replace(/([\\()])/g, '\\$1').replace(/[^\x20-\x7e]/g, '?');
+  return [...value].map((character) => {
+    if (character === '\u0000') return '\\000';
+    if (/[\\()]/.test(character)) return `\\${character}`;
+    return /[\x20-\x7e]/.test(character) ? character : '?';
+  }).join('');
 }
 
 function createPdf(filePath, pageTexts) {

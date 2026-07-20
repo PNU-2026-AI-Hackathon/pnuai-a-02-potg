@@ -57,8 +57,10 @@ async function run() {
   const textPath = path.join(root, 'text.pdf');
   const ocrPath = path.join(root, 'ocr.pdf');
   const invalidPath = path.join(root, 'invalid.pdf');
+  const nulPath = path.join(root, 'nul.pdf');
   createPdf(textPath, [rich]);
   createPdf(ocrPath, ['tiny']);
+  createPdf(nulPath, [`${rich}\u0000storage safe tail`]);
   fs.writeFileSync(invalidPath, 'not a supported attachment');
   let cleanupCount = 0;
   let observedId = null;
@@ -72,7 +74,13 @@ async function run() {
       if (expectedStatus === 'PROCESSING') assert.equal(processing.failureCode, null);
     }
     const name = new URL(url).pathname.split('/').pop();
-    const filePath = name === 'ocr.pdf' && !retryWithText ? ocrPath : name === 'bad.pdf' ? invalidPath : textPath;
+    const filePath = name === 'ocr.pdf' && !retryWithText
+      ? ocrPath
+      : name === 'bad.pdf'
+        ? invalidPath
+        : name === 'nul.pdf'
+          ? nulPath
+          : textPath;
     const content = fs.readFileSync(filePath);
     return {
       tempFilePath: filePath,
@@ -113,6 +121,22 @@ async function run() {
     assert.equal(completedRow.extractorType, 'PDFJS_TEXT');
     assert.ok(completedRow.rawText.includes('[Page 1]'));
     assert.ok(completedRow.cleanedText.length > 100);
+
+    const nul = await prisma.programCaseAttachment.create({
+      data: {
+        programCaseId: savedProgram.id,
+        fileName: 'nul.pdf',
+        fileUrl: 'https://files.example.test/nul.pdf',
+        fileType: 'pdf',
+      },
+    });
+    observedId = nul.id;
+    expectedStatus = 'PROCESSING';
+    const nulResult = await processPdfAttachment(nul, { dryRun: false, retryFailed: false }, dependencies);
+    assert.equal(nulResult.outcome, 'COMPLETED');
+    const nulRow = await prisma.programCaseAttachment.findUniqueOrThrow({ where: { id: nul.id } });
+    assert.equal(nulRow.extractionStatus, 'COMPLETED');
+    assert.equal(nulRow.rawText.includes('\u0000'), false);
 
     const createAttachment = (name, data = {}) => prisma.programCaseAttachment.create({
       data: {

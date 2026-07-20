@@ -7,7 +7,11 @@ const { createPdf } = require('./attachment-test-helpers');
 const { parseExtractionArguments } = require('../dist/cli/extractProgramAttachments');
 const { downloadAttachment } = require('../dist/services/attachment/attachmentDownloader');
 const { detectAttachmentFileType } = require('../dist/services/attachment/fileTypeDetector');
-const { extractPdfText, cleanExtractedText } = require('../dist/services/attachment/pdfTextExtractor');
+const {
+  extractPdfText,
+  cleanExtractedText,
+  sanitizeRawTextForStorage,
+} = require('../dist/services/attachment/pdfTextExtractor');
 const { isPrivateOrReservedAddress, validateAttachmentUrl } = require('../dist/services/attachment/urlSecurity');
 
 const publicResolver = async () => [{ address: '93.184.216.34' }];
@@ -205,9 +209,11 @@ async function testPdfExtraction(root) {
   const mixedPath = path.join(root, 'mixed.pdf');
   const ocrPath = path.join(root, 'ocr-required.pdf');
   const invalidPath = path.join(root, 'invalid.pdf');
+  const nulPath = path.join(root, 'nul.pdf');
   createPdf(textPath, [`Page one ${rich}`, `Page two ${rich}`]);
   createPdf(mixedPath, [`Text page ${rich}`, '']);
   createPdf(ocrPath, ['tiny']);
+  createPdf(nulPath, [`Before NUL ${rich}\u0000 after NUL`]);
   fs.writeFileSync(invalidPath, 'not a pdf');
 
   const text = await extractPdfText(textPath);
@@ -219,8 +225,13 @@ async function testPdfExtraction(root) {
   assert.deepEqual(mixed.ocrCandidatePages, [2]);
   const ocr = await extractPdfText(ocrPath);
   assert.equal(ocr.classification, 'OCR_REQUIRED');
+  const nul = await extractPdfText(nulPath);
+  assert.equal(nul.classification, 'TEXT');
+  assert.equal(nul.rawText.includes('\u0000'), false);
+  assert.ok(nul.rawText.includes('Before NUL'));
   await expectCode(() => extractPdfText(invalidPath), 'PDF_PARSE_FAILED');
   assert.equal(cleanExtractedText('  한글\t Unicode  \r\n\r\n\r\n text\u0000 '), '한글 Unicode\n\ntext');
+  assert.equal(sanitizeRawTextForStorage('raw\u0000text\u0001'), 'rawtext\u0001');
 }
 
 function testCliArguments() {
