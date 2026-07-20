@@ -66,18 +66,34 @@ async function syncOneProgram(program: ProgramCaseInput): Promise<SyncOneResult>
       });
     }
 
-    // 초기 적재 단계에서는 원천 배열을 기준으로 메타데이터를 전체 교체한다.
-    // 첨부 본문 추출 결과를 저장하기 시작하면 식별자 기반 갱신 전략으로 변경해야 한다.
-    await tx.programCaseAttachment.deleteMany({ where: { programCaseId: saved.id } });
-    if (program.attachments.length > 0) {
-      await tx.programCaseAttachment.createMany({
-        data: program.attachments.map((attachment) => ({
+    const incomingUrls = program.attachments.map((attachment) => attachment.fileUrl);
+    await tx.programCaseAttachment.updateMany({
+      where: {
+        programCaseId: saved.id,
+        ...(incomingUrls.length > 0 ? { fileUrl: { notIn: incomingUrls } } : {}),
+      },
+      data: { isActive: false },
+    });
+
+    for (const attachment of program.attachments) {
+      await tx.programCaseAttachment.upsert({
+        where: {
+          programCaseId_fileUrl: {
+            programCaseId: saved.id,
+            fileUrl: attachment.fileUrl,
+          },
+        },
+        create: {
           programCaseId: saved.id,
           fileName: attachment.fileName,
           fileUrl: attachment.fileUrl,
           fileType: attachment.fileType,
-          extractionStatus: attachment.extractionStatus,
-        })),
+        },
+        update: {
+          fileName: attachment.fileName,
+          fileType: attachment.fileType,
+          isActive: true,
+        },
       });
     }
 
