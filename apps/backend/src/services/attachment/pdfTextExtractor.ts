@@ -42,6 +42,10 @@ export function cleanExtractedText(value: string) {
     .trim();
 }
 
+export function sanitizeRawTextForStorage(value: string) {
+  return value.replace(/\u0000/g, '');
+}
+
 function pageClassification(nonWhitespaceCharacterCount: number): PdfPageClassification {
   if (nonWhitespaceCharacterCount >= 100) return 'TEXT';
   if (nonWhitespaceCharacterCount < 30) return 'OCR_CANDIDATE';
@@ -107,7 +111,9 @@ export async function extractPdfText(filePath: string): Promise<PdfTextExtractio
       }
     }
 
-    const rawText = pages.map((page) => `[Page ${page.pageNumber}]\n${page.text}`).join('\n\n').trim();
+    const rawText = sanitizeRawTextForStorage(
+      pages.map((page) => `[Page ${page.pageNumber}]\n${page.text}`).join('\n\n').trim(),
+    );
     const cleanedText = cleanExtractedText(pages.map((page) => page.text).filter(Boolean).join('\n\n'));
     return {
       extractorVersion: pdfjs.version,
