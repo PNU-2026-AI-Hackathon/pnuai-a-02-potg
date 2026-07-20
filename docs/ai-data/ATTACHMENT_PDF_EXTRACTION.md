@@ -233,7 +233,7 @@ dry-run 전후 전체 스냅샷을 비교한 결과 다음 값과 6개 표본의
 
 실패한 2건은 `attemptCount = 1`, `failureCode = UNKNOWN_ERROR`, 실패 메시지 저장 상태로 유지했다. 이번 작업의 `FAILED` 재시도 금지 원칙에 따라 `--retry-failed`를 사용하거나 상태를 강제로 변경하지 않았다. 1차 배치의 임시 검증 로그는 사후 assertion 오류로 저장되지 않아 DB 시각과 결과에서 복원했으며, 해당 배치의 CLI 내부 처리 시간은 별도로 집계하지 않았다.
 
-전체 활성 PDF의 최종 결과는 다음과 같다.
+전체 PDF 배치 직후 결과는 다음과 같다.
 
 | 항목 | 결과 |
 | --- | ---: |
@@ -256,7 +256,50 @@ checksum이 저장된 53건에서 중복 그룹은 6개, 중복 그룹에 속한
 
 전체 처리 뒤 보존형 프로그램 재동기화 회귀 테스트를 실행하고, 55개 PDF의 상태·텍스트·checksum·추출기·실패 정보·시도 횟수·추출 시각을 전후 해시로 비교했다. 모든 추출 결과와 첨부파일 ID가 유지됐으며 대표 TEXT/MIXED PDF 2건도 `attemptCount = 1`로 보존됐다.
 
-현재 후속 OCR 대상은 `PDFJS_TEXT_PARTIAL`인 MIXED PDF 1건의 OCR 후보 페이지다. `OCR_REQUIRED` PDF는 없다. 별도로 NUL 결함으로 실패한 동일 PDF 2건은 수정된 코드로 명시적 재처리 여부를 결정해야 한다.
+## NUL 저장 실패 PDF 재처리 및 최종 검증
+
+2026-07-20에 배치 처리에서 `UNKNOWN_ERROR`로 남은 활성 PDF 2건을 수정된 NUL 저장 안전화 코드로 한 건씩 명시적으로 재처리했다. 두 레코드는 모두 동일한 15페이지 PDF 사본이며 재처리 전 상태는 `FAILED`, `attemptCount = 1`, 텍스트·checksum·추출 메타데이터 미저장이었다. 대상은 DB의 현재 실패 상태로 동적으로 조회했고 URL, 전체 checksum, 추출 원문은 로그와 문서에 남기지 않았다.
+
+각 대상에 다음 형태의 명령을 개별 실행했다.
+
+```bash
+npm run extract:program-attachments -- --type PDF --attachment-id <UUID> --retry-failed
+```
+
+| 항목 | 첫 번째 PDF | 두 번째 PDF |
+| --- | ---: | ---: |
+| 상태 전이 | `FAILED → PROCESSING → COMPLETED` | `FAILED → PROCESSING → COMPLETED` |
+| `attemptCount` | 1 → 2 | 1 → 2 |
+| `rawText` / `cleanedText` 문자 수 | 10,959 / 10,436 | 10,959 / 10,436 |
+| 원문 / 정제문 NUL 문자 수 | 0 / 0 | 0 / 0 |
+| 파일 크기 | 313,941 byte | 313,941 byte |
+| 판별 형식·MIME | `PDF`, `application/pdf` | `PDF`, `application/pdf` |
+| SHA-256 | 64자, 앞 12자리 `0990b49d577b` | 64자, 앞 12자리 `0990b49d577b` |
+| 페이지 | 15 | 15 |
+| 공백 제외 추출 문자 | 7,803 | 7,803 |
+| 추출기 | `PDFJS_TEXT`, `6.1.200` | `PDFJS_TEXT`, `6.1.200` |
+| 실패 정보 | 코드·메시지 모두 `null` | 코드·메시지 모두 `null` |
+
+두 파일은 checksum, 크기, 페이지 수, 텍스트 길이가 동일했다. 재처리 완료 뒤 같은 두 명령을 `--retry-failed` 없이 각각 한 번 더 실행했으며 모두 `selected = 0`이었다. 두 레코드의 `attemptCount = 2`, 텍스트, checksum, `lastAttemptedAt`, `extractedAt`도 변경되지 않아 완료 파일 자동 재실행 방지가 동작함을 확인했다.
+
+재처리와 전체 회귀 테스트가 끝난 뒤의 실제 DB 최종 상태는 다음과 같다.
+
+| 항목 | 최종 결과 |
+| --- | ---: |
+| 전체 활성 PDF | 55 |
+| `COMPLETED` / `FAILED` / `PENDING` / `PROCESSING` | 55 / 0 / 0 / 0 |
+| `PDFJS_TEXT` / `PDFJS_TEXT_PARTIAL` | 54 / 1 |
+| 실패 코드가 남은 PDF | 0 |
+| `rawText` / `cleanedText` / checksum 저장 PDF | 55 / 55 / 55 |
+| `ProgramCase` / `ProgramCaseSession` | 349 / 20 |
+| 전체 / 활성 `ProgramCaseAttachment` | 237 / 237 |
+| 세션·첨부파일 논리키 중복 | 0 / 0 |
+| 고아 세션·첨부파일 | 0 / 0 |
+| 임시 작업 파일 | 0 |
+
+이미지 156건(JPEG 125, PNG 31)과 HWP 26건은 재처리 전후 상태·시도 횟수·추출 필드가 모두 유지됐다. 전체 회귀 테스트 전후 55개 PDF의 상태, 텍스트, checksum, 추출기, 실패 정보, 시도 횟수와 시각을 지문으로 비교한 결과도 동일했다.
+
+PDF 텍스트 레이어 추출 단계는 완료됐다. 후속 OCR 대상은 `PDFJS_TEXT_PARTIAL`인 MIXED PDF 1건의 OCR 후보 페이지이며 `OCR_REQUIRED` PDF는 없다. OCR 결과 병합 정책을 구현한 뒤 텍스트 정규화와 HWP/HWPX 추출 단계로 진행한다.
 
 ## 테스트
 
