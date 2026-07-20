@@ -303,3 +303,72 @@ JSON 필드는 빠르지만 검색·제약·부분 갱신이 약해 장기적으
 - Tesseract.js와 PDF 비지원 범위: https://github.com/naptha/tesseract.js
 - Sharp: https://sharp.pixelplumbing.com/
 - Poppler: https://poppler.freedesktop.org/
+
+## 18. 2단계 구현 결과 (2026-07-21)
+
+이번 단계에서는 실제 DB 상태나 schema를 변경하지 않고 OCR 실행 기반만 구현했다.
+
+### 추가된 구조
+
+```text
+apps/backend/src/config/attachmentOcr.ts
+apps/backend/src/services/attachment/
+  subprocessRunner.ts
+  imageMetadata.ts
+  imagePreprocessor.ts
+  tesseractOcr.ts
+  imageOcrProcessor.ts
+apps/backend/scripts/
+  fake-subprocess.js
+  test-attachment-ocr.js
+```
+
+백엔드에 `sharp` 의존성과 `test:attachment-ocr` npm script를 추가했다. 기존 PDF CLI, PDF.js 추출 service와 Prisma schema/migration은 변경하지 않았다.
+
+### 설정과 제한
+
+- Tesseract 기본 executable `tesseract`, 언어 `kor+eng`, PSM 6, timeout 60초, text output 5 MiB.
+- stdout/stderr는 각각 64 KiB로 제한한다.
+- 이미지 최대 12,000×12,000, 40 MP, 예상 RGBA decode 160 MB, OCR 입력 긴 변 4,000 px.
+- PDF renderer 설정은 executable `pdftocairo`, timeout 30초, 200 DPI, 최대 50쪽으로 정의만 했으며 이번 단계에서 renderer를 구현하거나 호출하지 않았다.
+- 숫자는 유한한 안전 정수 범위로 검증하며 0, 음수, `NaN`, 과대값을 거부한다. 언어는 소문자·숫자·underscore의 `+` 구분 목록만 허용한다. executable은 환경 설정에서만 읽고 CLI 입력으로 받지 않는다.
+
+### subprocess와 Tesseract adapter
+
+- `spawn`과 argument array, `shell:false`, 숨김 창, stdin 미사용으로 실행한다.
+- timeout, AbortSignal, stdout/stderr 상한, exit code/signal, executable 없음과 취소를 구분한다.
+- 외부 오류에는 executable, 전체 command line, 작업 경로, 환경값, OCR 본문을 포함하지 않는다.
+- Tesseract는 기능 호출 시에만 실행한다. `--version`과 `--list-langs`를 검사하여 version 및 `kor`, `eng` 존재를 확인한다.
+- OCR 본문은 stdout이 아닌 고정된 `ocr-output.txt`에서 읽는다. 크기와 strict UTF-8을 검사하고 기존 PDF 정규화 함수로 NUL/control/whitespace를 정리한다.
+- 성공·실패 모두 OCR text output을 삭제한다. Tesseract가 로컬에 없어도 import와 backend build는 성공한다.
+
+### 이미지 검사와 전처리
+
+- Sharp metadata로 JPEG/PNG, dimensions, pages, orientation, alpha, pixels, 예상 RGBA memory를 확인한다.
+- 손상 파일, 미지원 형식, multi-page/animation, dimension/pixel/decode memory/aspect ratio 초과를 안전한 오류 코드로 거부한다.
+- `limitInputPixels`를 decode 경로에 적용한다.
+- 전처리는 EXIF rotate, 흰색 flatten, 확대 없는 4,000 px 이내 resize, grayscale, normalize, 결정적 PNG 설정만 사용한다.
+- 원본을 덮지 않고 작업 디렉터리의 `ocr-input.png`만 만들며 결과 크기를 검사하고 cleanup callback을 제공한다.
+
+### 순수 image processor
+
+`processImageForOcr`는 signature 판별 → metadata → preprocess → OCR 순서를 수행하고 모든 의존성을 주입할 수 있다. 반환값은 원본/전처리 dimensions, pixels, engine/version/languages, raw/cleaned text, empty 여부와 duration을 포함한다. `imageOcrLogSummary`는 OCR 본문을 의도적으로 제외한다. DB claim이나 저장은 하지 않는다.
+
+### `--plan`과 `--dry-run`
+
+- `--plan`: DB 대상과 도구 준비 여부 및 예상 계획만 확인한다. 다운로드/OCR/DB 변경 없음.
+- 향후 OCR `--dry-run`: 다운로드, signature, metadata, 전처리와 실제 OCR까지 수행하고 임시 파일을 정리하되 DB는 변경하지 않는다.
+- 이번 단계에서는 둘을 운영 CLI에 노출하지 않았다. 기존 PDF 추출 CLI의 `--dry-run` 의미도 변경하지 않았다.
+
+### 자동화 테스트 범위
+
+테스트 중 Sharp로 작은 JPEG, 투명 PNG, 가로/세로, EXIF orientation, multi-page TIFF, 손상 JPEG/PNG를 임시 디렉터리에 만든다. 실제 원본과 생성 fixture는 커밋하지 않는다. 작은 설정값을 주입해 dimension/pixel/decode 제한을 검증하므로 거대 파일도 만들지 않는다.
+
+테스트 전용 Node 실행 파일은 정상/echo/non-zero/delay/과대 stdout/과대 stderr를 제공한다. Tesseract adapter에는 가짜 runner를 주입해 안전한 arguments, version/languages, 결과 파일, 빈 text, timeout, exit failure, output size, NUL 정규화와 cleanup을 검증한다. processor 테스트는 단계 순서, 실패 시 OCR 미호출/cleanup과 본문 없는 로그를 확인한다.
+
+### 현재 미검증 범위와 다음 사용자 작업
+
+- 로컬에는 Tesseract와 시스템 Poppler가 설치되지 않아 실제 `kor+eng` OCR 정확도, binary/version/language 사전 점검과 PDF rendering은 미검증이다.
+- 실제 DB 이미지 다운로드/상태 변경/본문 저장과 156건 batch는 수행하지 않았다.
+- 다음 단계에서 사용자가 개발 환경에 Tesseract 5, `kor`/`eng` traineddata를 설치한 뒤 사전 점검과 합성 fixture 실제 OCR을 실행해야 한다.
+- 이후 대표 DB 이미지 dry-run → 1~2건 제한 저장 → Poppler 설치 → MIXED PDF 순서로 진행한다.
