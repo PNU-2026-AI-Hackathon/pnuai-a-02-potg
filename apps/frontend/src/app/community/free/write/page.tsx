@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function FreePostWritePage() {
   return (
     <main className="communityPage communityWritePage">
-      <section className="communityShell" aria-labelledby="free-write-title">
+      <section className="uiContainer communityShell" aria-labelledby="free-write-title">
         <nav className="communityBreadcrumb" aria-label="현재 위치">
           <Link href="/">홈</Link>
           <span aria-hidden="true">/</span>
@@ -19,9 +19,15 @@ export default function FreePostWritePage() {
           <span>게시글 작성</span>
         </nav>
 
+        <nav className="communityBoardTabs" aria-label="커뮤니티 게시판">
+          <Link href="/community/library-news">도서관 소식</Link>
+          <Link href="/community/proposals">우리동네 의제</Link>
+          <Link className="active" href="/community/free" aria-current="page">동네 광장</Link>
+        </nav>
+
         <header className="communityBoardHeader">
           <div>
-            <p className="communityEyebrow">자유 게시판</p>
+            <p className="uiEyebrow communityEyebrow">자유 게시판</p>
             <h1 id="free-write-title">게시글 작성</h1>
             <p>지역 주민과 나누고 싶은 이야기를 자유롭게 작성해 주세요.</p>
           </div>

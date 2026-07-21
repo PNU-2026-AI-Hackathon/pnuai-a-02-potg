@@ -2163,16 +2163,6 @@ button {
   background: #fbfdff;
 }
 
-.communityPostNumber {
-  width: 74px;
-  text-align: center;
-}
-
-.communityPostNumber span {
-  color: #d24b45;
-  font-weight: 800;
-}
-
 .communityPostType {
   min-height: 24px;
   border-color: #d8e2ed;
@@ -2265,12 +2255,6 @@ button {
 .communityWriteButton:hover,
 .communityWriteButton:focus-visible {
   background: #084b8c;
-}
-
-.communityLoadMessage {
-  margin: 0 0 12px;
-  color: #9a6700;
-  font-size: 13px;
 }
 
 .communityWriteForm {
@@ -3039,17 +3023,6 @@ button {
   .communityPostTable td {
     border-bottom: 0;
     padding: 4px 0;
-  }
-
-  .communityPostNumber {
-    width: auto;
-    text-align: left;
-  }
-
-  .communityPostNumber span {
-    display: inline-flex;
-    min-height: 24px;
-    align-items: center;
   }
 
   .communityPostAuthor,
@@ -5409,6 +5382,382 @@ html.isFullPageScroll:has(.moiraPage) {
 
   .surveyTimeOptions {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Community boards — DESIGN.md alignment */
+.communityPage {
+  min-height: calc(100vh - var(--site-header-height));
+  padding: 44px 0 72px;
+  background:
+    radial-gradient(circle at 8% 4%, rgba(223, 243, 233, 0.78), transparent 28%),
+    linear-gradient(180deg, #fbfdfb 0%, var(--moira-cream) 100%);
+}
+
+.communityShell {
+  width: min(1180px, calc(100% - 48px));
+}
+
+.communityBreadcrumb {
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.communityBreadcrumb a {
+  color: var(--moira-green-dark);
+  font-weight: 700;
+}
+
+.communityBreadcrumb a:hover,
+.communityBreadcrumb a:focus-visible {
+  color: var(--moira-green);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.communityBoardTabs {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 24px;
+  border: 1px solid rgba(22, 116, 95, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 28px rgba(33, 70, 61, 0.06);
+  padding: 6px;
+}
+
+.communityBoardTabs a,
+.communityBoardTabs a + a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #536b65;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.communityBoardTabs a.active,
+.communityBoardTabs a:hover,
+.communityBoardTabs a:focus-visible {
+  border: 0;
+  background: var(--moira-green);
+  color: #fff;
+}
+
+.communityBoardTabs a:focus-visible,
+.communityWriteField input:focus-visible,
+.communityWriteField textarea:focus-visible {
+  outline: 3px solid rgba(241, 168, 91, 0.55);
+  outline-offset: 3px;
+}
+
+.communityBoardHeader {
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
+  border: 1px solid rgba(22, 116, 95, 0.14);
+  border-radius: var(--moira-radius-lg);
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.96), rgba(223, 243, 233, 0.86));
+  box-shadow: var(--moira-shadow);
+  padding: 48px;
+}
+
+.communityBoardHeader::after {
+  position: absolute;
+  right: -54px;
+  bottom: -78px;
+  width: 230px;
+  height: 230px;
+  border: 34px solid rgba(22, 116, 95, 0.08);
+  border-radius: 50%;
+  content: "";
+}
+
+.communityEyebrow {
+  color: var(--moira-green);
+}
+
+.communityBoardHeader h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--moira-ink);
+  font-size: clamp(30px, 4vw, 44px);
+  letter-spacing: -0.04em;
+  line-height: 1.18;
+}
+
+.communityBoardHeader h1::after {
+  display: none;
+}
+
+.communityBoardHeader p:not(.communityEyebrow) {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 16px 0 0;
+  color: #536b65;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.communityBoardNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: 20px;
+  border: 1px solid rgba(22, 116, 95, 0.14);
+  border-radius: var(--moira-radius-sm);
+  background: rgba(255, 255, 255, 0.82);
+  padding: 18px 20px;
+}
+
+.communityNoticeIcon {
+  display: inline-grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--moira-mint);
+  color: var(--moira-green);
+}
+
+.communityBoardNotice p {
+  margin: 2px 0 0;
+  color: #536b65;
+  line-height: 1.7;
+}
+
+.communityPostSection {
+  margin-top: 34px;
+}
+
+.communityBoardControls {
+  min-height: 56px;
+  margin: 0 0 14px;
+}
+
+.communityBoardControls p {
+  color: #536b65;
+}
+
+.communityBoardControls strong {
+  color: var(--moira-green-dark);
+}
+
+.communityWriteButton {
+  min-height: 48px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--moira-green);
+  padding: 0 22px;
+}
+
+.communityWriteButton:hover,
+.communityWriteButton:focus-visible {
+  background: var(--moira-green-dark);
+}
+
+.communityPostList {
+  overflow: hidden;
+  border: 1px solid rgba(22, 116, 95, 0.13);
+  border-radius: var(--moira-radius-md);
+  background: #fff;
+  box-shadow: var(--moira-shadow);
+}
+
+.communityPostTable {
+  border-top: 0;
+  background: transparent;
+}
+
+.communityPostTable th {
+  border-bottom: 1px solid rgba(22, 116, 95, 0.13);
+  background: #f4f9f6;
+  color: #536b65;
+  padding: 15px 12px;
+}
+
+.communityPostTable td {
+  border-bottom-color: #edf2ef;
+  padding: 19px 12px;
+}
+
+.communityPostTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.communityPostRow {
+  transition: background-color 0.18s ease;
+}
+
+.communityPostRow:hover {
+  background: #fbfdfc;
+}
+
+.communityPostRow.isNotice {
+  background: #fffaf3;
+}
+
+.communityPostRow.isNotice .communityPostBody h3 {
+  color: var(--moira-green-dark);
+}
+
+.communityPostType,
+.communityPostTag,
+.communityPostRow.isNotice .communityPostType {
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #eef3f0;
+  color: #476059;
+}
+
+.communityPostRow.isNotice .communityPostType {
+  background: #fff1df;
+  color: #9a591b;
+}
+
+.communityPostBody h3 {
+  color: var(--moira-ink);
+  font-size: 16px;
+}
+
+.communityPostTitleLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.communityPostTitleLine h3 {
+  min-width: 0;
+}
+
+.communityPostTitleIcon {
+  display: inline-grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.communityPostTitleIcon svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.communityPostBody p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.communityWriteError {
+  border-radius: var(--moira-radius-sm);
+  background: #fff1df;
+  color: #8b4e16;
+  padding: 12px 14px;
+}
+
+.communityWriteForm {
+  gap: 24px;
+  margin-top: 24px;
+  border: 1px solid rgba(22, 116, 95, 0.14);
+  border-radius: var(--moira-radius-md);
+  box-shadow: var(--moira-shadow);
+  padding: 36px;
+}
+
+.communityWriteField > span {
+  color: var(--moira-ink);
+}
+
+.communityWriteField input,
+.communityWriteField textarea {
+  border: 1px solid #cfd8e3;
+  border-radius: var(--moira-radius-sm);
+  padding: 14px 16px;
+}
+
+.communityWriteField input:focus,
+.communityWriteField textarea:focus {
+  border-color: var(--moira-green);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+}
+
+.communityWriteField small {
+  color: var(--muted);
+}
+
+.communityWriteActions {
+  border-top-color: #e4ece8;
+}
+
+.communityWriteActions a,
+.communityWriteActions button {
+  min-width: 112px;
+  border-radius: 999px;
+}
+
+@media (max-width: 720px) {
+  .communityPage {
+    padding: 28px 0 48px;
+  }
+
+  .communityShell {
+    width: min(100% - 32px, 1180px);
+  }
+
+  .communityBoardTabs {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    border-radius: var(--moira-radius-md);
+  }
+
+  .communityBoardTabs a,
+  .communityBoardTabs a + a {
+    width: 100%;
+    margin: 0;
+  }
+
+  .communityBoardHeader {
+    border-radius: var(--moira-radius-md);
+    padding: 30px 24px;
+  }
+
+  .communityBoardHeader::after {
+    right: -100px;
+  }
+
+  .communityBoardControls {
+    display: flex;
+    gap: 14px;
+  }
+
+  .communityPostList {
+    border-radius: var(--moira-radius-sm);
+    padding: 0 16px;
+  }
+
+  .communityWriteForm {
+    padding: 24px 18px;
   }
 }
 
