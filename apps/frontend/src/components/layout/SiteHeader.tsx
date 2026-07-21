@@ -56,7 +56,7 @@ export default function SiteHeader({
                 <Link href="/community/free">동네 광장</Link>
               </div>
             </div>
-            <Link className="siteStudioLink" href="/#moira-studio">
+            <Link className="siteStudioLink" href="/studio">
               <span className="siteStudioIcon" aria-hidden="true">✦</span>
               MOIRA Studio
             </Link>
