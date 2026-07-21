@@ -5,15 +5,34 @@ import { useEffect, useState } from 'react';
 import GenerateButton from './GenerateButton';
 import ConditionDropdown from './ConditionDropdown';
 import StudioTutorialModal from './StudioTutorialModal';
-import { communityPosts } from '@/lib/community-boards';
 import { studioFields, type StudioConditionKey } from './studio-options';
 
 const storageKey = 'moira-studio-tutorial-seen';
 const conditionKeys: StudioConditionKey[] = ['category', 'audience', 'period'];
 const planningFields = studioFields.filter((field) => conditionKeys.includes(field.key));
-const agendaPosts = communityPosts.filter(
-  (post) => post.boardSlug === 'proposals' && post.type === 'normal',
-);
+const agendaPosts = [
+  {
+    id: 'proposals-2',
+    title: '시니어 대상 스마트폰 반복 교육이 필요합니다',
+    content:
+      '키오스크, 공공앱, 모바일 은행 사용을 여러 번 연습할 수 있는 소규모 프로그램을 제안합니다.',
+    tags: ['디지털 교육', '시니어'],
+  },
+  {
+    id: 'proposals-3',
+    title: '방과후 숙제 도움 프로그램을 운영하면 좋겠습니다',
+    content:
+      '맞벌이 가정 아이들이 도서관에서 안전하게 머물며 숙제를 도울 수 있는 시간이 있으면 좋겠습니다.',
+    tags: ['아동', '방과후'],
+  },
+  {
+    id: 'proposals-4',
+    title: '도서관 주변 분리배출 캠페인을 제안합니다',
+    content:
+      '작은도서관을 거점으로 어린이와 주민이 함께 참여하는 자원순환 캠페인을 열면 좋겠습니다.',
+    tags: ['환경', '캠페인'],
+  },
+];
 
 export default function ProgramConditionForm() {
   const [prompt, setPrompt] = useState('');

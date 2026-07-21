@@ -18,6 +18,13 @@ enum Gender {
   OTHER
 }
 
+enum AttachmentExtractionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id          String         @id @default(uuid())
   userId      String?        @unique
@@ -51,4 +58,99 @@ model UserInterest {
 
   @@id([userId, interestId])
   @@index([interestId])
+}
+
+model CommunityPost {
+  id        String   @id @default(uuid())
+  boardSlug String
+  type      String
+  title     String
+  content   String
+  author    String
+  tags      String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([boardSlug])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ProgramCase {
+  id                     String                  @id @default(uuid())
+  sourceType             String
+  sourcePostId           String
+  sourceUrl              String
+  title                  String
+  targetAudience         String
+  instructor             String
+  capacity               Int
+  currentApplicants      Int
+  applicationStatus      String
+  educationStartDate     DateTime
+  educationEndDate       DateTime
+  educationStartDateText String
+  educationEndDateText   String
+  location               String?
+  feeText                String?
+  preparationText        String?
+  contactText            String?
+  notices                String                  @db.Text
+  rawText                String                  @db.Text
+  hasUnparsedAttachments Boolean
+  crawledAt              DateTime
+  requestSucceeded       Boolean
+  parseWarnings          Json
+  sessions               ProgramCaseSession[]
+  attachments            ProgramCaseAttachment[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  @@unique([sourceType, sourcePostId])
+  @@index([applicationStatus])
+  @@index([educationStartDate])
+  @@index([educationEndDate])
+}
+
+model ProgramCaseSession {
+  id            String      @id @default(uuid())
+  programCaseId String
+  sessionNumber Int
+  sessionDate   DateTime?
+  dateText      String
+  activity      String      @db.Text
+  sortOrder     Int
+  programCase   ProgramCase @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([programCaseId, sessionNumber])
+}
+
+model ProgramCaseAttachment {
+  id               String                     @id @default(uuid())
+  programCaseId    String
+  fileName         String
+  fileUrl          String
+  fileType         String?
+  detectedFileType String?
+  detectedMimeType String?
+  fileSizeBytes    Int?
+  checksumSha256   String?
+  extractionStatus AttachmentExtractionStatus @default(PENDING)
+  rawText          String?                    @db.Text
+  cleanedText      String?                    @db.Text
+  extractorType    String?
+  extractorVersion String?
+  failureCode      String?
+  failureMessage   String?                    @db.Text
+  attemptCount     Int                        @default(0)
+  lastAttemptedAt  DateTime?
+  extractedAt      DateTime?
+  isActive         Boolean                    @default(true)
+  programCase      ProgramCase                @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  @@unique([programCaseId, fileUrl])
 }

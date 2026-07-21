@@ -7,16 +7,20 @@ import {
 
 const board = getCommunityBoard('library-news');
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: `${board.title} | 모이라`,
   description: board.description,
 };
 
-export default function LibraryNewsBoardPage() {
+export default async function LibraryNewsBoardPage() {
+  const posts = await getCommunityPosts(board.slug);
+
   return (
     <CommunityBoardView
       board={board}
-      posts={getCommunityPosts(board.slug)}
+      posts={posts}
     />
   );
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { AUTH_COOKIE_MAX_AGE, AUTH_COOKIE_NAME, type AuthUser } from '@/lib/auth-config';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+import { getBackendUrl } from '@/lib/backend-url';
 
 type LoginResponse = {
   token?: string;
@@ -12,7 +11,7 @@ type LoginResponse = {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+    const response = await fetch(getBackendUrl('/api/auth/login'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
