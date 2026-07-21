@@ -11,14 +11,17 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is required');
 }
 
-const caPath = path.resolve(process.cwd(), 'global-bundle.pem');
+const caPath = path.resolve(process.cwd(), process.env.DATABASE_SSL_CA_PATH || 'global-bundle.pem');
+const ssl = fs.existsSync(caPath)
+  ? {
+      ca: fs.readFileSync(caPath, 'utf8'),
+      rejectUnauthorized: true,
+    }
+  : false;
 
 const pool = new Pool({
   connectionString,
-  ssl: {
-    ca: fs.readFileSync(caPath, 'utf8'),
-    rejectUnauthorized: true,
-  },
+  ssl,
 });
 
 const adapter = new PrismaPg(pool);

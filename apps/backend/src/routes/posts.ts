@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Router, Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 
 type BoardPost = {
   id: string;
@@ -8,6 +9,10 @@ type BoardPost = {
   category: string;
   author: string;
   createdAt: string;
+  boardSlug?: string;
+  type?: 'notice' | 'normal';
+  tags?: string[];
+  passwordHash?: string;
 };
 
 type CreatePostBody = {
@@ -15,6 +20,14 @@ type CreatePostBody = {
   content?: string;
   category?: string;
   author?: string;
+  boardSlug?: string;
+  password?: string;
+};
+
+type UpdatePostBody = {
+  title?: string;
+  content?: string;
+  password?: string;
 };
 
 const CATEGORY_ALL = '\uC804\uCCB4';
@@ -57,31 +70,43 @@ const router = Router();
 router.get('/', (req, res) => {
   const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : '';
   const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
+  const boardSlug = typeof req.query.boardSlug === 'string' ? req.query.boardSlug.trim() : '';
 
   const filteredPosts = posts
     .filter((post) => {
       const matchesCategory = !category || category === CATEGORY_ALL || post.category === category;
+      const matchesBoard = !boardSlug || post.boardSlug === boardSlug;
       const matchesSearch =
         !search ||
         [post.title, post.content, post.category, post.author].some((value) =>
           value.toLowerCase().includes(search),
         );
 
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesBoard && matchesSearch;
     })
     .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
 
-  res.json({ posts: filteredPosts });
+  res.json({ posts: filteredPosts.map(toPublicPost) });
 });
 
-router.post('/', (req: Request<{}, {}, CreatePostBody>, res: Response) => {
+router.post('/', async (req: Request<{}, {}, CreatePostBody>, res: Response) => {
   const title = req.body.title?.trim();
   const content = req.body.content?.trim();
   const category = req.body.category?.trim();
   const author = req.body.author?.trim() || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
+  const boardSlug = req.body.boardSlug?.trim();
+  const password = req.body.password;
 
   if (!title || !content || !category) {
     return res.status(400).json({ error: 'title, content, and category are required' });
+  }
+
+  if (title.length > 100 || content.length > 5000) {
+    return res.status(400).json({ error: 'title or content is too long' });
+  }
+
+  if (boardSlug === 'free' && (!password || password.length < 4 || password.length > 64)) {
+    return res.status(400).json({ error: 'password must be between 4 and 64 characters' });
   }
 
   const post: BoardPost = {
@@ -91,11 +116,53 @@ router.post('/', (req: Request<{}, {}, CreatePostBody>, res: Response) => {
     category,
     author,
     createdAt: new Date().toISOString(),
+    boardSlug,
+    type: 'normal',
+    tags: boardSlug === 'free' ? ['자유글'] : undefined,
+    passwordHash: password ? await bcrypt.hash(password, 10) : undefined,
   };
 
   posts.unshift(post);
 
-  return res.status(201).json({ post });
+  return res.status(201).json({ post: toPublicPost(post) });
 });
+
+router.patch('/:id', async (req: Request<{ id: string }, {}, UpdatePostBody>, res: Response) => {
+  const post = posts.find((candidate) => candidate.id === req.params.id);
+  if (!post) return res.status(404).json({ error: 'post not found' });
+  if (!(await hasValidPassword(post, req.body.password))) {
+    return res.status(403).json({ error: 'invalid password' });
+  }
+
+  const title = req.body.title?.trim();
+  const content = req.body.content?.trim();
+  if (!title || !content) return res.status(400).json({ error: 'title and content are required' });
+  if (title.length > 100 || content.length > 5000) {
+    return res.status(400).json({ error: 'title or content is too long' });
+  }
+
+  post.title = title;
+  post.content = content;
+  return res.json({ post: toPublicPost(post) });
+});
+
+router.delete('/:id', async (req: Request<{ id: string }, {}, { password?: string }>, res: Response) => {
+  const index = posts.findIndex((candidate) => candidate.id === req.params.id);
+  if (index < 0) return res.status(404).json({ error: 'post not found' });
+  if (!(await hasValidPassword(posts[index], req.body.password))) {
+    return res.status(403).json({ error: 'invalid password' });
+  }
+
+  posts.splice(index, 1);
+  return res.status(204).send();
+});
+
+function toPublicPost({ passwordHash: _passwordHash, ...post }: BoardPost) {
+  return post;
+}
+
+async function hasValidPassword(post: BoardPost, password?: string) {
+  return Boolean(post.passwordHash && password && (await bcrypt.compare(password, post.passwordHash)));
+}
 
 export default router;

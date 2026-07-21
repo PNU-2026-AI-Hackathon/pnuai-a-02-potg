@@ -2166,6 +2166,124 @@ button {
   color: #0b5cab;
 }
 
+.communityWriteButton {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #0b5cab;
+  background: #0b5cab;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.communityWriteButton:hover,
+.communityWriteButton:focus-visible {
+  background: #084b8c;
+}
+
+.communityLoadMessage {
+  margin: 0 0 12px;
+  color: #9a6700;
+  font-size: 13px;
+}
+
+.communityWriteForm {
+  display: grid;
+  gap: 24px;
+  margin-top: 28px;
+  border-top: 2px solid #333;
+  background: #fff;
+  padding: 32px;
+}
+
+.communityWriteField {
+  display: grid;
+  gap: 9px;
+}
+
+.communityWriteField > span {
+  color: #333;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.communityWriteField input,
+.communityWriteField textarea {
+  width: 100%;
+  border: 1px solid #cfd5dc;
+  background: #fff;
+  color: #222;
+  padding: 13px 14px;
+  outline: none;
+}
+
+.communityWriteField textarea {
+  min-height: 280px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.communityWriteField input:focus,
+.communityWriteField textarea:focus {
+  border-color: #0b5cab;
+  box-shadow: 0 0 0 3px rgba(11, 92, 171, 0.12);
+}
+
+.communityWriteField small {
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.communityPasswordField {
+  max-width: 480px;
+}
+
+.communityPasswordField small {
+  text-align: left;
+}
+
+.communityWriteError {
+  margin: 0;
+  color: #c62828;
+  font-size: 14px;
+}
+
+.communityWriteActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e5e8ec;
+  padding-top: 24px;
+}
+
+.communityWriteActions a,
+.communityWriteActions button {
+  min-width: 104px;
+  border: 1px solid #c9ced5;
+  background: #fff;
+  color: #444;
+  padding: 11px 18px;
+  text-align: center;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.communityWriteActions button {
+  border-color: #0b5cab;
+  background: #0b5cab;
+  color: #fff;
+}
+
+.communityWriteActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .communityPostRow.isNotice .communityPostBody h3 {
   color: #d24b45;
   font-weight: 800;
@@ -2505,6 +2623,10 @@ button {
     justify-content: flex-start;
   }
 
+  .communityWriteForm {
+    padding: 24px 20px;
+  }
+
   .boardFormActions {
     justify-content: stretch;
   }
@@ -2605,6 +2727,22 @@ button {
   .boardWriteButton,
   .communityPrimaryLink {
     width: 100%;
+  }
+
+  .communityBoardControls,
+  .communityWriteActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .communityWriteButton,
+  .communityWriteActions a,
+  .communityWriteActions button {
+    width: 100%;
+  }
+
+  .communityWriteForm {
+    padding: 22px 16px;
   }
 
   .communityBoardTabs a + a {
