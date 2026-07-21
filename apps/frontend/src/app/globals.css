@@ -2529,6 +2529,193 @@ button {
   line-height: 1.6;
 }
 
+.mypagePage {
+  display: grid;
+  gap: 24px;
+  padding: 24px 0 40px;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.mypageHero,
+.mypageGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  min-width: 0;
+}
+
+.mypageHero {
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: stretch;
+}
+
+.mypagePanel {
+  border: 1px solid #dce7f2;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 18px 45px rgba(31, 63, 105, 0.07);
+  padding: 20px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mypageProfile {
+  display: grid;
+  gap: 14px;
+}
+
+.mypageProfile .panelBar,
+.mypagePanel .panelBar {
+  background: transparent;
+  border: 0;
+  padding: 0 0 14px;
+  margin: 0;
+}
+
+.profileSummary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #edf5ff 0%, #f7fbff 100%);
+  border: 1px solid #dce8f6;
+  min-width: 0;
+}
+
+.profileAvatar {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  border: 1px solid #d7e5f6;
+  font-size: 28px;
+}
+
+.profileSummary h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+  color: var(--deep);
+  word-break: keep-all;
+}
+
+.profileSummary p,
+.activityItem span,
+.listRow p,
+.eventCard p,
+.listRow span {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summaryCard {
+  border: 1px solid #dbe7f3;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+  padding: 16px;
+}
+
+.summaryCard span {
+  display: block;
+  color: #667085;
+  font-size: 13px;
+}
+
+.summaryCard strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--deep);
+  font-size: 26px;
+  overflow-wrap: anywhere;
+}
+
+.activityList {
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.activityItem {
+  border: 1px solid #e5e8ee;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #fbfcfe;
+}
+
+.activityItem strong {
+  display: block;
+  margin-top: 6px;
+  color: #0f172a;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.listBlock,
+.eventList {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.listRow,
+.eventCard {
+  border: 1px solid #e4e8ee;
+  border-radius: 16px;
+  background: #fbfcfe;
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.listRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.listRow h3,
+.eventCard h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.eventCard .badge,
+.panelBar .badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e7f0fb;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 @media (max-width: 980px) {
   .headerInner,
   .heroBody {
@@ -5123,5 +5310,564 @@ html.isFullPageScroll:has(.moiraPage) {
   .homeHero.isHeroIntro.isInView .moiraServicePath::before,
   .homeHero.isHeroIntro.isInView .moiraServicePath li > span {
     animation: none;
+  }
+}
+
+/* My page */
+.mypageRoot {
+  min-height: 100vh;
+  background: #fbfcfa;
+}
+
+.mypageRoot .siteHeader {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.mypageMain {
+  min-height: calc(100vh - var(--site-header-height));
+}
+
+.moiraPage .mypageMain > section {
+  min-height: 0;
+  scroll-snap-align: none;
+}
+
+.mypageIntro {
+  border-bottom: 1px solid var(--moira-border);
+  background:
+    radial-gradient(circle at 84% 16%, rgba(223, 243, 233, 0.9), transparent 26%),
+    linear-gradient(135deg, #f8f5eb 0%, #f3f8f4 100%);
+  padding: 22px 0 32px;
+}
+
+.mypageBreadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--moira-muted);
+  font-size: 13px;
+}
+
+.mypageBreadcrumb a:hover,
+.mypageBreadcrumb a:focus-visible {
+  color: var(--moira-green);
+}
+
+.mypageBreadcrumb strong {
+  color: var(--moira-ink);
+}
+
+.mypageWelcome {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.mypageWelcome h1 {
+  margin: 8px 0 0;
+  color: var(--moira-ink);
+  font-size: clamp(34px, 4vw, 48px);
+  letter-spacing: -0.045em;
+  line-height: 1.18;
+}
+
+.mypageWelcome > div > p:last-child {
+  margin: 9px 0 0;
+  color: var(--moira-muted);
+  font-size: 16px;
+}
+
+.mypageMockNotice {
+  flex: 0 0 auto;
+  border: 1px solid #d9cba9;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #715e33;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mypageProfileCard {
+  display: grid;
+  grid-template-columns: minmax(270px, 1.1fr) minmax(360px, 1fr) auto;
+  align-items: center;
+  gap: clamp(20px, 3vw, 40px);
+  margin-top: 22px;
+  border: 1px solid rgba(219, 229, 223, 0.9);
+  border-radius: var(--moira-radius-md);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--moira-shadow);
+  padding: 22px 26px;
+}
+
+.mypageIdentity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 18px;
+}
+
+.mypageAvatar {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--moira-green);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 850;
+}
+
+.mypageIdentity strong {
+  color: var(--moira-ink);
+  font-size: 20px;
+}
+
+.mypageIdentity p {
+  margin: 6px 0 0;
+  color: var(--moira-muted);
+  font-size: 13px;
+}
+
+.mypageInterestTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.mypageInterestTags span {
+  border-radius: 999px;
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mypageStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(64px, 1fr));
+  margin: 0;
+}
+
+.mypageStats div {
+  position: relative;
+  text-align: center;
+}
+
+.mypageStats div + div::before {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 0;
+  width: 1px;
+  background: var(--moira-border);
+  content: "";
+}
+
+.mypageStats dt {
+  color: var(--moira-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mypageStats dd {
+  margin: 7px 0 0;
+  color: var(--moira-green-dark);
+  font-size: 25px;
+  font-weight: 850;
+}
+
+.mypageEditButton:disabled,
+.mypageMoreButton:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.mypageContent {
+  padding-block: 40px 60px;
+}
+
+.mypageActivityGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.mypageActivityCard {
+  min-width: 0;
+  border: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-md);
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(33, 70, 61, 0.06);
+  overflow: hidden;
+}
+
+.mypageSectionHeading {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  border-bottom: 1px solid #e8eeea;
+  padding: 19px 20px;
+}
+
+.mypageSectionIcon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 15px;
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.mypageSectionHeading h2,
+.mypageEventHeading h2 {
+  margin: 5px 0 0;
+  color: var(--moira-ink);
+  font-size: 23px;
+  letter-spacing: -0.025em;
+}
+
+.mypageSectionHeading > div > p:last-child,
+.mypageEventHeading > div > p:last-child {
+  margin: 7px 0 0;
+  color: var(--moira-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mypageMoreButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--moira-green);
+  padding: 4px 0;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.mypagePostList {
+  padding: 0 20px;
+}
+
+.mypagePostItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 13px;
+  padding: 15px 0;
+}
+
+.mypagePostItem + .mypagePostItem {
+  border-top: 1px solid #edf1ef;
+}
+
+.mypagePostItem .uiTag {
+  margin-top: 2px;
+}
+
+.mypagePostCopy {
+  min-width: 0;
+}
+
+.mypagePostCopy h3 {
+  margin: 0;
+  overflow: hidden;
+  color: #243d36;
+  font-size: 16px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mypagePostCopy > p {
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: var(--moira-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mypagePostMeta {
+  display: flex;
+  gap: 14px;
+  margin-top: 7px;
+  color: #84908c;
+  font-size: 11px;
+}
+
+.mypageRowArrow {
+  color: #9eaaa6;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.mypageEventSection {
+  margin-top: 46px;
+}
+
+.mypageEventHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 17px;
+}
+
+.mypageEventHeading h2 {
+  font-size: clamp(27px, 3vw, 34px);
+}
+
+.mypageEventGrid,
+.mypageInterestGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mypageLocalEvent {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 20px;
+  min-height: 168px;
+  border: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-md);
+  background: #fff;
+  padding: 20px;
+}
+
+.mypageEventDate {
+  align-self: stretch;
+  border-right: 1px solid var(--moira-border);
+  padding-right: 18px;
+  text-align: center;
+}
+
+.mypageEventDate strong {
+  display: block;
+  color: var(--moira-green);
+  font-size: 22px;
+}
+
+.mypageEventDate span {
+  display: block;
+  margin-top: 7px;
+  color: var(--moira-muted);
+  font-size: 12px;
+}
+
+.mypageLocalEvent h3,
+.mypageInterestEvent h3 {
+  margin: 14px 0 0;
+  color: var(--moira-ink);
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.mypageLocalEvent p {
+  margin: 9px 0 0;
+  color: var(--moira-muted);
+  font-size: 12px;
+}
+
+.mypageLocalEvent p + p {
+  margin-top: 5px;
+}
+
+.mypageInterestSection {
+  border-radius: var(--moira-radius-lg);
+  background: var(--moira-ink);
+  padding: 28px;
+}
+
+.mypageInterestSection .uiEyebrow,
+.mypageInterestSection .mypageMoreButton {
+  color: #aee0cf;
+}
+
+.mypageInterestSection .mypageEventHeading h2 {
+  color: #fff;
+}
+
+.mypageInterestSection .mypageEventHeading > div > p:last-child {
+  color: #b9c9c3;
+}
+
+.mypageInterestEvent {
+  min-height: 200px;
+  border-radius: var(--moira-radius-md);
+  background: #fff;
+  padding: 21px;
+}
+
+.mypageInterestEvent > p {
+  margin: 11px 0 0;
+  color: var(--moira-muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.mypageInterestEvent > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  border-top: 1px solid var(--moira-border);
+  padding-top: 15px;
+  color: var(--moira-muted);
+  font-size: 12px;
+}
+
+.mypageInterestEvent > div strong {
+  color: var(--moira-green);
+}
+
+@media (max-width: 980px) {
+  .mypageProfileCard {
+    grid-template-columns: 1fr auto;
+  }
+
+  .mypageStats {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .mypageActivityGrid,
+  .mypageEventGrid,
+  .mypageInterestGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mypageLocalEvent {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .mypageIntro {
+    padding: 16px 0 24px;
+  }
+
+  .mypageWelcome {
+    display: block;
+    margin-top: 20px;
+  }
+
+  .mypageWelcome > div > p:last-child {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .mypageMockNotice {
+    display: inline-flex;
+    margin-top: 12px;
+  }
+
+  .mypageProfileCard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .mypageIdentity {
+    align-items: flex-start;
+  }
+
+  .mypageAvatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .mypageStats {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .mypageEditButton {
+    width: 100%;
+  }
+
+  .mypageContent {
+    padding-block: 26px 42px;
+  }
+
+  .mypageActivityGrid {
+    gap: 12px;
+  }
+
+  .mypageSectionHeading {
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding: 16px;
+  }
+
+  .mypageSectionIcon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .mypageSectionHeading .mypageMoreButton {
+    display: none;
+  }
+
+  .mypagePostList {
+    padding: 0 16px;
+  }
+
+  .mypagePostItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .mypagePostItem .uiTag {
+    grid-column: 1 / -1;
+    width: fit-content;
+  }
+
+  .mypageEventSection {
+    margin-top: 34px;
+  }
+
+  .mypageEventHeading {
+    display: block;
+  }
+
+  .mypageEventHeading .mypageMoreButton {
+    margin-top: 14px;
+  }
+
+  .mypageLocalEvent {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 16px;
+    padding: 17px;
+  }
+
+  .mypageEventDate {
+    padding-right: 14px;
+  }
+
+  .mypageInterestSection {
+    margin-inline: -8px;
+    border-radius: 24px;
+    padding: 22px 16px;
   }
 }

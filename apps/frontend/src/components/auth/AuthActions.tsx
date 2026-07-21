@@ -47,14 +47,9 @@ export default function AuthActions({ initialUser }: AuthActionsProps) {
 
   return (
     <div className="authActions">
-      <button
-        type="button"
-        className="mypageButton"
-        disabled
-        title="마이페이지는 준비 중입니다."
-      >
+      <Link className="mypageButton" href="/mypage">
         마이페이지
-      </button>
+      </Link>
       <button
         type="button"
         className="logoutButton"
