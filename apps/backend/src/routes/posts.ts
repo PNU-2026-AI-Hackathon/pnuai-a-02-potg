@@ -1,168 +1,248 @@
-import { randomUUID } from 'crypto';
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { prisma } from '../lib/prisma';
 
-type BoardPost = {
+type CommunityPostResponse = {
   id: string;
+  boardSlug: string;
+  type: string;
   title: string;
   content: string;
-  category: string;
   author: string;
   createdAt: string;
-  boardSlug?: string;
-  type?: 'notice' | 'normal';
-  tags?: string[];
-  passwordHash?: string;
+  tags: string[];
 };
 
-type CreatePostBody = {
+type CreateCommunityPostBody = {
+  boardSlug?: string;
+  type?: string;
   title?: string;
   content?: string;
-  category?: string;
   author?: string;
-  boardSlug?: string;
+  tags?: unknown;
   password?: string;
 };
 
-type UpdatePostBody = {
+type UpdateCommunityPostBody = {
   title?: string;
   content?: string;
   password?: string;
 };
 
-const CATEGORY_ALL = '\uC804\uCCB4';
-const CATEGORY_NOTICE = '\uACF5\uC9C0';
-const CATEGORY_NEWS = '\uC18C\uC2DD';
-const CATEGORY_SUGGESTION = '\uC81C\uC548';
-
-const posts: BoardPost[] = [
-  {
-    id: 'post-1',
-    title: '\uC791\uC740\uB3C4\uC11C\uAD00 \uC8FC\uB9D0 \uB3C5\uC11C \uBAA8\uC784\uC744 \uC81C\uC548\uD569\uB2C8\uB2E4',
-    content:
-      '\uC9C0\uC5ED \uC8FC\uBBFC\uC774 \uD568\uAED8 \uCC45\uC744 \uC77D\uACE0 \uC774\uC57C\uAE30\uB97C \uB098\uB204\uB294 \uBAA8\uC784\uC744 \uC5F4\uBA74 \uC88B\uACA0\uC2B5\uB2C8\uB2E4.',
-    category: CATEGORY_SUGGESTION,
-    author: '\uAE40\uBAA8\uC774\uB77C',
-    createdAt: '2026-06-26T09:00:00.000Z',
-  },
-  {
-    id: 'post-2',
-    title: '7\uC6D4 \uCCAD\uC18C\uB144 AI \uB3C5\uC11C \uBA58\uD1A0\uB9C1 \uCC38\uC5EC\uC790\uB97C \uBAA8\uC9D1\uD569\uB2C8\uB2E4',
-    content:
-      '\uCCAD\uC18C\uB144\uC744 \uB300\uC0C1\uC73C\uB85C \uD55C AI \uB3C5\uC11C \uBA58\uD1A0\uB9C1 \uD504\uB85C\uADF8\uB7A8 \uCC38\uC5EC\uC790\uB97C \uBAA8\uC9D1\uD569\uB2C8\uB2E4.',
-    category: CATEGORY_NEWS,
-    author: '\uBAA8\uC774\uB77C \uC6B4\uC601\uD300',
-    createdAt: '2026-06-25T02:30:00.000Z',
-  },
-  {
-    id: 'post-3',
-    title: '\uAC8C\uC2DC\uD310 \uC774\uC6A9 \uC548\uB0B4',
-    content:
-      '\uBAA8\uC774\uB77C \uAC8C\uC2DC\uD310\uC740 \uACF5\uC9C0, \uC9C0\uC5ED \uC18C\uC2DD, \uC8FC\uBBFC \uC81C\uC548\uC744 \uD568\uAED8 \uACF5\uC720\uD558\uB294 \uACF5\uAC04\uC785\uB2C8\uB2E4.',
-    category: CATEGORY_NOTICE,
-    author: '\uAD00\uB9AC\uC790',
-    createdAt: '2026-06-24T01:10:00.000Z',
-  },
-];
+const DEFAULT_BOARD_SLUG = 'library-news';
+const DEFAULT_POST_TYPE = 'normal';
+const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'proposals']);
+const VALID_POST_TYPES = new Set(['notice', 'normal']);
+const MIN_PASSWORD_LENGTH = 4;
+const MAX_PASSWORD_LENGTH = 64;
+const MAX_TITLE_LENGTH = 100;
+const MAX_CONTENT_LENGTH = 5000;
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : '';
-  const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
-  const boardSlug = typeof req.query.boardSlug === 'string' ? req.query.boardSlug.trim() : '';
+function readString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
 
-  const filteredPosts = posts
-    .filter((post) => {
-      const matchesCategory = !category || category === CATEGORY_ALL || post.category === category;
-      const matchesBoard = !boardSlug || post.boardSlug === boardSlug;
-      const matchesSearch =
-        !search ||
-        [post.title, post.content, post.category, post.author].some((value) =>
-          value.toLowerCase().includes(search),
-        );
+function readPassword(value: unknown) {
+  return typeof value === 'string' ? value : '';
+}
 
-      return matchesCategory && matchesBoard && matchesSearch;
-    })
-    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+function readTags(value: unknown) {
+  if (!Array.isArray(value)) return [];
 
-  res.json({ posts: filteredPosts.map(toPublicPost) });
-});
+  return [
+    ...new Set(
+      value
+        .filter((tag): tag is string => typeof tag === 'string')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
 
-router.post('/', async (req: Request<{}, {}, CreatePostBody>, res: Response) => {
-  const title = req.body.title?.trim();
-  const content = req.body.content?.trim();
-  const category = req.body.category?.trim();
-  const author = req.body.author?.trim() || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
-  const boardSlug = req.body.boardSlug?.trim();
-  const password = req.body.password;
+function serializePost(post: {
+  id: string;
+  boardSlug: string;
+  type: string;
+  title: string;
+  content: string;
+  author: string;
+  createdAt: Date;
+  tags: string[];
+}): CommunityPostResponse {
+  return {
+    id: post.id,
+    boardSlug: post.boardSlug,
+    type: post.type,
+    title: post.title,
+    content: post.content,
+    author: post.author,
+    createdAt: post.createdAt.toISOString(),
+    tags: post.tags,
+  };
+}
 
-  if (!title || !content || !category) {
-    return res.status(400).json({ error: 'title, content, and category are required' });
+function isPasswordLengthValid(password: string) {
+  return password.length >= MIN_PASSWORD_LENGTH && password.length <= MAX_PASSWORD_LENGTH;
+}
+
+async function verifyPostPassword(passwordHash: string | null, password: unknown) {
+  const candidate = readPassword(password);
+  return Boolean(passwordHash && candidate && (await bcrypt.compare(candidate, passwordHash)));
+}
+
+router.get('/', async (req: Request, res: Response) => {
+  const boardSlug = readString(req.query.boardSlug) || DEFAULT_BOARD_SLUG;
+  const search = readString(req.query.search);
+  const type = readString(req.query.type);
+
+  if (!VALID_BOARD_SLUGS.has(boardSlug)) {
+    return res.status(400).json({
+      code: 'INVALID_BOARD_SLUG',
+      error: 'boardSlug must be library-news, free, or proposals.',
+    });
   }
 
-  if (title.length > 100 || content.length > 5000) {
-    return res.status(400).json({ error: 'title or content is too long' });
+  if (type && !VALID_POST_TYPES.has(type)) {
+    return res.status(400).json({
+      code: 'INVALID_POST_TYPE',
+      error: 'type must be notice or normal.',
+    });
   }
 
-  if (boardSlug === 'free' && (!password || password.length < 4 || password.length > 64)) {
-    return res.status(400).json({ error: 'password must be between 4 and 64 characters' });
-  }
-
-  const post: BoardPost = {
-    id: randomUUID(),
-    title,
-    content,
-    category,
-    author,
-    createdAt: new Date().toISOString(),
+  const where: Prisma.CommunityPostWhereInput = {
     boardSlug,
-    type: 'normal',
-    tags: boardSlug === 'free' ? ['자유글'] : undefined,
-    passwordHash: password ? await bcrypt.hash(password, 10) : undefined,
+    ...(type ? { type } : {}),
+    ...(search
+      ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { content: { contains: search, mode: 'insensitive' } },
+            { author: { contains: search, mode: 'insensitive' } },
+            { tags: { has: search } },
+          ],
+        }
+      : {}),
   };
 
-  posts.unshift(post);
-
-  return res.status(201).json({ post: toPublicPost(post) });
+  try {
+    const posts = await prisma.communityPost.findMany({
+      where,
+      orderBy: [{ type: 'asc' }, { createdAt: 'desc' }],
+    });
+    return res.status(200).json({ posts: posts.map(serializePost) });
+  } catch (error) {
+    console.error('Community post list lookup failed:', error);
+    return res.status(500).json({ code: 'POST_LIST_FAILED', error: 'Unable to load posts.' });
+  }
 });
 
-router.patch('/:id', async (req: Request<{ id: string }, {}, UpdatePostBody>, res: Response) => {
-  const post = posts.find((candidate) => candidate.id === req.params.id);
-  if (!post) return res.status(404).json({ error: 'post not found' });
-  if (!(await hasValidPassword(post, req.body.password))) {
-    return res.status(403).json({ error: 'invalid password' });
+router.get('/:postId', async (req: Request<{ postId: string }>, res: Response) => {
+  try {
+    const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
+    if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+    return res.status(200).json({ post: serializePost(post) });
+  } catch (error) {
+    console.error('Community post detail lookup failed:', error);
+    return res.status(500).json({ code: 'POST_DETAIL_FAILED', error: 'Unable to load post.' });
   }
-
-  const title = req.body.title?.trim();
-  const content = req.body.content?.trim();
-  if (!title || !content) return res.status(400).json({ error: 'title and content are required' });
-  if (title.length > 100 || content.length > 5000) {
-    return res.status(400).json({ error: 'title or content is too long' });
-  }
-
-  post.title = title;
-  post.content = content;
-  return res.json({ post: toPublicPost(post) });
 });
 
-router.delete('/:id', async (req: Request<{ id: string }, {}, { password?: string }>, res: Response) => {
-  const index = posts.findIndex((candidate) => candidate.id === req.params.id);
-  if (index < 0) return res.status(404).json({ error: 'post not found' });
-  if (!(await hasValidPassword(posts[index], req.body.password))) {
-    return res.status(403).json({ error: 'invalid password' });
+router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Response) => {
+  const boardSlug = readString(req.body.boardSlug) || DEFAULT_BOARD_SLUG;
+  const requestedType = readString(req.body.type) || DEFAULT_POST_TYPE;
+  const title = readString(req.body?.title);
+  const content = readString(req.body?.content);
+  const author = readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
+  const password = readPassword(req.body.password);
+  const requestedTags = readTags(req.body.tags);
+  const tags = boardSlug === 'free' && requestedTags.length === 0 ? ['자유글'] : requestedTags;
+
+  if (!VALID_BOARD_SLUGS.has(boardSlug)) {
+    return res.status(400).json({ code: 'INVALID_BOARD_SLUG', error: 'Invalid boardSlug.' });
+  }
+  if (!VALID_POST_TYPES.has(requestedType)) {
+    return res.status(400).json({ code: 'INVALID_POST_TYPE', error: 'Invalid post type.' });
+  }
+  if (!title || !content) {
+    return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
+  }
+  if (title.length > MAX_TITLE_LENGTH || content.length > MAX_CONTENT_LENGTH) {
+    return res.status(400).json({ code: 'POST_TOO_LONG', error: 'title or content is too long.' });
+  }
+  if (boardSlug === 'free' && !isPasswordLengthValid(password)) {
+    return res.status(400).json({
+      code: 'INVALID_POST_PASSWORD',
+      error: `password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters.`,
+    });
   }
 
-  posts.splice(index, 1);
-  return res.status(204).send();
+  try {
+    const passwordHash = boardSlug === 'free' ? await bcrypt.hash(password, 10) : null;
+    const post = await prisma.communityPost.create({
+      data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash },
+    });
+    return res.status(201).json({ post: serializePost(post) });
+  } catch (error) {
+    console.error('Community post creation failed:', error);
+    return res.status(500).json({ code: 'POST_CREATE_FAILED', error: 'Unable to create post.' });
+  }
 });
 
-function toPublicPost({ passwordHash: _passwordHash, ...post }: BoardPost) {
-  return post;
+async function updatePost(
+  req: Request<{ postId: string }, {}, UpdateCommunityPostBody>,
+  res: Response,
+) {
+  const title = readString(req.body?.title);
+  const content = readString(req.body?.content);
+
+  if (!title || !content) {
+    return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
+  }
+  if (title.length > MAX_TITLE_LENGTH || content.length > MAX_CONTENT_LENGTH) {
+    return res.status(400).json({ code: 'POST_TOO_LONG', error: 'title or content is too long.' });
+  }
+
+  try {
+    const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
+    if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+    if (!(await verifyPostPassword(post.passwordHash, req.body?.password))) {
+      return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
+    }
+
+    const updatedPost = await prisma.communityPost.update({
+      where: { id: post.id },
+      data: { title, content },
+    });
+    return res.status(200).json({ post: serializePost(updatedPost) });
+  } catch (error) {
+    console.error('Community post update failed:', error);
+    return res.status(500).json({ code: 'POST_UPDATE_FAILED', error: 'Unable to update post.' });
+  }
 }
 
-async function hasValidPassword(post: BoardPost, password?: string) {
-  return Boolean(post.passwordHash && password && (await bcrypt.compare(password, post.passwordHash)));
-}
+router.patch('/:postId', updatePost);
+router.put('/:postId', updatePost);
+
+router.delete(
+  '/:postId',
+  async (req: Request<{ postId: string }, {}, { password?: string }>, res: Response) => {
+    try {
+      const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
+      if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+      if (!(await verifyPostPassword(post.passwordHash, req.body?.password))) {
+        return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
+      }
+
+      await prisma.communityPost.delete({ where: { id: post.id } });
+      return res.status(204).send();
+    } catch (error) {
+      console.error('Community post deletion failed:', error);
+      return res.status(500).json({ code: 'POST_DELETE_FAILED', error: 'Unable to delete post.' });
+    }
+  },
+);
 
 export default router;

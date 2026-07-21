@@ -145,7 +145,7 @@ AI 기반 프로그램 기획 기능을 통해 사서의 업무 부담을 완화
 ```mermaid
 flowchart LR
     User[지역 주민 / 사서 / 관리자] --> Frontend[Frontend<br/>Next.js + React]
-    Frontend --> Backend[Backend<br/>NestJS]
+    Frontend --> Backend[Backend<br/>Express + TypeScript]
     Backend --> DB[(PostgreSQL<br/>Prisma ORM)]
     Backend --> VectorDB[(pgvector<br/>Program Embeddings)]
     Backend --> AI[AI API<br/>RAG 기반 기획안 생성]
@@ -198,7 +198,7 @@ flowchart LR
 | 기술           | 설명              |
 | ------------ | --------------- |
 | TypeScript   | 정적 타입 기반 백엔드 개발 |
-| NestJS       | 서버 애플리케이션 프레임워크 |
+| Express      | 서버 애플리케이션 프레임워크 |
 | Prisma ORM   | 데이터베이스 ORM      |
 | PostgreSQL   | 관계형 데이터베이스      |
 | pgvector     | 프로그램 사례 벡터 검색   |
@@ -310,6 +310,7 @@ flowchart TD
 
 * 금정구 공공예약서비스와 금정구 작은도서관 공지사항에 공개된 행사 정보를 제공합니다.
 * 프로그램명, 대상, 일정, 장소, 모집 인원, 안내사항, 출처, 공식 신청 링크 등을 확인할 수 있습니다.
+* n8n 크롤링 워크플로우와 전체 실행 검증 결과는 [금정구 작은도서관 프로그램 크롤링 문서](./automation/n8n/README.md)에서 확인할 수 있습니다.
 
 ### 10.9. 프로그램 및 게시판 관리
 
@@ -342,44 +343,42 @@ flowchart TD
 ```bash
 PNUAI-A-02-POTG/
 ├── .github/
-│
 ├── apps/
 │   ├── backend/
+│   │   ├── prisma/
+│   │   │   ├── migrations/
+│   │   │   ├── schema.prisma
+│   │   │   └── seed.js
 │   │   ├── src/
-│   │   │   ├── data/
-│   │   │   │   └── mockData.ts
-│   │   │   ├── routes/
-│   │   │   └── index.ts
-│   │   ├── .gitkeep
-│   │   ├── package-lock.json
+│   │   │   ├── data/          # 임시·목 데이터
+│   │   │   ├── lib/           # Prisma Client 초기화
+│   │   │   ├── middleware/    # 인증·권한 미들웨어
+│   │   │   ├── routes/        # Express API 라우터
+│   │   │   └── index.ts       # 서버 진입점
 │   │   ├── package.json
+│   │   ├── prisma.config.ts
 │   │   ├── README.md
 │   │   └── tsconfig.json
 │   │
 │   └── frontend/
+│       ├── public/
 │       ├── src/
-│       │   └── app/
-│       │       ├── globals.css
-│       │       ├── layout.tsx
-│       │       └── page.tsx
-│       ├── .gitignore
-│       ├── .gitkeep
+│       │   ├── app/           # Next.js App Router 페이지·API
+│       │   ├── components/    # 화면 컴포넌트
+│       │   └── lib/           # 인증·백엔드 연동 유틸리티
 │       ├── eslint.config.mjs
-│       ├── next-env.d.ts
 │       ├── next.config.ts
-│       ├── package-lock.json
 │       ├── package.json
 │       ├── README.md
 │       └── tsconfig.json
 │
+├── automation/
+│   └── n8n/                    # 금정구 프로그램 크롤링 워크플로우
 ├── docs/
-│   └── .gitkeep
-│
 ├── packages/
 │   └── types/
-│       └── .gitkeep
-│
 ├── CONTRIBUTING.md
+├── DESIGN.md
 └── README.md
 ```
 
@@ -406,7 +405,7 @@ PNUAI-A-02-POTG/
 * GitHub Copilot을 활용하여 반복적인 코드 작성과 컴포넌트 구조 생성을 보조했습니다.
 * TypeScript 기반 코드 작성, 리팩토링, 오류 수정, 주석 작성 등에 활용했습니다.
 * 프론트엔드에서는 Next.js와 React 기반 화면 컴포넌트 구현을 보조했습니다.
-* 백엔드에서는 NestJS, Prisma 기반 API 및 데이터베이스 연동 코드 작성을 보조할 예정입니다.
+* 백엔드에서는 Express, Prisma 기반 API 및 데이터베이스 연동 코드 작성을 보조했습니다.
 
 ### 13.4. AI 기능 구현
 
@@ -452,7 +451,7 @@ cd pnuai-a-02-potg
 
 ```bash
 cd apps/frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -468,20 +467,28 @@ http://localhost:3000
 
 ```bash
 cd apps/backend
-npm install
-npm run start:dev
+npm ci
+npm run dev
 ```
+
+백엔드는 기본적으로 `http://localhost:4000`에서 실행됩니다. 정상 실행 여부는 `GET /api/health`로 확인할 수 있습니다.
 
 ---
 
 ### 14.5. 환경 변수 설정
 
-프로젝트 루트 또는 백엔드 디렉토리에 `.env` 파일을 생성하고 다음 값을 설정합니다.
+백엔드는 `apps/backend/.env`, 프론트엔드는 필요한 경우 `apps/frontend/.env.local`에 환경 변수를 설정합니다. 실제 비밀값은 Git에 커밋하지 마세요.
 
 ```env
+# apps/backend/.env
 DATABASE_URL=
-AI_API_KEY=
 JWT_SECRET=
+PORT=4000
+# 자체 서명 SSL 인증서를 쓰는 로컬 개발 DB에서만 false로 설정
+DATABASE_SSL_REJECT_UNAUTHORIZED=true
+
+# apps/frontend/.env.local (생략 시 기본값: http://localhost:4000)
+BACKEND_URL=http://localhost:4000
 ```
 
 ---

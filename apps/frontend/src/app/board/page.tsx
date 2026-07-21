@@ -2,6 +2,7 @@
 
 import type { FormEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 
 type BoardPost = {
   id: string;
@@ -61,6 +62,12 @@ function formatDate(value: string) {
     month: '2-digit',
     day: '2-digit',
   }).format(new Date(value));
+}
+
+function createPreview(content: string) {
+  const normalized = content.replace(/\s+/g, ' ').trim();
+
+  return normalized.length > 96 ? `${normalized.slice(0, 96)}...` : normalized;
 }
 
 export default function BoardPage() {
@@ -287,18 +294,23 @@ export default function BoardPage() {
 
           {!isLoading && !errorMessage
             ? posts.map((post) => (
-                <article className="boardRow" key={post.id}>
+                <Link
+                  className="boardRow"
+                  href={`/board/${post.id}`}
+                  key={post.id}
+                  aria-label={`${post.title} 상세 보기`}
+                >
                   <span className="boardCategory">{post.category}</span>
                   <div className="boardPostText">
                     <h2>{post.title}</h2>
-                    <p>{post.content}</p>
+                    <p>{createPreview(post.content)}</p>
                   </div>
                   <span className="boardMeta">
                     {post.author}
                     <br />
                     {formatDate(post.createdAt)}
                   </span>
-                </article>
+                </Link>
               ))
             : null}
         </section>

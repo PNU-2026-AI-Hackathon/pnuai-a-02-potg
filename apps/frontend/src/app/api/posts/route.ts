@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
+import { getBackendUrl } from '@/lib/backend-url';
 
 async function readBackendResponse(response: Response) {
   const contentType = response.headers.get('content-type');
@@ -13,7 +12,7 @@ async function readBackendResponse(response: Response) {
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const response = await fetch(`${BACKEND_URL}/api/posts?${url.searchParams.toString()}`, {
+    const response = await fetch(getBackendUrl(`/api/posts?${url.searchParams.toString()}`), {
       cache: 'no-store',
     });
     const data = await readBackendResponse(response);
@@ -32,7 +31,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const response = await fetch(`${BACKEND_URL}/api/posts`, {
+    const response = await fetch(getBackendUrl('/api/posts'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
