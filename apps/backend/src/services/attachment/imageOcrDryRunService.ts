@@ -12,6 +12,8 @@ import { downloadAttachment } from './attachmentDownloader';
 import { ClovaOcrRequestError, createClovaOcrEngine } from './clovaOcrClient';
 import { safeAttachmentError } from './attachmentErrors';
 import { imageOcrLogSummary, processImageForOcr } from './imageOcrProcessor';
+import { detectAttachmentFileType } from './fileTypeDetector';
+import { findOcrDonors, OcrDonor, resolveOcrDonors } from './imageOcrReuse';
 
 export type ImageOcrRunOptions = {
   type: 'IMAGE';
@@ -34,6 +36,8 @@ export type ImageOcrDependencies = {
   saveCompleted?: (id: string, data: Record<string, unknown>) => Promise<void>;
   saveFailed?: (id: string, data: { failureCode: string; failureMessage: string }) => Promise<void>;
   now?: () => Date;
+  findDonors?: (checksum: string, excludeId: string) => Promise<OcrDonor[]>;
+  detector?: typeof detectAttachmentFileType;
 };
 
 type DatabaseSnapshot = {
@@ -185,6 +189,10 @@ export async function runImageOcr(
       apiCallCount: number('apiCallCount'),
       retryCount: number('retryCount'),
       emptyTextCount: number('emptyTextCount'),
+      reusedCount: number('reusedCount'),
+      ocrProcessedCount: number('ocrProcessedCount'),
+      apiCallsSaved: number('apiCallsSaved'),
+      checksumConflictCount: number('checksumConflictCount'),
       databaseMutation: !options.dryRun && number('claimed') > 0,
       averageDurationMs: durations.length ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length) : 0,
       failureCodes: results.flatMap((result) => (result as { failureCodes?: string[] }).failureCodes ?? []),
@@ -219,6 +227,7 @@ export async function runImageOcr(
       selected: 0, claimed: 0, completed: 0, failed: 0, skipped: 0,
       estimatedApiCalls: 0, actualApiCalls: 0, apiCallCount: 0, retryCount: 0,
       databaseMutation: false, emptyTextCount: 0, failureCodes: [],
+      reusedCount: 0, ocrProcessedCount: 0, apiCallsSaved: 0, checksumConflictCount: 0,
       preflight,
     };
   }
@@ -234,6 +243,7 @@ export async function runImageOcr(
   let downloaded: Awaited<ReturnType<typeof downloadAttachment>> | undefined;
   let actualApiCalls = 0;
   let claimed = false;
+  let checksumConflictCount = 0;
 
   try {
     if (!options.dryRun) {
@@ -248,6 +258,44 @@ export async function runImageOcr(
     }
     downloaded = await downloader(target.fileUrl, { networkRetries: 0 });
     const expectedType = target.fileType?.toLowerCase() === 'png' ? 'PNG' : 'JPEG';
+    if (!options.dryRun) {
+      const detection = await (dependencies.detector ?? detectAttachmentFileType)({
+        filePath: downloaded.tempFilePath,
+        dbFileType: expectedType,
+        requireExpectedMatch: true,
+      });
+      const resolution = resolveOcrDonors(await (dependencies.findDonors ?? findOcrDonors)(downloaded.checksumSha256, target.id));
+      if (resolution.kind === 'REUSABLE') {
+        const donor = resolution.donor;
+        const reusedData = {
+          extractionStatus: 'COMPLETED' as const,
+          rawText: donor.rawText!,
+          cleanedText: donor.cleanedText!,
+          detectedFileType: detection.detectedFileType,
+          detectedMimeType: detection.detectedMimeType,
+          fileSizeBytes: downloaded.byteSize,
+          checksumSha256: downloaded.checksumSha256,
+          extractorType: donor.extractorType,
+          extractorVersion: donor.extractorVersion,
+          extractedAt: (dependencies.now ?? (() => new Date()))(),
+          failureCode: null,
+          failureMessage: null,
+        };
+        if (dependencies.saveCompleted) await dependencies.saveCompleted(target.id, reusedData);
+        else await prisma.programCaseAttachment.update({ where: { id: target.id }, data: reusedData });
+        return {
+          mode: 'write', selected: 1, claimed: 1, completed: 1, failed: 0, skipped: 0,
+          estimatedApiCalls: 1, actualApiCalls: 0, apiCallCount: 0, retryCount: 0,
+          databaseMutation: true, emptyTextCount: donor.cleanedText === '' ? 1 : 0,
+          reusedCount: 1, ocrProcessedCount: 0, apiCallsSaved: 1,
+          checksumConflictCount: 0, failureCodes: [], fileBytes: downloaded.byteSize, preflight,
+        };
+      }
+      if (resolution.kind === 'CONFLICT') {
+        // Continue through OCR; conflicting stored text is never reused.
+        checksumConflictCount = 1;
+      }
+    }
     const result = await processImage({
       sourcePath: downloaded.tempFilePath,
       workDirectory: path.dirname(downloaded.tempFilePath),
@@ -280,6 +328,8 @@ export async function runImageOcr(
         estimatedApiCalls: 1, actualApiCalls, apiCallCount: actualApiCalls,
         retryCount: result.retryCount, databaseMutation: true,
         emptyTextCount: result.isEmpty ? 1 : 0, failureCodes: [],
+        reusedCount: 0, ocrProcessedCount: 1, apiCallsSaved: 0,
+        checksumConflictCount,
         fileBytes: downloaded.byteSize,
         rawTextCharacterCount: result.rawText.length,
         cleanedTextCharacterCount: result.cleanedText.length,
