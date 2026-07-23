@@ -550,3 +550,35 @@ remaining temporary files / job directories: 0 / 0
 Mock 테스트는 성공·빈 text·실패 저장, claim 경쟁, 완료 대상 skip, dry-run 불변과 성공/실패 cleanup을 검증하며 실제 endpoint 호출은 0회다. 재동기화 보존 테스트는 CLOVA 이미지 결과 형태에 대해 ID, 본문, extractor, checksum, attempt와 추출 시각이 동일 file URL 동기화 후 유지됨을 확인했다.
 
 다음 단계의 limit 5는 비용과 다건 DB 변경을 수반하므로 별도 승인 후 진행한다. MIXED/스캔 PDF와 실패 대상 재시도는 계속 범위 밖이다.
+
+## 22. IMAGE limit 5 제한 배치 결과 (2026-07-24)
+
+단건 orchestration을 동시성 1로 순차 호출하는 배치 계층을 추가했다. 각 파일은 독립적으로 조건부 claim, 다운로드, signature/metadata/전처리, 최대 1회 OCR, 성공·실패 저장과 cleanup을 수행한다. 파일 하나의 실패는 안전하게 `FAILED`로 저장된 뒤 다음 파일 처리를 계속하며, claim 실패는 다운로드와 API 호출 없이 skip한다. 실행 전체에서 `maxRetries=0`을 유지한다.
+
+Mock 다건 테스트는 5개 후보에 성공, API 실패, 빈 텍스트 성공, claim 경쟁과 후속 성공을 섞어 실패 격리, 순차 실행, 호출 상한, retry 0과 파일별 cleanup을 검증했다. 테스트의 실제 외부 호출은 0회다.
+
+```text
+limit 5 plan selected / estimated / actual calls: 5 / 5 / 0
+batch selected / claimed / completed / failed / skipped: 5 / 5 / 5 / 0 / 0
+actual API calls / retries: 5 / 0
+empty text: 0
+failure codes: none
+average OCR duration: 1508 ms
+raw / cleaned character range: 224..844 / 224..844
+field count range: 40..173
+per-file average confidence range: 0.9391391541618506..0.9734636960000002
+reading order: LINE_BREAK
+image status before: PENDING 155, PROCESSING 0, COMPLETED 1, FAILED 0
+image status after: PENDING 150, PROCESSING 0, COMPLETED 6, FAILED 0
+completed target re-selection: 0
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+PDF / HWP: 55 / 26
+duplicate logical keys / orphan attachments: 0 / 0
+remaining temporary files / job directories: 0 / 0
+```
+
+기존 완료 이미지의 attempt 1, 본문 길이 157/157, extractor/checksum/추출 시각은 그대로 유지됐다. 새 완료 5건도 attempt 1, 본문 non-null, checksum 길이 64, `CLOVA_OCR_GENERAL`/`V2`, 실패 정보 null과 추출 시각 존재를 확인했다.
+
+Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 전체 응답은 출력·문서화하지 않았다. 사용자는 Prisma Studio에서 새 `COMPLETED` 이미지의 `cleanedText`를 원본 프로그램 문맥과 비교해 날짜·시간·대상·장소·문의 내용 및 줄바꿈 순서를 수동 검토해야 한다.
+
+기술적으로 다음 제한 배치로 진행할 수 있지만 실제 외부 호출과 다건 DB 변경은 매번 별도 범위 승인이 필요하다. 전체 150건 자동 처리는 비용, 중복 콘텐츠와 품질 표본을 먼저 검토한 뒤 결정한다.
