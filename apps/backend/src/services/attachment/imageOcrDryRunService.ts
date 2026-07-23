@@ -10,7 +10,7 @@ import {
 import { prisma } from '../../lib/prisma';
 import { downloadAttachment } from './attachmentDownloader';
 import { ClovaOcrRequestError, createClovaOcrEngine } from './clovaOcrClient';
-import { safeAttachmentError } from './attachmentErrors';
+import { AttachmentProcessingError, safeAttachmentError } from './attachmentErrors';
 import { imageOcrLogSummary, processImageForOcr } from './imageOcrProcessor';
 import { detectAttachmentFileType } from './fileTypeDetector';
 import { findOcrDonors, OcrDonor, resolveOcrDonors } from './imageOcrReuse';
@@ -294,8 +294,11 @@ export async function runImageOcr(
         };
       }
       if (resolution.kind === 'CONFLICT') {
-        // Continue through OCR; conflicting stored text is never reused.
         checksumConflictCount = 1;
+        throw new AttachmentProcessingError(
+          'CHECKSUM_DONOR_CONFLICT',
+          'Stored OCR donors for this checksum have conflicting results.',
+        );
       }
     }
     const result = await processImage({
@@ -372,7 +375,7 @@ export async function runImageOcr(
         selected: 1, claimed: 1, completed: 0, failed: 1, skipped: 0,
         estimatedApiCalls: 1, actualApiCalls, apiCallCount: actualApiCalls,
         retryCount: 0, databaseMutation: true, emptyTextCount: 0,
-        failureCodes: [safe.code], preflight,
+        checksumConflictCount, failureCodes: [safe.code], preflight,
       };
     }
     throw Object.assign(new Error(safe.message), {
