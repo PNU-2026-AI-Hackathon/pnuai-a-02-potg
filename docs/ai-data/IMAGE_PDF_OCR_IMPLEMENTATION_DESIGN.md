@@ -715,3 +715,40 @@ remaining temporary files / job directories / manifest: 0 / 0 / 0
 125건 모두 현재 자동 IMAGE 처리 대상으로 복귀 가능하다. checksum 재사용을 활성화한 제한 배치를 계속할 수 있으며, 같은 대상에서 다시 네트워크 오류가 발생하면 재시도 없이 안전 코드로 저장하거나 다음 배치 진입을 중단하는 기존 정책을 유지한다.
 
 Invoke URL, host, Secret, attachment ID, URL, 파일명, checksum, 응답 본문, OCR 본문과 임시 경로는 출력·문서화하지 않았다.
+
+## 27. IMAGE checksum 재사용 활성화 20건 제한 배치 (2026-07-24)
+
+checksum 재사용이 활성화된 기존 IMAGE `--limit 5` 배치를 네 번 순차 실행했다. 각 배치 전에 비용 0 plan을 확인하고, 실행 직후 최근 완료 저장 필드, attempt, donor 결과 동일성, DB 집계, 논리키·고아 관계를 검증한 뒤에만 다음 배치로 진행했다.
+
+| 배치 | selected/claimed/completed/failed/skipped | reused/OCR/saved | 실제 호출/retry | 평균 OCR 시간 |
+|---|---:|---:|---:|---:|
+| Batch 1 | 5 / 5 / 5 / 0 / 0 | 2 / 3 / 2 | 3 / 0 | 1,256 ms |
+| Batch 2 | 5 / 5 / 5 / 0 / 0 | 1 / 4 / 1 | 4 / 0 | 1,545 ms |
+| Batch 3 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 2,069 ms |
+| Batch 4 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 2,559 ms |
+
+```text
+executed batches: 4
+total selected / claimed / completed / failed / skipped: 20 / 20 / 20 / 0 / 0
+total reused / OCR processed / API calls saved: 3 / 17 / 3
+total actual API calls / retries: 17 / 0
+checksum conflicts / empty text / failure codes: 0 / 0 / none
+new OCR raw / cleaned character range: 448..1231 / 448..1231
+new OCR field count range: 102..297
+new OCR average confidence range: 0.9174156582242989..0.9910538654966883
+reading order strategies: LINE_BREAK
+image status before: PENDING 125, PROCESSING 0, COMPLETED 31, FAILED 0
+image status after: PENDING 105, PROCESSING 0, COMPLETED 51, FAILED 0
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+PDF / HWP: 55 / 26
+duplicate logical keys / orphan attachments: 0 / 0
+remaining temporary files / job directories / manifest: 0 / 0 / 0
+```
+
+재사용 결과 3건은 API 호출 0으로 donor 본문·extractor가 동일하게 저장됐고, 신규 OCR 17건은 API 호출 1, attempt 1, 본문 non-null, checksum 길이 64, `CLOVA_OCR_GENERAL`/`V2`, failure null 상태를 확인했다. 기존 COMPLETED 31건은 변경되지 않았고 완료 대상은 다시 선택되지 않았다.
+
+confidence 0.70 미만, field 0, 빈 text, 다른 reading-order 전략은 없었다. 원본 장축 3,933px 표본 4건은 OCR 입력 긴 변 4,000px 기준에 가깝지만 제한 이내에서 정상 처리됐다. 품질 주의 표본으로 표시하되 오류로 분류하지 않는다.
+
+Invoke URL, host, Secret, attachment ID, URL, 파일명, checksum 값, OCR 본문, 전체 응답과 원본 이미지는 출력·문서화하지 않았다.
+
+checksum 재사용 배치는 실제 20건에서 오류 없이 호출 3회를 절감했으므로 계속 활성화할 수 있다. 남은 PENDING 105건 전체 처리는 최대 105건 DB 변경과 상당한 외부 호출을 수반하므로 별도 승인과 제한 배치 단위 검증을 유지한다.
