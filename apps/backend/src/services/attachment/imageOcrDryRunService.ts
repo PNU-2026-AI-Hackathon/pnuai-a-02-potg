@@ -141,7 +141,10 @@ async function claimImage(attachment: ProgramCaseAttachment, now: Date) {
   return claimed.count === 1;
 }
 
-export async function runImageOcr(options: ImageOcrRunOptions, dependencies: ImageOcrDependencies = {}) {
+export async function runImageOcr(
+  options: ImageOcrRunOptions,
+  dependencies: ImageOcrDependencies = {},
+): Promise<Record<string, unknown>> {
   const config = { ...(dependencies.getConfig?.() ?? getClovaOcrConfig()), maxRetries: 0 };
   validateClovaOcrExecutionConfig(config);
   const preflight = clovaOcrConfigSummary(config);
@@ -156,6 +159,57 @@ export async function runImageOcr(options: ImageOcrRunOptions, dependencies: Ima
       databaseMutation: false,
       download: false,
       ocrCall: false,
+      preflight,
+    };
+  }
+  if (selected.length > 1) {
+    const results: Record<string, unknown>[] = [];
+    for (const target of selected) {
+      const result: Record<string, unknown> = await runImageOcr(
+        { ...options, limit: 1, attachmentId: target.id },
+        { ...dependencies, select: async () => [target] },
+      );
+      results.push(result);
+    }
+    const number = (key: string) => results.reduce((sum, result) => sum + Number((result as Record<string, unknown>)[key] ?? 0), 0);
+    const durations = results.map((result) => Number((result as Record<string, unknown>).durationMs ?? 0));
+    return {
+      mode: options.dryRun ? 'dry-run' : 'write',
+      selected: selected.length,
+      claimed: number('claimed'),
+      completed: number('completed'),
+      failed: number('failed'),
+      skipped: number('skipped'),
+      estimatedApiCalls: selected.length,
+      actualApiCalls: number('actualApiCalls'),
+      apiCallCount: number('apiCallCount'),
+      retryCount: number('retryCount'),
+      emptyTextCount: number('emptyTextCount'),
+      databaseMutation: !options.dryRun && number('claimed') > 0,
+      averageDurationMs: durations.length ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length) : 0,
+      failureCodes: results.flatMap((result) => (result as { failureCodes?: string[] }).failureCodes ?? []),
+      temporaryFilesRemaining: 0,
+      jobDirectoriesRemaining: 0,
+      results: results.map((result, index) => {
+        const value = result as Record<string, unknown>;
+        return {
+          sequence: index + 1,
+          finalStatus: Number(value.completed) === 1 ? 'COMPLETED' : Number(value.failed) === 1 ? 'FAILED' : 'SKIPPED',
+          detectedFormat: value.detectedFormat ?? null,
+          width: value.width ?? null,
+          height: value.height ?? null,
+          fileBytes: value.fileBytes ?? null,
+          fieldCount: value.fieldCount ?? null,
+          rawTextCharacterCount: value.rawTextCharacterCount ?? null,
+          cleanedTextCharacterCount: value.cleanedTextCharacterCount ?? null,
+          averageConfidence: value.averageConfidence ?? null,
+          readingOrderStrategy: value.readingOrderStrategy ?? null,
+          isEmpty: value.isEmpty ?? null,
+          failureCode: ((value.failureCodes as string[] | undefined) ?? [])[0] ?? null,
+          durationMs: value.durationMs ?? null,
+          apiCallCount: value.apiCallCount ?? 0,
+        };
+      }),
       preflight,
     };
   }
