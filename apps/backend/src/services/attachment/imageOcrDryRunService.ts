@@ -30,6 +30,10 @@ export type ImageOcrDependencies = {
   getConfig?: () => ClovaOcrConfig;
   snapshot?: () => Promise<DatabaseSnapshot>;
   getRow?: (id: string) => Promise<ProgramCaseAttachment>;
+  claim?: (attachment: ProgramCaseAttachment, now: Date) => Promise<boolean>;
+  saveCompleted?: (id: string, data: Record<string, unknown>) => Promise<void>;
+  saveFailed?: (id: string, data: { failureCode: string; failureMessage: string }) => Promise<void>;
+  now?: () => Date;
 };
 
 type DatabaseSnapshot = {
@@ -118,6 +122,25 @@ function same(left: unknown, right: unknown) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+async function claimImage(attachment: ProgramCaseAttachment, now: Date) {
+  const claimed = await prisma.programCaseAttachment.updateMany({
+    where: {
+      id: attachment.id,
+      isActive: true,
+      extractionStatus: 'PENDING',
+      OR: IMAGE_TYPES.map((value) => ({ fileType: { equals: value, mode: 'insensitive' as const } })),
+    },
+    data: {
+      extractionStatus: 'PROCESSING',
+      attemptCount: { increment: 1 },
+      lastAttemptedAt: now,
+      failureCode: null,
+      failureMessage: null,
+    },
+  });
+  return claimed.count === 1;
+}
+
 export async function runImageOcr(options: ImageOcrRunOptions, dependencies: ImageOcrDependencies = {}) {
   const config = { ...(dependencies.getConfig?.() ?? getClovaOcrConfig()), maxRetries: 0 };
   validateClovaOcrExecutionConfig(config);
@@ -136,20 +159,39 @@ export async function runImageOcr(options: ImageOcrRunOptions, dependencies: Ima
       preflight,
     };
   }
-  if (!options.dryRun) throw new Error('IMAGE extraction requires --plan or --dry-run.');
-  if (selected.length !== 1) throw new Error('IMAGE dry-run requires exactly one selected attachment.');
+  if (selected.length === 0) {
+    return {
+      mode: options.dryRun ? 'dry-run' : 'write',
+      selected: 0, claimed: 0, completed: 0, failed: 0, skipped: 0,
+      estimatedApiCalls: 0, actualApiCalls: 0, apiCallCount: 0, retryCount: 0,
+      databaseMutation: false, emptyTextCount: 0, failureCodes: [],
+      preflight,
+    };
+  }
+  if (selected.length !== 1) throw new Error('IMAGE execution requires exactly one selected attachment.');
 
   const target = selected[0];
-  const beforeRow = fingerprint(target);
   const snapshot = dependencies.snapshot ?? databaseSnapshot;
-  const beforeDatabase = await snapshot();
+  const beforeRow = options.dryRun ? fingerprint(target) : undefined;
+  const beforeDatabase = options.dryRun ? await snapshot() : undefined;
   const downloader = dependencies.downloader ?? downloadAttachment;
   const processImage = dependencies.processImage ?? processImageForOcr;
   const createEngine = dependencies.createEngine ?? createClovaOcrEngine;
   let downloaded: Awaited<ReturnType<typeof downloadAttachment>> | undefined;
   let actualApiCalls = 0;
+  let claimed = false;
 
   try {
+    if (!options.dryRun) {
+      claimed = await (dependencies.claim ?? claimImage)(target, (dependencies.now ?? (() => new Date()))());
+      if (!claimed) {
+        return {
+          mode: 'write', selected: 1, claimed: 0, completed: 0, failed: 0, skipped: 1,
+          estimatedApiCalls: 1, actualApiCalls: 0, apiCallCount: 0, retryCount: 0,
+          databaseMutation: false, emptyTextCount: 0, failureCodes: [], preflight,
+        };
+      }
+    }
     downloaded = await downloader(target.fileUrl, { networkRetries: 0 });
     const expectedType = target.fileType?.toLowerCase() === 'png' ? 'PNG' : 'JPEG';
     const result = await processImage({
@@ -159,6 +201,37 @@ export async function runImageOcr(options: ImageOcrRunOptions, dependencies: Ima
       ocrEngine: createEngine(config),
     }, getAttachmentOcrConfig());
     actualApiCalls = result.apiCallCount;
+
+    if (!options.dryRun) {
+      const completedData = {
+        extractionStatus: 'COMPLETED' as const,
+        rawText: result.rawText,
+        cleanedText: result.cleanedText,
+        detectedFileType: result.detectedFormat,
+        detectedMimeType: result.detectedFormat === 'PNG' ? 'image/png' : 'image/jpeg',
+        fileSizeBytes: downloaded.byteSize,
+        checksumSha256: downloaded.checksumSha256,
+        extractorType: 'CLOVA_OCR_GENERAL',
+        extractorVersion: result.engineVersion,
+        extractedAt: (dependencies.now ?? (() => new Date()))(),
+        failureCode: null,
+        failureMessage: null,
+      };
+      if (dependencies.saveCompleted) await dependencies.saveCompleted(target.id, completedData);
+      else await prisma.programCaseAttachment.update({ where: { id: target.id }, data: completedData });
+      return {
+        ...imageOcrLogSummary(result),
+        mode: 'write',
+        selected: 1, claimed: 1, completed: 1, failed: 0, skipped: 0,
+        estimatedApiCalls: 1, actualApiCalls, apiCallCount: actualApiCalls,
+        retryCount: result.retryCount, databaseMutation: true,
+        emptyTextCount: result.isEmpty ? 1 : 0, failureCodes: [],
+        fileBytes: downloaded.byteSize,
+        rawTextCharacterCount: result.rawText.length,
+        cleanedTextCharacterCount: result.cleanedText.length,
+        preflight,
+      };
+    }
 
     const after = dependencies.getRow
       ? await dependencies.getRow(target.id)
@@ -181,6 +254,21 @@ export async function runImageOcr(options: ImageOcrRunOptions, dependencies: Ima
   } catch (error) {
     if (error instanceof ClovaOcrRequestError) actualApiCalls = error.attempts;
     const safe = safeAttachmentError(error);
+    if (claimed) {
+      const failure = { failureCode: safe.code, failureMessage: safe.message.slice(0, 500) };
+      if (dependencies.saveFailed) await dependencies.saveFailed(target.id, failure);
+      else await prisma.programCaseAttachment.update({
+        where: { id: target.id },
+        data: { extractionStatus: 'FAILED', ...failure },
+      });
+      return {
+        mode: 'write',
+        selected: 1, claimed: 1, completed: 0, failed: 1, skipped: 0,
+        estimatedApiCalls: 1, actualApiCalls, apiCallCount: actualApiCalls,
+        retryCount: 0, databaseMutation: true, emptyTextCount: 0,
+        failureCodes: [safe.code], preflight,
+      };
+    }
     throw Object.assign(new Error(safe.message), {
       code: safe.code,
       httpStatus: error instanceof ClovaOcrRequestError ? error.httpStatus : null,
