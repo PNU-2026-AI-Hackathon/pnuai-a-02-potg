@@ -885,3 +885,30 @@ plan 전후 집계는 IMAGE COMPLETED 156, PDF COMPLETED 55, `PDFJS_TEXT` 54, `P
 Invoke URL, Secret, attachment ID, PDF URL, 원본 파일명, checksum 값, PDF/OCR 본문, 원본 PDF, 렌더 이미지와 임시 파일 전체 경로는 출력하거나 문서화하지 않았다.
 
 다음 단계는 Poppler 설치 승인 후 동일 MIXED PDF 후보 1페이지만 로컬 렌더하는 dry-run이다. 렌더 결과의 PNG signature·크기·dimensions와 cleanup을 먼저 확인한 뒤 별도 승인을 받아 최대 CLOVA API 1회로 OCR·병합 결과를 DB 저장 없이 검증한다.
+
+## 30. MIXED PDF 렌더링 dry-run 전 Poppler 환경 재확인 (2026-07-24)
+
+Windows PowerShell 환경에서 MIXED PDF 후보 1페이지 렌더링 dry-run 전 renderer preflight를 다시 실행했다.
+
+```text
+renderer configured: true
+renderer available: false
+renderer version detected: false
+renderer version: unavailable
+winget available: false
+Chocolatey available: false
+Scoop available: false
+```
+
+preflight가 실패했으므로 안전 계약에 따라 MIXED PDF를 선택하거나 다운로드하지 않았고 `pdftocairo` 렌더링도 시도하지 않았다. 실제 렌더/CLOVA API 호출/DB 변경은 모두 0회이며 PDF PROCESSING claim과 attempt 증가도 없었다. 코드와 테스트는 직전 단계 구현을 그대로 유지했다.
+
+현재 환경에는 사용 가능한 패키지 관리자가 없으므로 권장 수동 설치 방법은 `oschwartz10612/poppler-windows` GitHub Releases에서 최신 Windows ZIP을 직접 내려받아 원하는 로컬 디렉터리에 압축을 풀고, 압축본의 `Library\bin` 디렉터리를 사용자 PATH에 추가하는 것이다. 자동 다운로드, 자동 설치와 PATH 변경은 수행하지 않았다.
+
+설치 후 새 PowerShell을 열어 다음을 확인한다.
+
+```powershell
+where.exe pdftocairo
+pdftocairo -v
+```
+
+두 명령이 정상인 경우에만 `--type PDF_OCR --mixed-only --limit 1 --render-dry-run`을 한 번 실행한다. 다음 단계도 렌더 대상은 최대 1페이지, CLOVA API 호출과 DB 변경은 0회로 제한한다.
