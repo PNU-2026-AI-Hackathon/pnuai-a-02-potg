@@ -289,6 +289,8 @@ export async function runImageOcr(
           databaseMutation: true, emptyTextCount: donor.cleanedText === '' ? 1 : 0,
           reusedCount: 1, ocrProcessedCount: 0, apiCallsSaved: 1,
           checksumConflictCount: 0, failureCodes: [], fileBytes: downloaded.byteSize, preflight,
+          rawTextCharacterCount: donor.rawText!.length,
+          cleanedTextCharacterCount: donor.cleanedText!.length,
         };
       }
       if (resolution.kind === 'CONFLICT') {
