@@ -2,10 +2,12 @@ const { prisma } = require('../dist/lib/prisma');
 const { runImageOcr } = require('../dist/services/attachment/imageOcrDryRunService');
 
 async function run() {
-  const completed = await prisma.programCaseAttachment.findFirstOrThrow({
+  const completedRows = await prisma.programCaseAttachment.findMany({
     where: { isActive: true, extractionStatus: 'COMPLETED', extractorType: 'CLOVA_OCR_GENERAL' },
     orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
   });
+  if (completedRows.length === 0) throw new Error('No completed image OCR rows.');
+  const completed = completedRows[0];
   const [programCases, sessions, attachments, activeAttachments, imageStatuses, pdfCount, hwpCount, duplicates, orphans] =
     await Promise.all([
       prisma.programCase.count(),
@@ -60,6 +62,23 @@ async function run() {
       failureMessageNull: completed.failureMessage === null,
       extractedAtPresent: completed.extractedAt !== null,
     },
+    completedRows: completedRows.map((row, index) => ({
+      sequence: index + 1,
+      attemptCount: row.attemptCount,
+      rawTextPresent: row.rawText !== null,
+      rawTextLength: row.rawText?.length ?? null,
+      cleanedTextPresent: row.cleanedText !== null,
+      cleanedTextLength: row.cleanedText?.length ?? null,
+      detectedFileType: row.detectedFileType,
+      detectedMimeType: row.detectedMimeType,
+      fileSizeBytes: row.fileSizeBytes,
+      checksumLength: row.checksumSha256?.length ?? null,
+      extractorType: row.extractorType,
+      extractorVersion: row.extractorVersion,
+      failureCode: row.failureCode,
+      lastAttemptedAtPresent: row.lastAttemptedAt !== null,
+      extractedAtPresent: row.extractedAt !== null,
+    })),
     counts: {
       programCases, sessions, attachments, activeAttachments,
       imageStatuses: Object.fromEntries(imageStatuses.map((row) => [row.extractionStatus, row._count._all])),

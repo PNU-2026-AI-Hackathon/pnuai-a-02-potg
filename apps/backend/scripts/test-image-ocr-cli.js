@@ -1,6 +1,7 @@
 const assert = require('assert/strict');
 const { parseExtractionArguments } = require('../dist/cli/extractProgramAttachments');
 const { AttachmentProcessingError } = require('../dist/services/attachment/attachmentErrors');
+const { ClovaOcrRequestError } = require('../dist/services/attachment/clovaOcrClient');
 const { runImageOcr } = require('../dist/services/attachment/imageOcrDryRunService');
 
 const id = '123e4567-e89b-42d3-a456-426614174000';
@@ -232,11 +233,70 @@ async function testWriteTransitions() {
   assert.deepEqual([completed.selected, completed.actualApiCalls], [0, 0]);
 }
 
+async function testBatchIsolation() {
+  const targets = Array.from({ length: 5 }, (_, index) => ({
+    ...target,
+    id: `123e4567-e89b-42d3-a456-42661417400${index}`,
+    fileUrl: `https://www.geumjeong.go.kr/${index}.png`,
+  }));
+  const cleaned = [];
+  const stored = [];
+  const calls = [];
+  const result = await runImageOcr(
+    { type: 'IMAGE', limit: 5, retryFailed: false, plan: false, dryRun: false },
+    {
+      getConfig: () => config,
+      select: async (options) => options.attachmentId
+        ? targets.filter((item) => item.id === options.attachmentId)
+        : targets,
+      claim: async (item) => !item.fileUrl.endsWith('/3.png'),
+      downloader: async (url) => ({
+        tempFilePath: `safe/${new URL(url).pathname.slice(1)}`,
+        byteSize: 123,
+        checksumSha256: 'a'.repeat(64),
+        responseContentType: 'image/png',
+        finalHost: 'hidden',
+        cleanup: async () => cleaned.push(url),
+      }),
+      createEngine: () => ({ recognize: async () => { throw new Error('unused'); } }),
+      processImage: async ({ sourcePath }) => {
+        const index = Number(sourcePath.match(/(\d+)\.png$/)[1]);
+        calls.push(index);
+        if (index === 1) throw new ClovaOcrRequestError(
+          'CLOVA_OCR_REQUEST_FAILED', 'safe failure', false, 500, 1, 'REQUEST',
+        );
+        const empty = index === 2;
+        return {
+          detectedFormat: 'PNG', width: 10, height: 20, pixelCount: 200,
+          preprocessedWidth: 10, preprocessedHeight: 20, engine: 'CLOVA_OCR',
+          engineVersion: 'V2', rawText: empty ? '' : 'stored', cleanedText: empty ? '' : 'stored',
+          isEmpty: empty, durationMs: 5, apiCallCount: 1, retryCount: 0,
+          averageConfidence: empty ? undefined : 0.9, fieldCount: empty ? 0 : 2,
+          readingOrderStrategy: 'LINE_BREAK',
+        };
+      },
+      saveCompleted: async (savedId) => stored.push(['completed', savedId]),
+      saveFailed: async (savedId) => stored.push(['failed', savedId]),
+    },
+  );
+  assert.deepEqual({
+    selected: result.selected, claimed: result.claimed, completed: result.completed,
+    failed: result.failed, skipped: result.skipped, calls: result.actualApiCalls,
+    empty: result.emptyTextCount, retries: result.retryCount,
+  }, { selected: 5, claimed: 4, completed: 3, failed: 1, skipped: 1, calls: 4, empty: 1, retries: 0 });
+  assert.deepEqual(calls, [0, 1, 2, 4]);
+  assert.equal(stored.length, 4);
+  assert.equal(cleaned.length, 4);
+  assert.equal(result.results.length, 5);
+  assert.equal(JSON.stringify(result).includes('stored'), false);
+}
+
 async function run() {
   testArguments();
   await testPlan();
   await testDryRun();
   await testWriteTransitions();
+  await testBatchIsolation();
   console.log('IMAGE OCR CLI plan/dry-run orchestration tests passed with mock requests only.');
 }
 
