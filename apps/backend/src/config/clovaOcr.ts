@@ -53,6 +53,7 @@ export function clovaOcrConfigSummary(config: ClovaOcrConfig) {
     invokeUrlConfigured: config.invokeUrl.length > 0,
     secretConfigured: config.secret.length > 0,
     timeoutMs: config.timeoutMs,
+    responseMaxBytes: config.responseMaxBytes,
     maxRetries: config.maxRetries,
   };
 }
