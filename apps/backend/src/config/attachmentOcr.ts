@@ -14,9 +14,11 @@ export type AttachmentOcrConfig = {
   imageMaxDecodeBytes: number;
   imageOcrMaxLongEdge: number;
   preprocessedMaxBytes: number;
+  pdfRenderExecutable: string;
   pdfRenderTimeoutMs: number;
   pdfRenderDpi: number;
   pdfOcrMaxPages: number;
+  pdfRenderMaxBytes: number;
 };
 
 export function getAttachmentOcrConfig(environment: NodeJS.ProcessEnv = process.env): AttachmentOcrConfig {
@@ -27,8 +29,10 @@ export function getAttachmentOcrConfig(environment: NodeJS.ProcessEnv = process.
     imageMaxDecodeBytes: integerSetting('ATTACHMENT_IMAGE_MAX_DECODE_BYTES', environment.ATTACHMENT_IMAGE_MAX_DECODE_BYTES, 160_000_000, 1, 1_000_000_000),
     imageOcrMaxLongEdge: integerSetting('ATTACHMENT_IMAGE_OCR_MAX_LONG_EDGE', environment.ATTACHMENT_IMAGE_OCR_MAX_LONG_EDGE, 4_000, 1, 20_000),
     preprocessedMaxBytes: 30 * 1024 * 1024,
+    pdfRenderExecutable: environment.ATTACHMENT_PDF_RENDER_EXECUTABLE?.trim() || 'pdftocairo',
     pdfRenderTimeoutMs: integerSetting('ATTACHMENT_PDF_RENDER_TIMEOUT_MS', environment.ATTACHMENT_PDF_RENDER_TIMEOUT_MS, 30_000, 1_000, 600_000),
     pdfRenderDpi: integerSetting('ATTACHMENT_PDF_RENDER_DPI', environment.ATTACHMENT_PDF_RENDER_DPI, 200, 72, 600),
-    pdfOcrMaxPages: integerSetting('ATTACHMENT_PDF_OCR_MAX_PAGES', environment.ATTACHMENT_PDF_OCR_MAX_PAGES, 50, 1, 500),
+    pdfOcrMaxPages: integerSetting('ATTACHMENT_PDF_OCR_MAX_PAGES', environment.ATTACHMENT_PDF_OCR_MAX_PAGES, 50, 1, 50),
+    pdfRenderMaxBytes: integerSetting('ATTACHMENT_PDF_RENDER_MAX_BYTES', environment.ATTACHMENT_PDF_RENDER_MAX_BYTES, 20 * 1024 * 1024, 1, 100 * 1024 * 1024),
   };
 }
