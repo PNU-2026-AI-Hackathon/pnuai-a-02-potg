@@ -618,3 +618,41 @@ confidence 0.70 미만, 빈 text, field 0, 다른 reading-order 전략, 입력 �
 Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 전체 응답은 출력·문서화하지 않았다. 사용자는 Prisma Studio에서 새 완료 결과의 `cleanedText`를 원본 프로그램 문맥과 비교하여 날짜·시간, 모집 대상·인원, 장소, 문의처, 본문과 줄바꿈 순서를 수동 검토해야 한다.
 
 파이프라인은 20건 확대 검증에서 안정적이었지만 PENDING 130건 전체 처리는 최대 130회의 외부 호출과 DB 변경을 수반한다. 동일 콘텐츠가 여러 attachment에 반복되는 사례가 이미 관찰됐으므로, 전체 처리 전에 checksum 기반 결과 재사용 또는 중복 비용 절감 설계를 우선 검토한다.
+
+## 24. IMAGE checksum 중복 분석 및 결과 재사용 설계 (2026-07-24)
+
+중복은 SHA-256 checksum 완전 일치, 즉 파일 byte가 동일한 경우만 인정한다. 리사이즈·재압축·crop 등 시각적으로 비슷한 이미지는 재사용 대상이 아니다.
+
+donor는 활성 `COMPLETED`, 동일 checksum, raw/cleaned text non-null, failure 없음, `CLOVA_OCR_GENERAL`, extractor version 존재 조건을 모두 만족해야 한다. 현재 attachment는 제외하고 `extractedAt`, `id` 오름차순으로 선택한다. 같은 checksum donor가 여러 개이면 raw/cleaned text와 extractor 정보가 모두 같은 경우에만 첫 donor를 사용하며, 하나라도 다르면 충돌로 분류하고 재사용하지 않는다. 빈 문자열의 정상 완료 결과도 유효 donor다.
+
+write orchestration은 claim과 안전한 다운로드 후 signature를 확인하고, downloader가 계산한 checksum으로 donor를 조회한다. 일관된 donor가 있으면 전처리와 CLOVA 호출을 생략하고 donor 본문·extractor를 현재 파일 metadata/checksum과 함께 저장한다. 별도 migration이나 extractor 문자열 변경 없이 실행 요약에 `reusedCount`, `ocrProcessedCount`, `apiCallsSaved`, `checksumConflictCount`를 제공한다. donor가 없거나 충돌하면 기존 OCR 경로를 유지한다. 순차 배치에서는 먼저 완료된 같은-checksum PENDING 파일도 다음 파일의 donor가 된다.
+
+Mock 테스트는 donor 없음/재사용, 빈 text donor, 서로 다른 donor 본문의 충돌, OCR 미호출, 저장 값과 재사용 집계를 검증했다. 실제 endpoint와 실제 Secret은 사용하지 않았다.
+
+### PENDING 전체 read-only 분석
+
+분석 도구는 활성 PENDING JPG/JPEG/PNG를 `createdAt`, `id` 순으로 한 건씩 다운로드하고 signature/checksum 확인 직후 cleanup했다. CLOVA client 생성, 이미지 전처리, claim, attempt 증가와 DB update는 수행하지 않았다.
+
+```text
+pending candidates: 130
+downloaded / analyzed / failed: 124 / 124 / 6
+completed donor matches: 1
+pending-only duplicate groups / files: 9 / 51
+unique pending checksums without donor: 81
+checksum conflicts: 0
+estimated calls without reuse: 124
+estimated calls with reuse: 81
+estimated calls saved: 43
+estimated reduction: 34.68%
+largest duplicate group: 19
+duplicate group size distribution: 2 files x 3 groups, 3 x 1, 5 x 3, 8 x 1, 19 x 1
+actual OCR API calls: 0
+database mutation: false
+remaining temporary files / job directories: 0 / 0
+```
+
+분석 실패 6건은 예상 호출 계산에서 제외했으며 상태나 오류를 DB에 기록하지 않았다. 분석 전후 ProgramCase, Session, Attachment 전체/활성, 이미지/PDF 상태, attempt 합계, 본문/checksum 존재 건수와 PENDING 개별 `updatedAt` fingerprint가 동일했다.
+
+Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 원본 이미지는 출력·문서화하지 않았다.
+
+checksum 재사용 경로는 Mock과 실제 read-only 분석 기준으로 제한 배치에 적용 가능하다. 분석 성공 124건 기준 예상 유료 호출은 81회이며, 분석 실패 6건은 별도 원인 확인 전 자동 처리하지 않는다. 다음 단계는 재사용을 활성화한 limit 5 배치로 donor 복사와 신규 OCR이 함께 동작하는지 검증하는 것이 적절하다.
