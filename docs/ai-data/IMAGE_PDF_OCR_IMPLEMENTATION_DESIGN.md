@@ -10,6 +10,8 @@
 
 권장 조합은 **Tesseract 5 CLI(`kor+eng`) + Sharp 전처리 + Poppler `pdftocairo` PNG 렌더링**이다. Node.js는 파이프라인과 상태를 제어하고 OCR·렌더링은 자식 프로세스로 격리한다. 911 MiB, swap 없음인 운영 EC2에서는 동시성 1, 페이지 단위 직렬 처리, 픽셀/DPI 제한과 timeout이 전제다.
 
+> 기술 결정 변경: 위 내용은 초기 분석 결론이다. 실제 복합 한국어 홍보 포스터 표본에서 영역 탐지, 읽기 순서와 한글 인식 품질이 충분하지 않아 2026-07-23 운영 OCR 엔진을 NAVER Cloud CLOVA OCR General API V2로 변경했다. 아래 19절에 변경 구현과 정책을 기록한다.
+
 기존 다운로드·보안·형식 판별·PDF.js·상태 관리 코드는 재사용한다. OCR 실행기, 이미지 검사/전처리, PDF 페이지 렌더러, 페이지 결과 병합기는 route/controller가 아니라 독립 service로 추가한다.
 
 일반 이미지 OCR과 `OCR_REQUIRED` PDF의 MVP는 현재 schema로 구현할 수 있다. MIXED PDF도 최종 합본만 저장하면 migration 없이 가능하지만 페이지별 성공 정보, 안전한 재개, 기존 성공과 OCR 보강 실패의 동시 표현은 불가능하다. 첫 구현은 무 migration으로 제한하고 운영 안정화 단계에서 페이지 실행 모델을 검토한다.
@@ -372,3 +374,95 @@ apps/backend/scripts/
 - 실제 DB 이미지 다운로드/상태 변경/본문 저장과 156건 batch는 수행하지 않았다.
 - 다음 단계에서 사용자가 개발 환경에 Tesseract 5, `kor`/`eng` traineddata를 설치한 뒤 사전 점검과 합성 fixture 실제 OCR을 실행해야 한다.
 - 이후 대표 DB 이미지 dry-run → 1~2건 제한 저장 → Poppler 설치 → MIXED PDF 순서로 진행한다.
+
+## 19. CLOVA OCR 전환 구현 결과 (2026-07-23)
+
+### 기술 결정 변경
+
+```text
+초기 Tesseract 5 CLI 결정
+→ 실제 복합 한국어 포스터 표본 검증
+→ 영역 탐지·읽기 순서·한글 품질 한계 확인
+→ NAVER Cloud CLOVA OCR General API V2로 변경
+```
+
+Sharp metadata/입력 제한/전처리, downloader, signature 판별, 기존 text 정규화, cleanup과 `subprocessRunner`는 유지했다. subprocess는 이미지 OCR에는 쓰지 않지만 향후 Poppler `pdftocairo`에 필요하다. Tesseract binary·traineddata 검사, CLI arguments, Tesseract 전용 설정·오류·adapter 테스트와 `tesseractOcr.ts`는 제거했다. 과거 분석과 커밋은 기술 결정 이력으로 유지한다.
+
+### 모듈 구조
+
+```text
+src/config/clovaOcr.ts
+src/services/attachment/
+  ocrEngine.ts
+  clovaOcrClient.ts
+  clovaOcrResponseParser.ts
+  imageOcrProcessor.ts
+```
+
+`imageOcrProcessor`는 URL, Secret, HTTP 세부사항을 모르며 주입된 `OcrEngine`만 호출한다. signature → metadata → 최소 전처리 → engine → cleanup 순서는 유지하고, 실패 시에도 전처리 파일을 정리한다. 로그 요약에는 raw/cleaned OCR 본문을 포함하지 않는다.
+
+### 환경변수와 Secret 보호
+
+```text
+CLOVA_OCR_ENABLED=false
+CLOVA_OCR_INVOKE_URL=
+CLOVA_OCR_SECRET=
+CLOVA_OCR_TIMEOUT_MS=30000
+CLOVA_OCR_RESPONSE_MAX_BYTES=5242880
+CLOVA_OCR_MAX_RETRIES=1
+```
+
+- 실제 실행은 enabled, HTTPS URL, credentials/fragment 없음, 비어 있지 않은 Secret을 요구한다.
+- timeout과 response 제한은 유한한 안전 정수, retries는 0~2만 허용한다.
+- 안전한 설정 요약은 enabled와 URL/Secret 설정 여부 boolean, timeout, retries만 제공한다. host도 출력하지 않는다.
+- 실제 `.env`, Invoke URL과 Secret은 읽어서 문서·로그·오류·snapshot에 복사하지 않는다.
+
+### 외부 전송 정책과 요청
+
+- 공식 General OCR V2 multipart 형식의 `message`와 `file`을 사용한다.
+- message는 V2, UUID requestId, millisecond timestamp, `lang=ko`, 단일 image format/name, `enableTableDetection=false`로 구성한다.
+- 원본 URL, attachment ID, 원본 파일명과 Base64 data는 전송하지 않는다.
+- 내부 검증·전처리를 통과한 파일을 Node `openAsBlob`으로 열고 `ocr-input.jpg` 또는 `ocr-input.png`라는 고정 이름으로 전송한다.
+- `X-OCR-SECRET`만 명시하고 multipart `Content-Type`과 boundary는 Node FormData가 생성한다.
+- 파일 하나당 API 요청 하나를 기본으로 한다.
+
+### timeout, 응답 제한과 오류
+
+- 기본 timeout은 요청 및 response stream 읽기를 포함한 30초다.
+- response는 stream으로 읽으며 기본 5 MiB를 넘으면 즉시 취소한다. 제한 없는 `response.text()`를 사용하지 않는다.
+- strict UTF-8과 JSON parsing을 적용하며 body나 OCR 원문은 오류에 포함하지 않는다.
+- 400/401/403/429/5xx/기타 HTTP를 request invalid/auth/forbidden/rate limited/server/request failed로 구분한다.
+- 2xx도 images, inferResult, fields, inferText, confidence, boundingPoly와 lineBreak schema를 검증한다.
+- inferResult가 SUCCESS가 아니면 image failure, 빈 fields는 정상적인 empty 결과다.
+
+### 텍스트 구성
+
+- 모든 field에 유효한 lineBreak가 있으면 API 배열 순서를 유지하고 lineBreak에 따라 공백/개행을 넣는다.
+- lineBreak가 없으면 boundingPoly의 위쪽 좌표, 왼쪽 좌표, 원래 index 순으로 안정 정렬한다.
+- 낮은 confidence를 버리거나 문장부호를 추가하지 않는다.
+- NUL과 control 문자를 제거하고 기존 정규화 함수를 재사용한다.
+- field count, average confidence, empty 여부와 읽기 순서 전략을 반환하지만 field별 box/confidence는 DB에 저장하지 않는다.
+
+### 재시도와 호출량
+
+- 네트워크 연결 실패, HTTP 429와 5xx만 제한적으로 재시도한다.
+- 400/401/403, 설정·입력·schema/image 결과 오류는 재시도하지 않는다.
+- timeout은 서버 처리 완료 여부를 알 수 없어 중복 과금 가능성이 있으므로 자동 재시도하지 않는다.
+- 기본 retries 1, 최대 2이며 100ms부터 제한된 exponential backoff를 사용한다.
+- 최초 호출을 포함한 `apiCallCount`와 추가 시도 수인 `retryCount`를 결과에 명시한다.
+
+### CLOVA 기본 전처리
+
+EXIF 방향 반영, 투명 PNG의 흰색 배경 합성, 애플리케이션 긴 변 제한을 넘을 때의 축소와 PNG 출력만 적용한다. Tesseract 실험용 grayscale과 normalize는 제거했다. threshold, deskew, sharpening, 영역 분할도 자동 적용하지 않는다.
+
+### Mock 검증과 남은 범위
+
+자동화 테스트는 명시적으로 주입한 fake HTTPS URL, fake Secret과 mock fetch만 사용한다. multipart message/file, 안전한 내부 파일명, lineBreak와 coordinate parsing, 빈 text, 모든 HTTP mapping, network/429/5xx retry, auth/schema no-retry, timeout no-retry, response size/JSON/schema/infer failure, 호출량과 processor cleanup을 검증한다. 공통 가짜 subprocess와 Sharp 합성 fixture 테스트도 유지한다.
+
+이번 단계의 실제 CLOVA API 호출은 0건이며 실제 DB 다운로드·claim·저장, schema/migration 변경도 없다. 다음 단계의 대표 공개 포스터 1건 dry-run은 최소 1회 API 비용을 발생시킬 수 있으므로 사용자의 명시적 승인을 받은 후 실행한다.
+
+### 공식 명세
+
+- CLOVA OCR 개요: https://api.ncloud-docs.com/docs/ai-application-service-ocr
+- General OCR V2: https://api.ncloud-docs.com/docs/ai-application-service-ocr-ocr
+- multipart 요청 예제: https://api.ncloud-docs.com/docs/ai-application-service-ocr-example01
