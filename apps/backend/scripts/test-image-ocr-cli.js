@@ -200,15 +200,17 @@ async function testWriteTransitions() {
 
   const conflict = writeDependencies({
     findDonors: async () => [donorBase, { ...donorBase, id, cleanedText: 'different' }],
+    processImage: async () => { throw new Error('must not OCR on donor conflict'); },
   });
   const conflictResult = await runImageOcr(
     { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
     conflict.dependencies,
   );
   assert.deepEqual(
-    [conflictResult.checksumConflictCount, conflictResult.reusedCount, conflictResult.ocrProcessedCount, conflictResult.actualApiCalls],
-    [1, 0, 1, 1],
+    [conflictResult.checksumConflictCount, conflictResult.completed, conflictResult.failed, conflictResult.actualApiCalls],
+    [1, 0, 1, 0],
   );
+  assert.deepEqual(conflictResult.failureCodes, ['CHECKSUM_DONOR_CONFLICT']);
 
   const success = writeDependencies();
   const result = await runImageOcr(
