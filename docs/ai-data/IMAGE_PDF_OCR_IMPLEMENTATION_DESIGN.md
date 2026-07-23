@@ -582,3 +582,39 @@ remaining temporary files / job directories: 0 / 0
 Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 전체 응답은 출력·문서화하지 않았다. 사용자는 Prisma Studio에서 새 `COMPLETED` 이미지의 `cleanedText`를 원본 프로그램 문맥과 비교해 날짜·시간·대상·장소·문의 내용 및 줄바꿈 순서를 수동 검토해야 한다.
 
 기술적으로 다음 제한 배치로 진행할 수 있지만 실제 외부 호출과 다건 DB 변경은 매번 별도 범위 승인이 필요하다. 전체 150건 자동 처리는 비용, 중복 콘텐츠와 품질 표본을 먼저 검토한 뒤 결정한다.
+
+## 23. IMAGE 20건 확대 제한 배치 결과 (2026-07-24)
+
+기존 limit 5 순차 배치를 네 번만 실행했다. 각 배치 앞에서 plan을 수행하고, 배치 직후 DB 집계·기존 완료 결과·완료 대상 skip·중복/고아 관계와 cleanup을 검증했다. 모든 검증이 통과한 경우에만 다음 배치로 진행했으며 네 번째 실행 후 승인 상한 20회에 도달하여 추가 배치를 실행하지 않았다.
+
+| 배치 | plan 선택/예상 호출 | selected/claimed/completed/failed/skipped | 실제 호출/retry | 빈 text | 평균 OCR 시간 |
+|---|---:|---:|---:|---:|---:|
+| Batch 1 | 5 / 5 | 5 / 5 / 5 / 0 / 0 | 5 / 0 | 0 | 1,994 ms |
+| Batch 2 | 5 / 5 | 5 / 5 / 5 / 0 / 0 | 5 / 0 | 0 | 1,801 ms |
+| Batch 3 | 5 / 5 | 5 / 5 / 5 / 0 / 0 | 5 / 0 | 0 | 1,947 ms |
+| Batch 4 | 5 / 5 | 5 / 5 / 5 / 0 / 0 | 5 / 0 | 0 | 1,608 ms |
+
+```text
+executed batches: 4
+total selected / claimed / completed / failed / skipped: 20 / 20 / 20 / 0 / 0
+total actual API calls / retries: 20 / 0
+empty text / failure codes: 0 / none
+overall average OCR duration: 1838 ms
+raw / cleaned character range: 224..1072 / 224..1072
+field count range: 40..266
+per-file average confidence range: 0.9231596054545456..0.9903633228991592
+reading order strategies: LINE_BREAK
+image status before: PENDING 150, PROCESSING 0, COMPLETED 6, FAILED 0
+image status after: PENDING 130, PROCESSING 0, COMPLETED 26, FAILED 0
+completed target re-selection: 0
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+PDF / HWP: 55 / 26
+duplicate logical keys / orphan attachments: 0 / 0
+remaining temporary files / job directories: 0 / 0
+```
+
+confidence 0.70 미만, 빈 text, field 0, 다른 reading-order 전략, 입력 제한 근접 표본은 없었다. 문자 수 최솟값도 224자여서 이번 기준에서 별도 이상 품질 표본은 0건이다. 기존 완료 이미지 6건은 attempt, 본문 길이, extractor, checksum과 추출 시각이 유지됐다. 중단 조건은 발생하지 않았다.
+
+Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 전체 응답은 출력·문서화하지 않았다. 사용자는 Prisma Studio에서 새 완료 결과의 `cleanedText`를 원본 프로그램 문맥과 비교하여 날짜·시간, 모집 대상·인원, 장소, 문의처, 본문과 줄바꿈 순서를 수동 검토해야 한다.
+
+파이프라인은 20건 확대 검증에서 안정적이었지만 PENDING 130건 전체 처리는 최대 130회의 외부 호출과 DB 변경을 수반한다. 동일 콘텐츠가 여러 attachment에 반복되는 사례가 이미 관찰됐으므로, 전체 처리 전에 checksum 기반 결과 재사용 또는 중복 비용 절감 설계를 우선 검토한다.
