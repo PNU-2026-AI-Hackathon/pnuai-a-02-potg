@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
 const { parseExtractionArguments } = require('../dist/cli/extractProgramAttachments');
+const { AttachmentProcessingError } = require('../dist/services/attachment/attachmentErrors');
 const { runImageOcr } = require('../dist/services/attachment/imageOcrDryRunService');
 
 const id = '123e4567-e89b-42d3-a456-426614174000';
@@ -142,10 +143,100 @@ async function testDryRun() {
   assert.equal(attempts, 1);
 }
 
+function writeDependencies(overrides = {}) {
+  let cleaned = false;
+  const saved = [];
+  const base = {
+    getConfig: () => config,
+    select: async () => [target],
+    claim: async () => true,
+    downloader: async () => ({
+      tempFilePath: 'safe/attachment.bin', byteSize: 123, checksumSha256: 'a'.repeat(64),
+      responseContentType: 'image/png', finalHost: 'hidden',
+      cleanup: async () => { cleaned = true; },
+    }),
+    createEngine: () => ({ recognize: async () => { throw new Error('unused'); } }),
+    processImage: async () => ({
+      detectedFormat: 'PNG', width: 10, height: 20, pixelCount: 200,
+      preprocessedWidth: 10, preprocessedHeight: 20, engine: 'CLOVA_OCR',
+      engineVersion: 'V2', rawText: 'stored', cleanedText: 'stored',
+      isEmpty: false, durationMs: 5, apiCallCount: 1, retryCount: 0,
+      averageConfidence: 0.9, fieldCount: 2, readingOrderStrategy: 'LINE_BREAK',
+    }),
+    saveCompleted: async (_id, data) => saved.push(['completed', data]),
+    saveFailed: async (_id, data) => saved.push(['failed', data]),
+  };
+  return { dependencies: { ...base, ...overrides }, saved, wasCleaned: () => cleaned };
+}
+
+async function testWriteTransitions() {
+  const success = writeDependencies();
+  const result = await runImageOcr(
+    { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
+    success.dependencies,
+  );
+  assert.deepEqual([result.claimed, result.completed, result.failed, result.apiCallCount], [1, 1, 0, 1]);
+  assert.equal(success.wasCleaned(), true);
+  assert.equal(success.saved[0][0], 'completed');
+  assert.deepEqual({
+    status: success.saved[0][1].extractionStatus,
+    extractor: success.saved[0][1].extractorType,
+    version: success.saved[0][1].extractorVersion,
+    failure: success.saved[0][1].failureCode,
+  }, { status: 'COMPLETED', extractor: 'CLOVA_OCR_GENERAL', version: 'V2', failure: null });
+
+  const empty = writeDependencies({
+    processImage: async () => ({
+      detectedFormat: 'PNG', width: 1, height: 1, pixelCount: 1,
+      preprocessedWidth: 1, preprocessedHeight: 1, engine: 'CLOVA_OCR',
+      engineVersion: 'V2', rawText: '', cleanedText: '', isEmpty: true,
+      durationMs: 1, apiCallCount: 1, retryCount: 0, fieldCount: 0,
+      readingOrderStrategy: 'LINE_BREAK',
+    }),
+  });
+  const emptyResult = await runImageOcr(
+    { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
+    empty.dependencies,
+  );
+  assert.equal(emptyResult.emptyTextCount, 1);
+  assert.equal(empty.saved[0][1].rawText, '');
+  assert.equal(empty.saved[0][1].failureCode, null);
+
+  let calls = 0;
+  const skipped = writeDependencies({
+    claim: async () => false,
+    processImage: async () => { calls += 1; throw new Error('must not run'); },
+  });
+  const skipResult = await runImageOcr(
+    { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
+    skipped.dependencies,
+  );
+  assert.deepEqual([skipResult.claimed, skipResult.skipped, calls], [0, 1, 0]);
+
+  const failure = writeDependencies({
+    processImage: async () => { calls += 1; throw new AttachmentProcessingError('IMAGE_DECODE_FAILED', 'safe failure'); },
+  });
+  const failed = await runImageOcr(
+    { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
+    failure.dependencies,
+  );
+  assert.deepEqual([failed.failed, failed.apiCallCount], [1, 0]);
+  assert.equal(failure.saved[0][0], 'failed');
+  assert.equal(failure.saved[0][1].failureCode, 'IMAGE_DECODE_FAILED');
+  assert.equal(failure.wasCleaned(), true);
+
+  const completed = await runImageOcr(
+    { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
+    { getConfig: () => config, select: async () => [] },
+  );
+  assert.deepEqual([completed.selected, completed.actualApiCalls], [0, 0]);
+}
+
 async function run() {
   testArguments();
   await testPlan();
   await testDryRun();
+  await testWriteTransitions();
   console.log('IMAGE OCR CLI plan/dry-run orchestration tests passed with mock requests only.');
 }
 

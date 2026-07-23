@@ -15,6 +15,7 @@
     "test:attachment-extraction": "npm run build && node scripts/test-attachment-modules.js && node scripts/test-attachment-extraction-state.js",
     "test:attachment-ocr": "npm run build && node scripts/test-attachment-ocr.js",
     "test:image-ocr-cli": "npm run build && node scripts/test-image-ocr-cli.js",
+    "verify:image-ocr-write": "npm run build && node scripts/verify-image-ocr-write.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
     "postinstall": "prisma generate"
   },
