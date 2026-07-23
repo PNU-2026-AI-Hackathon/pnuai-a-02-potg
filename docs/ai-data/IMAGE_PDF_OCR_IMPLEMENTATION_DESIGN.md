@@ -686,3 +686,32 @@ remaining temporary files / job directories / manifest: 0 / 0 / 0
 Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 전체 응답은 출력·문서화하지 않았다.
 
 실제 혼합 배치에서 예상과 동일하게 5건 중 2건을 재사용하고 유료 호출을 3회로 제한했으므로 checksum 재사용을 후속 제한 배치에 활성화할 수 있다. 다음에는 분석 실패 6건을 API와 DB 변경 없이 오류 단계별로 분류한 뒤, 정상 분석 대상에 대해 limit 5~20 범위의 재사용 배치를 진행한다.
+
+## 26. IMAGE checksum 분석 실패 6건 read-only 원인 조사 (2026-07-24)
+
+진단 도구는 현재 활성 PENDING 이미지 전체를 동시성 1, 파일당 요청 1회, 자동 재시도 0으로 순회했다. 기존 downloader와 allowlist/DNS/public-IP 검증, redirect 정책, signature detector와 Sharp metadata 검사만 사용했으며 CLOVA client, 전처리, claim과 DB update는 연결하지 않았다.
+
+Mock 분류 테스트는 timeout, 일반 network failure, HTTP 403/404/5xx, 출처 차단, HTML 응답, signature/metadata 불일치, 이미지 decode 실패와 unknown 오류가 안전한 코드·범주로 변환되고 원본 오류 메시지가 노출되지 않음을 확인했다.
+
+```text
+pending candidates: 125
+previously failed expected: 6
+current analysis failures: 0
+currently recovered: 6
+newly failed: 0
+download / signature / metadata success: 125 / 125 / 125
+temporary network / permanent input / code-policy / unknown failures: 0 / 0 / 0 / 0
+failure codes / stages: none
+actual OCR API calls: 0
+database mutation: false
+image status: PENDING 125, PROCESSING 0, COMPLETED 31, FAILED 0
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+PDF / HWP: 55 / 26
+remaining temporary files / job directories / manifest: 0 / 0 / 0
+```
+
+이전 실패 6건 모두 이번 단일 요청에서 정상 회복되어 특정 오류 코드가 재현되지 않았다. 현재 증거로는 영구 URL·형식 오류나 detector/allowlist 결함이 아니며, 이전 실행 당시의 일시적인 네트워크 또는 원격 서버 상태였을 가능성이 높다. 원인을 단정하거나 DB에 실패 상태를 기록하지 않는다.
+
+125건 모두 현재 자동 IMAGE 처리 대상으로 복귀 가능하다. checksum 재사용을 활성화한 제한 배치를 계속할 수 있으며, 같은 대상에서 다시 네트워크 오류가 발생하면 재시도 없이 안전 코드로 저장하거나 다음 배치 진입을 중단하는 기존 정책을 유지한다.
+
+Invoke URL, host, Secret, attachment ID, URL, 파일명, checksum, 응답 본문, OCR 본문과 임시 경로는 출력·문서화하지 않았다.
