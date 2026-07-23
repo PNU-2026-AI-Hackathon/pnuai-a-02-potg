@@ -2,6 +2,7 @@ const assert = require('assert/strict');
 const { parseExtractionArguments } = require('../dist/cli/extractProgramAttachments');
 const { AttachmentProcessingError } = require('../dist/services/attachment/attachmentErrors');
 const { ClovaOcrRequestError } = require('../dist/services/attachment/clovaOcrClient');
+const { resolveOcrDonors } = require('../dist/services/attachment/imageOcrReuse');
 const { runImageOcr } = require('../dist/services/attachment/imageOcrDryRunService');
 
 const id = '123e4567-e89b-42d3-a456-426614174000';
@@ -157,6 +158,8 @@ function writeDependencies(overrides = {}) {
       cleanup: async () => { cleaned = true; },
     }),
     createEngine: () => ({ recognize: async () => { throw new Error('unused'); } }),
+    findDonors: async () => [],
+    detector: async () => ({ detectedFileType: 'PNG', detectedMimeType: 'image/png', matchesExpectedType: true }),
     processImage: async () => ({
       detectedFormat: 'PNG', width: 10, height: 20, pixelCount: 200,
       preprocessedWidth: 10, preprocessedHeight: 20, engine: 'CLOVA_OCR',
@@ -171,6 +174,42 @@ function writeDependencies(overrides = {}) {
 }
 
 async function testWriteTransitions() {
+  const donorBase = {
+    id: '223e4567-e89b-42d3-a456-426614174000',
+    rawText: 'donor text', cleanedText: 'donor text',
+    extractorType: 'CLOVA_OCR_GENERAL', extractorVersion: 'V2',
+    extractedAt: new Date('2026-01-01T00:00:00Z'),
+  };
+  assert.equal(resolveOcrDonors([]).kind, 'NONE');
+  assert.equal(resolveOcrDonors([donorBase]).kind, 'REUSABLE');
+  assert.equal(resolveOcrDonors([donorBase, { ...donorBase, id, cleanedText: 'different' }]).kind, 'CONFLICT');
+
+  let reuseOcrCalls = 0;
+  const reuse = writeDependencies({
+    findDonors: async () => [{ ...donorBase, rawText: '', cleanedText: '' }],
+    processImage: async () => { reuseOcrCalls += 1; throw new Error('must not OCR'); },
+  });
+  const reused = await runImageOcr(
+    { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
+    reuse.dependencies,
+  );
+  assert.deepEqual([reused.reusedCount, reused.ocrProcessedCount, reused.apiCallsSaved, reused.actualApiCalls], [1, 0, 1, 0]);
+  assert.equal(reused.emptyTextCount, 1);
+  assert.equal(reuseOcrCalls, 0);
+  assert.equal(reuse.saved[0][1].cleanedText, '');
+
+  const conflict = writeDependencies({
+    findDonors: async () => [donorBase, { ...donorBase, id, cleanedText: 'different' }],
+  });
+  const conflictResult = await runImageOcr(
+    { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
+    conflict.dependencies,
+  );
+  assert.deepEqual(
+    [conflictResult.checksumConflictCount, conflictResult.reusedCount, conflictResult.ocrProcessedCount, conflictResult.actualApiCalls],
+    [1, 0, 1, 1],
+  );
+
   const success = writeDependencies();
   const result = await runImageOcr(
     { type: 'IMAGE', limit: 1, retryFailed: false, plan: false, dryRun: false },
@@ -259,6 +298,8 @@ async function testBatchIsolation() {
         cleanup: async () => cleaned.push(url),
       }),
       createEngine: () => ({ recognize: async () => { throw new Error('unused'); } }),
+      findDonors: async () => [],
+      detector: async () => ({ detectedFileType: 'PNG', detectedMimeType: 'image/png', matchesExpectedType: true }),
       processImage: async ({ sourcePath }) => {
         const index = Number(sourcePath.match(/(\d+)\.png$/)[1]);
         calls.push(index);
