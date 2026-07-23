@@ -809,3 +809,79 @@ remaining temporary files / job directories / manifest: 0 / 0 / 0
 Invoke URL, host, Secret, attachment ID, URL, 파일명, checksum 값, OCR 본문, 전체 응답과 원본 이미지는 출력하거나 문서화하지 않았다. 사용자는 Prisma Studio에서 IMAGE 상태가 `COMPLETED`인지 확인한 뒤 필요한 일부 행의 `cleanedText`만 원본과 수동 비교할 수 있다.
 
 이로써 현재 등록된 IMAGE OCR 단계는 완료됐다. 다음 권장 작업은 별도 승인 범위에서 PDF OCR 대상과 Poppler 실행 환경을 다시 검토하는 것이다.
+
+## 29. MIXED PDF 렌더링·병합 기반 및 실제 1건 plan (2026-07-24)
+
+`PDFJS_TEXT_PARTIAL`인 MIXED PDF 1건의 후보 페이지만 보강하기 위한 기반을 구현했다. 이번 단계는 read-only plan으로 제한해 실제 페이지 렌더링, CLOVA OCR 호출, PROCESSING claim, attempt 증가와 PDF 본문 저장을 수행하지 않았다.
+
+### renderer와 subprocess 계약
+
+`pdfPageRenderer.ts`는 환경 설정에서만 읽은 `pdftocairo` executable과 argument 배열을 기존 `subprocessRunner.ts`에 전달한다. 명령은 `-png -singlefile -r 200 -f N -l N input output-prefix` 구조이며 shell을 사용하지 않는다. 입력 PDF와 출력 prefix가 작업 디렉터리 안에 있는지 확인하고 한 번에 한 페이지만 처리한다.
+
+기본 제한은 timeout 30초, DPI 200, PDF 최대 50페이지, PNG 최대 20 MiB이다. 1 미만 또는 전체 페이지를 넘는 번호, 페이지 제한 초과, subprocess 미탐지·timeout·비정상 종료, 출력 누락·0 byte·크기 초과·PNG signature 불일치를 안전 오류로 변환한다. 성공 결과는 호출자가 페이지 OCR 직후 삭제할 수 있는 cleanup 함수를 제공하고 실패 시 생성된 출력도 제거한다. 전체 명령과 경로는 오류에 포함하지 않는다.
+
+현재 로컬 탐지 결과는 다음과 같다.
+
+```text
+renderer configured: true
+renderer available: false
+renderer version configured: false
+```
+
+Poppler를 자동 설치하거나 시스템 설정을 변경하지 않았다. 따라서 다음 실제 렌더 dry-run 전에 사용자 승인 아래 로컬 Poppler 설치가 필요하다.
+
+### 페이지 병합 계약
+
+`pdfOcrMerger.ts`는 PDF.js 페이지 결과와 OCR 후보/결과를 받아 1페이지부터 끝까지 순서대로 각 페이지를 정확히 한 번 선택한다. 후보 페이지는 CLOVA 결과로 교체하고 비후보 페이지는 PDF.js 결과를 유지하며, 기존 전체 본문 뒤에 OCR 결과를 추가하지 않는다. raw text에는 `[Page N]` 경계를 한 번씩 유지하고 cleaned text는 선택된 페이지 결과를 같은 순서로 정규화한다.
+
+페이지 수 오류, 후보·결과 범위 초과, 중복 번호, 필요한 OCR 결과 또는 비후보 PDF.js 결과 누락을 병합 전에 거부한다. 입력 순서가 섞여도 페이지 번호로 결정되며 같은 입력의 반복 결과는 동일하다. 빈 OCR 결과는 유효한 빈 페이지 결과로 유지하지만 결과 객체 자체가 없으면 실패한다.
+
+### Mock·fixture 검증
+
+합성 입력과 주입한 subprocess runner로 다음을 검증했다.
+
+```text
+3페이지 PDF.js/OCR 교체와 페이지 경계
+첫·마지막 및 복수 후보
+후보 없는 PDF와 빈 OCR 결과
+후보 결과 누락, 중복, 범위 밖 번호
+섞인 입력 순서와 반복 실행 멱등성
+고정 executable/argument, 동일한 -f/-l, 200 DPI
+정상 PNG와 cleanup
+출력 누락·0 byte·signature 오류·크기 초과
+timeout·non-zero exit·page 0·페이지 제한·경로 containment
+PDF_OCR CLI 허용/금지 조합
+read-only plan의 renderer/OCR 미호출과 fingerprint 불변
+```
+
+Prisma validate/generate, TypeScript build, 기존 attachment extraction, CLOVA/image OCR 회귀 테스트와 새 `test:pdf-ocr-foundation`이 모두 통과했다. 상태 전이 회귀 테스트는 테스트용 DB 레코드를 사용한 뒤 cleanup까지 완료했다.
+
+### 실제 MIXED PDF 1건 read-only plan
+
+CLI는 현재 `--type PDF_OCR --mixed-only --limit 1 --plan`만 허용한다. `--mixed-only` 누락, limit 1 초과, write, dry-run, retry-failed, ocr-required-only, 알 수 없거나 중복된 옵션과 잘못된 UUID를 거부한다. 대상 조회 조건은 활성 PDF, COMPLETED, `PDFJS_TEXT_PARTIAL`이며 생성 시각과 ID 오름차순이다.
+
+```text
+selected: 1
+total pages: 4
+PDF.js TEXT pages: 3
+LOW_DENSITY pages: 0
+OCR candidate pages: 1
+candidate range / uniqueness / ascending: valid / valid / valid
+all pages candidates: false
+MIXED classification confirmed: true
+estimated render count: 1
+estimated CLOVA API calls: 1
+actual render count: 0
+actual CLOVA API calls: 0
+file bytes: 1,157,777
+PDF.js analysis duration: 626 ms
+database mutation: false
+target fingerprint unchanged: true
+aggregate counts unchanged: true
+```
+
+plan 전후 집계는 IMAGE COMPLETED 156, PDF COMPLETED 55, `PDFJS_TEXT` 54, `PDFJS_TEXT_PARTIAL` 1, HWP 26으로 동일했다. ProgramCase 349, ProgramCaseSession 20, Attachment 전체/활성 237/237도 유지됐고 logical key 중복과 고아 attachment는 0이었다. 임시 파일, job 디렉터리와 manifest 잔여도 모두 0이었다.
+
+Invoke URL, Secret, attachment ID, PDF URL, 원본 파일명, checksum 값, PDF/OCR 본문, 원본 PDF, 렌더 이미지와 임시 파일 전체 경로는 출력하거나 문서화하지 않았다.
+
+다음 단계는 Poppler 설치 승인 후 동일 MIXED PDF 후보 1페이지만 로컬 렌더하는 dry-run이다. 렌더 결과의 PNG signature·크기·dimensions와 cleanup을 먼저 확인한 뒤 별도 승인을 받아 최대 CLOVA API 1회로 OCR·병합 결과를 DB 저장 없이 검증한다.
