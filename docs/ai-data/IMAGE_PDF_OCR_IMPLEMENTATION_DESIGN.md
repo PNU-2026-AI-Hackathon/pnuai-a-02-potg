@@ -6,6 +6,8 @@
 - 범위: #78 구현 전 환경·DB·코드 분석과 설계
 - 제외: 패키지/시스템 도구 설치, OCR 실행, 원본 다운로드, DB 및 schema 변경
 
+> 현재 정책(2026-07-24): 운영 이미지 OCR 엔진은 **NAVER Cloud CLOVA OCR General API V2**다. EXIF 방향 반영, 투명 배경 흰색 합성과 제한 초과 시 축소만 수행하며 Tesseract용 grayscale/normalize는 사용하지 않는다. IMAGE `--dry-run`은 실제 CLOVA 호출 후 DB를 변경하지 않고, 옵션 없는 IMAGE 실행은 원자적 claim 후 결과를 저장한다. 1건 검증 실행은 중복 과금을 막기 위해 재시도 0을 사용한다. 1~18절은 초기 Tesseract 분석·구현 이력이며 현재 운영 정책은 19절 이후를 기준으로 한다.
+
 ## 1. 결론
 
 권장 조합은 **Tesseract 5 CLI(`kor+eng`) + Sharp 전처리 + Poppler `pdftocairo` PNG 렌더링**이다. Node.js는 파이프라인과 상태를 제어하고 OCR·렌더링은 자식 프로세스로 격리한다. 911 MiB, swap 없음인 운영 EC2에서는 동시성 1, 페이지 단위 직렬 처리, 픽셀/DPI 제한과 timeout이 전제다.
@@ -306,7 +308,7 @@ JSON 필드는 빠르지만 검색·제약·부분 갱신이 약해 장기적으
 - Sharp: https://sharp.pixelplumbing.com/
 - Poppler: https://poppler.freedesktop.org/
 
-## 18. 2단계 구현 결과 (2026-07-21)
+## 18. 초기 Tesseract 2단계 구현 기록 (2026-07-21, 현재 비활성)
 
 이번 단계에서는 실제 DB 상태나 schema를 변경하지 않고 OCR 실행 기반만 구현했다.
 
@@ -512,3 +514,39 @@ remaining OCR job directories: 0
 본문이 비어 있지 않고 평균 confidence가 약 0.920이므로 첫 표본에서 CLOVA 연결, 한국어 텍스트 탐지와 응답 parsing은 정상으로 판단한다. 전체 OCR 본문과 500자 미리보기는 개인정보 가능성을 재검토하지 않은 상태에서 불필요하게 노출하지 않기 위해 제공하거나 저장하지 않았다.
 
 이번 결과는 read-only 표본 검증이며 실제 DB 저장은 수행하지 않았다. 다음 단계는 별도 승인 아래 동일한 안전 장치로 이미지 1건 저장 전환을 구현하고 검증하는 것이다. 스캔 PDF, MIXED PDF, 배치 처리는 계속 범위 밖이다.
+
+## 21. IMAGE 1건 실제 DB 저장 결과 (2026-07-24)
+
+### write orchestration
+
+IMAGE 서비스는 `PENDING` 후보를 `createdAt`, `id` 오름차순으로 선택한 뒤 `id`, 활성 상태, PENDING 상태와 JPG/JPEG/PNG 형식을 조건으로 `updateMany` claim한다. 성공한 단일 claim만 `PROCESSING`으로 전환하면서 attempt를 증가시키고 시각을 기록한다. claim 경쟁에서 패한 실행은 다운로드와 API 호출 없이 skip한다.
+
+성공 시 raw/cleaned text, 탐지 형식/MIME, 파일 크기, checksum, `CLOVA_OCR_GENERAL`/`V2`, 추출 시각을 저장하고 `COMPLETED`로 전환한다. 빈 fields도 빈 문자열의 정상 완료다. claim 이후 실패는 안전한 code/message만 저장하고 `FAILED`로 전환한다. 기존 IMAGE dry-run의 DB 불변 계약은 유지한다.
+
+### 실제 단건 결과
+
+```text
+plan selected / estimated / actual calls: 1 / 1 / 0
+write selected / claimed / completed / failed / skipped: 1 / 1 / 1 / 0 / 0
+actual API calls / retries: 1 / 0
+image status before: PENDING 156, COMPLETED 0
+image status after: PENDING 155, COMPLETED 1
+attempt count: 1
+raw / cleaned text length: 157 / 157
+extractor: CLOVA_OCR_GENERAL V2
+checksum stored / length: true / 64
+field count: 31
+average confidence: 0.9196083019354843
+reading order: LINE_BREAK
+completed target re-selection: 0
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+PDF / HWP: 55 / 26
+duplicate logical keys / orphan attachments: 0 / 0
+remaining temporary files / job directories: 0 / 0
+```
+
+실제 Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 전체 응답은 출력하거나 기록하지 않았다. OCR 결과의 null 여부와 길이만 자동 검증했다. 본문 품질은 Prisma Studio에서 `ProgramCaseAttachment.cleanedText`를 로컬로 직접 확인해야 한다.
+
+Mock 테스트는 성공·빈 text·실패 저장, claim 경쟁, 완료 대상 skip, dry-run 불변과 성공/실패 cleanup을 검증하며 실제 endpoint 호출은 0회다. 재동기화 보존 테스트는 CLOVA 이미지 결과 형태에 대해 ID, 본문, extractor, checksum, attempt와 추출 시각이 동일 file URL 동기화 후 유지됨을 확인했다.
+
+다음 단계의 limit 5는 비용과 다건 DB 변경을 수반하므로 별도 승인 후 진행한다. MIXED/스캔 PDF와 실패 대상 재시도는 계속 범위 밖이다.
