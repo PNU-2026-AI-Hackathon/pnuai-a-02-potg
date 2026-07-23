@@ -20,6 +20,7 @@
     "verify:image-ocr-reuse-batch": "npm run build && node scripts/verify-image-ocr-reuse-batch.js",
     "analyze:image-ocr-failures": "npm run build && node scripts/analyze-image-ocr-failures.js",
     "test:image-ocr-failure-diagnostics": "npm run build && node scripts/test-image-ocr-failure-diagnostics.js",
+    "test:pdf-ocr-foundation": "npm run build && node scripts/test-pdf-ocr-foundation.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
     "postinstall": "prisma generate"
   },
