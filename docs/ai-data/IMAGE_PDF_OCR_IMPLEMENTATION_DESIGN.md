@@ -752,3 +752,60 @@ confidence 0.70 미만, field 0, 빈 text, 다른 reading-order 전략은 없었
 Invoke URL, host, Secret, attachment ID, URL, 파일명, checksum 값, OCR 본문, 전체 응답과 원본 이미지는 출력·문서화하지 않았다.
 
 checksum 재사용 배치는 실제 20건에서 오류 없이 호출 3회를 절감했으므로 계속 활성화할 수 있다. 남은 PENDING 105건 전체 처리는 최대 105건 DB 변경과 상당한 외부 호출을 수반하므로 별도 승인과 제한 배치 단위 검증을 유지한다.
+
+## 28. IMAGE 남은 105건 최종 checksum 재사용 배치 (2026-07-24)
+
+시작 전 donor 충돌 정책을 보완했다. 같은 checksum의 유효 donor들이 서로 다른 OCR 결과를 가지면 `CHECKSUM_DONOR_CONFLICT`로 실패 처리하고 신규 CLOVA OCR로 우회하지 않는다. Mock 테스트에서 충돌 시 실제 API 호출이 0회이고 안전 오류 코드가 반환되는 것을 확인했다.
+
+남은 PENDING IMAGE 105건을 동시성 1, 파일당 재시도 0, 배치당 최대 5건으로 처리했다. 각 배치는 비용 없는 plan, write, 최근 저장 결과와 전체 DB 무결성 검증 순으로 진행했으며 검증을 통과한 경우에만 다음 배치를 시작했다.
+
+| 배치 | selected/claimed/completed/failed/skipped | reused/OCR/saved | 실제 호출/retry | 빈 text/conflict | 처리 후 PENDING |
+|---|---:|---:|---:|---:|---:|
+| Batch 01 | 5 / 5 / 5 / 0 / 0 | 4 / 1 / 4 | 1 / 0 | 0 / 0 | 100 |
+| Batch 02 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 95 |
+| Batch 03 | 5 / 5 / 5 / 0 / 0 | 1 / 4 / 1 | 4 / 0 | 0 / 0 | 90 |
+| Batch 04 | 5 / 5 / 5 / 0 / 0 | 3 / 2 / 3 | 2 / 0 | 0 / 0 | 85 |
+| Batch 05 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 80 |
+| Batch 06 | 5 / 5 / 5 / 0 / 0 | 1 / 4 / 1 | 4 / 0 | 0 / 0 | 75 |
+| Batch 07 | 5 / 5 / 5 / 0 / 0 | 3 / 2 / 3 | 2 / 0 | 0 / 0 | 70 |
+| Batch 08 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 65 |
+| Batch 09 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 60 |
+| Batch 10 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 55 |
+| Batch 11 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 50 |
+| Batch 12 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 45 |
+| Batch 13 | 5 / 5 / 5 / 0 / 0 | 4 / 1 / 4 | 1 / 0 | 0 / 0 | 40 |
+| Batch 14 | 5 / 5 / 5 / 0 / 0 | 2 / 3 / 2 | 3 / 0 | 0 / 0 | 35 |
+| Batch 15 | 5 / 5 / 5 / 0 / 0 | 2 / 3 / 2 | 3 / 0 | 0 / 0 | 30 |
+| Batch 16 | 5 / 5 / 5 / 0 / 0 | 0 / 5 / 0 | 5 / 0 | 0 / 0 | 25 |
+| Batch 17 | 5 / 5 / 5 / 0 / 0 | 1 / 4 / 1 | 4 / 0 | 0 / 0 | 20 |
+| Batch 18 | 5 / 5 / 5 / 0 / 0 | 5 / 0 / 5 | 0 / 0 | 0 / 0 | 15 |
+| Batch 19 | 5 / 5 / 5 / 0 / 0 | 5 / 0 / 5 | 0 / 0 | 0 / 0 | 10 |
+| Batch 20 | 5 / 5 / 5 / 0 / 0 | 5 / 0 / 5 | 0 / 0 | 0 / 0 | 5 |
+| Batch 21 | 5 / 5 / 5 / 0 / 0 | 5 / 0 / 5 | 0 / 0 | 0 / 0 | 0 |
+
+```text
+executed batches: 21
+total selected / claimed / completed / failed / skipped: 105 / 105 / 105 / 0 / 0
+total reused / OCR processed / API calls saved: 41 / 64 / 41
+total actual API calls / retries: 64 / 0
+checksum conflicts / empty text / failure codes: 0 / 0 / none
+new OCR cleaned character range: 262..5085
+new OCR field count range: 61..894
+new OCR average confidence range: 0.8982841283692306..0.9918452849629628
+reading order strategies: LINE_BREAK
+quality warnings: 0
+image status before: PENDING 105, PROCESSING 0, COMPLETED 51, FAILED 0
+image status after: PENDING 0, PROCESSING 0, COMPLETED 156, FAILED 0
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+PDF / HWP: 55 / 26
+duplicate logical keys / orphan attachments: 0 / 0
+remaining temporary files / job directories / manifest: 0 / 0 / 0
+```
+
+신규 OCR 결과에는 confidence 0.70 미만, field 0, 빈 text, `LINE_BREAK` 이외 reading-order 결과가 없었다. 기존 COMPLETED 51건은 처리 대상으로 재선택하지 않았고, PDF 55건과 HWP 26건 및 상위 관계 데이터도 변경하지 않았다.
+
+완료 후 read-only plan 결과는 selected 0, estimated API calls 0, actual API calls 0, database mutation false, download false, OCR call false였다. 최종 진단에서도 PENDING 대상과 분석 실패가 0이며 cleanup 잔여가 없었다.
+
+Invoke URL, host, Secret, attachment ID, URL, 파일명, checksum 값, OCR 본문, 전체 응답과 원본 이미지는 출력하거나 문서화하지 않았다. 사용자는 Prisma Studio에서 IMAGE 상태가 `COMPLETED`인지 확인한 뒤 필요한 일부 행의 `cleanedText`만 원본과 수동 비교할 수 있다.
+
+이로써 현재 등록된 IMAGE OCR 단계는 완료됐다. 다음 권장 작업은 별도 승인 범위에서 PDF OCR 대상과 Poppler 실행 환경을 다시 검토하는 것이다.
