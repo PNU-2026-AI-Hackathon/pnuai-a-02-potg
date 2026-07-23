@@ -38,8 +38,6 @@ export async function preprocessImage(
       .rotate()
       .flatten({ background: '#ffffff' })
       .resize({ width: config.imageOcrMaxLongEdge, height: config.imageOcrMaxLongEdge, fit: 'inside', withoutEnlargement: true })
-      .grayscale()
-      .normalize()
       .png({ compressionLevel: 9, adaptiveFiltering: false, palette: false })
       .toFile(outputPath);
     const byteSize = (await stat(outputPath)).size;

@@ -2,13 +2,12 @@ import { AttachmentOcrConfig } from '../../config/attachmentOcr';
 import { detectAttachmentFileType } from './fileTypeDetector';
 import { inspectImageMetadata, ValidatedImageMetadata } from './imageMetadata';
 import { preprocessImage } from './imagePreprocessor';
-import { OcrResult, runTesseractOcr } from './tesseractOcr';
+import { OcrEngine, OcrRecognitionResult } from './ocrEngine';
 
 export type ImageOcrProcessorDependencies = {
   detector?: typeof detectAttachmentFileType;
   metadataInspector?: typeof inspectImageMetadata;
   preprocessor?: typeof preprocessImage;
-  ocr?: typeof runTesseractOcr;
 };
 
 export type ImageOcrProcessingResult = {
@@ -18,13 +17,17 @@ export type ImageOcrProcessingResult = {
   pixelCount: number;
   preprocessedWidth: number;
   preprocessedHeight: number;
-  engine: OcrResult['engine'];
+  engine: string;
   engineVersion: string;
-  languages: string[];
   rawText: string;
   cleanedText: string;
   isEmpty: boolean;
   durationMs: number;
+  apiCallCount: number;
+  retryCount: number;
+  averageConfidence?: number;
+  fieldCount?: number;
+  readingOrderStrategy?: OcrRecognitionResult['readingOrderStrategy'];
 };
 
 export function imageOcrLogSummary(result: ImageOcrProcessingResult) {
@@ -37,9 +40,13 @@ export function imageOcrLogSummary(result: ImageOcrProcessingResult) {
     preprocessedHeight: result.preprocessedHeight,
     engine: result.engine,
     engineVersion: result.engineVersion,
-    languages: result.languages,
     isEmpty: result.isEmpty,
     durationMs: result.durationMs,
+    apiCallCount: result.apiCallCount,
+    retryCount: result.retryCount,
+    averageConfidence: result.averageConfidence,
+    fieldCount: result.fieldCount,
+    readingOrderStrategy: result.readingOrderStrategy,
   };
 }
 
@@ -47,13 +54,12 @@ export async function processImageForOcr(input: {
   sourcePath: string;
   workDirectory: string;
   expectedType: 'JPEG' | 'PNG';
-  engineVersion: string;
+  ocrEngine: OcrEngine;
   signal?: AbortSignal;
 }, config: AttachmentOcrConfig, dependencies: ImageOcrProcessorDependencies = {}): Promise<ImageOcrProcessingResult> {
   const detector = dependencies.detector || detectAttachmentFileType;
   const metadataInspector = dependencies.metadataInspector || inspectImageMetadata;
   const preprocessor = dependencies.preprocessor || preprocessImage;
-  const ocr = dependencies.ocr || runTesseractOcr;
   const startedAt = Date.now();
   const detection = await detector({ filePath: input.sourcePath, dbFileType: input.expectedType, requireExpectedMatch: true });
   if (detection.detectedFileType !== 'JPEG' && detection.detectedFileType !== 'PNG') throw new Error('Image detector returned a non-image type.');
@@ -61,7 +67,7 @@ export async function processImageForOcr(input: {
   let prepared: Awaited<ReturnType<typeof preprocessImage>> | undefined;
   try {
     prepared = await preprocessor(input.sourcePath, input.workDirectory, config);
-    const result = await ocr({ inputPath: prepared.filePath, workDirectory: input.workDirectory, engineVersion: input.engineVersion, signal: input.signal }, config);
+    const result = await input.ocrEngine.recognize({ filePath: prepared.filePath, format: 'png', signal: input.signal });
     return {
       detectedFormat: detection.detectedFileType,
       width: metadata.width,
@@ -71,11 +77,15 @@ export async function processImageForOcr(input: {
       preprocessedHeight: prepared.height,
       engine: result.engine,
       engineVersion: result.engineVersion,
-      languages: result.languages,
       rawText: result.rawText,
       cleanedText: result.cleanedText,
       isEmpty: result.isEmpty,
       durationMs: Date.now() - startedAt,
+      apiCallCount: result.apiCallCount,
+      retryCount: result.retryCount,
+      averageConfidence: result.averageConfidence,
+      fieldCount: result.fieldCount,
+      readingOrderStrategy: result.readingOrderStrategy,
     };
   } finally {
     await prepared?.cleanup().catch(() => undefined);
