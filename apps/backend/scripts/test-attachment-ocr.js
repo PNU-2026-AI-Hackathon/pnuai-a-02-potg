@@ -81,7 +81,8 @@ async function testConfig() {
   await expectCode(async () => validateClovaOcrExecutionConfig(clovaConfig({ invokeUrl: 'https://user:pass@mock.invalid/general' })), 'CLOVA_OCR_CONFIG_MISSING');
   await expectCode(async () => validateClovaOcrExecutionConfig(clovaConfig({ invokeUrl: `${fakeUrl}#fragment` })), 'CLOVA_OCR_CONFIG_MISSING');
   assert.deepEqual(clovaOcrConfigSummary(clovaConfig()), {
-    enabled: true, invokeUrlConfigured: true, secretConfigured: true, timeoutMs: 500, maxRetries: 1,
+    enabled: true, invokeUrlConfigured: true, secretConfigured: true, timeoutMs: 500,
+    responseMaxBytes: 5 * 1024 * 1024, maxRetries: 1,
   });
 }
 
