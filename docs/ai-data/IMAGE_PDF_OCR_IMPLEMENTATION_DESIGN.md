@@ -656,3 +656,33 @@ remaining temporary files / job directories: 0 / 0
 Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 원본 이미지는 출력·문서화하지 않았다.
 
 checksum 재사용 경로는 Mock과 실제 read-only 분석 기준으로 제한 배치에 적용 가능하다. 분석 성공 124건 기준 예상 유료 호출은 81회이며, 분석 실패 6건은 별도 원인 확인 전 자동 처리하지 않는다. 다음 단계는 재사용을 활성화한 limit 5 배치로 donor 복사와 신규 OCR이 함께 동작하는지 검증하는 것이 적절하다.
+
+## 25. IMAGE checksum 재사용 실제 5건 혼합 검증 (2026-07-24)
+
+read-only runner가 PENDING 전체 checksum을 다시 분석하여 기존 COMPLETED donor 일치 1건, 같은 PENDING-only 중복 그룹의 seed/reuse 각 1건, donor 없는 고유 이미지 2건을 내부적으로 선정했다. 분석 실패 6건은 선택·claim·재다운로드 조사·OCR 대상에서 제외했다. 식별정보와 checksum은 메모리에서만 사용하고 출력·manifest 저장하지 않았다.
+
+```text
+plan selected total: 5
+completed donor reuse / pending duplicate seed / pending duplicate reuse / unique: 1 / 1 / 1 / 2
+estimated reused / OCR processed / API calls: 2 / 3 / 3
+
+actual selected / claimed / completed / failed / skipped: 5 / 5 / 5 / 0 / 0
+reused / OCR processed / API calls saved: 2 / 3 / 2
+checksum conflicts: 0
+actual API calls / retries: 3 / 0
+empty text / failure codes: 0 / none
+processing order: REUSED, OCR, REUSED, OCR, OCR
+raw / cleaned lengths by sequence: 405, 439, 439, 486, 482
+image status before: PENDING 130, PROCESSING 0, COMPLETED 26, FAILED 0
+image status after: PENDING 125, PROCESSING 0, COMPLETED 31, FAILED 0
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+PDF / HWP: 55 / 26
+duplicate logical keys / orphan attachments: 0 / 0
+remaining temporary files / job directories / manifest: 0 / 0 / 0
+```
+
+재사용 결과는 같은 checksum donor의 raw/cleaned text 및 extractor type/version과 동일함을 본문 출력 없이 비교했다. 신규 OCR과 재사용 결과 모두 attempt 1, 본문 non-null, checksum 길이 64, `CLOVA_OCR_GENERAL`/`V2`, failure null과 extractedAt 존재를 확인했다. 기존 COMPLETED 26건은 변경되지 않았고 완료 대상 selection은 0건이었다.
+
+Invoke URL, host, Secret, attachment ID, URL, 원본 파일명, checksum 값, OCR 본문과 전체 응답은 출력·문서화하지 않았다.
+
+실제 혼합 배치에서 예상과 동일하게 5건 중 2건을 재사용하고 유료 호출을 3회로 제한했으므로 checksum 재사용을 후속 제한 배치에 활성화할 수 있다. 다음에는 분석 실패 6건을 API와 DB 변경 없이 오류 단계별로 분류한 뒤, 정상 분석 대상에 대해 limit 5~20 범위의 재사용 배치를 진행한다.
