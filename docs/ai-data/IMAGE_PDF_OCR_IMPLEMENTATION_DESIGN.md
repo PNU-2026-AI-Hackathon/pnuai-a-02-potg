@@ -466,3 +466,49 @@ EXIF 방향 반영, 투명 PNG의 흰색 배경 합성, 애플리케이션 긴 �
 - CLOVA OCR 개요: https://api.ncloud-docs.com/docs/ai-application-service-ocr
 - General OCR V2: https://api.ncloud-docs.com/docs/ai-application-service-ocr-ocr
 - multipart 요청 예제: https://api.ncloud-docs.com/docs/ai-application-service-ocr-example01
+
+## 20. IMAGE CLI와 실제 표본 dry-run 결과 (2026-07-24)
+
+### CLI 구조와 계약
+
+기존 `extract:program-attachments` 명령에서 `--type PDF`는 기존 PDF 서비스로, `--type IMAGE`는 별도의 read-only OCR orchestration으로 분기한다. IMAGE는 기본 limit 1, 최대 5이며 plan/dry-run 동시 지정, 중복·미지원 옵션과 잘못된 UUID를 거부한다.
+
+- `--plan`: 활성 PENDING 이미지(JPG/JPEG/PNG)를 `createdAt`, `id` 오름차순으로 선택하고 preflight와 예상 호출량만 계산한다. 다운로드, 임시 파일 생성, OCR, DB 변경은 수행하지 않는다.
+- `--dry-run`: 동일 기준의 이미지 1건을 다운로드하고 signature, Sharp metadata, 최소 전처리와 CLOVA OCR을 수행하지만 DB update를 호출하지 않는다.
+- 첫 실제 표본은 timeout이나 429/5xx에서도 중복 전송·과금하지 않도록 실행 범위에서 `maxRetries=0`으로 강제했다.
+- 다운로드 URL은 금정구청 공식 출처 allowlist와 public-address 검증을 그대로 통과해야 한다.
+
+### 안전 검증
+
+실제 값은 출력하지 않고 enabled, Invoke URL/Secret 설정 여부, timeout, 응답 제한과 retries만 preflight에 포함했다. `.env`는 Git ignore 상태이며 수정하지 않았다. Invoke URL, host, Secret, attachment ID, 전체 URL, 원본 파일명, checksum, OCR 본문과 전체 응답은 로그나 문서에 저장하지 않았다.
+
+dry-run 전후 대상 fingerprint에는 상태, attempt/시각, 본문 길이, 탐지 metadata, checksum, extractor, 실패 정보와 `updatedAt`을 포함했다. ProgramCase, Session, Attachment 전체/활성 및 이미지·PDF 상태별 집계도 전후 비교했다.
+
+### 실제 공개 이미지 1건 결과
+
+```text
+plan selected: 1
+estimated API calls: 1
+actual API calls: 1
+retry count: 0
+database mutation: false
+target fingerprint unchanged: true
+aggregate counts unchanged: true
+detected format: JPEG
+original dimensions: 794 x 1123
+preprocessed dimensions: 794 x 1123
+file bytes: 237079
+field count: 31
+raw text characters: 157
+cleaned text characters: 157
+average confidence: 0.9196083019354843
+reading order: LINE_BREAK
+empty: false
+OCR duration: 3605 ms
+remaining temporary files: 0
+remaining OCR job directories: 0
+```
+
+본문이 비어 있지 않고 평균 confidence가 약 0.920이므로 첫 표본에서 CLOVA 연결, 한국어 텍스트 탐지와 응답 parsing은 정상으로 판단한다. 전체 OCR 본문과 500자 미리보기는 개인정보 가능성을 재검토하지 않은 상태에서 불필요하게 노출하지 않기 위해 제공하거나 저장하지 않았다.
+
+이번 결과는 read-only 표본 검증이며 실제 DB 저장은 수행하지 않았다. 다음 단계는 별도 승인 아래 동일한 안전 장치로 이미지 1건 저장 전환을 구현하고 검증하는 것이다. 스캔 PDF, MIXED PDF, 배치 처리는 계속 범위 밖이다.
