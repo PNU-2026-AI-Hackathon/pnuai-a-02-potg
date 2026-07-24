@@ -27,6 +27,7 @@
     "test:hwp-analysis": "npm run build && node scripts/test-hwp-analysis.js",
     "test:hwp-tool-comparison": "npm run build && node scripts/test-hwp-tool-comparison.js",
     "compare:hwp-tools": "npm run build && node dist/cli/compareHwpExtractionTools.js",
+    "test:kordoc-deployment": "npm run build && node scripts/test-kordoc-deployment-validation.js",
     "analyze:hwp-attachments": "npm run build && node dist/cli/analyzeHwpAttachments.js",
     "recover:attachment-extractions": "npm run build && node dist/cli/recoverAttachmentExtractions.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
