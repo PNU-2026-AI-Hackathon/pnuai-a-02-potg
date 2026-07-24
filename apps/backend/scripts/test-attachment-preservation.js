@@ -4,7 +4,7 @@ const { syncProgramCases } = require('../dist/services/programCaseSyncService');
 
 const sourceType = 'TEST_ATTACHMENT_PRESERVATION';
 const sourcePostId = `codex-${Date.now()}-${process.pid}`;
-const firstUrl = 'https://example.com/attachments/preserved.pdf';
+const firstUrl = 'https://example.com/attachments/preserved.jpg';
 const secondUrl = 'https://example.com/attachments/new.pdf';
 
 function program(overrides = {}) {
@@ -40,9 +40,9 @@ function program(overrides = {}) {
       sortOrder: 0,
     }],
     attachments: [{
-      fileName: '원본.pdf',
+      fileName: '원본.jpg',
       fileUrl: firstUrl,
-      fileType: 'pdf',
+      fileType: 'jpg',
       extractionStatus: 'PENDING',
     }],
     ...overrides,
@@ -103,15 +103,15 @@ async function run() {
     const seeded = await prisma.programCaseAttachment.update({
       where: { id: created.id },
       data: {
-        detectedFileType: 'pdf',
-        detectedMimeType: 'application/pdf',
+        detectedFileType: 'JPEG',
+        detectedMimeType: 'image/jpeg',
         fileSizeBytes: 12345,
         checksumSha256: 'a'.repeat(64),
         extractionStatus: 'COMPLETED',
         rawText: '테스트 원문',
         cleanedText: '테스트 정제문',
-        extractorType: 'TEST',
-        extractorVersion: '1.0',
+        extractorType: 'CLOVA_OCR_GENERAL',
+        extractorVersion: 'V2',
         attemptCount: 1,
         lastAttemptedAt,
         extractedAt,
@@ -120,12 +120,12 @@ async function run() {
     const expectedExtraction = extractionValues(seeded);
 
     await expectSuccessfulSync(program({ attachments: [{
-      fileName: '변경된 이름.pdf', fileUrl: firstUrl, fileType: 'application-pdf', extractionStatus: 'FAILED',
+      fileName: '변경된 이름.jpg', fileUrl: firstUrl, fileType: 'jpeg', extractionStatus: 'FAILED',
     }] }));
     const sameUrl = await attachment(programCaseId, firstUrl);
     assert.equal(sameUrl.id, created.id);
-    assert.equal(sameUrl.fileName, '변경된 이름.pdf');
-    assert.equal(sameUrl.fileType, 'application-pdf');
+    assert.equal(sameUrl.fileName, '변경된 이름.jpg');
+    assert.equal(sameUrl.fileType, 'jpeg');
     assert.equal(sameUrl.isActive, true);
     assert.deepEqual(extractionValues(sameUrl), expectedExtraction);
 
@@ -136,7 +136,7 @@ async function run() {
     assert.deepEqual(extractionValues(removed), expectedExtraction);
 
     await expectSuccessfulSync(program({ attachments: [{
-      fileName: '재등장.pdf', fileUrl: firstUrl, fileType: 'pdf', extractionStatus: 'PENDING',
+      fileName: '재등장.jpg', fileUrl: firstUrl, fileType: 'jpg', extractionStatus: 'PENDING',
     }] }));
     const reappeared = await attachment(programCaseId, firstUrl);
     assert.equal(reappeared.id, created.id);

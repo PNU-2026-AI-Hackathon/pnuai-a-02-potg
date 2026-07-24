@@ -4,3 +4,4 @@ global-bundle.pem
 dist
 node_modules
 /src/generated/prisma
+.local/

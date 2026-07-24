@@ -235,9 +235,10 @@ async function testPdfExtraction(root) {
 }
 
 function testCliArguments() {
-  assert.deepEqual(parseExtractionArguments([]), { type: 'PDF', limit: 5, retryFailed: false, dryRun: false });
-  assert.deepEqual(parseExtractionArguments(['--type', 'pdf', '--limit', '2', '--attachment-id', 'id', '--retry-failed', '--dry-run']), {
-    type: 'PDF', limit: 2, attachmentId: 'id', retryFailed: true, dryRun: true,
+  const id = '123e4567-e89b-42d3-a456-426614174000';
+  assert.throws(() => parseExtractionArguments([]));
+  assert.deepEqual(parseExtractionArguments(['--type', 'pdf', '--limit', '2', '--attachment-id', id, '--retry-failed', '--dry-run']), {
+    type: 'PDF', limit: 2, attachmentId: id, retryFailed: true, dryRun: true,
   });
   assert.throws(() => parseExtractionArguments(['--type', 'HWP']));
   assert.throws(() => parseExtractionArguments(['--limit', '21']));

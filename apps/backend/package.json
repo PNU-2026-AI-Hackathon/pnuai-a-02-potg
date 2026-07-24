@@ -13,6 +13,18 @@
     "test:attachment-preservation": "npm run build && node scripts/test-attachment-preservation.js",
     "test:attachment-regression": "npm run build && node scripts/test-attachment-regression.js",
     "test:attachment-extraction": "npm run build && node scripts/test-attachment-modules.js && node scripts/test-attachment-extraction-state.js",
+    "test:attachment-ocr": "npm run build && node scripts/test-attachment-ocr.js",
+    "test:image-ocr-cli": "npm run build && node scripts/test-image-ocr-cli.js",
+    "verify:image-ocr-write": "npm run build && node scripts/verify-image-ocr-write.js",
+    "analyze:image-ocr-duplicates": "npm run build && node scripts/analyze-image-ocr-duplicates.js",
+    "verify:image-ocr-reuse-batch": "npm run build && node scripts/verify-image-ocr-reuse-batch.js",
+    "analyze:image-ocr-failures": "npm run build && node scripts/analyze-image-ocr-failures.js",
+    "test:image-ocr-failure-diagnostics": "npm run build && node scripts/test-image-ocr-failure-diagnostics.js",
+    "test:pdf-ocr-foundation": "npm run build && node scripts/test-pdf-ocr-foundation.js",
+    "test:pdf-ocr-write": "npm run build && node scripts/test-pdf-ocr-write.js",
+    "test:pdf-ocr-required": "npm run build && node scripts/test-pdf-ocr-write.js",
+    "test:attachment-recovery": "npm run build && node scripts/test-attachment-recovery.js",
+    "recover:attachment-extractions": "npm run build && node dist/cli/recoverAttachmentExtractions.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
     "postinstall": "prisma generate"
   },
@@ -25,7 +37,8 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "pdfjs-dist": "^6.1.200",
-    "pg": "^8.22.0"
+    "pg": "^8.22.0",
+    "sharp": "^0.35.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
