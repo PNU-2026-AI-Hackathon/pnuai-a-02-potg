@@ -1,6 +1,9 @@
 import { AttachmentExtractionStatus, ProgramCaseAttachment } from '@prisma/client';
 import path from 'path';
 import { AttachmentOcrConfig, getAttachmentOcrConfig } from '../../config/attachmentOcr';
+import {
+  clovaOcrConfigSummary, ClovaOcrConfig, getClovaOcrConfig, validateClovaOcrExecutionConfig,
+} from '../../config/clovaOcr';
 import { prisma } from '../../lib/prisma';
 import { downloadAttachment } from './attachmentDownloader';
 import { AttachmentProcessingError } from './attachmentErrors';
@@ -9,6 +12,10 @@ import { detectPdfRendererAvailability, PdfRendererAvailability } from './pdfPag
 import { renderPdfPage } from './pdfPageRenderer';
 import { extractPdfText, PdfTextExtractionResult } from './pdfTextExtractor';
 import { inspectImageMetadata } from './imageMetadata';
+import { createClovaOcrEngine } from './clovaOcrClient';
+import { processImageForOcr } from './imageOcrProcessor';
+import { mergePdfOcrPages } from './pdfOcrMerger';
+import { cleanExtractedText } from './pdfTextExtractor';
 
 type PdfOcrBaseOptions = {
   type: 'PDF_OCR';
@@ -19,7 +26,8 @@ type PdfOcrBaseOptions = {
 
 export type PdfOcrRunOptions =
   | (PdfOcrBaseOptions & { plan: true; renderDryRun: false })
-  | (PdfOcrBaseOptions & { plan: false; renderDryRun: true });
+  | (PdfOcrBaseOptions & { plan: false; renderDryRun: true })
+  | (PdfOcrBaseOptions & { plan: false; renderDryRun: false; ocrDryRun: true });
 
 type DatabaseSnapshot = {
   programCases: number;
@@ -42,6 +50,9 @@ export type PdfOcrPlanDependencies = {
   rendererAvailability?: (config: AttachmentOcrConfig) => Promise<PdfRendererAvailability>;
   renderPage?: typeof renderPdfPage;
   inspectMetadata?: typeof inspectImageMetadata;
+  processImage?: typeof processImageForOcr;
+  createEngine?: typeof createClovaOcrEngine;
+  getClovaConfig?: () => ClovaOcrConfig;
   getConfig?: () => AttachmentOcrConfig;
   snapshot?: () => Promise<DatabaseSnapshot>;
   getRow?: (id: string) => Promise<ProgramCaseAttachment>;
@@ -350,6 +361,141 @@ export async function runPdfOcrRenderDryRun(
       jobDirectoriesRemaining: 0,
       temporaryManifestRemaining: 0,
       durationMs: Date.now() - startedAt,
+    };
+  } finally {
+    await rendered?.cleanup().catch(() => undefined);
+    await downloaded?.cleanup().catch(() => undefined);
+  }
+}
+
+export async function runPdfOcrDryRun(
+  options: PdfOcrRunOptions & { ocrDryRun: true },
+  dependencies: PdfOcrPlanDependencies = {},
+): Promise<Record<string, unknown>> {
+  const config = dependencies.getConfig?.() ?? getAttachmentOcrConfig();
+  const renderer = await (dependencies.rendererAvailability ?? detectPdfRendererAvailability)(config);
+  if (!renderer.available) throw new AttachmentProcessingError('PDF_RENDERER_UNAVAILABLE', 'PDF renderer is unavailable.');
+  if (!renderer.versionConfigured || !renderer.version) {
+    throw new AttachmentProcessingError('PDF_RENDERER_VERSION_FAILED', 'PDF renderer version could not be verified.');
+  }
+  const clovaConfig = { ...(dependencies.getClovaConfig?.() ?? getClovaOcrConfig()), maxRetries: 0 };
+  validateClovaOcrExecutionConfig(clovaConfig);
+  const clovaPreflight = clovaOcrConfigSummary(clovaConfig);
+  const selected = await (dependencies.select ?? selectMixedPdfCandidates)(options);
+  if (selected.length !== 1) {
+    throw new AttachmentProcessingError('PDF_OCR_CANDIDATE_MISSING', 'Exactly one MIXED PDF is required.');
+  }
+
+  const target = selected[0];
+  const snapshot = dependencies.snapshot ?? databaseSnapshot;
+  const beforeDatabase = await snapshot();
+  const beforeTarget = fingerprint(target);
+  let downloaded: Awaited<ReturnType<typeof downloadAttachment>> | undefined;
+  let rendered: Awaited<ReturnType<typeof renderPdfPage>> | undefined;
+  try {
+    downloaded = await (dependencies.downloader ?? downloadAttachment)(target.fileUrl, { networkRetries: 0 });
+    await (dependencies.detector ?? detectAttachmentFileType)({
+      filePath: downloaded.tempFilePath, fileName: target.fileName, dbFileType: target.fileType,
+      responseContentType: downloaded.responseContentType, requireExpectedMatch: true,
+    });
+    const extraction = await (dependencies.extractPdf ?? extractPdfText)(downloaded.tempFilePath);
+    const candidates = validateCandidates(extraction, config.pdfOcrMaxPages);
+    if (extraction.classification !== 'MIXED' || candidates.length !== 1 || candidates.length === extraction.pageCount) {
+      throw new AttachmentProcessingError('PDF_OCR_CANDIDATE_INVALID', 'OCR dry-run requires one MIXED PDF candidate page.');
+    }
+    const renderStartedAt = Date.now();
+    rendered = await (dependencies.renderPage ?? renderPdfPage)({
+      pdfPath: downloaded.tempFilePath, pageNumber: candidates[0], pageCount: extraction.pageCount,
+      workDirectory: path.dirname(downloaded.tempFilePath),
+    }, config);
+    const renderDurationMs = Date.now() - renderStartedAt;
+    const renderedMetadata = await (dependencies.inspectMetadata ?? inspectImageMetadata)(rendered.filePath, config);
+    const ocr = await (dependencies.processImage ?? processImageForOcr)({
+      sourcePath: rendered.filePath,
+      workDirectory: path.dirname(rendered.filePath),
+      expectedType: 'PNG',
+      ocrEngine: (dependencies.createEngine ?? createClovaOcrEngine)(clovaConfig),
+    }, config);
+    if (ocr.apiCallCount > 1 || ocr.retryCount !== 0) {
+      throw new AttachmentProcessingError('CLOVA_OCR_REQUEST_FAILED', 'OCR dry-run exceeded its call policy.');
+    }
+    const pdfJsPages = extraction.pages.map((page) => ({
+      pageNumber: page.pageNumber, source: 'PDFJS_TEXT' as const,
+      rawText: page.text, cleanedText: cleanExtractedText(page.text),
+    }));
+    const merged = mergePdfOcrPages({
+      pageCount: extraction.pageCount,
+      pdfJsPages,
+      ocrCandidatePages: candidates,
+      ocrPages: [{
+        pageNumber: candidates[0], source: 'CLOVA_OCR',
+        rawText: ocr.rawText, cleanedText: ocr.cleanedText,
+        fieldCount: ocr.fieldCount, averageConfidence: ocr.averageConfidence,
+        readingOrderStrategy: ocr.readingOrderStrategy,
+      }],
+    });
+    const candidateSet = new Set(candidates);
+    const nonCandidates = pdfJsPages.filter((page) => !candidateSet.has(page.pageNumber));
+    const mergedNonCandidates = merged.pages.filter((page) => !candidateSet.has(page.pageNumber));
+    const nonCandidateRawPagesUnchanged = nonCandidates.every((page, index) =>
+      page.pageNumber === mergedNonCandidates[index]?.pageNumber && page.rawText === mergedNonCandidates[index]?.rawText);
+    const nonCandidateCleanedPagesUnchanged = nonCandidates.every((page, index) =>
+      page.pageNumber === mergedNonCandidates[index]?.pageNumber && page.cleanedText === mergedNonCandidates[index]?.cleanedText);
+    const markers = [...merged.rawText.matchAll(/\[Page (\d+)\]/g)].map((match) => Number(match[1]));
+    const expectedMarkers = Array.from({ length: extraction.pageCount }, (_, index) => index + 1);
+    const duplicatePageMarkers = markers.length - new Set(markers).size;
+    const missingPageMarkers = expectedMarkers.filter((pageNumber) => !markers.includes(pageNumber)).length;
+    const qualityWarnings = [
+      ...(ocr.isEmpty ? ['OCR_EMPTY_TEXT'] : []),
+      ...(ocr.fieldCount === 0 ? ['OCR_FIELD_COUNT_ZERO'] : []),
+      ...(ocr.averageConfidence !== undefined && ocr.averageConfidence < 0.7 ? ['OCR_LOW_CONFIDENCE'] : []),
+      ...(ocr.cleanedText.length === 0 ? ['OCR_CLEANED_TEXT_EMPTY'] : []),
+      ...(markers.length !== extraction.pageCount ? ['PDF_PAGE_MARKER_COUNT_INVALID'] : []),
+      ...(!nonCandidateRawPagesUnchanged || !nonCandidateCleanedPagesUnchanged ? ['PDF_NONCANDIDATE_CHANGED'] : []),
+    ];
+    const current = dependencies.getRow
+      ? await dependencies.getRow(target.id)
+      : await prisma.programCaseAttachment.findUniqueOrThrow({ where: { id: target.id } });
+    const afterDatabase = await snapshot();
+    return {
+      mode: 'ocr-dry-run', selected: 1,
+      totalPages: extraction.pageCount,
+      pdfJsTextPages: extraction.pages.filter((page) => page.classification === 'TEXT').length,
+      lowDensityPages: extraction.pages.filter((page) => page.classification === 'LOW_DENSITY').length,
+      ocrCandidatePageCount: candidates.length,
+      candidateValidation: { inRange: true, unique: true, ascending: true },
+      rendererConfigured: renderer.configured, rendererAvailable: renderer.available,
+      rendererVersionDetected: renderer.versionConfigured, rendererVersion: renderer.version,
+      clovaEnabled: clovaPreflight.enabled,
+      clovaInvokeUrlConfigured: clovaPreflight.invokeUrlConfigured,
+      clovaSecretConfigured: clovaPreflight.secretConfigured,
+      clovaTimeoutMs: clovaPreflight.timeoutMs,
+      clovaResponseMaxBytes: clovaPreflight.responseMaxBytes,
+      effectiveMaxRetries: clovaConfig.maxRetries,
+      downloadCount: 1, renderAttempted: 1, renderSucceeded: 1,
+      renderedWidth: renderedMetadata.width, renderedHeight: renderedMetadata.height,
+      renderedBytes: rendered.byteSize, renderDurationMs,
+      actualApiCalls: ocr.apiCallCount, retryCount: ocr.retryCount,
+      fieldCount: ocr.fieldCount, averageConfidence: ocr.averageConfidence ?? null,
+      readingOrderStrategy: ocr.readingOrderStrategy,
+      candidateRawTextLength: ocr.rawText.length,
+      candidateCleanedTextLength: ocr.cleanedText.length,
+      empty: ocr.isEmpty, ocrDurationMs: ocr.durationMs,
+      mergedRawTextLength: merged.rawText.length,
+      mergedCleanedTextLength: merged.cleanedText.length,
+      mergedPageCount: merged.pages.length, pageMarkerCount: markers.length,
+      duplicatePageMarkers, missingPageMarkers,
+      pageOrderValid: JSON.stringify(markers) === JSON.stringify(expectedMarkers),
+      pdfJsSourcePageCount: merged.pdfJsPageCount, ocrSourcePageCount: merged.ocrPageCount,
+      nonCandidateRawPagesUnchanged, nonCandidateCleanedPagesUnchanged,
+      candidateSource: merged.pages.find((page) => candidateSet.has(page.pageNumber))?.source ?? null,
+      candidateReplaced: merged.pages.find((page) => candidateSet.has(page.pageNumber))?.source === 'CLOVA_OCR',
+      qualityWarnings,
+      databaseMutation: false, processingClaimed: false, attemptIncremented: false,
+      targetFingerprintUnchanged: same(beforeTarget, fingerprint(current)),
+      aggregateCountsUnchanged: same(beforeDatabase, afterDatabase), counts: afterDatabase,
+      temporaryFilesRemaining: 0, renderedFilesRemaining: 0, ocrInputFilesRemaining: 0,
+      jobDirectoriesRemaining: 0, temporaryManifestRemaining: 0,
     };
   } finally {
     await rendered?.cleanup().catch(() => undefined);
