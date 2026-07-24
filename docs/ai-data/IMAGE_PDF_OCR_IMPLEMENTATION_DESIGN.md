@@ -912,3 +912,51 @@ pdftocairo -v
 ```
 
 두 명령이 정상인 경우에만 `--type PDF_OCR --mixed-only --limit 1 --render-dry-run`을 한 번 실행한다. 다음 단계도 렌더 대상은 최대 1페이지, CLOVA API 호출과 DB 변경은 0회로 제한한다.
+
+## 31. MIXED PDF 후보 1페이지 실제 렌더링 dry-run (2026-07-24)
+
+사용자가 설치한 Poppler가 새 셸 PATH에 반영된 것을 확인한 뒤 `--type PDF_OCR --mixed-only --limit 1 --render-dry-run` 실행 경로를 구현했다. Codex 프로세스에는 이전 PATH가 남아 있어 실행할 자식 프로세스에서 시스템·사용자 PATH를 읽어 일시적으로 반영했으며 영구 PATH나 시스템 설정은 변경하지 않았다.
+
+CLI는 `PDF_OCR`, `mixed-only`, limit 1과 `render-dry-run` 조합만 허용한다. attachment UUID는 선택적으로 받을 수 있지만 활성 PDF, COMPLETED, `PDFJS_TEXT_PARTIAL` 조건을 우회하지 못한다. plan/dry-run/retry-failed/ocr-required-only와의 조합, IMAGE·일반 PDF 타입, limit 초과, 중복·알 수 없는 옵션과 잘못된 UUID는 거부한다.
+
+renderer preflight는 대상 DB 조회와 PDF 다운로드보다 먼저 실행한다. executable 실행 여부와 version 문자열이 모두 확인되어야 다음 단계로 진행하며, 실패하면 선택·다운로드·렌더를 모두 0회로 유지한다.
+
+```text
+renderer configured: true
+renderer available: true
+renderer version detected: true
+renderer version: 26.02.0
+DPI / timeout: 200 / 30000 ms
+max pages / max output bytes: 50 / 20971520
+```
+
+orchestration은 PDF signature 확인과 PDF.js 재분석 후 기존 `ocrCandidatePages`를 범위·중복·오름차순으로 검증한다. MIXED 분류와 후보 1페이지를 확인한 경우에만 기존 `pdfPageRenderer.ts`를 한 번 호출하고, Sharp metadata 검사로 PNG format, 단일 페이지, dimensions, pixel 수, 예상 RGBA decode memory와 aspect ratio 제한을 확인한다. CLOVA client와 병합기는 생성하거나 호출하지 않는다.
+
+Mock·fixture 테스트는 정상 parser와 금지 조합, preflight 성공·실패/version 누락, preflight 실패 시 선택·다운로드 미호출, 4페이지 중 후보 1페이지 renderer 호출, PNG metadata 결과, fingerprint·집계 불변, metadata 실패 시 PNG·PDF cleanup을 검증했다. 기존 renderer 테스트의 출력 누락·0 byte·signature·크기·timeout·non-zero·페이지·containment 검증도 유지했다.
+
+Prisma validate/generate, TypeScript build, 기존 attachment extraction 상태 전이, CLOVA/IMAGE OCR 회귀와 PDF OCR foundation 테스트가 모두 통과한 뒤 실제 명령을 정확히 한 번 실행했다.
+
+```text
+mode: render-dry-run
+selected / download count: 1 / 1
+total pages: 4
+PDF.js TEXT / LOW_DENSITY pages: 3 / 0
+OCR candidate pages: 1
+candidate in-range / unique / ascending: true / true / true
+render attempted / succeeded: 1 / 1
+rendered format: PNG
+rendered dimensions: 1653 x 2339
+rendered bytes: 169179
+render duration: 1283 ms
+actual CLOVA API calls: 0
+database mutation: false
+PROCESSING claim / attempt increment: false / false
+target fingerprint unchanged: true
+aggregate counts unchanged: true
+```
+
+실행 전후 집계는 ProgramCase 349, ProgramCaseSession 20, Attachment 전체/활성 237/237, IMAGE COMPLETED 156, PDF COMPLETED 55, `PDFJS_TEXT` 54, `PDFJS_TEXT_PARTIAL` 1, HWP 26이었다. logical key 중복과 고아 attachment는 0이었다.
+
+독립 cleanup 검사에서도 임시 PDF·렌더 PNG·OCR 입력, job 디렉터리와 manifest 잔여가 모두 0이었다. Invoke URL, Secret, attachment ID, PDF URL, 원본 파일명, checksum 값, PDF/페이지/OCR 본문, 원본 PDF, 렌더 PNG와 전체 로컬 경로는 출력하거나 문서화하지 않았다.
+
+실제 렌더링과 입력 안전 검증이 성공했으므로 다음 단계는 동일 후보 1페이지를 CLOVA OCR로 보내고 PDF.js 본문과 병합하되 DB에는 저장하지 않는 OCR dry-run이다. 다음 단계의 최대 CLOVA API 호출 승인 수는 1회이다.
