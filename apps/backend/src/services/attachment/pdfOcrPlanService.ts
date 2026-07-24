@@ -27,7 +27,8 @@ type PdfOcrBaseOptions = {
 export type PdfOcrRunOptions =
   | (PdfOcrBaseOptions & { plan: true; renderDryRun: false })
   | (PdfOcrBaseOptions & { plan: false; renderDryRun: true })
-  | (PdfOcrBaseOptions & { plan: false; renderDryRun: false; ocrDryRun: true });
+  | (PdfOcrBaseOptions & { plan: false; renderDryRun: false; ocrDryRun: true })
+  | (PdfOcrBaseOptions & { plan: false; renderDryRun: false; write: true });
 
 type DatabaseSnapshot = {
   programCases: number;
@@ -53,6 +54,10 @@ export type PdfOcrPlanDependencies = {
   processImage?: typeof processImageForOcr;
   createEngine?: typeof createClovaOcrEngine;
   getClovaConfig?: () => ClovaOcrConfig;
+  onMerged?: (value: {
+    mergedRawText: string; mergedCleanedText: string; downloaded: Awaited<ReturnType<typeof downloadAttachment>>;
+    extractorVersion: string;
+  }) => Promise<void>;
   getConfig?: () => AttachmentOcrConfig;
   snapshot?: () => Promise<DatabaseSnapshot>;
   getRow?: (id: string) => Promise<ProgramCaseAttachment>;
@@ -185,6 +190,8 @@ export async function runPdfOcrPlan(
 ): Promise<Record<string, unknown>> {
   const selected = await (dependencies.select ?? selectMixedPdfCandidates)(options);
   const config = dependencies.getConfig?.() ?? getAttachmentOcrConfig();
+  const clovaConfig = { ...(dependencies.getClovaConfig?.() ?? getClovaOcrConfig()), maxRetries: 0 };
+  const clovaPreflight = clovaOcrConfigSummary(clovaConfig);
   const renderer = await (dependencies.rendererAvailability ?? detectPdfRendererAvailability)(config);
   if (selected.length === 0) {
     return {
@@ -193,6 +200,10 @@ export async function runPdfOcrPlan(
       rendererConfigured: renderer.configured, rendererAvailable: renderer.available,
       rendererVersionConfigured: renderer.versionConfigured,
       rendererVersion: renderer.version,
+      clovaEnabled: clovaPreflight.enabled,
+      clovaInvokeUrlConfigured: clovaPreflight.invokeUrlConfigured,
+      clovaSecretConfigured: clovaPreflight.secretConfigured,
+      effectiveMaxRetries: clovaConfig.maxRetries,
       databaseMutation: false, actualApiCalls: 0, download: false, render: false, ocrCall: false,
       temporaryFilesRemaining: 0, jobDirectoriesRemaining: 0,
     };
@@ -240,6 +251,10 @@ export async function runPdfOcrPlan(
       rendererAvailable: renderer.available,
       rendererVersionConfigured: renderer.versionConfigured,
       rendererVersion: renderer.version,
+      clovaEnabled: clovaPreflight.enabled,
+      clovaInvokeUrlConfigured: clovaPreflight.invokeUrlConfigured,
+      clovaSecretConfigured: clovaPreflight.secretConfigured,
+      effectiveMaxRetries: clovaConfig.maxRetries,
       fileBytes: downloaded.byteSize,
       pdfAnalysisDurationMs: analysisDurationMs,
       targetFingerprintUnchanged: same(beforeTarget, fingerprint(current)),
@@ -256,6 +271,120 @@ export async function runPdfOcrPlan(
     };
   } finally {
     await downloaded?.cleanup().catch(() => undefined);
+  }
+}
+
+async function claimMixedPdf(target: ProgramCaseAttachment, now: Date) {
+  const claimed = await prisma.programCaseAttachment.updateMany({
+    where: {
+      id: target.id, isActive: true, fileType: { equals: 'pdf', mode: 'insensitive' },
+      extractionStatus: 'COMPLETED', extractorType: 'PDFJS_TEXT_PARTIAL',
+      rawText: { not: null }, cleanedText: { not: null }, updatedAt: target.updatedAt,
+    },
+    data: {
+      extractionStatus: 'PROCESSING', attemptCount: { increment: 1 }, lastAttemptedAt: now,
+      failureCode: null, failureMessage: null,
+    },
+  });
+  if (claimed.count !== 1) return null;
+  return prisma.programCaseAttachment.findUniqueOrThrow({ where: { id: target.id } });
+}
+
+async function completeMixedPdf(
+  claimed: ProgramCaseAttachment,
+  value: { mergedRawText: string; mergedCleanedText: string; downloaded: Awaited<ReturnType<typeof downloadAttachment>>; extractorVersion: string },
+  now: Date,
+) {
+  const result = await prisma.programCaseAttachment.updateMany({
+    where: {
+      id: claimed.id, extractionStatus: 'PROCESSING', extractorType: 'PDFJS_TEXT_PARTIAL',
+      attemptCount: claimed.attemptCount, lastAttemptedAt: claimed.lastAttemptedAt, updatedAt: claimed.updatedAt,
+    },
+    data: {
+      extractionStatus: 'COMPLETED', rawText: value.mergedRawText, cleanedText: value.mergedCleanedText,
+      detectedFileType: 'PDF', detectedMimeType: 'application/pdf',
+      fileSizeBytes: value.downloaded.byteSize, checksumSha256: value.downloaded.checksumSha256,
+      extractorType: 'PDFJS_TEXT_OCR_MERGED', extractorVersion: value.extractorVersion,
+      extractedAt: now, failureCode: null, failureMessage: null,
+    },
+  });
+  return result.count;
+}
+
+async function restoreMixedPdf(snapshotRow: ProgramCaseAttachment, claimed: ProgramCaseAttachment) {
+  const result = await prisma.programCaseAttachment.updateMany({
+    where: {
+      id: claimed.id, extractionStatus: 'PROCESSING', extractorType: 'PDFJS_TEXT_PARTIAL',
+      attemptCount: claimed.attemptCount, lastAttemptedAt: claimed.lastAttemptedAt, updatedAt: claimed.updatedAt,
+    },
+    data: {
+      extractionStatus: 'COMPLETED', rawText: snapshotRow.rawText, cleanedText: snapshotRow.cleanedText,
+      detectedFileType: snapshotRow.detectedFileType, detectedMimeType: snapshotRow.detectedMimeType,
+      fileSizeBytes: snapshotRow.fileSizeBytes, checksumSha256: snapshotRow.checksumSha256,
+      extractorType: snapshotRow.extractorType, extractorVersion: snapshotRow.extractorVersion,
+      extractedAt: snapshotRow.extractedAt, failureCode: snapshotRow.failureCode, failureMessage: snapshotRow.failureMessage,
+    },
+  });
+  return result.count;
+}
+
+export async function runMixedPdfWrite(
+  options: PdfOcrRunOptions & { write: true },
+  dependencies: PdfOcrPlanDependencies & {
+    claimMixed?: typeof claimMixedPdf;
+    completeMixed?: typeof completeMixedPdf;
+    restoreMixed?: typeof restoreMixedPdf;
+    now?: () => Date;
+  } = {},
+) {
+  const config = dependencies.getConfig?.() ?? getAttachmentOcrConfig();
+  const renderer = await (dependencies.rendererAvailability ?? detectPdfRendererAvailability)(config);
+  if (!renderer.available || !renderer.versionConfigured) {
+    throw new AttachmentProcessingError('PDF_RENDERER_UNAVAILABLE', 'PDF renderer preflight failed.');
+  }
+  const clovaConfig = { ...(dependencies.getClovaConfig?.() ?? getClovaOcrConfig()), maxRetries: 0 };
+  validateClovaOcrExecutionConfig(clovaConfig);
+  const selected = await (dependencies.select ?? selectMixedPdfCandidates)(options);
+  if (selected.length !== 1) {
+    return { mode: 'write', selected: selected.length, claimed: 0, completed: 0, failed: 0, skipped: selected.length ? 1 : 0, actualApiCalls: 0, databaseMutation: false };
+  }
+  const original = selected[0];
+  const now = dependencies.now ?? (() => new Date());
+  const claimed = await (dependencies.claimMixed ?? claimMixedPdf)(original, now());
+  if (!claimed) {
+    return { mode: 'write', selected: 1, claimed: 0, completed: 0, failed: 0, skipped: 1, skippedByClaimConcurrency: 1, actualApiCalls: 0, databaseMutation: false };
+  }
+  let completionCount = 0;
+  try {
+    const result = await runPdfOcrDryRun(
+      { type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: false, renderDryRun: false, ocrDryRun: true },
+      {
+        ...dependencies,
+        getClovaConfig: () => clovaConfig,
+        rendererAvailability: async () => renderer,
+        select: async () => [original],
+        onMerged: async (value) => {
+          completionCount = await (dependencies.completeMixed ?? completeMixedPdf)(claimed, value, now());
+          if (completionCount !== 1) throw new AttachmentProcessingError('PDF_OCR_MERGE_FAILED', 'PDF OCR completion lost concurrency.');
+        },
+      },
+    );
+    return {
+      ...result, mode: 'write', selected: 1, claimed: 1, completed: 1, failed: 0, skipped: 0,
+      skippedByClaimConcurrency: 0, completionSkippedByConcurrency: 0,
+      restoreAttempted: 0, restored: 0, restoreSkippedByConcurrency: 0,
+      databaseUpdates: 2, databaseMutation: true,
+    };
+  } catch (error) {
+    const restored = await (dependencies.restoreMixed ?? restoreMixedPdf)(original, claimed);
+    return {
+      mode: 'write', selected: 1, claimed: 1, completed: 0, failed: 1, skipped: 0,
+      actualApiCalls: Number((error as { apiCallCount?: number }).apiCallCount ?? 0),
+      retryCount: 0, restoreAttempted: 1, restored, restoreSkippedByConcurrency: restored === 0 ? 1 : 0,
+      completionSkippedByConcurrency: completionCount === 0 ? 1 : 0,
+      databaseUpdates: 1 + restored, databaseMutation: true,
+      failureCodes: [(error as { code?: string }).code ?? 'UNKNOWN_ERROR'],
+    };
   }
 }
 
@@ -453,6 +582,12 @@ export async function runPdfOcrDryRun(
       ...(markers.length !== extraction.pageCount ? ['PDF_PAGE_MARKER_COUNT_INVALID'] : []),
       ...(!nonCandidateRawPagesUnchanged || !nonCandidateCleanedPagesUnchanged ? ['PDF_NONCANDIDATE_CHANGED'] : []),
     ];
+    await dependencies.onMerged?.({
+      mergedRawText: merged.rawText,
+      mergedCleanedText: merged.cleanedText,
+      downloaded,
+      extractorVersion: `PDFJS_${extraction.extractorVersion}+CLOVA_V2+POPPLER_${renderer.version}`,
+    });
     const current = dependencies.getRow
       ? await dependencies.getRow(target.id)
       : await prisma.programCaseAttachment.findUniqueOrThrow({ where: { id: target.id } });

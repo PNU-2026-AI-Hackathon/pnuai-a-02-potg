@@ -21,6 +21,8 @@
     "analyze:image-ocr-failures": "npm run build && node scripts/analyze-image-ocr-failures.js",
     "test:image-ocr-failure-diagnostics": "npm run build && node scripts/test-image-ocr-failure-diagnostics.js",
     "test:pdf-ocr-foundation": "npm run build && node scripts/test-pdf-ocr-foundation.js",
+    "test:pdf-ocr-write": "npm run build && node scripts/test-pdf-ocr-write.js",
+    "test:pdf-ocr-required": "npm run build && node scripts/test-pdf-ocr-write.js",
     "test:attachment-recovery": "npm run build && node scripts/test-attachment-recovery.js",
     "recover:attachment-extractions": "npm run build && node dist/cli/recoverAttachmentExtractions.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",

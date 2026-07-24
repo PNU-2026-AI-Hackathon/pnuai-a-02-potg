@@ -17,16 +17,16 @@ const page = (pageNumber, source, text) => ({ pageNumber, source, rawText: text,
 
 function testArguments() {
   assert.deepEqual(parseExtractionArguments(['--type', 'PDF_OCR', '--mixed-only', '--limit', '1', '--plan']), {
-    type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: true, renderDryRun: false,
+    type: 'PDF_OCR', mixedOnly: true, ocrRequiredOnly: false, limit: 1, plan: true, renderDryRun: false,
   });
   assert.deepEqual(parseExtractionArguments(['--type', 'PDF_OCR', '--mixed-only', '--attachment-id', id, '--plan']), {
-    type: 'PDF_OCR', mixedOnly: true, limit: 1, attachmentId: id, plan: true, renderDryRun: false,
+    type: 'PDF_OCR', mixedOnly: true, ocrRequiredOnly: false, limit: 1, attachmentId: id, plan: true, renderDryRun: false,
   });
   assert.deepEqual(parseExtractionArguments(['--type', 'PDF_OCR', '--mixed-only', '--render-dry-run']), {
-    type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: false, renderDryRun: true,
+    type: 'PDF_OCR', mixedOnly: true, ocrRequiredOnly: false, limit: 1, plan: false, renderDryRun: true,
   });
   assert.deepEqual(parseExtractionArguments(['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run']), {
-    type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: false, renderDryRun: false, ocrDryRun: true,
+    type: 'PDF_OCR', mixedOnly: true, ocrRequiredOnly: false, limit: 1, plan: false, renderDryRun: false, ocrDryRun: true,
   });
   for (const args of [
     ['--type', 'PDF_OCR'], ['--type', 'PDF_OCR', '--mixed-only'],
