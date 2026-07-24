@@ -24,6 +24,8 @@
     "test:pdf-ocr-write": "npm run build && node scripts/test-pdf-ocr-write.js",
     "test:pdf-ocr-required": "npm run build && node scripts/test-pdf-ocr-write.js",
     "test:attachment-recovery": "npm run build && node scripts/test-attachment-recovery.js",
+    "test:hwp-analysis": "npm run build && node scripts/test-hwp-analysis.js",
+    "analyze:hwp-attachments": "npm run build && node dist/cli/analyzeHwpAttachments.js",
     "recover:attachment-extractions": "npm run build && node dist/cli/recoverAttachmentExtractions.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
     "postinstall": "prisma generate"
