@@ -7,7 +7,7 @@ const { parseExtractionArguments } = require('../dist/cli/extractProgramAttachme
 const { AttachmentProcessingError } = require('../dist/services/attachment/attachmentErrors');
 const { mergePdfOcrPages } = require('../dist/services/attachment/pdfOcrMerger');
 const { detectPdfRendererAvailability, renderPdfPage } = require('../dist/services/attachment/pdfPageRenderer');
-const { runPdfOcrPlan, runPdfOcrRenderDryRun } = require('../dist/services/attachment/pdfOcrPlanService');
+const { runPdfOcrDryRun, runPdfOcrPlan, runPdfOcrRenderDryRun } = require('../dist/services/attachment/pdfOcrPlanService');
 
 const id = '123e4567-e89b-42d3-a456-426614174000';
 const png = Buffer.concat([Buffer.from('89504e470d0a1a0a', 'hex'), Buffer.from('safe')]);
@@ -25,6 +25,9 @@ function testArguments() {
   assert.deepEqual(parseExtractionArguments(['--type', 'PDF_OCR', '--mixed-only', '--render-dry-run']), {
     type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: false, renderDryRun: true,
   });
+  assert.deepEqual(parseExtractionArguments(['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run']), {
+    type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: false, renderDryRun: false, ocrDryRun: true,
+  });
   for (const args of [
     ['--type', 'PDF_OCR'], ['--type', 'PDF_OCR', '--mixed-only'],
     ['--type', 'PDF_OCR', '--mixed-only', '--plan', '--limit', '2'],
@@ -36,6 +39,12 @@ function testArguments() {
     ['--type', 'PDF_OCR', '--mixed-only', '--render-dry-run', '--dry-run'],
     ['--type', 'PDF_OCR', '--mixed-only', '--render-dry-run', '--limit', '2'],
     ['--type', 'PDF_OCR', '--mixed-only', '--render-dry-run', '--render-dry-run'],
+    ['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run', '--plan'],
+    ['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run', '--render-dry-run'],
+    ['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run', '--dry-run'],
+    ['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run', '--retry-failed'],
+    ['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run', '--limit', '2'],
+    ['--type', 'PDF_OCR', '--mixed-only', '--ocr-dry-run', '--ocr-dry-run'],
     ['--type', 'IMAGE', '--render-dry-run'],
     ['--type', 'PDF', '--render-dry-run'],
     ['--type', 'IMAGE', '--mixed-only', '--plan'],
@@ -211,10 +220,10 @@ async function testRenderDryRun() {
   const extraction = {
     extractorVersion: 'mock', pageCount: 4,
     pages: [
-      { pageNumber: 1, classification: 'TEXT' },
-      { pageNumber: 2, classification: 'TEXT' },
-      { pageNumber: 3, classification: 'TEXT' },
-      { pageNumber: 4, classification: 'OCR_CANDIDATE' },
+      { pageNumber: 1, text: 'one', classification: 'TEXT' },
+      { pageNumber: 2, text: 'two', classification: 'TEXT' },
+      { pageNumber: 3, text: 'three', classification: 'TEXT' },
+      { pageNumber: 4, text: '', classification: 'OCR_CANDIDATE' },
     ],
     rawText: 'must not leak', cleanedText: 'must not leak', totalCharacterCount: 300,
     totalNonWhitespaceCharacterCount: 300, replacementCharacterCount: 0,
@@ -307,6 +316,58 @@ async function testRenderDryRun() {
     },
   ));
   assert.deepEqual([failurePdfCleaned, failurePngCleaned], [true, true]);
+
+  let ocrPngCleaned = false;
+  let ocrPdfCleaned = false;
+  let engineCreated = 0;
+  const ocrResult = await runPdfOcrDryRun(
+    { type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: false, renderDryRun: false, ocrDryRun: true },
+    {
+      rendererAvailability: async () => ({
+        configured: true, available: true, versionConfigured: true, version: '25.12.0',
+      }),
+      getClovaConfig: () => ({
+        enabled: true, invokeUrl: 'https://mock.invalid/ocr', secret: 'fake',
+        timeoutMs: 30000, responseMaxBytes: 5242880, maxRetries: 1,
+      }),
+      select: async () => [target],
+      getConfig: () => config(),
+      snapshot: async () => snapshot,
+      getRow: async () => target,
+      downloader: async () => ({
+        tempFilePath: 'safe/input.pdf', byteSize: 1, checksumSha256: 'hidden',
+        responseContentType: 'application/pdf', finalHost: 'hidden',
+        cleanup: async () => { ocrPdfCleaned = true; },
+      }),
+      detector: async () => ({ detectedFileType: 'PDF', detectedMimeType: 'application/pdf', matchesExpectedType: true }),
+      extractPdf: async () => extraction,
+      renderPage: async () => ({
+        filePath: 'safe/page.png', byteSize: 4567, cleanup: async () => { ocrPngCleaned = true; },
+      }),
+      inspectMetadata: async () => ({
+        format: 'png', width: 1654, height: 2339, pages: 1, orientation: null,
+        hasAlpha: false, pixelCount: 3869306, estimatedRgbaBytes: 15477224,
+      }),
+      createEngine: () => { engineCreated += 1; return {}; },
+      processImage: async () => ({
+        detectedFormat: 'PNG', width: 1654, height: 2339, pixelCount: 3869306,
+        preprocessedWidth: 1654, preprocessedHeight: 2339, engine: 'CLOVA_OCR',
+        engineVersion: 'V2', rawText: 'secret-body-xyz', cleanedText: 'secret-body-xyz',
+        isEmpty: false, durationMs: 10, apiCallCount: 1, retryCount: 0,
+        averageConfidence: 0.95, fieldCount: 2, readingOrderStrategy: 'LINE_BREAK',
+      }),
+    },
+  );
+  assert.deepEqual([engineCreated, ocrPngCleaned, ocrPdfCleaned], [1, true, true]);
+  assert.deepEqual([ocrResult.actualApiCalls, ocrResult.retryCount, ocrResult.mergedPageCount], [1, 0, 4]);
+  assert.deepEqual([ocrResult.pageMarkerCount, ocrResult.duplicatePageMarkers, ocrResult.missingPageMarkers], [4, 0, 0]);
+  assert.deepEqual([ocrResult.pdfJsSourcePageCount, ocrResult.ocrSourcePageCount], [3, 1]);
+  assert.deepEqual(
+    [ocrResult.nonCandidateRawPagesUnchanged, ocrResult.nonCandidateCleanedPagesUnchanged, ocrResult.candidateReplaced],
+    [true, true, true],
+  );
+  assert.deepEqual(ocrResult.qualityWarnings, []);
+  assert.equal(JSON.stringify(ocrResult).includes('secret-body-xyz'), false);
 }
 
 async function run() {
