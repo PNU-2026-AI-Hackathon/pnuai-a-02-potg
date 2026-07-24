@@ -984,3 +984,29 @@ cleanup remaining: 0
 ```
 
 IMAGE COMPLETED 156, PDF COMPLETED 55(`PDFJS_TEXT` 54, `PDFJS_TEXT_PARTIAL` 1), HWP 26과 ProgramCase/Session/Attachment 349/20/237 집계가 유지됐다. logical key 중복과 고아 attachment는 0이었다. Secret, URL, ID, checksum, PDF·OCR·병합 본문과 전체 경로는 출력하거나 문서화하지 않았다. 품질 경고가 없으므로 다음 단계는 별도 승인 아래 동일 1건을 실제 DB 저장하는 제한 write 검증이다.
+
+## 33. MIXED PDF stale PROCESSING 복구 기반 (2026-07-24)
+
+MIXED PDF write 중 프로세스 종료로 PROCESSING이 잔류할 경우를 대비해 별도 maintenance CLI를 추가했다. 실제 MIXED write는 아직 구현 전이지만 기존 claim 패턴은 상태, attempt, lastAttemptedAt과 failure만 변경하고 기존 본문·extractor·checksum·extractedAt을 보존한다. 따라서 활성 PDF, PROCESSING, `PDFJS_TEXT_PARTIAL`, raw/cleaned 본문 존재, failure null, lastAttemptedAt이 cutoff 이전인 행만 이전 COMPLETED 상태로 확정할 수 있다.
+
+기본 stale 기준은 60분이며 허용 범위는 15~1440분, limit은 기본 20·허용 1~100이다. plan/apply는 반드시 하나만 지정한다. apply는 행별 짧은 조건부 update를 사용하고 ID, PROCESSING, extractor, 본문 존재, stale cutoff, `lastAttemptedAt`과 `updatedAt` snapshot이 모두 일치할 때만 COMPLETED로 바꾼다. 경쟁에서 count 0이면 강제 재시도 없이 skip한다. attemptCount, lastAttemptedAt, 본문, extractor/version, extractedAt, checksum과 파일 metadata는 보존한다.
+
+Mock 테스트에서 정상 stale 복구, 최근 PROCESSING, 본문 누락, 예상 외 extractor, 비활성, lastAttemptedAt 누락 제외와 concurrency skip을 검증했다. plan은 update 0, apply 정상 fixture는 recovered 1, 경쟁 fixture는 skipped 1이었다. 외부 다운로드·renderer·CLOVA 호출은 없다.
+
+실제 DB에서는 다음 read-only plan만 실행했고 apply는 실행하지 않았다.
+
+```text
+stale after / limit: 60 minutes / 20
+processing total / stale by time / eligible: 0 / 0 / 0
+selected / estimated updates / actual updates: 0 / 0 / 0
+database mutation: false
+aggregate counts unchanged: true
+ProgramCase / Session / Attachment / active: 349 / 20 / 237 / 237
+IMAGE COMPLETED: 156
+PDF COMPLETED: 55
+PDFJS_TEXT / PDFJS_TEXT_PARTIAL: 54 / 1
+HWP: 26
+download / render / CLOVA calls: 0 / 0 / 0
+```
+
+`.env`와 `.local` ignore를 확인했고 품질 검수가 끝난 `.local/ocr-review` 폴더만 삭제했다. ID, URL, checksum, 본문, Secret과 전체 경로는 출력하거나 문서화하지 않았다. stale 대상이 없고 복구 안전장치가 준비됐으므로 다음 단계는 별도 승인 아래 MIXED PDF 1건 실제 저장을 제한 실행하는 것이다.
