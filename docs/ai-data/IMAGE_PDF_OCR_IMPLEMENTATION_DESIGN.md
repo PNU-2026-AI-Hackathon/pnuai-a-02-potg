@@ -960,3 +960,27 @@ aggregate counts unchanged: true
 독립 cleanup 검사에서도 임시 PDF·렌더 PNG·OCR 입력, job 디렉터리와 manifest 잔여가 모두 0이었다. Invoke URL, Secret, attachment ID, PDF URL, 원본 파일명, checksum 값, PDF/페이지/OCR 본문, 원본 PDF, 렌더 PNG와 전체 로컬 경로는 출력하거나 문서화하지 않았다.
 
 실제 렌더링과 입력 안전 검증이 성공했으므로 다음 단계는 동일 후보 1페이지를 CLOVA OCR로 보내고 PDF.js 본문과 병합하되 DB에는 저장하지 않는 OCR dry-run이다. 다음 단계의 최대 CLOVA API 호출 승인 수는 1회이다.
+
+## 32. MIXED PDF 후보 1페이지 CLOVA OCR·병합 dry-run (2026-07-24)
+
+`--type PDF_OCR --mixed-only --limit 1 --ocr-dry-run`을 구현하고 실제로 한 번 실행했다. renderer와 CLOVA 설정을 대상 조회 전에 검증하고 실행 범위에서 retry를 0으로 강제했다. 후보 PNG는 기존 이미지 OCR 안전 파이프라인으로 처리하고 `pdfOcrMerger`에서 PDF.js 페이지와 메모리 병합했으며 DB에는 저장하지 않았다.
+
+```text
+selected / total pages / PDF.js TEXT / candidate: 1 / 4 / 3 / 1
+render attempted / succeeded: 1 / 1
+render dimensions / bytes / duration: 1653x2339 / 169179 / 1223 ms
+CLOVA calls / retries / OCR duration: 1 / 0 / 9647 ms
+field count / confidence / reading order: 10 / 0.7798277339999998 / LINE_BREAK
+candidate raw / cleaned length / empty: 57 / 57 / false
+merged raw / cleaned length: 2576 / 2437
+merged pages / markers / duplicate / missing: 4 / 4 / 0 / 0
+PDF.js / OCR source pages: 3 / 1
+noncandidate raw / cleaned unchanged: true / true
+candidate replaced: true
+quality warnings: none
+database mutation / claim / attempt increment: false / false / false
+target fingerprint / aggregate counts unchanged: true / true
+cleanup remaining: 0
+```
+
+IMAGE COMPLETED 156, PDF COMPLETED 55(`PDFJS_TEXT` 54, `PDFJS_TEXT_PARTIAL` 1), HWP 26과 ProgramCase/Session/Attachment 349/20/237 집계가 유지됐다. logical key 중복과 고아 attachment는 0이었다. Secret, URL, ID, checksum, PDF·OCR·병합 본문과 전체 경로는 출력하거나 문서화하지 않았다. 품질 경고가 없으므로 다음 단계는 별도 승인 아래 동일 1건을 실제 DB 저장하는 제한 write 검증이다.
