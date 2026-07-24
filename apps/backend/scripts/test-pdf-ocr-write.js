@@ -121,6 +121,27 @@ async function testMixedWrite() {
     },
   );
   assert.deepEqual([raced.claimed, raced.skippedByClaimConcurrency, raced.actualApiCalls], [0, 1, 0]);
+
+  let restored = 0;
+  const failed = await runMixedPdfWrite(
+    { type: 'PDF_OCR', mixedOnly: true, limit: 1, plan: false, renderDryRun: false, write: true },
+    {
+      select: async () => [row], claimMixed: async () => claimed,
+      restoreMixed: async (original, processing) => {
+        assert.equal(original.rawText, 'old');
+        assert.equal(processing.extractionStatus, 'PROCESSING');
+        restored += 1;
+        return 1;
+      },
+      getConfig: () => config, getClovaConfig: () => clova,
+      rendererAvailability: async () => renderer, snapshot: async () => snapshot,
+      downloader: async () => download(async () => undefined),
+      detector: async () => ({}), extractPdf: async () => extraction,
+      renderPage: async () => { throw Object.assign(new Error('safe'), { code: 'PDF_RENDER_FAILED' }); },
+      getRow: async () => claimed,
+    },
+  );
+  assert.deepEqual([failed.failed, failed.restored, restored, failed.actualApiCalls], [1, 1, 1, 0]);
 }
 
 async function testOcrRequired() {
@@ -195,6 +216,60 @@ async function testOcrRequired() {
     },
   );
   assert.deepEqual([calls, failures, failed.failed, failed.actualApiCalls], [2, 1, 1, 1]);
+
+  let renderFailureOcrCalls = 0;
+  const renderFailed = await runOcrRequiredPdf(
+    { type: 'PDF_OCR', mixedOnly: false, ocrRequiredOnly: true, limit: 1, plan: false, write: true },
+    {
+      ...common, select: async () => [failedRow], claim: async () => true,
+      downloader: async () => download(async () => undefined),
+      detector: async () => ({}), analyze: async () => ({ ...extraction, pageCount: 1 }),
+      render: async () => { throw Object.assign(new Error('safe'), { code: 'PDF_RENDER_FAILED' }); },
+      processImage: async () => { renderFailureOcrCalls += 1; },
+      fail: async () => undefined,
+    },
+  );
+  assert.deepEqual([renderFailed.failed, renderFailed.actualApiCalls, renderFailureOcrCalls], [1, 0, 0]);
+
+  let emptyStored;
+  const empty = await runOcrRequiredPdf(
+    { type: 'PDF_OCR', mixedOnly: false, ocrRequiredOnly: true, limit: 1, plan: false, write: true },
+    {
+      ...common, select: async () => [failedRow], claim: async () => true,
+      downloader: async () => download(async () => undefined),
+      detector: async () => ({}), analyze: async () => ({ ...extraction, pageCount: 1 }),
+      render: async () => ({ filePath: 'safe/1.png', byteSize: 1, cleanup: async () => undefined }),
+      processImage: async () => ({ rawText: '', cleanedText: '', apiCallCount: 1, retryCount: 0 }),
+      complete: async (_target, value) => { emptyStored = value; return 1; },
+    },
+  );
+  assert.deepEqual([empty.completed, empty.actualApiCalls, emptyStored.cleanedText], [1, 1, '']);
+
+  let pageLimitRenderCount = 0;
+  const limited = await runOcrRequiredPdf(
+    { type: 'PDF_OCR', mixedOnly: false, ocrRequiredOnly: true, limit: 1, plan: false, write: true },
+    {
+      ...common, select: async () => [failedRow], claim: async () => true,
+      downloader: async () => download(async () => undefined),
+      detector: async () => ({}), analyze: async () => ({ ...extraction, pageCount: 51 }),
+      render: async () => { pageLimitRenderCount += 1; },
+      fail: async () => undefined,
+    },
+  );
+  assert.deepEqual([limited.failed, limited.actualApiCalls, pageLimitRenderCount], [1, 0, 0]);
+
+  const completionRace = await runOcrRequiredPdf(
+    { type: 'PDF_OCR', mixedOnly: false, ocrRequiredOnly: true, limit: 1, plan: false, write: true },
+    {
+      ...common, select: async () => [failedRow], claim: async () => true,
+      downloader: async () => download(async () => undefined),
+      detector: async () => ({}), analyze: async () => ({ ...extraction, pageCount: 1 }),
+      render: async () => ({ filePath: 'safe/1.png', byteSize: 1, cleanup: async () => undefined }),
+      processImage: async () => ({ rawText: 'ok', cleanedText: 'ok', apiCallCount: 1, retryCount: 0 }),
+      complete: async () => 0,
+    },
+  );
+  assert.deepEqual([completionRace.completed, completionRace.skipped, completionRace.failed], [0, 1, 0]);
 }
 
 async function run() {
