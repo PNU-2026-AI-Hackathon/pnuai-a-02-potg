@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { runAttachmentExtraction, RunAttachmentExtractionOptions } from '../services/attachment/attachmentExtractionService';
 import { ImageOcrRunOptions, runImageOcr } from '../services/attachment/imageOcrDryRunService';
-import { PdfOcrRunOptions, runPdfOcrPlan } from '../services/attachment/pdfOcrPlanService';
+import { PdfOcrRunOptions, runPdfOcrPlan, runPdfOcrRenderDryRun } from '../services/attachment/pdfOcrPlanService';
 
 type ExtractionArguments = RunAttachmentExtractionOptions | ImageOcrRunOptions | PdfOcrRunOptions;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -15,7 +15,7 @@ function valueAfter(args: string[], index: number, option: string) {
 export function parseExtractionArguments(args: string[]): ExtractionArguments {
   const values: Record<string, string | boolean> = {};
   const valueOptions = new Set(['--type', '--limit', '--attachment-id']);
-  const flagOptions = new Set(['--retry-failed', '--dry-run', '--plan', '--mixed-only', '--ocr-required-only']);
+  const flagOptions = new Set(['--retry-failed', '--dry-run', '--plan', '--mixed-only', '--ocr-required-only', '--render-dry-run']);
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (!valueOptions.has(argument) && !flagOptions.has(argument)) throw new Error(`Unknown option: ${argument}`);
@@ -37,14 +37,20 @@ export function parseExtractionArguments(args: string[]): ExtractionArguments {
     if (values['--retry-failed']) throw new Error('--retry-failed is not supported for PDF_OCR.');
     if (values['--ocr-required-only']) throw new Error('--ocr-required-only is not supported for PDF_OCR.');
     if (values['--dry-run']) throw new Error('--dry-run is not implemented for PDF_OCR.');
-    if (values['--plan'] !== true) throw new Error('--plan is required for PDF_OCR.');
+    const plan = values['--plan'] === true;
+    const renderDryRun = values['--render-dry-run'] === true;
+    if (plan && renderDryRun) throw new Error('--render-dry-run cannot be combined with --plan.');
+    if (!plan && !renderDryRun) throw new Error('--plan or --render-dry-run is required for PDF_OCR.');
     const limit = values['--limit'] === undefined ? 1 : Number(values['--limit']);
     if (limit !== 1) throw new Error('--limit must be 1 for PDF_OCR.');
     const attachmentId = values['--attachment-id'] ? String(values['--attachment-id']) : undefined;
     if (attachmentId && !UUID.test(attachmentId)) throw new Error('--attachment-id must be a UUID.');
-    return { type: 'PDF_OCR', mixedOnly: true, limit: 1, ...(attachmentId ? { attachmentId } : {}), plan: true };
+    return {
+      type: 'PDF_OCR', mixedOnly: true, limit: 1, ...(attachmentId ? { attachmentId } : {}),
+      plan, renderDryRun,
+    } as PdfOcrRunOptions;
   }
-  if (values['--mixed-only'] || values['--ocr-required-only']) {
+  if (values['--mixed-only'] || values['--ocr-required-only'] || values['--render-dry-run']) {
     throw new Error('PDF OCR selection options require --type PDF_OCR.');
   }
   const maximum = type === 'IMAGE' ? 5 : 20;
@@ -85,7 +91,9 @@ export async function main(args = process.argv.slice(2)) {
   const result = options.type === 'IMAGE'
     ? await runImageOcr(options)
     : options.type === 'PDF_OCR'
-      ? await runPdfOcrPlan(options)
+      ? options.renderDryRun
+        ? await runPdfOcrRenderDryRun(options)
+        : await runPdfOcrPlan(options)
       : await runAttachmentExtraction(options);
   console.log(JSON.stringify({ ...result, durationMs: Date.now() - startedAt }, null, 2));
 }

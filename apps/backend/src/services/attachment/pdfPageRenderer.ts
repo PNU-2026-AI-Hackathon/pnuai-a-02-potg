@@ -10,6 +10,7 @@ export type PdfRendererAvailability = {
   configured: boolean;
   available: boolean;
   versionConfigured: boolean;
+  version: string | null;
 };
 
 export type RenderedPdfPage = {
@@ -45,18 +46,20 @@ export async function detectPdfRendererAvailability(
   runner: SubprocessRunner = runSubprocess,
 ): Promise<PdfRendererAvailability> {
   const configured = config.pdfRenderExecutable.trim().length > 0;
-  if (!configured) return { configured: false, available: false, versionConfigured: false };
+  if (!configured) return { configured: false, available: false, versionConfigured: false, version: null };
   try {
-    await runner({
+    const result = await runner({
       executable: config.pdfRenderExecutable,
       args: ['-v'],
       timeoutMs: Math.min(config.pdfRenderTimeoutMs, 5_000),
       stdoutMaxBytes: 16 * 1024,
       stderrMaxBytes: 16 * 1024,
     });
-    return { configured: true, available: true, versionConfigured: true };
+    const output = `${result.stdout.toString('utf8')}\n${result.stderr.toString('utf8')}`;
+    const version = output.match(/pdftocairo version\s+([0-9][0-9A-Za-z._-]*)/i)?.[1] ?? null;
+    return { configured: true, available: true, versionConfigured: version !== null, version };
   } catch {
-    return { configured: true, available: false, versionConfigured: false };
+    return { configured: true, available: false, versionConfigured: false, version: null };
   }
 }
 
