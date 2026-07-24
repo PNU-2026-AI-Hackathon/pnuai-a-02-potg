@@ -3,8 +3,9 @@ import { runAttachmentExtraction, RunAttachmentExtractionOptions } from '../serv
 import { ImageOcrRunOptions, runImageOcr } from '../services/attachment/imageOcrDryRunService';
 import { PdfOcrRunOptions, runMixedPdfWrite, runPdfOcrDryRun, runPdfOcrPlan, runPdfOcrRenderDryRun } from '../services/attachment/pdfOcrPlanService';
 import { runOcrRequiredPdf } from '../services/attachment/pdfOcrRequiredService';
+import { RunHwpExtractionOptions, runHwpExtraction } from '../services/attachment/hwpExtractionService';
 
-type ExtractionArguments = RunAttachmentExtractionOptions | ImageOcrRunOptions | PdfOcrRunOptions;
+type ExtractionArguments = RunAttachmentExtractionOptions | ImageOcrRunOptions | PdfOcrRunOptions | RunHwpExtractionOptions;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function valueAfter(args: string[], index: number, option: string) {
@@ -30,8 +31,8 @@ export function parseExtractionArguments(args: string[]): ExtractionArguments {
   }
   if (!values['--type']) throw new Error('--type is required.');
   const type = String(values['--type']).toUpperCase();
-  if (type !== 'PDF' && type !== 'IMAGE' && type !== 'PDF_OCR') {
-    throw new Error('Only --type PDF, IMAGE, or PDF_OCR is supported.');
+  if (type !== 'PDF' && type !== 'IMAGE' && type !== 'PDF_OCR' && type !== 'HWP') {
+    throw new Error('Only --type PDF, IMAGE, PDF_OCR, or HWP is supported.');
   }
   if (type === 'PDF_OCR') {
     const mixedOnly = values['--mixed-only'] === true;
@@ -63,8 +64,8 @@ export function parseExtractionArguments(args: string[]): ExtractionArguments {
   if (values['--mixed-only'] || values['--ocr-required-only'] || values['--render-dry-run'] || values['--ocr-dry-run'] || values['--write']) {
     throw new Error('PDF OCR selection options require --type PDF_OCR.');
   }
-  const maximum = type === 'IMAGE' ? 5 : 20;
-  const defaultLimit = type === 'IMAGE' ? 1 : 5;
+  const maximum = type === 'IMAGE' ? 5 : type === 'HWP' ? 4 : 20;
+  const defaultLimit = type === 'IMAGE' || type === 'HWP' ? 1 : 5;
   const limit = values['--limit'] === undefined ? defaultLimit : Number(values['--limit']);
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > maximum) {
     throw new Error(`--limit must be an integer from 1 to ${maximum}.`);
@@ -79,6 +80,16 @@ export function parseExtractionArguments(args: string[]): ExtractionArguments {
     if (plan) throw new Error('--plan is only supported for IMAGE.');
     return {
       type: 'PDF',
+      limit,
+      ...(attachmentId ? { attachmentId } : {}),
+      retryFailed,
+      dryRun,
+    };
+  }
+  if (type === 'HWP') {
+    if (plan) throw new Error('--plan is only supported for IMAGE.');
+    return {
+      type: 'HWP',
       limit,
       ...(attachmentId ? { attachmentId } : {}),
       retryFailed,
@@ -100,6 +111,8 @@ export async function main(args = process.argv.slice(2)) {
   const startedAt = Date.now();
   const result = options.type === 'IMAGE'
     ? await runImageOcr(options)
+    : options.type === 'HWP'
+      ? await runHwpExtraction(options)
     : options.type === 'PDF_OCR'
       ? 'ocrRequiredOnly' in options && options.ocrRequiredOnly
         ? await runOcrRequiredPdf(options as never)
