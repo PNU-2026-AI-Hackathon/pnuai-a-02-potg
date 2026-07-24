@@ -1010,3 +1010,47 @@ download / render / CLOVA calls: 0 / 0 / 0
 ```
 
 `.env`와 `.local` ignore를 확인했고 품질 검수가 끝난 `.local/ocr-review` 폴더만 삭제했다. ID, URL, checksum, 본문, Secret과 전체 경로는 출력하거나 문서화하지 않았다. stale 대상이 없고 복구 안전장치가 준비됐으므로 다음 단계는 별도 승인 아래 MIXED PDF 1건 실제 저장을 제한 실행하는 것이다.
+
+## 34. MIXED PDF 실제 OCR 병합 저장 결과 (2026-07-24)
+
+`--type PDF_OCR --mixed-only --limit 1 --write` 경로를 구현하고, 전체 Mock·fixture 회귀와 read-only preflight가 통과한 뒤 실제 대상 1건에 정확히 한 번 실행했다. claim은 `COMPLETED + PDFJS_TEXT_PARTIAL` 상태와 snapshot 시각이 일치할 때만 `PROCESSING`으로 전환하며 attempt를 증가시킨다. 최종 저장도 claim 직후의 상태·시각이 일치할 때만 수행한다. 렌더·OCR·병합 또는 완료 update가 실패하면 기존 PDF.js 본문과 metadata snapshot을 조건부로 복원한다.
+
+실행 범위에서는 Poppler 26.02.0을 사용했고 CLOVA retry를 0으로 강제했다. 4페이지 중 PDF.js 텍스트 3페이지를 그대로 유지하고 OCR 후보 1페이지만 렌더·호출했다.
+
+```text
+selected / claimed / completed / failed / skipped: 1 / 1 / 1 / 0 / 0
+render attempted / succeeded: 1 / 1
+CLOVA API calls / retries: 1 / 0
+OCR field count / average confidence: 10 / 0.7798277339999998
+candidate empty / quality warnings: false / none
+merged raw / cleaned length: 2576 / 2437
+merged pages / page markers: 4 / 4
+duplicate / missing markers: 0 / 0
+PDF.js / OCR source pages: 3 / 1
+noncandidate raw / cleaned unchanged: true / true
+extractor type: PDFJS_TEXT_OCR_MERGED
+restore attempted: 0
+temporary artifacts remaining: 0
+```
+
+저장 직후 동일 plan은 `selected = 0`, 예상 renderer·API 호출 0을 반환했다. stale PROCESSING plan과 OCR_REQUIRED plan도 각각 대상 0이었으며 추가 CLOVA 호출과 DB 변경은 없었다. 최종 PDF 집계는 COMPLETED 55, `PDFJS_TEXT` 54, `PDFJS_TEXT_OCR_MERGED` 1이다. ProgramCase/Session/Attachment 349/20/237, 활성 attachment 237, IMAGE COMPLETED 156, HWP 26, logical key 중복 0, 고아 attachment 0을 유지했다.
+
+## 35. OCR_REQUIRED 스캔 PDF 처리 기반
+
+`FAILED + failureCode = OCR_REQUIRED`인 활성 PDF만 선택하는 `--type PDF_OCR --ocr-required-only` 경로를 추가했다. plan은 다운로드·렌더·OCR·DB update를 수행하지 않고 대상 수와 renderer/CLOVA preflight만 반환한다. write는 limit 1~5에서만 허용하며 retry는 0이다. 실제 DB에는 대상이 없어 plan만 실행했고 `selected = 0`, 실제 API 호출과 DB 변경은 모두 0이었다.
+
+write 경로는 조건부 claim 후 PDF signature와 페이지 수를 검증하고, 페이지 제한 50 안에서 순차적으로 Poppler 렌더와 CLOVA OCR을 수행한다. 각 페이지 결과는 `[Page N]` marker 순서로 병합하고 성공 시 `CLOVA_OCR_PDF`로 저장한다. 중간 페이지가 실패하면 다음 페이지를 처리하지 않고 빈 본문과 안전한 failure code로 FAILED 전이한다. completion 경쟁에서는 다른 worker의 결과를 덮어쓰지 않는다.
+
+Mock 테스트는 다음 범위를 검증했다.
+
+- 3페이지 전체 성공과 page marker 순서
+- 2페이지 OCR 실패 시 3페이지 미호출
+- renderer 실패 시 OCR 호출 0
+- 빈 OCR 정상 결과 저장
+- 페이지 제한 초과 시 렌더·OCR 호출 0
+- claim 및 completion 경쟁 skip
+- PDF와 페이지별 렌더 파일 cleanup
+- MIXED 정상 저장, claim 경쟁, 렌더 실패 snapshot 복원
+- CLI 모드 상호 배타성, limit과 지원 type 검증
+
+모든 테스트는 가짜 renderer와 OCR 응답만 사용했으며 실제 CLOVA endpoint 호출과 운영 OCR_REQUIRED DB write는 수행하지 않았다. Secret, URL, attachment ID, checksum과 원문·OCR·병합 본문은 문서에 기록하지 않았다.
