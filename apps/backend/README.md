@@ -76,3 +76,19 @@ npm run db:verify:interests
 ```
 
 If a local development database uses a self-signed certificate, set `DATABASE_SSL_REJECT_UNAUTHORIZED=false` before running the seed or verification command.
+
+## HWP attachment extraction
+
+HWP extraction requires Node.js 18 or newer; Node.js 22 is recommended. `kordoc 4.2.7` runs as one isolated subprocess per file with a default 60-second timeout and concurrency 1.
+
+```bash
+# Read-only extraction validation
+npm run extract:program-attachments -- --type HWP --attachment-id <uuid> --dry-run
+
+# Claim and persist one eligible HWP attachment
+npm run extract:program-attachments -- --type HWP --attachment-id <uuid>
+```
+
+The kordoc OCR/PDF optional dependencies are not used by the HWP path. A kordoc-only runtime can use `npm ci --omit=dev --omit=optional`. Do not apply `--omit=optional` blindly to this whole backend: the existing direct `sharp` dependency needs its platform-specific optional runtime for image OCR. An EC2 deployment must either preserve the matching sharp runtime or isolate the HWP worker install. If an old `node_modules` contains kordoc OCR/PDF packages, replace it with a clean, lockfile-based production install after deciding that packaging boundary.
+
+Ubuntu 24.04 execution has not yet been verified. Do not process all HWP attachments in production until the representative samples, timeout/kill behavior, peak memory, sharp packaging, and temporary-file cleanup pass in that environment.
