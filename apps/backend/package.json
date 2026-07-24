@@ -28,6 +28,7 @@
     "test:hwp-tool-comparison": "npm run build && node scripts/test-hwp-tool-comparison.js",
     "compare:hwp-tools": "npm run build && node dist/cli/compareHwpExtractionTools.js",
     "test:kordoc-deployment": "npm run build && node scripts/test-kordoc-deployment-validation.js",
+    "test:hwp-text-extraction": "npm run build && node scripts/test-hwp-text-extraction.js",
     "analyze:hwp-attachments": "npm run build && node dist/cli/analyzeHwpAttachments.js",
     "recover:attachment-extractions": "npm run build && node dist/cli/recoverAttachmentExtractions.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
@@ -41,6 +42,7 @@
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
+    "kordoc": "4.2.7",
     "pdfjs-dist": "^6.1.200",
     "pg": "^8.22.0",
     "sharp": "^0.35.3"
