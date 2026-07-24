@@ -2,17 +2,23 @@
 
 ## 1. 목적과 결론
 
-목적은 Ubuntu 24.04·Node.js 22에서 HWP 대표 표본 4건, `sharp` 이미지 경로, kordoc subprocess의 peak RSS·종료·cleanup을 확인하고 전체 백엔드 production 설치 명령을 확정하는 것이다.
+Ubuntu 24.04·Node.js 22 환경에서 전체 backend production dependency 설치 가능성과, 설치 후 sharp·PDF·kordoc HWP 경로를 함께 검증하는 것이 목적이다. 실제 EC2의 운영 디렉터리가 아닌 별도 검증 복사본에서 수행했다.
 
-**결론은 D. 아직 결정 불가**다. 현재 호스트에는 Docker·Podman이 없고, `wsl.exe`만 존재하며 Linux 배포판은 설치되어 있지 않다. 저장소에도 기존 Docker/Compose 실행 환경이 없고 EC2 접근 정보도 제공되지 않았다. 요청 조건에 따라 새 WSL·Docker·EC2 환경을 만들지 않고 정적 검토까지만 수행했다. 따라서 Linux 성공, 설치 크기, peak RSS를 추정값으로 대체하지 않는다.
+**결론은 D. 아직 결정 불가**다.
 
-전체 26건 실행은 불가하다. 기존 대표 4건을 포함해 이번 단계의 DB 쓰기는 0건이며 나머지 22건도 다운로드·실행하지 않았다.
+- Ubuntu 24.04.4 LTS와 Node.js 22.23.1 환경은 실제 확인했다.
+- `npm ci --omit=dev`를 두 번 실행했지만 전체 production dependency 설치는 완료되지 않았다.
+- 1차는 명시적인 `ENOSPC`, 2차는 `Command terminated by signal 9`로 실패했다.
+- 현재 약 6.8GiB 루트 filesystem에서는 swap과 partial `node_modules`가 동시에 공간을 압박했다. 명시적으로 확인된 첫 번째 병목은 디스크 부족이다.
+- 최대 RSS는 1차 668,340KiB, 2차 686,656KiB까지 관측되어 약 911MiB RAM 환경의 메모리 여유도 작았다. 다만 2차 signal 9의 원인을 메모리 하나로 단정하지 않는다.
+- 설치가 완료되지 않았으므로 Linux sharp, PDF, 대표 HWP 4건, 출력 SHA-256, subprocess process-tree는 여전히 미검증이다.
+- A(`npm ci --omit=dev`)와 C(HWP runtime 분리)는 더 큰 디스크 또는 별도의 깨끗한 Linux build 환경에서 재검증한 후 선택해야 한다.
 
-## 2. 기존 구현 결과
+현재 운영 서버에는 적용하지 않았다. DB 쓰기는 0건이며 대표 4건 재실행과 나머지 HWP 22건 처리는 모두 수행하지 않았다.
 
-Windows Node.js 22.17.0에서 대표 HWP 4건은 dry-run과 DB 저장 모두 4/4 성공했다. `extractorType=KORDOC_HWP`, version `4.2.7`, FAILED 0, replacement character 0이었다. raw text는 kordoc Markdown과 HTML table 구조이며 cleaned text는 표 셀 순서를 ` | `로 유지한다.
+## 2. 기존 Windows 구현 결과
 
-기존 Windows 파일별 CLI 기준은 다음과 같다.
+Windows Node.js 22.17.0에서 대표 HWP 4건은 dry-run과 DB 저장 모두 4/4 성공했다. `extractorType=KORDOC_HWP`, version `4.2.7`, FAILED 0, replacement character 0이었다.
 
 | attachment ID | bytes | raw chars | cleaned chars | tables/rows/cells | CLI 시간 |
 |---|---:|---:|---:|---:|---:|
@@ -21,149 +27,221 @@ Windows Node.js 22.17.0에서 대표 HWP 4건은 dry-run과 DB 저장 모두 4/4
 | `bd7ffc09-ef85-4288-a44c-4b97dfc9ddf1` | 421,888 | 1,057 | 603 | 1/4/13 | 338ms |
 | `41a0d307-62e4-42de-a199-93aaf02419a0` | 52,736 | 1,488 | 537 | 1/16/50 | 353ms |
 
-위 값은 Linux 결과가 아니며 비교 기준으로만 사용한다. Linux raw/normalized SHA-256, 줄바꿈 차이와 문자·표 통계 일치는 미검증이다.
+이는 Linux 결과가 아니라 비교 기준이다. Linux raw/normalized SHA-256, 줄바꿈, 문자·표 통계 일치는 확인하지 못했다.
 
-## 3. Linux 환경 가용성
+## 3. 실제 EC2 검증 환경
+
+| 항목 | 실제 확인값 |
+|---|---|
+| OS | Ubuntu 24.04.4 LTS |
+| Kernel | Linux 6.17.0-1017-aws |
+| Architecture | x86_64 |
+| Node.js | v22.23.1 |
+| npm | 10.9.8 |
+| RAM | 약 911MiB |
+| 초기 swap | 없음 |
+| Root filesystem | 약 6.8GiB |
+| 검증 위치 | 운영 디렉터리가 아닌 backend 복사본 |
+| 운영 PM2 process | `moira-backend`, 검증 전후 `online` |
+
+서버 IP, 계정명, 비밀키 등 민감한 운영 정보는 기록하지 않았다.
+
+## 4. `npm ci --omit=dev` 실제 실행
+
+### 4.1 1차 시도
+
+2GiB swap을 생성한 뒤 다음을 실행했다.
+
+```bash
+/usr/bin/time -v npm ci --omit=dev --loglevel=warn
+```
+
+| 항목 | 결과 |
+|---|---:|
+| 결과 | 실패, `ENOSPC: no space left on device` |
+| elapsed | 약 30.93초 |
+| maximum resident set size | 668,340KiB |
+| partial `node_modules` | 약 1.2GiB |
+| 확인된 파일 수 | 중단 전 14,613개 |
+| command exit status | 1 |
+
+2GiB swap file이 루트 filesystem을 함께 사용하면서 dependency 설치 공간이 부족해졌다. 이 시도의 명시적인 실패 원인은 디스크 공간 부족이다.
+
+### 4.2 2차 시도
+
+2GiB swap과 partial 결과를 제거해 원상복구한 뒤 1GiB swap을 만들고 우선순위를 낮춰 재시도했다.
+
+```bash
+nice -n 10 /usr/bin/time -v npm ci --omit=dev --loglevel=warn
+```
+
+| 항목 | 결과 |
+|---|---:|
+| 실제 결과 | 실패, `Command terminated by signal 9` |
+| elapsed | 약 3분 29초 |
+| maximum resident set size | 686,656KiB |
+| partial `node_modules` | 약 1.6GiB |
+| 당시 root 사용률 | 93% |
+| 당시 남은 공간 | 약 485MiB |
+| `npm ls` | extraneous package 다수, 불완전 tree |
+
+로그 pipeline 마지막의 `tee` 때문에 `/usr/bin/time` 출력에 `Exit status: 0`이 보였지만 npm 성공으로 해석하지 않는다. 실제 npm 작업은 signal 9로 종료됐고 dependency tree도 불완전했다.
+
+### 4.3 정량 요약
 
 | 항목 | 결과 |
 |---|---|
-| Docker | 명령 없음 |
-| Podman | 명령 없음 |
-| WSL | 실행 파일만 존재, 배포판 미설치 |
-| bash | 명령 없음 |
-| 저장소 Docker/Compose | 없음 |
-| EC2 접근 | 제공되지 않음 |
-| Ubuntu OS/버전 | 미검증 |
-| Linux CPU architecture | 미검증 |
-| Linux Node/npm | 미검증 |
-| Linux 메모리 | 미검증 |
+| Ubuntu | 24.04.4 LTS |
+| Node.js | 22.23.1 |
+| npm | 10.9.8 |
+| Architecture | x86_64 |
+| RAM | 약 911MiB |
+| Root filesystem | 약 6.8GiB |
+| 1차 partial `node_modules` | 약 1.2GiB |
+| 1차 peak RSS | 668,340KiB |
+| 1차 결과 | ENOSPC, 실패 |
+| 2차 partial `node_modules` | 약 1.6GiB |
+| 2차 peak RSS | 686,656KiB |
+| 2차 결과 | signal 9, 실패 |
+| DB writes | 0 |
+| Remaining HWP processed | 0 |
+| 운영 PM2 영향 | 없음, `online` 유지 |
 
-민감한 서버 정보, IP, 계정, 키는 조회하거나 기록하지 않았다.
+## 5. partial dependency tree의 의미
 
-## 4. production 설치 방식 검토
+2차 partial tree의 `npm ls --omit=dev --depth=0`에는 다음 direct dependency가 보였다.
 
-### A. `npm ci --omit=dev`
+- `@prisma/adapter-pg@7.8.0`
+- `@prisma/client@7.8.0`
+- `bcryptjs@2.4.3`
+- `cors@2.8.6`
+- `dotenv@17.4.2`
+- `express@4.22.2`
+- `jsonwebtoken@9.0.3`
+- `kordoc@4.2.7`
+- `pdfjs-dist@6.1.200`
+- `pg@8.22.0`
+- `sharp@0.35.3`
 
-공식적이고 재현 가능한 명령이다. npm 기본값은 optional dependency를 설치하므로 Linux용 sharp runtime과 kordoc의 Transformers·ONNX Runtime·PDFium·pdfjs·sharp optional도 함께 설치될 것으로 예상된다. Linux에서 실제 설치하지 않았으므로 전체 크기·파일 수·설치 시간·sharp/HWP 성공은 미측정이다.
+그러나 설치가 signal 9로 중단됐고 extraneous package가 다수였으므로 정상 production tree가 아니다. package 이름이 보였다는 사실은 sharp native runtime이나 kordoc CLI가 Linux에서 로드·실행됐다는 증거가 아니다.
 
-현재 Windows 개발 tree는 dev와 모든 optional을 포함해 1,252,353,204 bytes, 16,181 files다. 이는 깨끗한 A 설치 크기가 아니므로 A의 정량값으로 사용하지 않는다. 같은 tree에서 확인한 참고값은 다음과 같다.
+## 6. production 설치 방식 비교
 
-| 경로 | Windows 참고 크기 | 상태 |
-|---|---:|---|
-| kordoc subtree | 106,807,534 bytes | optional 중첩 포함 |
-| ONNX Runtime | 270,827,297 bytes | 설치됨 |
-| Transformers | 251,095,162 bytes | 설치됨 |
-| `pdfjs-dist` | 35,781,413 bytes | backend 직접 dependency도 존재 |
-| PDFium | 11,246,019 bytes | 설치됨 |
-| backend 직접 sharp package | 958,466 bytes | native runtime 별도 |
-| Windows sharp native runtime | 19,199,007 bytes | 설치됨 |
+### A. 전체 backend에서 `npm ci --omit=dev`
 
-기존 kordoc 단독 기본 설치는 약 745.8MiB였고 `--omit=optional` 단독 runtime은 29.36MiB였다. Linux A가 EC2 디스크와 배포 시간에 수용 가능한지는 EC2 디스크·배포 구조가 제공되지 않아 판단할 수 없다.
+공식적이고 재현 가능한 명령이지만 이번 약 6.8GiB root filesystem에서는 완료되지 않았다. optional dependency가 기본 설치되므로 Linux sharp runtime과 함께 kordoc의 Transformers, ONNX Runtime, PDFium, pdfjs, optional sharp까지 설치 대상이 된다.
 
-### B. sharp optional만 보존하고 kordoc optional 제외
+현재 EC2 조건에서는 A를 확정하지 않는다. 더 큰 디스크 또는 dependency 설치 전용의 깨끗한 Linux build 환경에서 설치 완료, 최종 크기, 설치 시간과 runtime smoke를 다시 측정해야 한다.
 
-현재 package 선언과 표준 npm flag만으로는 재현할 수 없다. npm의 `--omit=optional`과 `--include=optional`은 dependency 종류 전체에 적용되며 특정 부모 package의 optional만 선택하지 않는다. include와 omit을 함께 지정하면 optional 전체가 include된다. 이는 [npm ci 공식 문서](https://docs.npmjs.com/cli/commands/npm-ci/)와 [npm config 공식 문서](https://docs.npmjs.com/cli/using-npm/config/)의 동작이다.
+### B. sharp runtime만 보존하고 kordoc optional 제외
 
-수동 `node_modules` 삭제, lockfile 편집, 설치 후 cleanup, override·downgrade는 금지 조건 때문에 사용하지 않았다. OS별 `@img/sharp-*`를 직접 production dependency로 승격하는 방식은 package/architecture 조합과 lockfile 정책을 새로 설계해야 하며 Linux 실기 없이 안전성을 확정할 수 없어 적용하지 않았다.
+현재 package 선언과 표준 npm flag만으로는 재현할 수 없다. npm의 `--omit=optional`과 `--include=optional`은 특정 부모가 아니라 optional dependency 종류 전체에 적용된다. 따라서 sharp optional만 포함하고 kordoc optional만 제외할 수 없다. 이는 [npm ci 공식 문서](https://docs.npmjs.com/cli/commands/npm-ci/)의 동작과 일치한다.
+
+수동 `node_modules` 삭제, lockfile 편집, 설치 후 cleanup, override·downgrade는 수행하지 않았다.
 
 ### C. HWP runtime 분리
 
-A의 Linux 실측 크기나 배포 시간이 운영 한도를 넘을 때 검토할 수 있다. 이번 단계에서는 구현하지 않았다.
+A가 충분한 디스크에서도 운영상 과도할 경우 설계 후보로 유지한다. 이번 단계에서는 worker, queue 또는 별도 runtime을 구현하지 않았다.
 
-- 별도 package: kordoc 4.2.7과 최소 wrapper만 있는 package/lockfile 필요
-- 설치: HWP runtime에만 `npm ci --omit=dev --omit=optional`
-- 입력: 검증 완료된 로컬 HWP 경로, timeout/cancel 정보
-- 출력: 제한된 임시 Markdown 파일 또는 길이 제한 JSON metadata
-- 호출: Express가 기존 `runSubprocess()`로 worker CLI를 파일별 실행
-- 배포 단위: backend와 같은 호스트의 별도 runtime directory 또는 별도 이미지
-- 복잡도: 두 lockfile, 두 보안 감사, 버전 동기화, 배포·관측·cleanup 책임 증가
+- kordoc 4.2.7과 최소 wrapper만 별도 package/lockfile로 관리
+- HWP runtime에만 `npm ci --omit=dev --omit=optional`
+- 검증된 로컬 HWP 경로를 입력으로 받고 제한된 Markdown/metadata를 출력
+- Express에서 기존 `runSubprocess()`로 파일별 호출
+- backend와 같은 호스트의 별도 runtime directory 또는 별도 build artifact
+- 두 dependency tree의 감사·버전·배포 동기화가 추가 운영 부담
 
-방식 C는 queue나 상주 worker를 의미하지 않는다. A 실측 전에는 분리 필요성을 확정하지 않는다.
+## 7. sharp·PDF·kordoc Linux 검증
 
-## 5. sharp 검증
+설치가 완료되지 않았으므로 다음은 모두 **미검증**이다.
 
-Linux 검증은 미실행이다. 현재 Windows 설치에서는 다음 smoke test가 성공했다.
+- `require("sharp")`
+- sharp Linux native runtime과 libvips load
+- 합성 PNG metadata와 image preprocessing
+- image OCR mock
+- PDF extraction smoke
+- 대표 HWP 4건 다운로드와 container 검증
+- kordoc subprocess exit code
+- raw/cleaned 문자 수와 표·행·셀 수
+- Windows/Linux raw·normalized SHA-256 비교
+- replacement character와 줄바꿈 차이
 
-- `require("sharp")`: 성공
-- sharp: 0.35.3
-- libvips: 8.18.3
-- 2×2 합성 PNG 생성: 성공, 95 bytes
-- 생성 PNG metadata: `png`, 2×2
-- image OCR mock: 성공, 실제 CLOVA 호출 0
-- image preprocessor를 포함한 기존 mock 경로: 성공
+partial tree에서 direct dependency가 표시된 결과를 이 항목들의 성공으로 사용하지 않는다. 대표 4건을 재실행하거나 DB에 저장하지 않았고 나머지 22건도 처리하지 않았다.
 
-`npm ci --omit=dev --omit=optional`이 Linux sharp native runtime을 제거한다는 package tree 특성은 확인됐지만 Linux에서 재현하지 않았다. 이 명령은 전체 backend 운영안으로 선택할 수 없다.
+## 8. RSS, timeout, process 종료와 cleanup
 
-## 6. kordoc Linux 검증과 Windows 비교
+이번에 측정한 668,340KiB와 686,656KiB는 **npm 설치 process의 maximum RSS**다. kordoc HWP subprocess peak RSS가 아니다.
 
-Linux 대표 HWP 4건 다운로드·container 분석·kordoc 실행·출력 SHA-256·시간은 모두 미실행이다. DB에 다시 저장하지 않았다. Windows 기준 raw/cleaned 문자와 표 통계는 2절에 기록했다.
+dependency 설치가 완료되지 않아 Linux kordoc 정상 종료, 연속 4건 후 process 누적, timeout, 직접 child와 descendant process tree 종료는 실행하지 못했다. 현재 `runSubprocess()`는 직접 child에 `SIGKILL`을 보내지만 detached process group이나 PGID kill을 사용하지 않아 descendant process tree 종료는 여전히 보장되지 않는다.
 
-Linux에서 실행할 때는 기존 `--type HWP --attachment-id <id> --dry-run` 또는 DB와 분리된 승인 표본 파일을 사용해야 한다. 원문과 추출 전문은 출력하거나 커밋하지 않는다.
+검증 종료 후 다음을 정리했다.
 
-## 7. RSS, timeout, process 종료
+- 검증용 partial `node_modules`
+- npm log
+- swapfile
 
-Linux peak RSS는 미측정이다. 기존 Windows 검증의 `process.memoryUsage().rss`는 직접 API를 실행한 부모 process의 parse 직후 값으로 CLI subprocess peak RSS가 아니므로 Linux peak 값으로 재사용하지 않는다.
+최종 상태:
 
-현재 `runSubprocess()`는 timeout·Abort·stdout/stderr 제한 시 직접 child에 `child.kill("SIGKILL")`을 보내고 `close` event 후 종료한다. 기존 짧은 timeout mock은 `SUBPROCESS_TIMEOUT`, 직접 child 종료, 임시 output cleanup, 다음 테스트 계속 처리를 통과했다.
+- root 여유 약 3.0GiB
+- swap 0
+- `moira-backend` online
+- 운영 디렉터리와 PM2 설정 변경 없음
+- DB 쓰기 0
+- HWP 처리 0
 
-그러나 child를 detached process group으로 만들지 않고 Linux의 음수 PGID kill도 사용하지 않으므로 **descendant process tree 종료는 보장하지 않는다**. 일반 HWP parse에서 kordoc이 추가 자식을 생성하는지는 Linux에서 확인하지 못했다. 대규모 process framework는 추가하지 않았다.
+## 9. 보안 감사
 
-기존 Windows 실행 후 attachment temp job은 0개였고 Git 추적 원본·추출문도 0개다. Linux의 정상 4건·timeout 후 child/process/temp 잔존 수는 미검증이다.
+완성된 Linux production tree가 없으므로 해당 tree의 `npm audit --omit=dev`와 최종 `npm ls`는 수행할 수 없었다. partial tree 결과로 취약점 수를 확정하지 않는다.
 
-## 8. 보안 감사
+기존 Windows 전체 optional 설치 감사에서는 kordoc optional Transformers/ONNX/sharp와 MCP SDK 계열 advisory가 확인됐다. 실제 Windows HWP 실행 loaded module에는 Transformers, ONNX Runtime, PDFium과 optional sharp가 없었다. Linux에서는 설치와 실행 모두 완료되지 않아 같은 결론을 재검증하지 못했다.
 
-현재 모든 optional이 설치된 Windows tree에서 `npm audit --omit=dev`는 critical 0, high 6, moderate 4, low 1을 보고했다. 주요 경로:
+`npm audit fix --force`, dependency override, downgrade, lockfile 수동 편집은 수행하지 않았다.
 
-- kordoc optional Transformers → ONNX Runtime/adm-zip 및 sharp 0.34.x: high
-- kordoc direct MCP SDK 계열 Hono/AJV-fast-uri: moderate/high advisory
-- 기존 Express body-parser: low
-- Prisma tooling 경로: moderate
+## 10. 실제 측정값과 미검증 항목 구분
 
-HWP 대표 실행에서 실제 로드된 package 목록에는 Transformers, ONNX Runtime, PDFium, kordoc optional sharp와 MCP server 모듈이 없었다. backend image 경로는 직접 sharp 0.35.3을 로드한다. lockfile 감사와 실제 설치·실행 경로는 구분해야 한다.
+실제 측정:
 
-npm은 일부 transitive 취약점에 수정 가능 표시를 하지만 kordoc에는 2.5.2 downgrade처럼 부적절한 제안도 포함된다. `npm audit fix --force`, override, downgrade는 실행하지 않았다. 최종 Linux 후보 tree를 설치한 뒤 감사 결과를 다시 확정해야 한다.
+- Ubuntu·kernel·architecture·Node/npm·RAM·filesystem
+- 두 installation attempt의 elapsed, partial size와 maximum RSS
+- 1차 ENOSPC와 2차 signal 9
+- 정리 후 disk/swap/PM2 상태
 
-## 9. 이번 단계 테스트
+partial 결과:
 
-Windows에서 성공:
+- direct dependency 이름과 version 일부
+- 1.2GiB/1.6GiB까지 생성된 불완전 `node_modules`
+- extraneous package가 포함된 비정상 tree
 
-- TypeScript build
-- HWP extraction unit/mock
-- kordoc deployment mock
-- image OCR mock, 실제 CLOVA 호출 0
-- sharp 합성 PNG/metadata smoke
-- attachment downloader/detector/PDF extraction module smoke
-- subprocess timeout·출력 제한·cleanup mock
+미검증:
 
-미실행:
+- 완료된 A 설치 크기·파일 수·시간
+- sharp·image OCR·PDF runtime
+- HWP 대표 4건과 출력 일치
+- kordoc peak RSS·timeout·process tree·cleanup
+- 최종 Linux 보안 감사
 
-- Linux `npm ci --omit=dev`
-- Linux 전체 node_modules 크기·설치 시간
-- Linux sharp native load와 image preprocessing
-- Linux PDF extraction
-- Linux 대표 HWP 4건
-- Linux 파일별 시간·peak RSS·SHA-256
-- Linux 정상/timeout process tree와 temp cleanup
+후속 판단 필요:
 
-기존 attachment 상태 전이 통합 테스트는 DB 접근이 필요한 쓰기 테스트이므로 이번 무쓰기 단계에서 재실행하지 않았다. 첫 시도는 sandbox DB 연결 제한으로 완료되지 않았으며 성공으로 계산하지 않는다.
+- 더 큰 EC2 root volume에서 A가 수용 가능한지
+- 별도 build artifact로 운영 디스크와 설치 peak를 분리할지
+- A가 과도할 경우 C를 선택할지
 
-## 10. 최종 선택과 다음 단계
+## 11. 최종 선택과 다음 단계
 
 선택은 **D. 아직 결정 불가**다.
 
-- A: 공식·재현 가능하지만 Linux 크기, sharp/HWP 동시 성공, peak RSS 미측정
-- B: 현재 npm package-type flag로 부모별 optional 선택 불가
-- C: 설계 가능하지만 A가 실제 운영 한도를 넘는지 미확인
+- A: 실제 실행했지만 두 번 모두 설치 완료 전에 실패했다.
+- B: 현재 npm package-type flag로 부모별 optional 선택이 불가능하다.
+- C: 설계 가능하지만 더 큰 disk/build 환경에서 A를 완료해 보기 전에는 확정하지 않는다.
 
-전체 26건은 실행할 수 없다. 다음 단계는 제공된 Ubuntu 24.04/EC2 동등 환경에서 아래 순서로 진행한다.
+전체 26건 실행은 허용할 수 없다. 다음 검증은 운영 서버가 아닌, 충분한 disk와 memory를 가진 깨끗한 Ubuntu 24.04·Node.js 22 환경에서 진행한다.
 
-1. Node.js 22와 npm 버전, architecture, memory, 디스크를 비식별 기록한다.
-2. 깨끗한 directory에서 `npm ci --omit=dev`의 시간·크기·파일 수를 측정한다.
-3. sharp native smoke, image OCR mock, PDF smoke를 통과시킨다.
-4. 대표 HWP 4건을 dry-run하여 Windows hash·문자·표 통계와 비교한다.
-5. `/usr/bin/time -v` 등으로 파일별 peak RSS를 측정한다.
-6. 짧은 timeout fixture 뒤 직접 child와 descendant, temp job이 모두 0인지 확인한다.
-7. 최종 installed tree에 `npm audit --omit=dev`와 `npm ls`를 실행한다.
-8. EC2 디스크·배포 시간 한도와 비교해 A 또는 C를 선택한다.
+1. swap과 `node_modules`를 포함한 설치 peak를 수용할 disk를 확보한다.
+2. `set -o pipefail`을 적용하거나 npm exit code를 별도로 보존해 pipeline 상태 오판을 막는다.
+3. `npm ci --omit=dev` 완료와 clean `npm ls`를 확인한다.
+4. 최종 tree 크기·파일 수·설치 시간과 `npm audit --omit=dev`를 기록한다.
+5. sharp native smoke, image OCR mock과 PDF smoke를 통과시킨다.
+6. 대표 HWP 4건을 DB 무쓰기 dry-run하여 Windows 결과와 비교한다.
+7. kordoc 파일별 peak RSS, timeout, child/process-tree와 temp cleanup을 확인한다.
+8. EC2 disk·memory·배포 시간 한도에 따라 A 또는 C를 선택한다.
 
-위 항목이 통과하고 운영 승인을 받은 뒤에만 나머지 22건의 순차 실행을 검토한다.
+위 검증과 운영 승인 전에는 현재 운영 서버에 적용하거나 나머지 22건을 실행하지 않는다.
