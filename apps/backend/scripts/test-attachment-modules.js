@@ -240,7 +240,9 @@ function testCliArguments() {
   assert.deepEqual(parseExtractionArguments(['--type', 'pdf', '--limit', '2', '--attachment-id', id, '--retry-failed', '--dry-run']), {
     type: 'PDF', limit: 2, attachmentId: id, retryFailed: true, dryRun: true,
   });
-  assert.throws(() => parseExtractionArguments(['--type', 'HWP']));
+  assert.deepEqual(parseExtractionArguments(['--type', 'HWP']), {
+    type: 'HWP', limit: 1, retryFailed: false, dryRun: false,
+  });
   assert.throws(() => parseExtractionArguments(['--limit', '21']));
   assert.throws(() => parseExtractionArguments(['--unknown']));
 }
