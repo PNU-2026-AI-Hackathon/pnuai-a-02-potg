@@ -138,3 +138,113 @@ DB 통합 테스트는 임시 프로그램을 생성한 뒤 다음을 검증하�
 4. 전체 실행의 쓰기 시간과 운영 시간대 확인
 5. 실행 후 `total`, `failed`, `emptyDocuments`, 경고 집계 검토
 6. 즉시 재실행하여 전부 `UNCHANGED`인지 확인
+
+## 전체 349건 생성 최종 결과
+
+승인된 DB에서 다음 명령을 실행했다.
+
+```bash
+npm run program-cases:build-documents -- --all
+```
+
+최초 전체 실행 결과:
+
+```text
+total: 349
+created: 344
+updated: 0
+unchanged: 5
+failed: 0
+emptyDocuments: 0
+withSessions: 5
+withAttachments: 237
+durationMs: 23,457
+```
+
+대표 검증에서 미리 생성한 5건은 `UNCHANGED`였고 나머지 344건이 새로 생성되었다. 프로그램 한 건씩 독립 처리되었으며 실패와 빈 문서는 없었다.
+
+같은 명령을 즉시 다시 실행한 결과:
+
+```text
+total: 349
+created: 0
+updated: 0
+unchanged: 349
+failed: 0
+emptyDocuments: 0
+withSessions: 5
+withAttachments: 237
+durationMs: 17,558
+```
+
+재실행 전후 검증:
+
+- `ProgramCaseDocument` 행 수: 349 → 349
+- 모든 문서의 `contentHash` 불변
+- 모든 문서의 `updatedAt` 불변
+- 동일 `programCaseId + documentType` 중복 0건
+- 원본 ProgramCase, Session, Attachment의 전체 행 해시 불변
+
+## 최종 DB 집계
+
+```text
+ProgramCase: 349
+ProgramCaseSession: 20
+ProgramCaseAttachment: 237
+ProgramCaseDocument: 349
+SEARCH documents: 349
+missing SEARCH documents: 0
+duplicate document groups: 0
+documentType SEARCH: 349
+version 1: 349
+```
+
+## 전체 품질 경고 집계
+
+```text
+LONG_ATTACHMENT_TEXT: 30
+MULTIPLE_PROGRAM_NAME_MARKERS: 43
+LONG_DOCUMENT: 0
+경고가 하나 이상 있는 프로그램: 43
+```
+
+최종 문서 길이:
+
+```text
+최소: 540자
+최대: 12,305자
+평균: 2,628자
+중앙값: 1,457자
+```
+
+가장 긴 문서 일부:
+
+| ProgramCase ID | 프로그램명 | 길이 | 경고 |
+|---|---|---:|---|
+| `920f31c3-3094-4f8a-b039-32367bdd7567` | [희망그루터기] 중국어 입문반 | 12,305 | 긴 첨부, 복수 프로그램명 |
+| `5ace1761-470d-4629-b5e7-62866e21fa08` | [아이꿈자람] I Love story | 12,284 | 긴 첨부, 복수 프로그램명 |
+| `dab88dcd-36fd-459b-95ce-8da618ed8458` | [아이꿈자람] 어린이 과학탐구교실 | 12,278 | 긴 첨부, 복수 프로그램명 |
+| `fb660179-162b-4029-a207-ca2d934bae48` | [아이꿈자람] Reading with phonics | 12,272 | 긴 첨부, 복수 프로그램명 |
+| `0104706d-6567-41ee-968a-fa36201c0974` | [금샘마을] 그림책 독서논술 | 12,271 | 긴 첨부, 복수 프로그램명 |
+
+긴 종합 PDF와 복수 프로그램명이 포함된 첨부는 검색 문서에서 자동 삭제·수정·분할하지 않았다. 경고는 후속 수동 검토를 위한 지표이며 생성 실패 조건이 아니다.
+
+## 최종 테스트
+
+다음 검증을 모두 통과했다.
+
+```bash
+npm run test:program-case-document
+npm run test:program-case-document-database
+npm run build
+npx prisma validate
+```
+
+- Builder, hash, 서비스, CLI 단위 테스트 통과
+- DB 통합 테스트 통과
+- TypeScript 빌드 통과
+- Prisma schema 검증 통과
+
+## 후속 작업
+
+다음 단계는 별도 이슈와 별도 브랜치에서 진행하는 검색·RAG용 문서 청킹이다. 이번 구현에는 청킹, 토큰 계산, 임베딩, pgvector, 유사 검색, RAG가 포함되지 않는다.
