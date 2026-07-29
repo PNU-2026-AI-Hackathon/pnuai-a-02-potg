@@ -53,7 +53,7 @@ export type ProgramCaseDocumentInput = {
 
 type Field = readonly [label: string, value: unknown];
 
-function normalizeText(value: string) {
+export function normalizeText(value: string) {
   return value
     .replace(/\r\n?/g, '\n')
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
@@ -64,12 +64,12 @@ function normalizeText(value: string) {
     .trim();
 }
 
-function textValue(value: unknown) {
+export function textValue(value: unknown) {
   if (value === null || value === undefined) return '';
   return normalizeText(String(value));
 }
 
-function dateValue(value: Date | string | null) {
+export function dateValue(value: Date | string | null) {
   if (!value) return '';
   if (value instanceof Date) {
     return Number.isNaN(value.getTime()) ? '' : value.toISOString().slice(0, 10);
@@ -79,14 +79,14 @@ function dateValue(value: Date | string | null) {
   return Number.isNaN(parsed.getTime()) ? normalized : parsed.toISOString().slice(0, 10);
 }
 
-function fieldLines(fields: readonly Field[]) {
+export function fieldLines(fields: readonly Field[]) {
   return fields.flatMap(([label, value]) => {
     const text = textValue(value);
     return text ? [`${label}: ${text}`] : [];
   });
 }
 
-function section(title: string, blocks: readonly string[]) {
+export function section(title: string, blocks: readonly string[]) {
   const content = blocks.map(textValue).filter(Boolean);
   return content.length > 0 ? [`[${title}]`, '', content.join('\n\n')].join('\n') : '';
 }
@@ -102,7 +102,7 @@ function attachmentKey(attachment: ProgramCaseDocumentAttachment) {
   return `${createdAt}\u0000${attachment.id ?? ''}\u0000${attachment.fileName}`;
 }
 
-function buildSessions(sessions: readonly ProgramCaseDocumentSession[]) {
+export function buildSessions(sessions: readonly ProgramCaseDocumentSession[]) {
   return [...sessions]
     .sort((left, right) =>
       left.sortOrder - right.sortOrder
@@ -143,7 +143,7 @@ function buildAttachments(attachments: readonly ProgramCaseDocumentAttachment[])
     });
 }
 
-function originalBody(program: ProgramCaseDocumentProgram) {
+export function originalBody(program: ProgramCaseDocumentProgram) {
   let body = textValue(program.rawText);
   const title = textValue(program.title);
   const duplicatedTitle = `${title} ${title}`;
