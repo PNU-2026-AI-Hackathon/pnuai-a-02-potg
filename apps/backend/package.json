@@ -10,6 +10,8 @@
     "db:seed": "prisma db seed",
     "db:verify:interests": "node prisma/verify-interests.js",
     "test:program-case-sync": "npm run build && node scripts/test-program-case-sync.js",
+    "test:program-case-document-builder": "npm run build && node scripts/test-program-case-document-builder.js",
+    "test:program-case-document": "npm run build && node scripts/test-program-case-document-builder.js && node scripts/test-program-case-document-service.js && node scripts/test-program-case-document-cli.js",
     "test:attachment-preservation": "npm run build && node scripts/test-attachment-preservation.js",
     "test:attachment-regression": "npm run build && node scripts/test-attachment-regression.js",
     "test:attachment-extraction": "npm run build && node scripts/test-attachment-modules.js && node scripts/test-attachment-extraction-state.js",
@@ -26,6 +28,7 @@
     "test:attachment-recovery": "npm run build && node scripts/test-attachment-recovery.js",
     "recover:attachment-extractions": "npm run build && node dist/cli/recoverAttachmentExtractions.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
+    "program-cases:build-documents": "npm run build && node dist/cli/buildProgramCaseDocuments.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
