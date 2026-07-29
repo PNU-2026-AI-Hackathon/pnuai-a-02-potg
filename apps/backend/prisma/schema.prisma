@@ -103,6 +103,7 @@ model ProgramCase {
   parseWarnings          Json
   sessions               ProgramCaseSession[]
   attachments            ProgramCaseAttachment[]
+  documents              ProgramCaseDocument[]
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
@@ -153,4 +154,19 @@ model ProgramCaseAttachment {
   updatedAt        DateTime                   @updatedAt
 
   @@unique([programCaseId, fileUrl])
+}
+
+model ProgramCaseDocument {
+  id            String      @id @default(uuid())
+  programCaseId String
+  documentType  String
+  content       String      @db.Text
+  contentHash   String
+  version       String
+  programCase   ProgramCase @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([programCaseId, documentType])
+  @@index([documentType])
 }
