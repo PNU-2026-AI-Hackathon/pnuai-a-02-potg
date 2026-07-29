@@ -197,7 +197,7 @@ function failedResult(programCaseId: string, failure: ProgramCaseDocumentFailure
     version: PROGRAM_CASE_DOCUMENT_VERSION,
     withSessions: false,
     withAttachments: false,
-    emptyDocument: true,
+    emptyDocument: false,
     warnings: [],
     failure,
   };
