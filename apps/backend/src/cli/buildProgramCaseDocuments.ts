@@ -15,14 +15,17 @@ export function parseBuildProgramCaseDocumentsArguments(args: string[]): BuildPr
   const valueOptions = new Set(['--program-case-id']);
   const flagOptions = new Set(['--all']);
   for (let index = 0; index < args.length; index += 1) {
-    const option = args[index];
+    const argument = args[index];
+    const equalsIndex = argument.indexOf('=');
+    const option = equalsIndex >= 0 ? argument.slice(0, equalsIndex) : argument;
     if (!valueOptions.has(option) && !flagOptions.has(option)) throw new Error(`Unknown option: ${option}`);
     if (option in values) throw new Error(`Duplicate option: ${option}`);
     if (valueOptions.has(option)) {
-      const value = args[++index];
+      const value = equalsIndex >= 0 ? argument.slice(equalsIndex + 1) : args[++index];
       if (!value || value.startsWith('--')) throw new Error(`${option} requires a value.`);
       values[option] = value;
     } else {
+      if (equalsIndex >= 0) throw new Error(`${option} does not accept a value.`);
       values[option] = true;
     }
   }
