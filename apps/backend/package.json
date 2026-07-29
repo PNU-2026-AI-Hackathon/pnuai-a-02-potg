@@ -12,6 +12,7 @@
     "test:program-case-sync": "npm run build && node scripts/test-program-case-sync.js",
     "test:program-case-document-builder": "npm run build && node scripts/test-program-case-document-builder.js",
     "test:program-case-document": "npm run build && node scripts/test-program-case-document-builder.js && node scripts/test-program-case-document-service.js && node scripts/test-program-case-document-cli.js",
+    "test:program-case-document-database": "npm run build && node scripts/test-program-case-document-database.js",
     "test:attachment-preservation": "npm run build && node scripts/test-attachment-preservation.js",
     "test:attachment-regression": "npm run build && node scripts/test-attachment-regression.js",
     "test:attachment-extraction": "npm run build && node scripts/test-attachment-modules.js && node scripts/test-attachment-extraction-state.js",
@@ -29,6 +30,7 @@
     "recover:attachment-extractions": "npm run build && node dist/cli/recoverAttachmentExtractions.js",
     "extract:program-attachments": "npm run build && node dist/cli/extractProgramAttachments.js",
     "program-cases:build-documents": "npm run build && node dist/cli/buildProgramCaseDocuments.js",
+    "verify:program-case-documents-limited": "npm run build && node scripts/verify-program-case-documents-limited.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {

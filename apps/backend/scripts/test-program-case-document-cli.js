@@ -12,11 +12,13 @@ function expectError(args, message) {
 
 async function run() {
   assert.deepEqual(parseBuildProgramCaseDocumentsArguments(['--program-case-id', id]), { programCaseId: id });
+  assert.deepEqual(parseBuildProgramCaseDocumentsArguments([`--program-case-id=${id}`]), { programCaseId: id });
   assert.deepEqual(parseBuildProgramCaseDocumentsArguments(['--all']), { all: true });
   expectError([], /Exactly one/);
   expectError(['--all', '--program-case-id', id], /Exactly one/);
   expectError(['--program-case-id', 'bad-id'], /UUID/);
   expectError(['--unknown'], /Unknown option/);
+  expectError(['--all=true'], /does not accept/);
   expectError(['--all', '--all'], /Duplicate option/);
   expectError(['--program-case-id', id, '--program-case-id', id], /Duplicate option/);
 
