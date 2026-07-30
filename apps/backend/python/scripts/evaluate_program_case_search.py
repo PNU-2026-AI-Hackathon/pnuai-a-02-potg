@@ -40,10 +40,8 @@ def main() -> None:
                 "results": [{
                     "rank": result.rank,
                     "similarity": result.similarity,
-                    "programTitle": result.program_title,
                     "chunkType": result.chunk_type,
-                    "sourceLabel": result.source_label,
-                    "preview": " ".join(result.content.split())[:300],
+                    "contentLength": len(result.content),
                 } for result in response.results],
             })
     print(json.dumps(output, ensure_ascii=False, indent=2))

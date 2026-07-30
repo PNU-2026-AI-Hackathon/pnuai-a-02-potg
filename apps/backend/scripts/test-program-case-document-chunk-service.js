@@ -3,6 +3,25 @@ const {
   syncProgramCaseDocumentChunks,
   syncProgramCaseDocumentChunksById,
 } = require('../dist/services/programCaseDocumentChunk/programCaseDocumentChunkService');
+const { buildProgramCaseDocument } = require('../dist/services/programCaseDocument/programCaseDocumentBuilder');
+
+function withSanitizedDocument(value) {
+  if (!value || value instanceof Error) return value;
+  const attachments = value.programCase.attachments.map((attachment) => ({
+    ...attachment, fileType: null, detectedFileType: null, extractorType: null,
+  }));
+  const programCase = { ...value.programCase, attachments };
+  return {
+    ...value,
+    version: '2',
+    content: buildProgramCaseDocument({
+      program: programCase,
+      sessions: programCase.sessions,
+      attachments,
+    }),
+    programCase,
+  };
+}
 
 function document(id, attachmentText = '첨부 원문') {
   return {
@@ -30,7 +49,11 @@ function fixture() {
   return {
     sources, stored, writes,
     repository: {
-      async findDocument(id) { const value = sources.get(id); if (value instanceof Error) throw value; return value ?? null; },
+      async findDocument(id) {
+        const value = sources.get(id);
+        if (value instanceof Error) throw value;
+        return withSanitizedDocument(value) ?? null;
+      },
       async listSearchDocumentIds() { return [...sources.keys()]; },
       async sync(id, chunks) {
         const old = stored.get(id) ?? new Map();

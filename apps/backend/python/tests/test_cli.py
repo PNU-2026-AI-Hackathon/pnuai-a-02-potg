@@ -1,5 +1,6 @@
 import unittest
 import io
+import inspect
 from contextlib import redirect_stderr, redirect_stdout
 from unittest.mock import patch
 
@@ -9,6 +10,12 @@ from program_case_semantic_search.selectors import SelectorKind
 
 
 class CliTests(unittest.TestCase):
+    def test_search_output_has_no_content_preview(self):
+        import program_case_semantic_search.cli as cli_module
+        source = inspect.getsource(cli_module)
+        self.assertNotIn('preview =', source)
+        self.assertNotIn('result.content.split()', source)
+
     def test_selectors(self):
         parser = build_parser()
         for option, kind in (

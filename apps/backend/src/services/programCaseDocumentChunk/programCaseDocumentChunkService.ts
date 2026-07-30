@@ -5,6 +5,7 @@ import {
 } from '@prisma/client';
 import { prisma } from '../../lib/prisma';
 import {
+  buildProgramCaseDocument,
   buildSessions,
   dateValue,
   fieldLines,
@@ -13,6 +14,7 @@ import {
   section,
   textValue,
 } from '../programCaseDocument/programCaseDocumentBuilder';
+import { PROGRAM_CASE_DOCUMENT_VERSION } from '../programCaseDocument/programCaseDocumentService';
 import {
   buildProgramCaseDocumentChunks,
   ProgramCaseDocumentChunk,
@@ -59,6 +61,8 @@ export type ProgramCaseDocumentChunkBatchResult = {
 type LoadedDocument = {
   id: string;
   documentType: string;
+  content: string;
+  version: string;
   programCaseId: string;
   programCase: {
     id: string;
@@ -88,6 +92,8 @@ type LoadedDocument = {
     attachments: Array<{
       id: string; fileName: string; cleanedText: string | null; createdAt: Date | string;
       isActive: boolean; extractionStatus: string;
+      fileType: string | null; detectedFileType: string | null;
+      extractorType: string | null;
     }>;
   };
 };
@@ -204,7 +210,11 @@ function sameChunk(existing: ExistingChunk, desired: ProgramCaseDocumentChunk) {
 }
 
 function toBuilderInput(document: LoadedDocument): ProgramCaseDocumentChunkBuilderInput {
-  const program = document.programCase;
+  const program = {
+    ...document.programCase,
+    instructor: '',
+    contactText: null,
+  };
   const period = [
     textValue(program.educationStartDateText) || dateValue(program.educationStartDate),
     textValue(program.educationEndDateText) || dateValue(program.educationEndDate),
@@ -243,6 +253,20 @@ function toBuilderInput(document: LoadedDocument): ProgramCaseDocumentChunkBuild
   };
 }
 
+function assertSanitizedDocument(document: LoadedDocument) {
+  if (document.version !== PROGRAM_CASE_DOCUMENT_VERSION) {
+    throw new Error('STALE_PROGRAM_CASE_DOCUMENT_VERSION');
+  }
+  const expected = buildProgramCaseDocument({
+    program: document.programCase,
+    sessions: document.programCase.sessions,
+    attachments: document.programCase.attachments,
+  });
+  if (document.content !== expected) {
+    throw new Error('STALE_PROGRAM_CASE_DOCUMENT_CONTENT');
+  }
+}
+
 function failureResult(id: string, document: LoadedDocument | null, step: ProgramCaseDocumentChunkFailureStep, error: unknown) {
   const known = error instanceof Prisma.PrismaClientKnownRequestError;
   const failure: ProgramCaseDocumentChunkFailure = {
@@ -272,6 +296,7 @@ export async function syncProgramCaseDocumentChunksById(
     document = await repository.findDocument(id);
     if (!document) throw new Error('PROGRAM_CASE_DOCUMENT_NOT_FOUND');
     if (document.documentType !== 'SEARCH') throw new Error('PROGRAM_CASE_DOCUMENT_NOT_SEARCH');
+    assertSanitizedDocument(document);
     step = 'BUILD_CHUNKS';
     const built = buildProgramCaseDocumentChunks(toBuilderInput(document));
     step = 'SYNC_CHUNKS';

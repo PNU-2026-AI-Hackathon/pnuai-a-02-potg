@@ -226,10 +226,34 @@ python -m program_case_semantic_search.cli search `
 ```
 
 검색 query는 trim 후 비어 있으면 거부하며 최대 1,000자로 제한한다. limit은
-기본 5, 최대 20이다. 출력 preview는 300자이며 전체 vector는 출력하지 않는다.
+기본 5, 최대 20이다. 검색 결과의 원문 preview는 개인정보 노출 방지를 위해
+출력하지 않으며 ID, chunk type, similarity, content length만 출력한다.
 모델 provider는 tokenizer로 truncation 전 token 수를 검사하고 model
 `max_seq_length`를 넘으면 조용히 자르지 않고 오류를 반환한다. embedding
 summary에는 실행 중 관측된 `maxInputTokens`가 포함된다.
+
+## 검색 문서 개인정보 최소화
+
+검색 문서에는 프로그램 탐색에 필요한 기관명, 프로그램명, 대상 연령대, 일정,
+모집 인원, 비용, 준비물, 공공시설 장소와 공식 출처 URL만 유지한다. 강사 및
+담당자 실명과 연락처는 구조화 필드 조립 단계에서 제외한다.
+
+자유서술과 첨부 추출문은 공통 sanitizer를 통과한다. 전화번호, 이메일,
+개인정보 라벨이 붙은 생년월일·계좌·개인 주소 행을 제거하며, 참여자 명단,
+출석부, 개인정보 동의서, 서명부, 강사 이력서 등 안전한 부분 분리가 어려운
+고위험 첨부는 전체 검색 대상에서 제외한다. 단순한 프로그램 신청 방법 안내는
+제외 사유가 아니다.
+
+문서 content hash는 정제된 최종 문서에서 계산한다. Chunk 서비스는 정제된
+문서 version과 content가 현재 builder 결과와 일치하는지 검증하며, Chunk
+builder는 입력을 다시 정제하고 금지 패턴이 남으면 저장 전에 실패한다. Chunk
+hash와 embedding은 이 검사를 통과한 Chunk content만 기준으로 한다.
+
+운영 DB의 기존 검색 문서와 Chunk는 이 정책 적용 전에 만들어졌으므로 별도의
+승인된 재처리가 필요하다. 재처리는 dry-run과 대상 DB allowlist를 기본으로
+문서와 Chunk를 프로그램 단위로 교체하고, embedding이 존재하면 연결 vector도
+무효화한 뒤 개인정보 패턴 aggregate가 0인지 확인해야 한다. 현재 감사 시점에는
+실제 KURE embedding이 생성되지 않았다.
 
 ## Cosine exact 검색
 

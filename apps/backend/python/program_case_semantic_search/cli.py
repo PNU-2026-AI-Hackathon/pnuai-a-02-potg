@@ -110,11 +110,9 @@ def _print_search(response, *, json_output: bool) -> None:
     print(f"Elapsed time: {response.elapsed_seconds:.3f}s")
     print("Results:")
     for result in response.results:
-        preview = " ".join(result.content.split())[:300]
         print(
-            f"{result.rank}. {result.similarity:.6f} | {result.program_title} | "
-            f"{result.target} | {result.chunk_type} | {result.chunk_key} | "
-            f"{result.source_label or '-'}\n   {preview}"
+            f"{result.rank}. {result.similarity:.6f} | {result.chunk_type} | "
+            f"{result.chunk_key} | content_length={len(result.content)}"
         )
 
 
