@@ -31,5 +31,7 @@ const source = require('node:fs').readFileSync(require.resolve('./rebuild-progra
 assert.match(source, /SET TRANSACTION READ ONLY/);
 assert.match(source, /prisma\.\$transaction/);
 assert.match(source, /maxWait: 10_000, timeout: 60_000/);
+assert.match(source, /documentsUnchanged/);
+assert.match(source, /changedRows/);
 assert.doesNotMatch(source, /console\.log\([^)]*(content|rawText|cleanedText|sourceUrl)/);
 console.log(JSON.stringify({ passed: true, cases: 12 }));

@@ -250,14 +250,25 @@ async function rebuildProgram(programCaseId, embeddingTable) {
 
 async function executeRebuild(options, metadata) {
   const ids = await prisma.programCase.findMany({ select: { id: true }, orderBy: { id: 'asc' } });
-  let processed = 0;
+  const totals = {
+    processed: 0, failed: 0,
+    documentsCreated: 0, documentsUpdated: 0, documentsUnchanged: 0,
+    chunksCreated: 0, chunksUpdated: 0, chunksDeleted: 0, chunksUnchanged: 0,
+  };
   for (let offset = 0; offset < ids.length; offset += options.batchSize) {
     for (const row of ids.slice(offset, offset + options.batchSize)) {
-      await rebuildProgram(row.id, metadata.embeddingTable);
-      processed += 1;
+      const result = await rebuildProgram(row.id, metadata.embeddingTable);
+      totals.processed += 1;
+      if (result.documentStatus === 'CREATED') totals.documentsCreated += 1;
+      else if (result.documentStatus === 'UPDATED') totals.documentsUpdated += 1;
+      else totals.documentsUnchanged += 1;
+      totals.chunksCreated += result.chunkResult.created;
+      totals.chunksUpdated += result.chunkResult.updated;
+      totals.chunksDeleted += result.chunkResult.deleted;
+      totals.chunksUnchanged += result.chunkResult.unchanged;
     }
   }
-  return { processed, failed: 0 };
+  return totals;
 }
 
 async function run(argv = process.argv.slice(2)) {
@@ -275,9 +286,10 @@ async function run(argv = process.argv.slice(2)) {
   };
   if (options.execute) {
     const result = await executeRebuild(options, metadata);
-    output.processed = result.processed;
-    output.failed = result.failed;
-    output.writeQueries = result.processed;
+    Object.assign(output, result);
+    output.changedRows = result.documentsCreated + result.documentsUpdated
+      + result.chunksCreated + result.chunksUpdated + result.chunksDeleted;
+    output.writeQueries = output.changedRows;
   }
   return output;
 }
