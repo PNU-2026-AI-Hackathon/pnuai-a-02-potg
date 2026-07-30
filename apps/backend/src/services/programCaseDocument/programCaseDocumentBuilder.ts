@@ -1,4 +1,7 @@
-import { sanitizeProgramCaseSearchText } from './programCaseDocumentSanitizer';
+import {
+  removeKnownPersonalValue,
+  sanitizeProgramCaseSearchText,
+} from './programCaseDocumentSanitizer';
 
 export type ProgramCaseDocumentProgram = {
   id: string;
@@ -171,6 +174,37 @@ export function originalBody(program: ProgramCaseDocumentProgram) {
 }
 
 export function buildProgramCaseDocument(input: ProgramCaseDocumentInput) {
+  const instructor = input.program.instructor;
+  const sanitizeKnown = (
+    value: string | null | undefined,
+    context: 'STRUCTURED_FIELD' | 'RAW_TEXT' | 'ATTACHMENT_TEXT',
+  ) => sanitizeProgramCaseSearchText(
+    removeKnownPersonalValue(value ?? '', instructor),
+    context,
+  ).text;
+  input = {
+    program: {
+      ...input.program,
+      sourcePostId: sanitizeKnown(input.program.sourcePostId, 'STRUCTURED_FIELD'),
+      sourceUrl: sanitizeKnown(input.program.sourceUrl, 'STRUCTURED_FIELD'),
+      title: sanitizeKnown(input.program.title, 'STRUCTURED_FIELD'),
+      targetAudience: sanitizeKnown(input.program.targetAudience, 'STRUCTURED_FIELD'),
+      location: sanitizeKnown(input.program.location, 'STRUCTURED_FIELD'),
+      feeText: sanitizeKnown(input.program.feeText, 'STRUCTURED_FIELD'),
+      preparationText: sanitizeKnown(input.program.preparationText, 'STRUCTURED_FIELD'),
+      notices: sanitizeKnown(input.program.notices, 'RAW_TEXT'),
+      rawText: sanitizeKnown(input.program.rawText, 'RAW_TEXT'),
+    },
+    sessions: input.sessions.map((session) => ({
+      ...session,
+      activity: sanitizeKnown(session.activity, 'RAW_TEXT'),
+    })),
+    attachments: input.attachments.map((attachment) => ({
+      ...attachment,
+      fileName: sanitizeKnown(attachment.fileName, 'ATTACHMENT_TEXT'),
+      cleanedText: sanitizeKnown(attachment.cleanedText, 'ATTACHMENT_TEXT'),
+    })),
+  };
   const program = {
     ...input.program,
     instructor: '',

@@ -10,7 +10,7 @@ export type SanitizationResult = {
 
 const PHONE = /(?<![0-9A-Za-z])(?:0\d{1,2}\)?[- ]?\d{3,4}[- ]?\d{4})(?![0-9A-Za-z])/g;
 const EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
-const BIRTH = /(?:생년월일|생일|출생일)\s*[:：]?\s*\d{2,4}[.\-/년]\s*\d{1,2}[.\-/월]\s*\d{1,2}일?/;
+const BIRTH = /(?:생년월일|생일|출생일)/;
 const ACCOUNT = /(?:입금계좌|환불계좌|계좌번호|계좌|예금주)\s*[:：]?/;
 const ADDRESS = /(?:상세주소|거주지|주소)\s*[:：]?/;
 const PERSON = /(?:(?:강사|담당자|사서|공무원|작성자)|(?:참여자|신청자|수강생|보호자|아동)\s*(?:이름|성명))\s*[:：]/;
@@ -65,4 +65,9 @@ export function containsForbiddenProgramCaseSearchPattern(input: string) {
   PHONE.lastIndex = 0; EMAIL.lastIndex = 0;
   return PHONE.test(input) || EMAIL.test(input) || BIRTH.test(input)
     || ACCOUNT.test(input) || ADDRESS.test(input) || HIGH_RISK.test(input);
+}
+
+export function removeKnownPersonalValue(input: string, value: string | null | undefined) {
+  const target = value?.trim();
+  return target ? input.split(target).join('') : input;
 }

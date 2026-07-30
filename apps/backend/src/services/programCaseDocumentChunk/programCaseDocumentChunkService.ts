@@ -15,6 +15,7 @@ import {
   textValue,
 } from '../programCaseDocument/programCaseDocumentBuilder';
 import { PROGRAM_CASE_DOCUMENT_VERSION } from '../programCaseDocument/programCaseDocumentService';
+import { removeKnownPersonalValue } from '../programCaseDocument/programCaseDocumentSanitizer';
 import {
   buildProgramCaseDocumentChunks,
   ProgramCaseDocumentChunk,
@@ -210,8 +211,24 @@ function sameChunk(existing: ExistingChunk, desired: ProgramCaseDocumentChunk) {
 }
 
 function toBuilderInput(document: LoadedDocument): ProgramCaseDocumentChunkBuilderInput {
+  const instructor = document.programCase.instructor;
+  const withoutInstructor = (value: string | null) =>
+    removeKnownPersonalValue(value ?? '', instructor);
   const program = {
     ...document.programCase,
+    title: withoutInstructor(document.programCase.title),
+    targetAudience: withoutInstructor(document.programCase.targetAudience),
+    sourcePostId: withoutInstructor(document.programCase.sourcePostId),
+    sourceUrl: withoutInstructor(document.programCase.sourceUrl),
+    location: withoutInstructor(document.programCase.location),
+    feeText: withoutInstructor(document.programCase.feeText),
+    preparationText: withoutInstructor(document.programCase.preparationText),
+    notices: withoutInstructor(document.programCase.notices),
+    rawText: withoutInstructor(document.programCase.rawText),
+    sessions: document.programCase.sessions.map((session) => ({
+      ...session,
+      activity: withoutInstructor(session.activity),
+    })),
     instructor: '',
     contactText: null,
   };
@@ -246,8 +263,8 @@ function toBuilderInput(document: LoadedDocument): ProgramCaseDocumentChunkBuild
       .filter((attachment) => Boolean(attachment.cleanedText?.trim()))
       .map((attachment, order) => ({
         id: attachment.id,
-        fileName: attachment.fileName,
-        content: attachment.cleanedText ?? '',
+        fileName: withoutInstructor(attachment.fileName),
+        content: withoutInstructor(attachment.cleanedText),
         order,
       })),
   };
