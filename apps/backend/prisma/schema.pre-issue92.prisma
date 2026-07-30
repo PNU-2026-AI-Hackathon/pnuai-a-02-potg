@@ -31,13 +31,6 @@ enum ProgramCaseDocumentChunkType {
   ATTACHMENT
 }
 
-enum ProgramCaseDocumentChunkEmbeddingStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
 model User {
   id          String         @id @default(uuid())
   userId      String?        @unique
@@ -200,7 +193,6 @@ model ProgramCaseDocumentChunk {
   characterCount          Int
   programCaseDocument     ProgramCaseDocument          @relation(fields: [programCaseDocumentId], references: [id], onDelete: Cascade)
   programCaseAttachment   ProgramCaseAttachment?       @relation(fields: [programCaseAttachmentId], references: [id], onDelete: Cascade)
-  embedding               ProgramCaseDocumentChunkEmbedding?
   createdAt               DateTime                     @default(now())
   updatedAt               DateTime                     @updatedAt
 
@@ -208,28 +200,4 @@ model ProgramCaseDocumentChunk {
   @@index([programCaseDocumentId, chunkOrder])
   @@index([programCaseAttachmentId])
   @@index([chunkType])
-}
-
-model ProgramCaseDocumentChunkEmbedding {
-  id                         String                                  @id @default(uuid())
-  programCaseDocumentChunkId String                                  @unique(map: "ProgramCaseChunkEmbedding_chunkId_key")
-  embedding                  Unsupported("vector(1024)")?
-  provider                   String
-  model                      String
-  modelRevision              String
-  embeddingVersion           String
-  dimension                  Int
-  embeddedContentHash        String?
-  status                     ProgramCaseDocumentChunkEmbeddingStatus @default(PENDING)
-  failureCode                String?
-  failureMessage             String?                                 @db.VarChar(500)
-  attemptCount               Int                                     @default(0)
-  lastAttemptedAt            DateTime?
-  embeddedAt                 DateTime?
-  programCaseDocumentChunk   ProgramCaseDocumentChunk                @relation(fields: [programCaseDocumentChunkId], references: [id], onDelete: Cascade, map: "ProgramCaseChunkEmbedding_chunkId_fkey")
-  createdAt                  DateTime                                @default(now())
-  updatedAt                  DateTime                                @updatedAt
-
-  @@index([status])
-  @@index([provider, model, modelRevision], map: "ProgramCaseChunkEmbedding_modelRevision_idx")
 }
