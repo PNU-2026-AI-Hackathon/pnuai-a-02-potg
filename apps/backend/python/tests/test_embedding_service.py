@@ -100,6 +100,18 @@ class EmbeddingServiceTests(unittest.TestCase):
         self.assertEqual(result.chunks_failed, 1)
         self.assertEqual(repository.failed[0][1], "MODEL_BATCH_FAILED")
 
+    def test_invalid_model_vector_is_recorded_as_failed(self):
+        provider = FakeProvider()
+        provider.encode_documents = lambda texts: type(
+            "Result", (), {"vectors": [[float("nan")] * 1024], "max_input_tokens": 0}
+        )()
+        repository = FakeEmbeddingRepository([chunk()])
+        result = EmbeddingService(
+            repository, ProviderFactory(provider), META, batch_size=8
+        ).run(EmbeddingSelector(SelectorKind.ALL))
+        self.assertEqual(result.chunks_failed, 1)
+        self.assertEqual(repository.failed[0][1], "MODEL_BATCH_FAILED")
+
     def test_dry_run_never_calls_model_or_writes(self):
         repository = FakeEmbeddingRepository([chunk()])
         provider = FakeProvider()

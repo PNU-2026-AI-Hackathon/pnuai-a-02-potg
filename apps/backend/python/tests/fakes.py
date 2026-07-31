@@ -67,6 +67,6 @@ class FakeSearchRepository:
         self.results = results or []
         self.calls = []
 
-    def search(self, vector, metadata, *, limit, chunk_type=None):
-        self.calls.append((vector, metadata, limit, chunk_type))
+    def search(self, vector, metadata, *, limit, threshold=None, chunk_type=None):
+        self.calls.append((vector, metadata, limit, threshold, chunk_type))
         return self.results
