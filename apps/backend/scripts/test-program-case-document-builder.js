@@ -83,4 +83,25 @@ assert.doesNotMatch(sparse, /\[원본 게시글 본문\]/);
 assert.doesNotMatch(sparse, /\[회차별 활동\]/);
 assert.doesNotMatch(sparse, /\[첨부파일 내용\]/);
 
+const fakePhone = ['010', '0000', '0000'].join('-');
+const fakeEmail = ['privacy-test', 'example.invalid'].join('@');
+const privateDocument = buildProgramCaseDocument({
+  program: program({
+    instructor: '테스트강사',
+    contactText: fakePhone,
+    rawText: `프로그램 일정: 2026-08-01\n신청자 성명: 테스트이름 ${fakePhone}\n문의: ${fakeEmail}`,
+  }),
+  sessions: [],
+  attachments: [{
+    id: 'high-risk', fileName: '출석부.hwp', fileType: 'hwp', detectedFileType: 'HWP',
+    extractionStatus: 'COMPLETED', cleanedText: '출석부\n테스트 행',
+    extractorType: 'HWP_TEXT', isActive: true, createdAt: '2026-01-01',
+  }],
+});
+assert.doesNotMatch(privateDocument, /테스트강사|테스트이름/);
+assert.equal(privateDocument.includes(fakePhone), false);
+assert.equal(privateDocument.includes(fakeEmail), false);
+assert.doesNotMatch(privateDocument, /출석부/);
+assert.match(privateDocument, /2026-08-01/);
+
 console.log('Program case document builder tests passed.');

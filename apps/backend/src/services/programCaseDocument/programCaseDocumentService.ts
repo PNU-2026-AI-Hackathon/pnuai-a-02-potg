@@ -7,7 +7,7 @@ import {
 import { createProgramCaseDocumentHash } from './programCaseDocumentHash';
 
 export const PROGRAM_CASE_DOCUMENT_TYPE = 'SEARCH';
-export const PROGRAM_CASE_DOCUMENT_VERSION = '1';
+export const PROGRAM_CASE_DOCUMENT_VERSION = '2';
 export const LONG_ATTACHMENT_TEXT_WARNING_THRESHOLD = 10_000;
 export const LONG_DOCUMENT_WARNING_THRESHOLD = 20_000;
 

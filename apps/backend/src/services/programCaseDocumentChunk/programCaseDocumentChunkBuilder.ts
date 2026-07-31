@@ -1,6 +1,10 @@
 import { createProgramCaseDocumentHash } from '../programCaseDocument/programCaseDocumentHash';
+import {
+  containsForbiddenProgramCaseSearchPattern,
+  sanitizeProgramCaseSearchText,
+} from '../programCaseDocument/programCaseDocumentSanitizer';
 
-export const PROGRAM_CASE_DOCUMENT_CHUNK_BUILDER_VERSION = 'program-case-chunk-v1';
+export const PROGRAM_CASE_DOCUMENT_CHUNK_BUILDER_VERSION = 'program-case-chunk-v2';
 export const TARGET_CHUNK_CHARACTERS = 1_500;
 export const MAX_CHUNK_CHARACTERS = 2_000;
 export const MAX_OVERLAP_CHARACTERS = 150;
@@ -48,6 +52,10 @@ export type ProgramCaseDocumentChunkBuildResult = {
 
 function normalize(value: string) {
   return value.replace(/\r\n?/g, '\n').trim();
+}
+
+function sanitize(value: string, context: 'STRUCTURED_FIELD' | 'RAW_TEXT' | 'ATTACHMENT_TEXT') {
+  return sanitizeProgramCaseSearchText(value, context).text;
 }
 
 function contextHeader(input: ProgramCaseDocumentChunkBuilderInput, type: ProgramCaseDocumentChunkTypeValue) {
@@ -114,7 +122,7 @@ function splitAttachment(
   input: ProgramCaseDocumentChunkBuilderInput,
   attachment: ProgramCaseDocumentChunkBuilderInput['attachments'][number],
 ) {
-  const source = normalize(attachment.content);
+  const source = sanitize(attachment.content, 'ATTACHMENT_TEXT');
   if (!source) return [] as AttachmentPart[];
   let estimatedParts = 1;
   let parts: AttachmentPart[] = [];
@@ -152,7 +160,7 @@ export function buildProgramCaseDocumentChunks(
   const chunks: ProgramCaseDocumentChunk[] = [];
   const warnings: ProgramCaseDocumentChunkWarning[] = [];
   const addStructured = (chunkKey: 'core' | 'sessions', chunkType: 'CORE' | 'SESSIONS', body: string) => {
-    const source = normalize(body);
+    const source = sanitize(body, 'RAW_TEXT');
     if (!source) return;
     const extra = chunkType === 'SESSIONS' ? ['회차 범위: 전체 회차'] : [];
     const content = [...contextHeader(input, chunkType), ...extra, '', source].join('\n');
@@ -176,6 +184,10 @@ export function buildProgramCaseDocumentChunks(
   addStructured('sessions', 'SESSIONS', input.sessionsContent);
 
   [...input.attachments]
+    .map((attachment) => ({
+      ...attachment,
+      fileName: sanitize(attachment.fileName, 'ATTACHMENT_TEXT'),
+    }))
     .sort((left, right) => left.order - right.order || left.id.localeCompare(right.id))
     .forEach((attachment) => {
       const parts = splitAttachment(input, attachment);
@@ -203,6 +215,9 @@ export function buildProgramCaseDocumentChunks(
   chunks.forEach((chunk, index) => {
     if (chunk.chunkOrder !== index || !chunk.content.trim() || chunk.characterCount !== chunk.content.length) {
       throw new Error('INVALID_CHUNK');
+    }
+    if (containsForbiddenProgramCaseSearchPattern(chunk.content)) {
+      throw new Error('UNSANITIZED_CHUNK_CONTENT');
     }
   });
   return { chunks, warnings };

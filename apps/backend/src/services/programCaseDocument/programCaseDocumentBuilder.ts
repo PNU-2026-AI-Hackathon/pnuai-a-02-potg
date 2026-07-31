@@ -1,3 +1,8 @@
+import {
+  removeKnownPersonalValue,
+  sanitizeProgramCaseSearchText,
+} from './programCaseDocumentSanitizer';
+
 export type ProgramCaseDocumentProgram = {
   id: string;
   sourceType: string;
@@ -128,19 +133,29 @@ function attachmentFormat(attachment: ProgramCaseDocumentAttachment) {
 
 function buildAttachments(attachments: readonly ProgramCaseDocumentAttachment[]) {
   return [...attachments]
+    .map((attachment) => ({
+      ...attachment,
+      fileName: sanitizeProgramCaseSearchText(attachment.fileName, 'ATTACHMENT_TEXT').text,
+    }))
     .filter((attachment) =>
       attachment.isActive
       && attachment.extractionStatus === 'COMPLETED'
       && textValue(attachment.cleanedText).length > 0)
     .sort((left, right) => attachmentKey(left).localeCompare(attachmentKey(right)))
     .map((attachment) => {
+      const sanitizedText = sanitizeProgramCaseSearchText(
+        textValue(attachment.cleanedText),
+        'ATTACHMENT_TEXT',
+      ).text;
+      if (!sanitizedText) return '';
       const metadata = fieldLines([
         ['파일명', attachment.fileName],
         ['파일 형식', attachmentFormat(attachment)],
         ['추출기', attachment.extractorType],
       ]);
-      return [...metadata, '', textValue(attachment.cleanedText)].filter(Boolean).join('\n');
-    });
+      return [...metadata, '', sanitizedText].filter(Boolean).join('\n');
+    })
+    .filter(Boolean);
 }
 
 export function originalBody(program: ProgramCaseDocumentProgram) {
@@ -159,7 +174,44 @@ export function originalBody(program: ProgramCaseDocumentProgram) {
 }
 
 export function buildProgramCaseDocument(input: ProgramCaseDocumentInput) {
-  const { program } = input;
+  const instructor = input.program.instructor;
+  const sanitizeKnown = (
+    value: string | null | undefined,
+    context: 'STRUCTURED_FIELD' | 'RAW_TEXT' | 'ATTACHMENT_TEXT',
+  ) => sanitizeProgramCaseSearchText(
+    removeKnownPersonalValue(value ?? '', instructor),
+    context,
+  ).text;
+  input = {
+    program: {
+      ...input.program,
+      sourcePostId: sanitizeKnown(input.program.sourcePostId, 'STRUCTURED_FIELD'),
+      sourceUrl: sanitizeKnown(input.program.sourceUrl, 'STRUCTURED_FIELD'),
+      title: sanitizeKnown(input.program.title, 'STRUCTURED_FIELD'),
+      targetAudience: sanitizeKnown(input.program.targetAudience, 'STRUCTURED_FIELD'),
+      location: sanitizeKnown(input.program.location, 'STRUCTURED_FIELD'),
+      feeText: sanitizeKnown(input.program.feeText, 'STRUCTURED_FIELD'),
+      preparationText: sanitizeKnown(input.program.preparationText, 'STRUCTURED_FIELD'),
+      notices: sanitizeKnown(input.program.notices, 'RAW_TEXT'),
+      rawText: sanitizeKnown(input.program.rawText, 'RAW_TEXT'),
+    },
+    sessions: input.sessions.map((session) => ({
+      ...session,
+      activity: sanitizeKnown(session.activity, 'RAW_TEXT'),
+    })),
+    attachments: input.attachments.map((attachment) => ({
+      ...attachment,
+      fileName: sanitizeKnown(attachment.fileName, 'ATTACHMENT_TEXT'),
+      cleanedText: sanitizeKnown(attachment.cleanedText, 'ATTACHMENT_TEXT'),
+    })),
+  };
+  const program = {
+    ...input.program,
+    instructor: '',
+    contactText: null,
+    notices: sanitizeProgramCaseSearchText(input.program.notices, 'RAW_TEXT').text,
+    rawText: sanitizeProgramCaseSearchText(input.program.rawText, 'RAW_TEXT').text,
+  };
   const period = [
     textValue(program.educationStartDateText) || dateValue(program.educationStartDate),
     textValue(program.educationEndDateText) || dateValue(program.educationEndDate),
