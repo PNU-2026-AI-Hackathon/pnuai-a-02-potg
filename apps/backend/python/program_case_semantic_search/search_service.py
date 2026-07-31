@@ -27,7 +27,7 @@ class SearchService:
 
     def search(
         self, query: str, *, limit: int = DEFAULT_SEARCH_LIMIT,
-        chunk_type: str | None = None
+        threshold: float | None = None, chunk_type: str | None = None
     ) -> SearchResponse:
         normalized = query.strip()
         if not normalized:
@@ -36,11 +36,14 @@ class SearchService:
             raise ValueError(f"query must be at most {MAX_QUERY_CHARACTERS} characters")
         if not 1 <= limit <= MAX_SEARCH_LIMIT:
             raise ValueError(f"limit must be between 1 and {MAX_SEARCH_LIMIT}")
+        if threshold is not None and not -1.0 <= threshold <= 1.0:
+            raise ValueError("threshold must be between -1 and 1")
         if chunk_type is not None and chunk_type not in CHUNK_TYPES:
             raise ValueError("chunk type must be CORE, SESSIONS, or ATTACHMENT")
         started = time.monotonic()
         vector = validate_vector(self.provider.encode_query(normalized), self.metadata.dimension)
         results = self.repository.search(
-            vector, self.metadata, limit=limit, chunk_type=chunk_type
+            vector, self.metadata, limit=limit, threshold=threshold,
+            chunk_type=chunk_type
         )
         return SearchResponse(results=results, elapsed_seconds=time.monotonic() - started)
