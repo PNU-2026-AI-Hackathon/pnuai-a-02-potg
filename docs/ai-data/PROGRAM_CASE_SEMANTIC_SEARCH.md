@@ -372,3 +372,168 @@ Transformers와 모델을 설치하지 않는다. 후속 배포가 필요하면 
 - 운영 DB migration/extension 생성
 - 운영 청크 임베딩과 검색
 - EC2 변경
+
+## 2026-08-03 운영 검증 결과
+
+운영 DB `moira`에서 pgvector `0.8.2`와 KURE-v1 고정 revision을 사용해
+유효 청크 888건의 임베딩 및 의미 검색을 검증했다. 모든 청크는 document
+version `2`, builder version `program-case-chunk-v2`, 비어 있지 않은 content를
+가졌으며 개인정보 금지 패턴, stale document 연결, 중복 ID·chunkKey가 없었다.
+
+### 실행 환경과 전체 집계
+
+| 항목 | 결과 |
+|---|---:|
+| Python | 3.11.15 |
+| 실행 장치 | CPU |
+| cache | `apps/backend/.model-cache` (약 2.29GB, Git ignored) |
+| batch size | 8 |
+| 유효 청크 | 888 |
+| CORE / SESSIONS / ATTACHMENT | 349 / 5 / 534 |
+| 최초 정상 완료 | 9 |
+| 전체 실행 신규 생성 | 879 |
+| 전체 실행 unchanged | 9 |
+| 실패 | 0 |
+| encode batch/call | 110 / 110 |
+| 관찰 실행 시간 | 약 1시간 48분 32초 |
+| 관찰 working set | 약 1.54~1.68GiB |
+
+상위 shell의 30분 제한 이후에도 실제 Python 자식 프로세스가 계속 실행되고
+있음을 확인하여 중복 실행하지 않고 자연 종료까지 모니터링했다. 위 최초 전체
+집계는 실행 시작 당시 정상 9건과 최종 DB 신규 879건, batch size 8에 따른
+결정적 집계다. 상위 shell 종료 때문에 최초 CLI의 최종 stdout 자체는 회수하지
+못했다.
+
+파일럿 8건은 CORE 3, SESSIONS 2, ATTACHMENT 3으로 동적 선택되었고 한 번의
+batch encode로 모두 생성됐다. 이를 위해 미임베딩·document v2·builder v2·
+비어 있지 않은 청크만 제한 선택하는 `--pilot-size`를 추가했다. 함께 발견된
+`--batch-size` 문자열 파싱 오류도 수정했다.
+
+최종 integrity 결과는 다음과 같다.
+
+- embedding/COMPLETED: 888/888
+- PENDING/PROCESSING/FAILED: 0/0/0
+- NULL vector, dimension mismatch: 0
+- provider/model/revision/version mismatch: 0
+- content hash mismatch, orphan, duplicate: 0
+- vector L2 norm 범위: 0.99999987~1.00000018
+- ProgramCase, Session, Attachment, Document, Chunk의 count/SHA-256 baseline 불변
+
+동일 전체 명령의 즉시 재실행 결과는 `TOTAL 888`, `UNCHANGED 888`,
+`CREATED 0`, `UPDATED 0`, `FAILED 0`, `BATCHES 0`, `MODEL_ENCODE_CALLS 0`,
+`ELAPSED_SECONDS 0.266`이었다. 재실행 전후 embedding의 updatedAt,
+attemptCount, vector hash, embeddedContentHash 집계 fingerprint도 동일했다.
+
+### 한국어 검색 평가
+
+아래 결과는 threshold 없이 exact cosine Top 5를 조회한 것이다. 프로그램명은
+운영 DB의 기존 CP949 mojibake를 DB 변경 없이 보고 단계에서만 가역 복원했다.
+본문, target, 첨부 원문과 vector는 출력하거나 문서에 저장하지 않았다.
+
+#### 유아와 부모가 함께하는 그림책 활동
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [유아/금정북파크] 클레이로 만나는 그림책 이야기 | 0.650287 | SESSIONS | `c2c17479-6d13-4d83-8fd8-29812884ee50` |
+| 2 | [미리내] 생각 쑥쑥 그림책 | 0.629984 | ATTACHMENT | `43727bca-99ab-46f3-8d19-8ab0ffe4d83a` |
+| 3 | [방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자 | 0.615471 | ATTACHMENT | `1d61aa19-329d-442e-93ed-0c378027c43a` |
+| 4 | [아이꿈자람] 그림책 놀이터 | 0.609402 | ATTACHMENT | `ecd157f7-4ee7-4599-8dae-86560610aec7` |
+| 5 | [사립 로뎀나무] 그림책 예술놀이 | 0.606451 | ATTACHMENT | `4ef4279d-a332-4eba-b02c-acc39b15ae9f` |
+
+그림책 활동은 잘 포착하지만 부모 동반 조건은 제목만으로 확인되지 않아 5건
+모두 부분 적합으로 보수적으로 판정했다.
+
+#### 초등학생 독서 프로그램
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [미리내] 자녀 독서지도 | 0.638605 | ATTACHMENT | `cd224f35-ed08-4990-ad3b-8d4784f16a92` |
+| 2 | [금샘마을] 그림책 독서논술 | 0.629367 | CORE | `0104706d-6567-41ee-968a-fa36201c0974` |
+| 3 | [아이꿈자람] 내 마음 토닥토닥 책읽기&글쓰기 | 0.626997 | CORE | `045feb8f-ce21-4213-a77a-96287c140322` |
+| 4 | [금샘마을] 그림책 독서논술 | 0.626230 | ATTACHMENT | `0104706d-6567-41ee-968a-fa36201c0974` |
+| 5 | [금정북파크] I Love English story | 0.626076 | ATTACHMENT | `d3c18b3a-5860-4667-ad2f-f3fc96ef63b5` |
+
+3건 적합, 2건 부분 적합이며 같은 프로그램의 CORE/ATTACHMENT 중복 1건이 있다.
+
+#### 노년층 디지털 교육
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [성인/게이트웨이(사립)] 디지털로 그리는 나의 하루, 스마트 라이프 교실 | 0.553443 | CORE | `41a9dfbf-f4f3-40c9-a58f-792b26c23162` |
+| 2 | [어린이/부곡1동] 나도 일러스트 작가! 디지털드로잉 | 0.538638 | CORE | `72454ab4-1084-4e9f-b79f-488800256bee` |
+| 3 | [성인/구서sk뷰 1단지] 누구나 쉽게 따라하는 스마트폰 | 0.536136 | CORE | `abbed79d-2044-40f7-b0b0-346464804a36` |
+| 4 | [금정북파크] 신나는 스마트폰 교실 | 0.534024 | CORE | `59b5f7c0-0d9b-488a-a0a7-53477a8a13fc` |
+| 5 | [성인/게이트웨이(사립)] 디지털로 그리는 나의 하루, 스마트 라이프 교실 | 0.525848 | ATTACHMENT | `41a9dfbf-f4f3-40c9-a58f-792b26c23162` |
+
+노년층이 명시되지 않아 4건 부분 적합, 어린이 디지털드로잉 1건 부적합으로
+판정했다. 동일 프로그램 중복 1건이 있다.
+
+#### 부모와 아이 문화 활동
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(초등반) | 0.542072 | ATTACHMENT | `dac90a63-290d-4ba6-bf75-c934a5a40f7a` |
+| 2 | [어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(유아반) | 0.537939 | ATTACHMENT | `7619dc94-dc9f-47a6-b3a6-21ae15d8fea3` |
+| 3 | [우지] 보테니컬 아트 | 0.517032 | ATTACHMENT | `23a1b6fb-0ff3-4e43-ae38-6c1ee2736e0e` |
+| 4 | [미리내] 자녀 독서지도 | 0.512439 | ATTACHMENT | `cd224f35-ed08-4990-ad3b-8d4784f16a92` |
+| 5 | [어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(초등반) | 0.512397 | CORE | `dac90a63-290d-4ba6-bf75-c934a5a40f7a` |
+
+부모 동반이 명시되지 않아 4건 부분 적합, 보테니컬 아트 1건 부적합으로
+판정했다. 동일 프로그램 중복 1건이 있다.
+
+#### 주민 공예 프로그램
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [아이꿈자람/어린이] 3D펜으로 생활소품 만들기 | 0.567726 | CORE | `05814221-1991-4a81-b568-ca87687df2ec` |
+| 2 | [아이꿈자람] 풍선아트 체험 16:40~17:00 | 0.551712 | ATTACHMENT | `99068bd9-8518-4b80-87df-99cbc12573cd` |
+| 3 | [아이꿈자람] 풍선아트 체험 15:00~15:20 | 0.551215 | ATTACHMENT | `7148f37d-e963-4ed9-9345-0f5762bbd54c` |
+| 4 | [아이꿈자람] 풍선아트 체험 14:00~14:20 | 0.550120 | ATTACHMENT | `4c253691-b671-474d-94ea-47927790c323` |
+| 5 | [아이꿈자람] 풍선아트 체험 14:40~15:00 | 0.549725 | ATTACHMENT | `a4cbbaa3-2849-454a-b192-c70096d22ae3` |
+
+공예·만들기 활동은 일치하지만 주민 일반보다 어린이 대상이므로 5건 모두
+부분 적합으로 판정했다.
+
+#### 건강 프로그램
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | 박민수 원장의 「생체 나이 10년 젊게」 강연 | 0.524286 | CORE | `03bafacf-b661-4496-bc41-b97ac8381df4` |
+| 2 | 박민수 원장의 「생체 나이 10년 젊게」 강연 | 0.516099 | ATTACHMENT | `03bafacf-b661-4496-bc41-b97ac8381df4` |
+| 3 | [어린이/아이꿈] 원어민 선생님과 Joyful English | 0.510967 | ATTACHMENT | `c22a7dbd-a864-499c-b163-4ec1d0e907a1` |
+| 4 | [초등/구서2동어린이] Cool Summer! Cool English! | 0.497522 | SESSIONS | `2a38d135-591f-4b39-bcbd-f348c11e60b8` |
+| 5 | [초등/부곡1동] 똑똑한 지구인 프로젝트 | 0.494328 | SESSIONS | `95756897-676f-4e06-b029-679135624716` |
+
+상위 2건은 적합하지만 같은 프로그램 중복이고, 나머지 3건은 부적합이다.
+
+### 분포와 후속 판단
+
+질의별 1위/5위/Top 5 평균은 각각 다음과 같다.
+
+| 질의 | 1위 | 5위 | 평균 |
+|---|---:|---:|---:|
+| 유아·부모 그림책 | 0.650287 | 0.606451 | 0.622319 |
+| 초등 독서 | 0.638605 | 0.626076 | 0.629455 |
+| 노년층 디지털 | 0.553443 | 0.525848 | 0.537618 |
+| 부모·아이 문화 | 0.542072 | 0.512397 | 0.524376 |
+| 주민 공예 | 0.567726 | 0.549725 | 0.554100 |
+| 건강 | 0.524286 | 0.494328 | 0.508640 |
+
+전체 Top 30의 score 범위는 0.494328~0.650287이다. 건강 질의의 부적합
+3위 점수 0.510967과 다른 질의의 부분 적합 점수 범위가 겹치며, 노년층
+질의에서도 부적합 결과가 일부 부분 적합 결과보다 높다. 따라서 현재 결과만으로
+고정 threshold를 두는 것은 부적절하고 더 많은 relevance label이 필요하다.
+
+Top 30의 청크 유형은 CORE 9, SESSIONS 3, ATTACHMENT 18로 ATTACHMENT가
+60%다. 여섯 질의 중 세 질의에서 같은 ProgramCase의 CORE/ATTACHMENT가
+동시에 노출되어 총 3건의 중복이 있었다. 다음 우선순위는 검색 후 프로그램
+단위 dedupe 또는 프로그램별 최고 청크 점수 집계이며, 그 다음에 labeled
+evaluation을 통한 threshold와 reranking을 검토한다.
+
+### 검증 명령 결과
+
+- TypeScript build: 통과
+- Python unit test: 53개 통과
+- 전용 `moira_pgvector_integration_test` synthetic pgvector integration: 통과
+- 운영 integrity 및 원본 SHA-256 비교: 통과
+- `git diff --check`: 통과
