@@ -53,6 +53,7 @@ export default function SiteHeader({
               <div className="siteNavSubmenu">
                 <Link href="/community/library-news">도서관 행사 및 소식</Link>
                 <Link href="/community/proposals">우리동네 의제</Link>
+                <Link href="/community/ideas">함께 만드는 행사</Link>
                 <Link href="/community/free">동네 광장</Link>
               </div>
             </div>

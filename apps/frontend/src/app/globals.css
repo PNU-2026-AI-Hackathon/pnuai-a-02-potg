@@ -6009,3 +6009,37 @@ html.isFullPageScroll:has(.moiraPage) {
     padding: 22px 16px;
   }
 }
+/* Idea board concept: threaded civic discussion */
+.ideaThreadPage { min-height: calc(100vh - var(--site-header-height)); background: #f3f6f2; color: #18352f; padding: 48px max(24px, calc((100vw - 1320px) / 2)) 80px; }
+.ideaHero { display: flex; justify-content: space-between; align-items: end; gap: 32px; padding: 42px 46px; border-radius: 32px; background: #163f36; color: white; box-shadow: 0 22px 60px rgba(15, 58, 49, .16); }
+.ideaEyebrow { margin: 0 0 14px !important; color: #9ee0c3 !important; font-size: 12px !important; font-weight: 800; letter-spacing: .16em; }
+.ideaHero h1 { margin: 0; max-width: 720px; font-size: clamp(36px, 4.6vw, 66px); line-height: 1.08; letter-spacing: -.055em; }
+.ideaHero p { margin: 20px 0 0; max-width: 610px; color: #d6e7e1; font-size: 17px; line-height: 1.7; }
+.ideaPrimaryButton { flex: 0 0 auto; border: 0; border-radius: 999px; background: #efff77; color: #163f36; padding: 16px 24px; font-weight: 900; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+.threadStats { display: flex; gap: 12px; margin: 18px 0 26px; }
+.threadStats span { border: 1px solid #dce6df; border-radius: 999px; background: white; padding: 10px 16px; color: #6a7772; font-size: 13px; }
+.threadStats strong { color: #16745f; font-size: 15px; }
+.threadWorkspace { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr); gap: 22px; align-items: start; }
+.threadFeed, .threadDetail { min-width: 0; border: 1px solid #dce5df; border-radius: 24px; background: #fff; box-shadow: 0 14px 36px rgba(25, 58, 49, .06); }
+.threadFeed { padding: 18px; }
+.threadToolbar { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px 16px; }
+.threadTabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #edf2ef; }
+.threadTabs button, .threadFilter { border: 0; border-radius: 9px; background: transparent; padding: 9px 13px; color: #66736f; font-weight: 700; cursor: pointer; }
+.threadTabs button.isActive { background: #fff; color: #163f36; box-shadow: 0 2px 8px rgba(31,63,54,.1); }
+.threadFilter { border: 1px solid #dbe5df; background: #fff; }
+.threadCards { display: grid; gap: 12px; }
+.threadCard { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 16px; border: 1px solid #e0e7e3; border-radius: 18px; padding: 20px; cursor: pointer; transition: .2s ease; }
+.threadCard:hover, .threadCard.isSelected { border-color: #63a995; background: #f8fcfa; transform: translateY(-1px); }
+.voteBox { align-self: start; display: grid; place-items: center; gap: 2px; border: 0; border-radius: 14px; background: #eef5f1; color: #5d6f69; padding: 10px 6px; cursor: pointer; }
+.voteBox span { font-size: 13px; }.voteBox strong { font-size: 16px; }.voteBox.isLiked { background: #d9f3e7; color: #0c7259; }
+.threadCardFlags { display: flex; gap: 8px; align-items: center; }.threadCardFlags span, .threadDetailHeader span { color: #14725c; font-size: 12px; font-weight: 800; }.threadCardFlags em { border-radius: 999px; background: #fff3d6; color: #8a6415; padding: 5px 9px; font-size: 11px; font-style: normal; font-weight: 700; }
+.threadCard h2 { margin: 10px 0 8px; font-size: 20px; line-height: 1.4; letter-spacing: -.02em; }.threadCardBody > p { margin: 0; color: #68746f; font-size: 14px; line-height: 1.65; }
+.threadCard footer { display: flex; align-items: center; gap: 8px; margin-top: 16px; color: #79837f; font-size: 12px; }.threadCard footer time { margin-left: auto; }.ideaAvatar { display: inline-grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #dceee6; color: #176650; font-size: 12px; font-weight: 900; }
+.threadDetail { position: sticky; top: calc(var(--site-header-height) + 20px); padding: 26px; max-height: calc(100vh - var(--site-header-height) - 40px); overflow: auto; }
+.threadDetailHeader { display: flex; justify-content: space-between; }.threadDetailHeader button { border: 0; background: none; color: #82908b; font-size: 26px; cursor: pointer; }.threadDetail > h2 { margin: 10px 0; font-size: 25px; line-height: 1.35; }.threadDetail > p { color: #62706b; font-size: 14px; line-height: 1.7; }
+.threadAuthor { display: flex; gap: 10px; align-items: center; padding: 14px 0 20px; border-bottom: 1px solid #e3e9e5; }.threadAuthor div { display: grid; gap: 3px; }.threadAuthor small { color: #84908c; }
+.threadDiscussionTitle { display: flex; justify-content: space-between; margin: 20px 0 4px; font-size: 13px; }.threadDiscussionTitle span { color: #7b8783; }
+.replyList article { padding: 16px 0; border-bottom: 1px solid #edf0ee; }.replyList article.isNested { margin-left: 30px; padding-left: 14px; border-left: 2px solid #c8ded5; }.replyList article > div { display: flex; align-items: center; gap: 7px; }.replyList small { color: #8b9692; }.replyList p { margin: 10px 0; color: #4f5e59; font-size: 13px; line-height: 1.65; }.replyList footer { display: flex; gap: 14px; }.replyList button { border: 0; background: none; padding: 0; color: #70807a; font-size: 12px; cursor: pointer; }
+.replyComposer { display: grid; gap: 9px; margin-top: 20px; }.replyComposer label { font-size: 13px; font-weight: 800; }.replyComposer textarea { min-height: 88px; resize: vertical; border: 1px solid #d5e0da; border-radius: 12px; padding: 12px; outline: none; }.replyComposer textarea:focus { border-color: #16806a; box-shadow: 0 0 0 3px #dff3e9; }.replyComposer button { justify-self: end; border: 0; border-radius: 10px; background: #16745f; color: #fff; padding: 10px 15px; font-weight: 800; }.replyComposer button:disabled { opacity: .4; }
+@media (max-width: 980px) { .threadWorkspace { grid-template-columns: 1fr; }.threadDetail { position: static; max-height: none; }.ideaHero { align-items: start; flex-direction: column; } }
+@media (max-width: 640px) { .ideaThreadPage { padding: 20px 14px 56px; }.ideaHero { padding: 30px 24px; border-radius: 22px; }.ideaHero h1 { font-size: 38px; }.ideaPrimaryButton { width: 100%; }.threadStats { overflow-x: auto; }.threadStats span { white-space: nowrap; }.threadFeed { padding: 10px; }.threadCard { grid-template-columns: 45px minmax(0,1fr); gap: 10px; padding: 15px 12px; }.threadCard h2 { font-size: 17px; }.threadCard footer span:nth-of-type(2) { display: none; }.threadDetail { padding: 20px 16px; }.threadToolbar { align-items: stretch; gap: 8px; }.threadFilter { padding-inline: 8px; } }
