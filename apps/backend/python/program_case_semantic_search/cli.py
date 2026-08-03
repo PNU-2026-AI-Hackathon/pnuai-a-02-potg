@@ -46,10 +46,15 @@ def build_parser() -> argparse.ArgumentParser:
     embed = subcommands.add_parser("embed")
     selectors = embed.add_mutually_exclusive_group(required=True)
     selectors.add_argument("--chunk-id", type=parse_chunk_id)
+    selectors.add_argument(
+        "--pilot-size", type=lambda value: validate_batch_size(int(value))
+    )
     selectors.add_argument("--all", action="store_true")
     selectors.add_argument("--failed", action="store_true")
     selectors.add_argument("--stale", action="store_true")
-    embed.add_argument("--batch-size", type=validate_batch_size)
+    embed.add_argument(
+        "--batch-size", type=lambda value: validate_batch_size(int(value))
+    )
     embed.add_argument("--dry-run", action="store_true")
     embed.add_argument("--confirm-database")
     embed.add_argument("--json", action="store_true")
@@ -71,6 +76,8 @@ def build_parser() -> argparse.ArgumentParser:
 def selector_from_args(args: argparse.Namespace) -> EmbeddingSelector:
     if args.chunk_id:
         return EmbeddingSelector(SelectorKind.CHUNK_ID, args.chunk_id)
+    if args.pilot_size:
+        return EmbeddingSelector(SelectorKind.PILOT, limit=args.pilot_size)
     if args.all:
         return EmbeddingSelector(SelectorKind.ALL)
     if args.failed:

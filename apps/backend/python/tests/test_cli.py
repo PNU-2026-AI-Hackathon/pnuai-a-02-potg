@@ -59,10 +59,20 @@ class CliTests(unittest.TestCase):
         parser = build_parser()
         for option, kind in (
             ("--all", SelectorKind.ALL), ("--failed", SelectorKind.FAILED),
-            ("--stale", SelectorKind.STALE),
+            ("--stale", SelectorKind.STALE), ("--pilot-size=8", SelectorKind.PILOT),
         ):
             args = parser.parse_args(["embed", option, "--dry-run"])
             self.assertEqual(selector_from_args(args).kind, kind)
+
+    def test_pilot_selector_preserves_limit(self):
+        args = build_parser().parse_args(["embed", "--pilot-size", "8", "--dry-run"])
+        selector = selector_from_args(args)
+        self.assertEqual(selector.kind, SelectorKind.PILOT)
+        self.assertEqual(selector.limit, 8)
+
+    def test_embed_batch_size_parses_as_integer(self):
+        args = build_parser().parse_args(["embed", "--all", "--batch-size", "8"])
+        self.assertEqual(args.batch_size, 8)
 
     def test_duplicate_selector_and_invalid_limit_fail(self):
         parser = build_parser()

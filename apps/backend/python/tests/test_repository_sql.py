@@ -22,6 +22,13 @@ class RepositorySqlTests(unittest.TestCase):
             self.assertIn(name, source)
         self.assertIn("<=>", source)
 
+    def test_pilot_selector_is_valid_unembedded_and_bounded(self):
+        source = inspect.getsource(embedding_repository.EmbeddingRepository.list_candidates)
+        for guard in ('d."version" = \'2\'', 'c."builderVersion" = \'program-case-chunk-v2\'',
+                      'btrim(c."content") <> \'\'', 'e."programCaseDocumentChunkId" IS NULL',
+                      'LIMIT %s'):
+            self.assertIn(guard, source)
+
 
 if __name__ == "__main__":
     unittest.main()
