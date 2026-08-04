@@ -6,11 +6,20 @@ from datetime import datetime, timezone
 from program_case_semantic_search.cli import metadata
 from program_case_semantic_search.database import connect
 from program_case_semantic_search.search_repository import SearchRepository
+from program_case_semantic_search.search_service import SearchService
 from program_case_semantic_search.test_database import test_database_url_from_environment
 from program_case_semantic_search.vector_utils import make_test_vector
 
 
 EXPECTED_TEST_DATABASE = "moira_pgvector_integration_test"
+
+
+class FixedQueryProvider:
+    dimension = 1024
+
+    def encode_query(self, query: str) -> list[float]:
+        del query
+        return make_test_vector(1)
 
 
 def assert_test_database(connection: object) -> None:
@@ -24,10 +33,13 @@ def main() -> None:
     test_database_url = test_database_url_from_environment()
     suffix = uuid.uuid4().hex
     program_id = str(uuid.uuid4())
+    other_program_id = str(uuid.uuid4())
     document_id = str(uuid.uuid4())
+    other_document_id = str(uuid.uuid4())
     first_chunk = str(uuid.uuid4())
     second_chunk = str(uuid.uuid4())
     mismatched_chunk = str(uuid.uuid4())
+    other_chunk = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
     current = metadata()
     test_error: Exception | None = None
@@ -59,25 +71,47 @@ INSERT INTO "ProgramCase" (
 )
 """, (program_id, suffix, "VECTOR_TEST_" + suffix, now, now, now, now, now))
                 cursor.execute("""
+INSERT INTO "ProgramCase" (
+  "id", "sourceType", "sourcePostId", "sourceUrl", "title", "targetAudience",
+  "instructor", "capacity", "currentApplicants", "applicationStatus",
+  "educationStartDate", "educationEndDate", "educationStartDateText",
+  "educationEndDateText", "notices", "rawText", "hasUnparsedAttachments",
+  "crawledAt", "requestSucceeded", "parseWarnings", "createdAt", "updatedAt"
+) VALUES (
+  %s, 'VECTOR_TEST', %s, 'https://example.invalid/test', %s, '성인 필터',
+  '테스트', 1, 0, 'TEST', %s, %s, 'test', 'test', '', '', false,
+  %s, true, '[]'::jsonb, %s, %s
+)
+""", (other_program_id, suffix + "-other", "VECTOR_OTHER_" + suffix,
+          now, now, now, now, now))
+                cursor.execute("""
 INSERT INTO "ProgramCaseDocument" (
   "id", "programCaseId", "documentType", "content", "contentHash",
   "version", "createdAt", "updatedAt"
 ) VALUES (%s, %s, 'SEARCH', 'fixture', %s, 'test', %s, %s)
 """, (document_id, program_id, suffix, now, now))
+                cursor.execute("""
+INSERT INTO "ProgramCaseDocument" (
+  "id", "programCaseId", "documentType", "content", "contentHash",
+  "version", "createdAt", "updatedAt"
+) VALUES (%s, %s, 'SEARCH', 'fixture', %s, 'test', %s, %s)
+""", (other_document_id, other_program_id, suffix + "-other", now, now))
                 fixtures = (
                     (first_chunk, "CORE", current.model_revision, 1),
-                    (second_chunk, "SESSIONS", current.model_revision, 2),
+                    (second_chunk, "ATTACHMENT", current.model_revision, 1),
                     (mismatched_chunk, "ATTACHMENT", current.model_revision + "-mismatch", 3),
+                    (other_chunk, "CORE", current.model_revision, 2),
                 )
                 for order, (chunk_id, chunk_type, model_revision, vector_seed) in enumerate(fixtures):
                     content_hash = suffix + str(order)
+                    fixture_document_id = other_document_id if chunk_id == other_chunk else document_id
                     cursor.execute("""
 INSERT INTO "ProgramCaseDocumentChunk" (
   "id", "programCaseDocumentId", "chunkKey", "chunkOrder", "chunkType",
   "content", "contentHash", "builderVersion", "characterCount", "createdAt", "updatedAt"
 ) VALUES (%s, %s, %s, %s, %s, %s, %s, 'test', 7, %s, %s)
 """, (
-                        chunk_id, document_id, "fixture-" + str(order), order,
+                        chunk_id, fixture_document_id, "fixture-" + str(order), order,
                         chunk_type, "fixture", content_hash, now, now,
                     ))
                     vector = make_test_vector(vector_seed)
@@ -106,10 +140,39 @@ INSERT INTO "ProgramCaseDocumentChunkEmbedding" (
             if any(result.chunk_id == mismatched_chunk for result in results):
                 raise AssertionError("metadata mismatch embedding was not excluded")
             fixture_results = [result for result in results if result.program_case_id == program_id]
-            if not fixture_results or fixture_results[0].chunk_id != first_chunk:
+            if not fixture_results or fixture_results[0].chunk_id not in {first_chunk, second_chunk}:
                 raise AssertionError("cosine ordering or relation mapping failed")
             if fixture_results[0].program_case_document_id != document_id:
                 raise AssertionError("document relation mapping failed")
+            candidate_results = SearchRepository(connection).search(
+                make_test_vector(1), current, limit=20
+            )
+            if sum(result.program_case_id == program_id for result in candidate_results) < 2:
+                raise AssertionError("dedupe fixture did not produce duplicate chunk candidates")
+            response = SearchService(
+                SearchRepository(connection), FixedQueryProvider(), current
+            ).search("fixture", limit=2)
+            if len({result.program_case_id for result in response.results}) != 2:
+                raise AssertionError("program case dedupe did not return unique programs")
+            representative = next(
+                result for result in response.results if result.program_case_id == program_id
+            )
+            if representative.chunk_id != first_chunk:
+                raise AssertionError("equal similarity tie did not prefer CORE")
+            if response.duplicates_removed < 1:
+                raise AssertionError("dedupe aggregate did not report removed duplicates")
+            filtered = SearchService(
+                SearchRepository(connection), FixedQueryProvider(), current
+            ).search("fixture", limit=5, target="성인", chunk_type="CORE")
+            if not filtered.results or any(
+                result.program_case_id != other_program_id for result in filtered.results
+            ):
+                raise AssertionError("target metadata filter returned an unexpected program")
+            empty_filtered = SearchService(
+                SearchRepository(connection), FixedQueryProvider(), current
+            ).search("fixture", limit=5, target="존재하지않는대상")
+            if empty_filtered.results:
+                raise AssertionError("metadata filter expected zero results")
             core_results = SearchRepository(connection).search(
                 make_test_vector(1), current, limit=2, chunk_type="CORE"
             )
@@ -140,7 +203,8 @@ INSERT INTO "ProgramCaseDocumentChunkEmbedding" (
                 assert_test_database(cleanup_connection)
                 with cleanup_connection.cursor() as cursor:
                     cursor.execute(
-                        'DELETE FROM "ProgramCase" WHERE "id" = %s', (program_id,)
+                        'DELETE FROM "ProgramCase" WHERE "id" IN (%s, %s)',
+                        (program_id, other_program_id),
                     )
         except Exception as exc:
             cleanup_errors.append(exc)
@@ -151,17 +215,18 @@ INSERT INTO "ProgramCaseDocumentChunkEmbedding" (
                     cursor.execute("""
 SELECT
   (SELECT COUNT(*) FROM "ProgramCase" WHERE "id" = %s)::int,
+  (SELECT COUNT(*) FROM "ProgramCase" WHERE "id" = %s)::int,
   (SELECT COUNT(*) FROM "ProgramCaseSession" WHERE "programCaseId" = %s)::int,
   (SELECT COUNT(*) FROM "ProgramCaseAttachment" WHERE "programCaseId" = %s)::int,
   (SELECT COUNT(*) FROM "ProgramCaseDocument" WHERE "id" = %s)::int,
   (SELECT COUNT(*) FROM "ProgramCaseDocumentChunk"
-   WHERE "id" IN (%s, %s, %s))::int,
+   WHERE "id" IN (%s, %s, %s, %s))::int,
   (SELECT COUNT(*) FROM "ProgramCaseDocumentChunkEmbedding"
-   WHERE "programCaseDocumentChunkId" IN (%s, %s, %s))::int
+   WHERE "programCaseDocumentChunkId" IN (%s, %s, %s, %s))::int
 """, (
-                        program_id, program_id, program_id, document_id,
-                        first_chunk, second_chunk, mismatched_chunk,
-                        first_chunk, second_chunk, mismatched_chunk,
+                        program_id, other_program_id, program_id, program_id, document_id,
+                        first_chunk, second_chunk, mismatched_chunk, other_chunk,
+                        first_chunk, second_chunk, mismatched_chunk, other_chunk,
                     ))
                     if any(cursor.fetchone()):
                         raise AssertionError("embedding cascade deletion failed: synthetic fixture cleanup was incomplete")

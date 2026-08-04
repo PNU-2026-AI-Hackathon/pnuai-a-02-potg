@@ -17,10 +17,11 @@ class RepositorySqlTests(unittest.TestCase):
         source = inspect.getsource(search_repository.SearchRepository.search)
         for name in (
             '"status"', '"provider"', '"modelRevision"', '"embeddingVersion"',
-            '"embeddedContentHash"', '"contentHash"',
+            '"embeddedContentHash"', '"contentHash"', '"targetAudience"',
         ):
             self.assertIn(name, source)
         self.assertIn("<=>", source)
+        self.assertIn("POSITION(lower(%s::text)", source)
 
     def test_pilot_selector_is_valid_unembedded_and_bounded(self):
         source = inspect.getsource(embedding_repository.EmbeddingRepository.list_candidates)

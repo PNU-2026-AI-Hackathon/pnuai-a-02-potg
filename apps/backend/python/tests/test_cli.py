@@ -54,6 +54,14 @@ class CliTests(unittest.TestCase):
         self.assertNotIn("청크 원문", serialized)
         self.assertNotIn("대상 원문", serialized)
         self.assertEqual(payload["results"][0]["programTitle"], "안전한 프로그램명")
+        self.assertTrue(payload["dedupeApplied"])
+        for key in ("rawChunkCandidates", "uniquePrograms", "duplicatesRemoved", "returnedResults"):
+            self.assertIn(key, payload)
+        for forbidden in (
+            "content", "preview", "vector", "targetAudience", "sourceLabel",
+            "programCaseDocumentId",
+        ):
+            self.assertNotIn(forbidden, payload["results"][0])
 
     def test_selectors(self):
         parser = build_parser()
@@ -108,9 +116,10 @@ class CliTests(unittest.TestCase):
         ])
         self.assertEqual(embed.confirm_database, "moira")
         search = parser.parse_args([
-            "search", "--query", "query", "--threshold", "0.4"
+            "search", "--query", "query", "--threshold", "0.4", "--target", "성인"
         ])
         self.assertEqual(search.threshold, 0.4)
+        self.assertEqual(search.target, "성인")
 
     def test_keyboard_interrupt_returns_130(self):
         stderr = io.StringIO()
