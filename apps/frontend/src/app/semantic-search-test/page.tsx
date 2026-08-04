@@ -31,7 +31,12 @@ export default function SemanticSearchTestPage() {
   return (
     <main style={{ maxWidth: 1180, margin: '40px auto', padding: 16 }}>
       <h1>ProgramCase SearchProfile 파일럿 비교</h1>
-      <p>기존 Chunk P0는 349개 프로그램의 888개 Chunk, SearchProfile은 대표 30개 프로그램만 검색합니다.</p>
+      <aside style={{ border: '2px solid #b45309', borderRadius: 8, padding: 16, background: '#fffbeb' }}>
+        <strong>검색 품질 미검증 파일럿</strong>
+        <p>기존 Chunk 검색 후보군: 349 ProgramCase / 888 chunks</p>
+        <p>SearchProfile 후보군: 대표 30 ProgramCase</p>
+        <p>후보군이 다르므로 결과를 직접적인 성능 비교로 해석할 수 없습니다.</p>
+      </aside>
       <form onSubmit={search} style={{ display: 'flex', gap: 8, margin: '24px 0' }}>
         <input aria-label="검색어" value={query} onChange={(event) => setQuery(event.target.value)} style={{ flex: 1, padding: 10 }} />
         <button type="submit" disabled={loading || !query.trim()} style={{ padding: '10px 16px' }}>{loading ? '검색 중…' : '검색'}</button>

@@ -154,19 +154,27 @@ def evaluate() -> dict:
         for query, expected in EVALUATION_QUERIES:
             profile = _search_with_provider(query, provider, 5)
             chunk = chunk_service.search(query, limit=5)
-            profile_rank = next((r["rank"] for r in profile["results"] if all(value in r[axis] for axis, value in expected.items())), None)
+            operation_dependent = any(axis in expected for axis in ("operationTypes", "sessionCount"))
+            diagnostic_expected = {
+                axis: value for axis, value in expected.items()
+                if axis not in ("operationTypes", "sessionCount")
+            }
+            profile_rank = next((r["rank"] for r in profile["results"] if all(value in r[axis] for axis, value in diagnostic_expected.items())), None)
             # Apply the same deterministic taxonomy to in-memory Chunk results;
             # the content itself is never written to the evaluation artifact.
-            chunk_rank = next((r.rank for r in chunk.results if all(value in classify(f"{r.program_title} {r.target} {r.content}", session_count=1)[axis] for axis, value in expected.items())), None)
-            if profile_rank and not chunk_rank: outcome = "IMPROVED"
-            elif chunk_rank and not profile_rank: outcome = "WORSE"
-            elif profile_rank and chunk_rank: outcome = "IMPROVED" if profile_rank < chunk_rank else ("EQUAL" if profile_rank == chunk_rank else "WORSE")
+            chunk_rank = next((r.rank for r in chunk.results if all(value in classify(f"{r.program_title} {r.target} {r.content}", session_count=1)[axis] for axis, value in diagnostic_expected.items())), None)
+            if operation_dependent: outcome = "INDETERMINATE"
+            elif profile_rank and not chunk_rank: outcome = "PROFILE_SIGNAL_AHEAD"
+            elif chunk_rank and not profile_rank: outcome = "CHUNK_SIGNAL_AHEAD"
+            elif profile_rank and chunk_rank: outcome = "PROFILE_SIGNAL_AHEAD" if profile_rank < chunk_rank else ("SAME_SIGNAL_RANK" if profile_rank == chunk_rank else "CHUNK_SIGNAL_AHEAD")
             else: outcome = "INDETERMINATE"
             rows.append({"query": query, "expectedTaxonomy": expected, "profileRelevantRank": profile_rank, "chunkTitleSignalRank": chunk_rank, "outcome": outcome,
+                         "diagnosticType": "WEAK_RULE_CONSISTENCY",
+                         "diagnosticNote": "Operation/session conditions are excluded; operation-dependent queries are indeterminate." if operation_dependent else "Not a human relevance judgment.",
                          "attachmentBiasInChunkTop5": sum(r.chunk_type == "ATTACHMENT" for r in chunk.results),
                          "chunkTop5": [{"rank": r.rank, "programCaseId": r.program_case_id, "title": r.program_title, "similarity": r.similarity, "chunkType": r.chunk_type} for r in chunk.results],
                          "profileTop5": [{"rank": r["rank"], "programCaseId": r["programCaseId"], "title": r["title"], "similarity": r["similarity"]} for r in profile["results"]]})
-    output = {"generatedAt": timestamp(), "databaseVerified": database, "chunkCandidateScope": "349 ProgramCase / 888 chunks", "profileCandidateScope": "30 representative ProgramCases", "judgmentMethod": "Expected taxonomy match using the same deterministic rules for both result sets. INDETERMINATE requires manual review.", "queries": rows}
+    output = {"generatedAt": timestamp(), "databaseVerified": database, "diagnosticName": "weak rule-consistency diagnostic", "isHumanRelevanceEvaluation": False, "chunkCandidateScope": "349 ProgramCase / 888 chunks", "profileCandidateScope": "30 representative ProgramCases", "judgmentMethod": "Weak rule-consistency diagnostic using similar deterministic taxonomy rules for both result sets. Operation/session conditions are not compared. This cannot establish retrieval quality.", "queries": rows}
     write_json(EVALUATION_PATH, output)
     return {"queryCount": len(rows), "outcomes": dict(Counter(row["outcome"] for row in rows)), "path": str(EVALUATION_PATH)}
 

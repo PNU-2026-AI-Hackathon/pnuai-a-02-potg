@@ -1,9 +1,11 @@
 {
-  "generatedAt": "2026-08-04T13:35:55Z",
+  "generatedAt": "2026-08-04T14:47:24Z",
   "databaseVerified": "moira",
+  "diagnosticName": "weak rule-consistency diagnostic",
+  "isHumanRelevanceEvaluation": false,
   "chunkCandidateScope": "349 ProgramCase / 888 chunks",
   "profileCandidateScope": "30 representative ProgramCases",
-  "judgmentMethod": "Expected taxonomy match using the same deterministic rules for both result sets. INDETERMINATE requires manual review.",
+  "judgmentMethod": "Weak rule-consistency diagnostic using similar deterministic taxonomy rules for both result sets. Operation/session conditions are not compared. This cannot establish retrieval quality.",
   "queries": [
     {
       "query": "초등학생 환경 실험 프로그램",
@@ -13,7 +15,9 @@
       },
       "profileRelevantRank": 1,
       "chunkTitleSignalRank": 1,
-      "outcome": "EQUAL",
+      "outcome": "SAME_SIGNAL_RANK",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 3,
       "chunkTop5": [
         {
@@ -93,7 +97,9 @@
       },
       "profileRelevantRank": 1,
       "chunkTitleSignalRank": 1,
-      "outcome": "EQUAL",
+      "outcome": "SAME_SIGNAL_RANK",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 3,
       "chunkTop5": [
         {
@@ -173,7 +179,9 @@
       },
       "profileRelevantRank": 1,
       "chunkTitleSignalRank": 1,
-      "outcome": "EQUAL",
+      "outcome": "SAME_SIGNAL_RANK",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 1,
       "chunkTop5": [
         {
@@ -254,6 +262,8 @@
       "profileRelevantRank": null,
       "chunkTitleSignalRank": null,
       "outcome": "INDETERMINATE",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 5,
       "chunkTop5": [
         {
@@ -334,6 +344,8 @@
       "profileRelevantRank": null,
       "chunkTitleSignalRank": null,
       "outcome": "INDETERMINATE",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 0,
       "chunkTop5": [
         {
@@ -412,8 +424,10 @@
         "operationTypes": "MULTI_SESSION"
       },
       "profileRelevantRank": 1,
-      "chunkTitleSignalRank": null,
-      "outcome": "IMPROVED",
+      "chunkTitleSignalRank": 1,
+      "outcome": "INDETERMINATE",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Operation/session conditions are excluded; operation-dependent queries are indeterminate.",
       "attachmentBiasInChunkTop5": 4,
       "chunkTop5": [
         {
@@ -492,7 +506,9 @@
       },
       "profileRelevantRank": 1,
       "chunkTitleSignalRank": 3,
-      "outcome": "IMPROVED",
+      "outcome": "PROFILE_SIGNAL_AHEAD",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 1,
       "chunkTop5": [
         {
@@ -572,7 +588,9 @@
       },
       "profileRelevantRank": 1,
       "chunkTitleSignalRank": 3,
-      "outcome": "IMPROVED",
+      "outcome": "PROFILE_SIGNAL_AHEAD",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 4,
       "chunkTop5": [
         {
@@ -652,7 +670,9 @@
       },
       "profileRelevantRank": 2,
       "chunkTitleSignalRank": null,
-      "outcome": "IMPROVED",
+      "outcome": "PROFILE_SIGNAL_AHEAD",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 5,
       "chunkTop5": [
         {
@@ -732,7 +752,9 @@
       },
       "profileRelevantRank": 1,
       "chunkTitleSignalRank": 3,
-      "outcome": "IMPROVED",
+      "outcome": "PROFILE_SIGNAL_AHEAD",
+      "diagnosticType": "WEAK_RULE_CONSISTENCY",
+      "diagnosticNote": "Not a human relevance judgment.",
       "attachmentBiasInChunkTop5": 4,
       "chunkTop5": [
         {

@@ -10,7 +10,7 @@ Issue #107의 30건 파일럿 검색에 필요한 최소 축만 정의한다. �
 - `targetAgeGroups`: `INFANT`, `CHILD`, `TEEN`, `ADULT`, `SENIOR`, `FAMILY`, `UNKNOWN`
 - `activityTypes`: `READING`, `WRITING`, `ART`, `CRAFT`, `DIGITAL_PRACTICE`, `EXERCISE`, `EXPERIMENT`, `PERFORMANCE`, `DISCUSSION`, `COMMUNITY_ACTIVITY`, `UNKNOWN`
 - `operationTypes`: `ONE_OFF`, `MULTI_SESSION`, `FAMILY_PARTICIPATION`, `GROUP`, `UNKNOWN`
-- `sessionCount`: 관계로 확인한 Session 수. 관계가 없으면 파일럿에서는 1회로 취급한다.
+- `sessionCount`: `COUNT(DISTINCT Session.id)`로 확인한 실제 Session row 수. 관계가 없으면 관찰값이 아닌 파일럿 fallback으로 1회 취급한다.
 
 ## 규칙
 

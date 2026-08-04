@@ -29,12 +29,27 @@ npm.cmd run program-case-search-profile -- evaluate
 
 비교 UI는 frontend `/semantic-search-test`, API는 backend `/api/program-case/search-profile-pilot?q=...`다. 화면과 응답은 Chunk P0 후보군 349개/888 chunks와 SearchProfile 후보군 30개를 명시한다.
 
-## 10개 질의 결과
+## 규칙 일치 기반 진단
 
-평가 질의 10개에서 규칙 기반 taxonomy 관련 순위 기준으로 개선 5, 동등 3, 판단 불가 2, 악화 0이었다. Chunk Top 5 총 50개 중 ATTACHMENT chunk가 30개였다. 정확한 Top 5와 유사도는 `program-case-search-profile-evaluation.json`에 있으며 본문·연락처는 없다.
+10개 질의에 대해 SearchProfile 생성과 유사한 taxonomy 규칙을 사용한 `weak rule-consistency diagnostic`을 수행했다. 이는 사람이 판정한 검색 관련성 평가가 아니며 실제 검색 품질을 측정하지 않는다. 생성과 진단에 유사한 규칙이 사용되어 순환성이 있고, Chunk 후보군은 349 ProgramCase/888 chunks인 반면 SearchProfile 후보군은 대표 30 ProgramCase로 서로 다르다.
 
-이 평가는 후보군 크기가 다르고 정답 label이 아닌 결정적 taxonomy 규칙을 사용한 약한 평가다. 따라서 개선 신호는 있지만 통계적 우월성으로 해석하면 안 된다. 판단 불가 사례와 Attachment 보완 128건은 수동 relevance 판정이 필요하다.
+다회차 조건은 Chunk 결과의 실제 Session 정보를 조회하지 않으므로 비교 기준에서 제외한다. `operationTypes` 또는 `sessionCount` 조건이 포함된 질의는 `INDETERMINATE`로 처리한다. 진단 결과의 `PROFILE_SIGNAL_AHEAD`, `SAME_SIGNAL_RANK`, `CHUNK_SIGNAL_AHEAD`는 taxonomy 신호의 위치만 나타내며 우수·동등·악화 판정이 아니다.
+
+Chunk Top 5 총 50개 중 ATTACHMENT chunk가 30개였다는 값은 관찰된 chunk type 분포일 뿐 Attachment 편향 감소 또는 검색 품질 개선의 증거가 아니다. cosine similarity 절댓값만으로 결과의 적합성을 판단하지 않는다. 정확한 Top 5와 진단 결과는 `program-case-search-profile-evaluation.json`에 있으며 본문·연락처는 없다.
+
+## 관찰된 실패 사례
+
+- `성인 대상 디지털 교육`: 관련성이 높은 모바일·블로그 운영 교육과 함께 한자 프로그램이 거의 같은 점수로 높은 순위에 나타났다.
+- `여러 회차로 진행되는 글쓰기 수업`: 영어 프로그램이 상위에 나타났다. 이 질의는 회차 조건을 공정하게 비교할 수 없어 자동 진단에서 판단 불가로 처리한다.
+- `지역 주민이 참여하는 공동체 활동`: 수학·과학 보드게임 프로그램이 상위에 나타났다.
+- `과학 체험과 만들기`: 그림책·미술·연극 계열 프로그램이 상위에 포함됐다.
+
+이 사례들은 파이프라인 동작과 별개로 실제 의미적 적합성이 검증되지 않았음을 보여준다. 사람 relevance label 없이 자동 규칙만으로 우열을 결론 내릴 수 없다.
 
 ## 결론
 
-**규칙 보완 후 확대 권장**으로 판단한다. 대표 문서 방식은 파일럿 내 관련 taxonomy 순위를 개선했고 Attachment 편향을 직접 노출하지 않는 장점이 있다. 반면 전체 데이터의 Session 결측, Attachment 기반 과분류 위험, 30건 후보군 차이, 수동 정답 부재가 남는다. 다음 이슈는 30건 relevance label 수동 검토, 연령 수치 규칙, Attachment section 제한, 349건 offline embedding 비용 측정 순으로 진행하고 그 전에는 정식 DB schema를 도입하지 않는 것이 안전하다.
+이번 파일럿에서는 ProgramCase 349건의 read-only 분포 분석, 결정적 SearchProfile 생성, 대표 30건의 KURE-v1 임베딩, 파일 기반 검색 및 기존 Chunk 검색과의 비교 UI까지 기술적으로 구현 가능한 것을 확인했다.
+
+다만 SearchProfile 후보군은 대표 30건이고 기존 Chunk 검색 후보군은 전체 349건이므로 검색 품질을 직접 비교하기 어렵다. 또한 현재 자동 진단은 독립적인 사람 relevance 판정이 아닌 taxonomy 규칙 일치 기반 진단이다.
+
+따라서 이번 이슈의 결론은 **SearchProfile 검색 파이프라인의 기술적 실행 가능성 확인**으로 제한한다. 실제 검색 품질은 후속 이슈에서 349건의 동일한 후보군, lexical·dense·hybrid 기준선, pooling 및 사람 relevance 판정을 통해 별도로 검증한다.
