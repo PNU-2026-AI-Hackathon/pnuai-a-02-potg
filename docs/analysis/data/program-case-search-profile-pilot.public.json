@@ -1,0 +1,3905 @@
+{
+  "generatedAt": "2026-08-04T14:45:20Z",
+  "databaseVerified": "moira",
+  "sourceCount": 349,
+  "pilotCount": 30,
+  "taxonomyVersion": "program-case-search-taxonomy-v1",
+  "profiles": [
+    {
+      "programCaseId": "07f38555-07e1-43c7-b57d-4e9056e861fc",
+      "title": "[방학특강/부곡1동] 조물조물 손으로 빚어낸 동화세상",
+      "topics": [
+        "READING_WRITING"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "ART",
+        "EXERCISE"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "child",
+        "exercise",
+        "reading",
+        "reading writing",
+        "동화세상",
+        "방학특강",
+        "부곡1동",
+        "빚어낸",
+        "손으로",
+        "조물조물"
+      ],
+      "sourceHash": "f7bc908188a7f463aaf4fc569cc80fb1744d7ac790e856cd5c64e64040587969",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "EXERCISE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_EXERCISE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [방학특강/부곡1동] 조물조물 손으로 빚어낸 동화세상\n대상: CHILD\n핵심 주제: READING_WRITING\n활동 형태: ART, EXERCISE, READING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: art, child, exercise, reading, reading writing, 동화세상, 방학특강, 부곡1동, 빚어낸, 손으로, 조물조물",
+      "representativeDocumentHash": "4146913b1261bc10371163c28b904a648ee1da9b16b3d452765990df446bf322",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:EXERCISE",
+        "activityTypes:READING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:CHILD",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "0f303a92-177e-4499-b624-b4a9671638a7",
+      "title": "[은빛사랑채] 한자를 알면 세상이 보인다!(풍수지리 익히기 등)",
+      "topics": [
+        "LANGUAGE",
+        "CULTURE",
+        "COMMUNITY"
+      ],
+      "targetAgeGroups": [
+        "ADULT"
+      ],
+      "activityTypes": [
+        "COMMUNITY_ACTIVITY"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "adult",
+        "community",
+        "community activity",
+        "culture",
+        "language",
+        "보인다",
+        "세상이",
+        "알면",
+        "은빛사랑채",
+        "익히기",
+        "풍수지리",
+        "한자를"
+      ],
+      "sourceHash": "d2a4b7680252d42885f9e66bdd42730b6541dd80ffc5483b2cbc3f157b45fb55",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "LANGUAGE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_LANGUAGE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "CULTURE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_CULTURE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "COMMUNITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_COMMUNITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "ADULT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_ADULT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "COMMUNITY_ACTIVITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_COMMUNITY_ACTIVITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [은빛사랑채] 한자를 알면 세상이 보인다!(풍수지리 익히기 등)\n대상: ADULT\n핵심 주제: COMMUNITY, CULTURE, LANGUAGE\n활동 형태: COMMUNITY_ACTIVITY\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: adult, community, community activity, culture, language, 보인다, 세상이, 알면, 은빛사랑채, 익히기, 풍수지리, 한자를",
+      "representativeDocumentHash": "89e334545d862e2955b633f0ba6ea9800488a81772e00e95b3dcb01ea62e77cd",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:COMMUNITY_ACTIVITY",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:ADULT",
+        "topics:COMMUNITY",
+        "topics:CULTURE",
+        "topics:LANGUAGE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "13ca7dd9-e729-43ac-a2af-474904809851",
+      "title": "[금정북파크] 청소년을 위한 독서 처방전",
+      "topics": [
+        "READING_WRITING"
+      ],
+      "targetAgeGroups": [
+        "TEEN"
+      ],
+      "activityTypes": [
+        "READING"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "reading",
+        "reading writing",
+        "teen",
+        "금정북파크",
+        "독서",
+        "위한",
+        "처방전",
+        "청소년을"
+      ],
+      "sourceHash": "6f45affbdeb4ed4301e063c81555feac9a1e80b7d8c005952077a2cc99d4319d",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "TEEN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_TEEN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [금정북파크] 청소년을 위한 독서 처방전\n대상: TEEN\n핵심 주제: READING_WRITING\n활동 형태: READING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: reading, reading writing, teen, 금정북파크, 독서, 위한, 처방전, 청소년을",
+      "representativeDocumentHash": "eeca19005a5093730681b89f1d4871a1e2d158a4916b026a11981dad3df92009",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:READING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:TEEN",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "1d61aa19-329d-442e-93ed-0c378027c43a",
+      "title": "[방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT",
+        "CULTURE"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "ART",
+        "PERFORMANCE"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "culture",
+        "infant",
+        "performance",
+        "reading",
+        "reading writing",
+        "같이",
+        "그림책이랑",
+        "놀자",
+        "방학특강",
+        "북파크",
+        "어서와",
+        "연극이랑"
+      ],
+      "sourceHash": "2490a0c684f2fae626e32a1ebf6f44c110434f6e33fa5d8176f961903c5b1dd1",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "CULTURE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_CULTURE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "PERFORMANCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_PERFORMANCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자\n대상: CHILD, INFANT\n핵심 주제: ART_CRAFT, CULTURE, READING_WRITING\n활동 형태: ART, PERFORMANCE, READING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: art, art craft, child, culture, infant, performance, reading, reading writing, 같이, 그림책이랑, 놀자, 방학특강, 북파크, 어서와, 연극이랑",
+      "representativeDocumentHash": "7a44afbf84822ede66c32c6cc7dd655161f89a9ccb2ece1d6202221387f628b4",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:PERFORMANCE",
+        "activityTypes:READING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:ART_CRAFT",
+        "topics:CULTURE",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "2230bff1-e21e-4052-8f80-27e6b8025ed7",
+      "title": "[북파크] 빅마마 선생님과 함께하는 도서관 놀이터(8~15차시)",
+      "topics": [
+        "UNKNOWN"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "UNKNOWN"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "GROUP"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "15차시",
+        "child",
+        "infant",
+        "놀이터",
+        "도서관",
+        "북파크",
+        "빅마마",
+        "선생님과",
+        "함께하는"
+      ],
+      "sourceHash": "8544546b3a642b4df6566d3e7eb49f9b5a08f397096681741cc3e0893e282ca8",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "GROUP",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_GROUP",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [북파크] 빅마마 선생님과 함께하는 도서관 놀이터(8~15차시)\n대상: CHILD, INFANT\n운영 형태: GROUP, ONE_OFF\n회차 구성: 1\n검색어: 15차시, child, infant, 놀이터, 도서관, 북파크, 빅마마, 선생님과, 함께하는",
+      "representativeDocumentHash": "4466542bf59a69382709247ba8cc1d62526a04c21915e6b0a49cd9c934925b67",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:UNKNOWN",
+        "operationTypes:GROUP",
+        "operationTypes:ONE_OFF",
+        "rules:HARD",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:UNKNOWN"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "2251848f-32d7-4041-bf76-37e66ea34cde",
+      "title": "[5월행사/북파크] 온가족이 즐기는 인형극 <똥돼지 왕방구>",
+      "topics": [
+        "COMMUNITY"
+      ],
+      "targetAgeGroups": [
+        "CHILD",
+        "FAMILY"
+      ],
+      "activityTypes": [
+        "COMMUNITY_ACTIVITY"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "FAMILY_PARTICIPATION"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "5월행사",
+        "child",
+        "community",
+        "community activity",
+        "family",
+        "똥돼지",
+        "북파크",
+        "온가족이",
+        "왕방구",
+        "인형극",
+        "즐기는"
+      ],
+      "sourceHash": "d0d21d68af6c267618dd36915714100f3eb5f4b1b13f8aef84da6ba8987e3c9f",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "COMMUNITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_COMMUNITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "FAMILY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_FAMILY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "COMMUNITY_ACTIVITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_COMMUNITY_ACTIVITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "FAMILY_PARTICIPATION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_FAMILY_PARTICIPATION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [5월행사/북파크] 온가족이 즐기는 인형극 <똥돼지 왕방구>\n대상: CHILD, FAMILY\n핵심 주제: COMMUNITY\n활동 형태: COMMUNITY_ACTIVITY\n운영 형태: FAMILY_PARTICIPATION, ONE_OFF\n회차 구성: 1\n검색어: 5월행사, child, community, community activity, family, 똥돼지, 북파크, 온가족이, 왕방구, 인형극, 즐기는",
+      "representativeDocumentHash": "9012652bd6d96a25637800c3dc2df336d7823f57dc619a6bbad04da9e754e69d",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:COMMUNITY_ACTIVITY",
+        "operationTypes:FAMILY_PARTICIPATION",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:FAMILY",
+        "topics:COMMUNITY"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "2a38d135-591f-4b39-bcbd-f348c11e60b8",
+      "title": "[초등/구서2동어린이] Cool Summer! Cool English!",
+      "topics": [
+        "READING_WRITING",
+        "DIGITAL"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "DIGITAL_PRACTICE"
+      ],
+      "operationTypes": [
+        "MULTI_SESSION"
+      ],
+      "sessionCount": 4,
+      "searchKeywords": [
+        "child",
+        "Cool",
+        "digital",
+        "digital practice",
+        "English",
+        "reading",
+        "reading writing",
+        "Summer",
+        "구서2동어린이",
+        "초등"
+      ],
+      "sourceHash": "054e34ebae66aef6567a1f0768f497fa86c8f9871af35f57261d56b9531748b7",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "DIGITAL",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_DIGITAL",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DIGITAL_PRACTICE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DIGITAL_PRACTICE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "MULTI_SESSION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_MULTI_SESSION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "SESSION",
+      "representativeDocument": "프로그램명: [초등/구서2동어린이] Cool Summer! Cool English!\n대상: CHILD\n핵심 주제: DIGITAL, READING_WRITING\n활동 형태: DIGITAL_PRACTICE, READING\n운영 형태: MULTI_SESSION\n회차 구성: 4\n검색어: child, Cool, digital, digital practice, English, reading, reading writing, Summer, 구서2동어린이, 초등",
+      "representativeDocumentHash": "6242232133e2ba159485e57f8451b8c25eb389eceb9f423527ae9527abf3e7d8",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:DIGITAL_PRACTICE",
+        "activityTypes:READING",
+        "operationTypes:MULTI_SESSION",
+        "rules:EASY",
+        "sessions:MULTI",
+        "source:SESSION",
+        "targetAgeGroups:CHILD",
+        "topics:DIGITAL",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "2f260ab3-cb87-4745-a86d-86a97ff58aef",
+      "title": "[어린이/금정북파크] ORT와 함께하는 차근차근 영어",
+      "topics": [
+        "LANGUAGE"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "ART",
+        "DIGITAL_PRACTICE"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "GROUP"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "child",
+        "digital practice",
+        "infant",
+        "language",
+        "ORT와",
+        "reading",
+        "금정북파크",
+        "어린이",
+        "영어",
+        "차근차근",
+        "함께하는"
+      ],
+      "sourceHash": "e63943f5b71e1bf43a3fb4a8dcb1a3362a0219a6650da4721af7b6dcc56ed1df",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "LANGUAGE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_LANGUAGE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DIGITAL_PRACTICE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DIGITAL_PRACTICE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "GROUP",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_GROUP",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [어린이/금정북파크] ORT와 함께하는 차근차근 영어\n대상: CHILD, INFANT\n핵심 주제: LANGUAGE\n활동 형태: ART, DIGITAL_PRACTICE, READING\n운영 형태: GROUP, ONE_OFF\n회차 구성: 1\n검색어: art, child, digital practice, infant, language, ORT와, reading, 금정북파크, 어린이, 영어, 차근차근, 함께하는",
+      "representativeDocumentHash": "8eb3f905e30751e1e06f3986b96bcada009b3e0ba84448962c14249b444dfe08",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:DIGITAL_PRACTICE",
+        "activityTypes:READING",
+        "operationTypes:GROUP",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:LANGUAGE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "30741b86-b683-4aee-bbd7-aeae563a6983",
+      "title": "[성인/위드맘 블루밍(사립)] 아침을 깨우는 싱잉볼 명상",
+      "topics": [
+        "COMMUNITY"
+      ],
+      "targetAgeGroups": [
+        "ADULT"
+      ],
+      "activityTypes": [
+        "EXPERIMENT",
+        "DISCUSSION",
+        "COMMUNITY_ACTIVITY"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "adult",
+        "community",
+        "community activity",
+        "discussion",
+        "experiment",
+        "깨우는",
+        "명상",
+        "블루밍",
+        "사립",
+        "성인",
+        "싱잉볼",
+        "아침을",
+        "위드맘"
+      ],
+      "sourceHash": "8eec8ae5784e0bb04bdf20e9e59c6862360c0b07c72b55af98905c0f47eeadb7",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "COMMUNITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_COMMUNITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "ADULT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_ADULT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "EXPERIMENT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_EXPERIMENT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DISCUSSION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DISCUSSION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "COMMUNITY_ACTIVITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_COMMUNITY_ACTIVITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [성인/위드맘 블루밍(사립)] 아침을 깨우는 싱잉볼 명상\n대상: ADULT\n핵심 주제: COMMUNITY\n활동 형태: COMMUNITY_ACTIVITY, DISCUSSION, EXPERIMENT\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: adult, community, community activity, discussion, experiment, 깨우는, 명상, 블루밍, 사립, 성인, 싱잉볼, 아침을, 위드맘",
+      "representativeDocumentHash": "001d515306598aaf04f7141d40458c66b5b1c1549926638c3a7308aea941394c",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:COMMUNITY_ACTIVITY",
+        "activityTypes:DISCUSSION",
+        "activityTypes:EXPERIMENT",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:ADULT",
+        "topics:COMMUNITY"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "3097bece-27e6-4fb3-9630-68d4c28c5a8a",
+      "title": "부산대학교와 함께하는 「제9기 금정시민인문아카데미」: 도서관에서 만나는 인문학",
+      "topics": [
+        "CULTURE"
+      ],
+      "targetAgeGroups": [
+        "ADULT"
+      ],
+      "activityTypes": [
+        "READING",
+        "CRAFT",
+        "PERFORMANCE"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "GROUP"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "adult",
+        "craft",
+        "culture",
+        "performance",
+        "reading",
+        "금정시민인문아카데미",
+        "도서관에서",
+        "만나는",
+        "부산대학교와",
+        "인문학",
+        "제9기",
+        "함께하는"
+      ],
+      "sourceHash": "09ef6b1b2d34902a8657771d9f89c5e7f3a65ca44cfe723a673c02d7cf8d23eb",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "CULTURE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_CULTURE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "ADULT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_ADULT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "PERFORMANCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_PERFORMANCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "GROUP",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_GROUP",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: 부산대학교와 함께하는 「제9기 금정시민인문아카데미」: 도서관에서 만나는 인문학\n대상: ADULT\n핵심 주제: CULTURE\n활동 형태: CRAFT, PERFORMANCE, READING\n운영 형태: GROUP, ONE_OFF\n회차 구성: 1\n검색어: adult, craft, culture, performance, reading, 금정시민인문아카데미, 도서관에서, 만나는, 부산대학교와, 인문학, 제9기, 함께하는",
+      "representativeDocumentHash": "0e6af9f61393824a6b2791ed41d16d70327f030cba19e17dbc732cb9ab773925",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:CRAFT",
+        "activityTypes:PERFORMANCE",
+        "activityTypes:READING",
+        "operationTypes:GROUP",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:ADULT",
+        "topics:CULTURE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "4274b332-a5ec-48dc-bf00-238d4091572c",
+      "title": "[여름나기] 「내마음ㅅㅅㅎ」 김지영 작가와의 만남",
+      "topics": [
+        "HEALTH"
+      ],
+      "targetAgeGroups": [
+        "CHILD",
+        "FAMILY"
+      ],
+      "activityTypes": [
+        "READING",
+        "ART",
+        "CRAFT"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "FAMILY_PARTICIPATION"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "child",
+        "craft",
+        "family",
+        "health",
+        "reading",
+        "김지영",
+        "내마음",
+        "만남",
+        "여름나기",
+        "작가와의"
+      ],
+      "sourceHash": "56916a40ca12340a8f386fba9b0e59907054859523856f8a6388bd92e71590e4",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "HEALTH",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_HEALTH",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "FAMILY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_FAMILY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "FAMILY_PARTICIPATION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_FAMILY_PARTICIPATION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [여름나기] 「내마음ㅅㅅㅎ」 김지영 작가와의 만남\n대상: CHILD, FAMILY\n핵심 주제: HEALTH\n활동 형태: ART, CRAFT, READING\n운영 형태: FAMILY_PARTICIPATION, ONE_OFF\n회차 구성: 1\n검색어: art, child, craft, family, health, reading, 김지영, 내마음, 만남, 여름나기, 작가와의",
+      "representativeDocumentHash": "3c90b421fe5e3cc43ac8a96d8745d44294e79be0fc877e45a541a25f42051d96",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:CRAFT",
+        "activityTypes:READING",
+        "operationTypes:FAMILY_PARTICIPATION",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:FAMILY",
+        "topics:HEALTH"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "4530158d-f3ef-47a7-be50-f76f7ae2fb07",
+      "title": "[어린이/북파크] 지도로 떠나는 우리나라 지리 여행",
+      "topics": [
+        "DIGITAL",
+        "ENVIRONMENT_SCIENCE",
+        "CULTURE"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "DIGITAL_PRACTICE",
+        "DISCUSSION"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "child",
+        "culture",
+        "digital",
+        "digital practice",
+        "discussion",
+        "environment science",
+        "떠나는",
+        "북파크",
+        "어린이",
+        "여행",
+        "우리나라",
+        "지도로",
+        "지리"
+      ],
+      "sourceHash": "57f3ac24f333a81457c0aa8a593123cf02475e385c4876c8b39b1b12fd4d2206",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "DIGITAL",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_DIGITAL",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ENVIRONMENT_SCIENCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ENVIRONMENT_SCIENCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "CULTURE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_CULTURE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DIGITAL_PRACTICE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DIGITAL_PRACTICE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DISCUSSION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DISCUSSION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [어린이/북파크] 지도로 떠나는 우리나라 지리 여행\n대상: CHILD\n핵심 주제: CULTURE, DIGITAL, ENVIRONMENT_SCIENCE\n활동 형태: DIGITAL_PRACTICE, DISCUSSION\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: child, culture, digital, digital practice, discussion, environment science, 떠나는, 북파크, 어린이, 여행, 우리나라, 지도로, 지리",
+      "representativeDocumentHash": "4cea7ba938c48d17173da4f4ceea7e149e06bf25217863d1cb316c766a7937b6",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:DIGITAL_PRACTICE",
+        "activityTypes:DISCUSSION",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:CHILD",
+        "topics:CULTURE",
+        "topics:DIGITAL",
+        "topics:ENVIRONMENT_SCIENCE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "46b74048-fcb4-47ec-84f1-7746ae4c1f69",
+      "title": "[성인/우지(사립)] 모바일로 쉽게 시작하는 네이버블로그 운영 8주 완성",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT",
+        "DIGITAL"
+      ],
+      "targetAgeGroups": [
+        "ADULT"
+      ],
+      "activityTypes": [
+        "WRITING",
+        "CRAFT",
+        "DIGITAL_PRACTICE"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "8주",
+        "adult",
+        "art craft",
+        "craft",
+        "digital",
+        "digital practice",
+        "reading writing",
+        "writing",
+        "네이버블로그",
+        "모바일로",
+        "사립",
+        "성인",
+        "쉽게",
+        "시작하는",
+        "완성",
+        "우지",
+        "운영"
+      ],
+      "sourceHash": "fd0aac58c60b20561e86067630372ee3d2ab15e3b2abbf69e2d4392059307552",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "DIGITAL",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_DIGITAL",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "ADULT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_ADULT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DIGITAL_PRACTICE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DIGITAL_PRACTICE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [성인/우지(사립)] 모바일로 쉽게 시작하는 네이버블로그 운영 8주 완성\n대상: ADULT\n핵심 주제: ART_CRAFT, DIGITAL, READING_WRITING\n활동 형태: CRAFT, DIGITAL_PRACTICE, WRITING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: 8주, adult, art craft, craft, digital, digital practice, reading writing, writing, 네이버블로그, 모바일로, 사립, 성인, 쉽게, 시작하는, 완성, 우지, 운영",
+      "representativeDocumentHash": "41118e01ebcd56d4d9c650f63012e1901e2b61872d0716a0e23858337641eb26",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:CRAFT",
+        "activityTypes:DIGITAL_PRACTICE",
+        "activityTypes:WRITING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:ADULT",
+        "topics:ART_CRAFT",
+        "topics:DIGITAL",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "5ace1761-470d-4629-b5e7-62866e21fa08",
+      "title": "[아이꿈자람] I Love story",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT",
+        "DIGITAL"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "WRITING",
+        "ART"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "digital",
+        "infant",
+        "Love",
+        "reading",
+        "reading writing",
+        "story",
+        "writing",
+        "아이꿈자람"
+      ],
+      "sourceHash": "ef7c161aa720f010eb8ae2658cd0dfa0703a413b09105e0e1096f56a7f655fb8",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "DIGITAL",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_DIGITAL",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [아이꿈자람] I Love story\n대상: CHILD, INFANT\n핵심 주제: ART_CRAFT, DIGITAL, READING_WRITING\n활동 형태: ART, READING, WRITING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: art, art craft, child, digital, infant, Love, reading, reading writing, story, writing, 아이꿈자람",
+      "representativeDocumentHash": "7abcbcfa8bd02776948f0bdf804eb86e1f366700a16dd5916540eb785d38cb42",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:READING",
+        "activityTypes:WRITING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:ART_CRAFT",
+        "topics:DIGITAL",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "6a390f7a-6a7f-4226-95ee-9bd945ca6ad7",
+      "title": "[12/2 아이꿈자람] 초록마술사 <가족사랑 스토리텔링매직쇼> 공연",
+      "topics": [
+        "CULTURE",
+        "COMMUNITY"
+      ],
+      "targetAgeGroups": [
+        "ADULT",
+        "FAMILY"
+      ],
+      "activityTypes": [
+        "PERFORMANCE",
+        "COMMUNITY_ACTIVITY"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "FAMILY_PARTICIPATION"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "12",
+        "adult",
+        "community",
+        "community activity",
+        "culture",
+        "family",
+        "performance",
+        "가족사랑",
+        "공연",
+        "스토리텔링매직쇼",
+        "아이꿈자람",
+        "초록마술사"
+      ],
+      "sourceHash": "a54e206883fae0f9c9857ec63478307388311b2b2b520c35c0e93c485cc33dd9",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "CULTURE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_CULTURE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "COMMUNITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_COMMUNITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "ADULT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_ADULT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "FAMILY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_FAMILY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "PERFORMANCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_PERFORMANCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "COMMUNITY_ACTIVITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_COMMUNITY_ACTIVITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "FAMILY_PARTICIPATION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_FAMILY_PARTICIPATION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [12/2 아이꿈자람] 초록마술사 <가족사랑 스토리텔링매직쇼> 공연\n대상: ADULT, FAMILY\n핵심 주제: COMMUNITY, CULTURE\n활동 형태: COMMUNITY_ACTIVITY, PERFORMANCE\n운영 형태: FAMILY_PARTICIPATION, ONE_OFF\n회차 구성: 1\n검색어: 12, adult, community, community activity, culture, family, performance, 가족사랑, 공연, 스토리텔링매직쇼, 아이꿈자람, 초록마술사",
+      "representativeDocumentHash": "64619fa26f36e210ff030adc19eda5c92b19c5ac0fa3d3a686cb9d31a2e20fdb",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:COMMUNITY_ACTIVITY",
+        "activityTypes:PERFORMANCE",
+        "operationTypes:FAMILY_PARTICIPATION",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:ADULT",
+        "targetAgeGroups:FAMILY",
+        "topics:COMMUNITY",
+        "topics:CULTURE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "787a228f-77bf-45cd-a880-9fc66912c92a",
+      "title": "[북파크] 빅마마 선생님과 함께하는 도서관 놀이터(1~7차시)",
+      "topics": [
+        "UNKNOWN"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "UNKNOWN"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "GROUP"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "7차시",
+        "child",
+        "infant",
+        "놀이터",
+        "도서관",
+        "북파크",
+        "빅마마",
+        "선생님과",
+        "함께하는"
+      ],
+      "sourceHash": "bfb68f3ca069a2191182c251c957cf63f38dcd0d22b3346951b94b4c5723d7d6",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "GROUP",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_GROUP",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [북파크] 빅마마 선생님과 함께하는 도서관 놀이터(1~7차시)\n대상: CHILD, INFANT\n운영 형태: GROUP, ONE_OFF\n회차 구성: 1\n검색어: 7차시, child, infant, 놀이터, 도서관, 북파크, 빅마마, 선생님과, 함께하는",
+      "representativeDocumentHash": "0e8be7d1a367c34ae23d37df894f64eefc9bea9098cb11d40b4ecbfc5fa32d21",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:UNKNOWN",
+        "operationTypes:GROUP",
+        "operationTypes:ONE_OFF",
+        "rules:HARD",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:UNKNOWN"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "9224fbaa-35f7-45bd-b851-6e82f2d95918",
+      "title": "[어린이/구서2동어린이] 동시와 함께 감성자극 놀이터",
+      "topics": [
+        "ART_CRAFT",
+        "HEALTH",
+        "LANGUAGE"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "ART",
+        "CRAFT",
+        "EXPERIMENT"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "GROUP"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "craft",
+        "experiment",
+        "health",
+        "language",
+        "감성자극",
+        "구서2동어린이",
+        "놀이터",
+        "동시와",
+        "어린이",
+        "함께"
+      ],
+      "sourceHash": "a90cf1daecef798861b8a85c20eeaaa7799f592a11e2af63b2537183c10f4a17",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "HEALTH",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_HEALTH",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "LANGUAGE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_LANGUAGE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "EXPERIMENT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_EXPERIMENT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "GROUP",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_GROUP",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [어린이/구서2동어린이] 동시와 함께 감성자극 놀이터\n대상: CHILD\n핵심 주제: ART_CRAFT, HEALTH, LANGUAGE\n활동 형태: ART, CRAFT, EXPERIMENT\n운영 형태: GROUP, ONE_OFF\n회차 구성: 1\n검색어: art, art craft, child, craft, experiment, health, language, 감성자극, 구서2동어린이, 놀이터, 동시와, 어린이, 함께",
+      "representativeDocumentHash": "d344fb89ef130a0951003fea41e98cc19903585fba4201ab72791555b996286c",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:CRAFT",
+        "activityTypes:EXPERIMENT",
+        "operationTypes:GROUP",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:CHILD",
+        "topics:ART_CRAFT",
+        "topics:HEALTH",
+        "topics:LANGUAGE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "9497a9c4-0972-40e7-961e-c1ce0af2a4ae",
+      "title": "[방학특강/책마을보드랑] 창의융합: 수학과학보드게임",
+      "topics": [
+        "READING_WRITING",
+        "ENVIRONMENT_SCIENCE",
+        "COMMUNITY"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "EXPERIMENT",
+        "COMMUNITY_ACTIVITY"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "child",
+        "community",
+        "community activity",
+        "environment science",
+        "experiment",
+        "reading",
+        "reading writing",
+        "방학특강",
+        "수학과학보드게임",
+        "창의융합",
+        "책마을보드랑"
+      ],
+      "sourceHash": "3e58d32dcc1910a75be4217565422d8e924ea1d1ba4f514a737e106055d0d5c3",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ENVIRONMENT_SCIENCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ENVIRONMENT_SCIENCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "COMMUNITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_COMMUNITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "EXPERIMENT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_EXPERIMENT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "COMMUNITY_ACTIVITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_COMMUNITY_ACTIVITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [방학특강/책마을보드랑] 창의융합: 수학과학보드게임\n대상: CHILD\n핵심 주제: COMMUNITY, ENVIRONMENT_SCIENCE, READING_WRITING\n활동 형태: COMMUNITY_ACTIVITY, EXPERIMENT, READING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: child, community, community activity, environment science, experiment, reading, reading writing, 방학특강, 수학과학보드게임, 창의융합, 책마을보드랑",
+      "representativeDocumentHash": "61e2e183736c62a9a350c518475ca1628f18b2e152518595a13073dd2c2a5513",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:COMMUNITY_ACTIVITY",
+        "activityTypes:EXPERIMENT",
+        "activityTypes:READING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "topics:COMMUNITY",
+        "topics:ENVIRONMENT_SCIENCE",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "95756897-676f-4e06-b029-679135624716",
+      "title": "[초등/부곡1동] 똑똑한 지구인 프로젝트(1.5℃를 지키는 아이들)",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT",
+        "ENVIRONMENT_SCIENCE"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "ART",
+        "CRAFT"
+      ],
+      "operationTypes": [
+        "MULTI_SESSION"
+      ],
+      "sessionCount": 4,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "craft",
+        "environment science",
+        "reading",
+        "reading writing",
+        "똑똑한",
+        "부곡1동",
+        "아이들",
+        "지구인",
+        "지키는",
+        "초등",
+        "프로젝트"
+      ],
+      "sourceHash": "5b4384689a6b6b3a5b001d692e3e31444ee2454a27715feed0e5dc18f1f50829",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ENVIRONMENT_SCIENCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ENVIRONMENT_SCIENCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "MULTI_SESSION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_MULTI_SESSION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "SESSION",
+      "representativeDocument": "프로그램명: [초등/부곡1동] 똑똑한 지구인 프로젝트(1.5℃를 지키는 아이들)\n대상: CHILD\n핵심 주제: ART_CRAFT, ENVIRONMENT_SCIENCE, READING_WRITING\n활동 형태: ART, CRAFT, READING\n운영 형태: MULTI_SESSION\n회차 구성: 4\n검색어: art, art craft, child, craft, environment science, reading, reading writing, 똑똑한, 부곡1동, 아이들, 지구인, 지키는, 초등, 프로젝트",
+      "representativeDocumentHash": "42bf01dacf6e05d526545ae62f0eeab209691ea39b5f99bbe90ce6d50f54317f",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:CRAFT",
+        "activityTypes:READING",
+        "operationTypes:MULTI_SESSION",
+        "rules:EASY",
+        "sessions:MULTI",
+        "source:SESSION",
+        "targetAgeGroups:CHILD",
+        "topics:ART_CRAFT",
+        "topics:ENVIRONMENT_SCIENCE",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "9a6c3861-a236-4367-b2c0-38097722c2b1",
+      "title": "[아이꿈자람] 큐! 감성자극놀이",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT",
+        "DIGITAL"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "WRITING",
+        "ART"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "digital",
+        "infant",
+        "reading",
+        "reading writing",
+        "writing",
+        "감성자극놀이",
+        "아이꿈자람"
+      ],
+      "sourceHash": "8b438e50356fae03ce32a14d85f0d926350c3542185aa26923ffb27249478288",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "DIGITAL",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_DIGITAL",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [아이꿈자람] 큐! 감성자극놀이\n대상: CHILD, INFANT\n핵심 주제: ART_CRAFT, DIGITAL, READING_WRITING\n활동 형태: ART, READING, WRITING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: art, art craft, child, digital, infant, reading, reading writing, writing, 감성자극놀이, 아이꿈자람",
+      "representativeDocumentHash": "fa3e6dc6e045afbd2ef5ba51d417541b2e4320f11f27913e566e8e322d94225b",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:READING",
+        "activityTypes:WRITING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:ART_CRAFT",
+        "topics:DIGITAL",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "9c00ac76-7ebb-42f5-a59e-d8c3f77fd44b",
+      "title": "[사립 금샘마을] 스마트폰 기초 활용",
+      "topics": [
+        "DIGITAL",
+        "COMMUNITY"
+      ],
+      "targetAgeGroups": [
+        "SENIOR"
+      ],
+      "activityTypes": [
+        "DIGITAL_PRACTICE",
+        "COMMUNITY_ACTIVITY"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "community",
+        "community activity",
+        "digital",
+        "digital practice",
+        "senior",
+        "금샘마을",
+        "기초",
+        "사립",
+        "스마트폰",
+        "활용"
+      ],
+      "sourceHash": "7d94673c01e3c7362cbaaf9e954e61129543f16297d9238dafcc1b40e47c4cc4",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "DIGITAL",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_DIGITAL",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "COMMUNITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_COMMUNITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "SENIOR",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_SENIOR",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DIGITAL_PRACTICE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DIGITAL_PRACTICE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "COMMUNITY_ACTIVITY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_COMMUNITY_ACTIVITY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [사립 금샘마을] 스마트폰 기초 활용\n대상: SENIOR\n핵심 주제: COMMUNITY, DIGITAL\n활동 형태: COMMUNITY_ACTIVITY, DIGITAL_PRACTICE\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: community, community activity, digital, digital practice, senior, 금샘마을, 기초, 사립, 스마트폰, 활용",
+      "representativeDocumentHash": "8ed670f6cfca5e94b1a1a9b3470047ae9dd388987f7128b199a876db2e70c6fe",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:COMMUNITY_ACTIVITY",
+        "activityTypes:DIGITAL_PRACTICE",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:SENIOR",
+        "topics:COMMUNITY",
+        "topics:DIGITAL"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "ac6aacc6-b651-4111-bb95-6f9e44c8f8f2",
+      "title": "[초등/아이꿈자람] 리틀 브레이닝! 창의융합 사고력 보드게임",
+      "topics": [
+        "ART_CRAFT",
+        "ENVIRONMENT_SCIENCE"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "ART"
+      ],
+      "operationTypes": [
+        "MULTI_SESSION"
+      ],
+      "sessionCount": 4,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "environment science",
+        "리틀",
+        "보드게임",
+        "브레이닝",
+        "사고력",
+        "아이꿈자람",
+        "창의융합",
+        "초등"
+      ],
+      "sourceHash": "d5b3e2f6c26015554f508fe0694fddfd34271b36bdc5efdaa1443b7426fe19cf",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ENVIRONMENT_SCIENCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ENVIRONMENT_SCIENCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "MULTI_SESSION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_MULTI_SESSION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "SESSION",
+      "representativeDocument": "프로그램명: [초등/아이꿈자람] 리틀 브레이닝! 창의융합 사고력 보드게임\n대상: CHILD\n핵심 주제: ART_CRAFT, ENVIRONMENT_SCIENCE\n활동 형태: ART\n운영 형태: MULTI_SESSION\n회차 구성: 4\n검색어: art, art craft, child, environment science, 리틀, 보드게임, 브레이닝, 사고력, 아이꿈자람, 창의융합, 초등",
+      "representativeDocumentHash": "f9a1fc2d9651df385591b821f2bb742f57d12dfee65324a861db353a1f1fb9e8",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "operationTypes:MULTI_SESSION",
+        "rules:EASY",
+        "sessions:MULTI",
+        "source:SESSION",
+        "targetAgeGroups:CHILD",
+        "topics:ART_CRAFT",
+        "topics:ENVIRONMENT_SCIENCE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "b3db058b-3308-414f-9378-518f6b5b941d",
+      "title": "[금정북파크] 꾀 많은 토끼 인형극",
+      "topics": [
+        "UNKNOWN"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "UNKNOWN"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "FAMILY_PARTICIPATION"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "child",
+        "infant",
+        "금정북파크",
+        "많은",
+        "인형극",
+        "토끼"
+      ],
+      "sourceHash": "327ba82ddd2cdfcd47bae9b63470cc2875abecfa9013d9b185f7b2c6fc317bad",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "FAMILY_PARTICIPATION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_FAMILY_PARTICIPATION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [금정북파크] 꾀 많은 토끼 인형극\n대상: CHILD, INFANT\n운영 형태: FAMILY_PARTICIPATION, ONE_OFF\n회차 구성: 1\n검색어: child, infant, 금정북파크, 많은, 인형극, 토끼",
+      "representativeDocumentHash": "67bc3b48bb490305f415e8785d1d76c44d7d3ed597878caaadc84ce0f39bd016",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:UNKNOWN",
+        "operationTypes:FAMILY_PARTICIPATION",
+        "operationTypes:ONE_OFF",
+        "rules:HARD",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:UNKNOWN"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "c25e729a-a6fc-4eeb-aaee-8b3a391a6348",
+      "title": "[방학특강/부곡1동] 쑥쑥! 마음이 자라는 어린이 동화 논술",
+      "topics": [
+        "READING_WRITING",
+        "HEALTH"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "WRITING",
+        "DISCUSSION"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "child",
+        "discussion",
+        "health",
+        "reading writing",
+        "writing",
+        "논술",
+        "동화",
+        "마음이",
+        "방학특강",
+        "부곡1동",
+        "쑥쑥",
+        "어린이",
+        "자라는"
+      ],
+      "sourceHash": "0248f1b1fa2da4bebac43df1e4e4f891f14df9cb4f9dd1a71cb546ab60e08783",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "HEALTH",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_HEALTH",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DISCUSSION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DISCUSSION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [방학특강/부곡1동] 쑥쑥! 마음이 자라는 어린이 동화 논술\n대상: CHILD\n핵심 주제: HEALTH, READING_WRITING\n활동 형태: DISCUSSION, WRITING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: child, discussion, health, reading writing, writing, 논술, 동화, 마음이, 방학특강, 부곡1동, 쑥쑥, 어린이, 자라는",
+      "representativeDocumentHash": "fa2ce9cb4d972047b714cf2bf8875fa2c667b09197ba0f361b6cbc286d601321",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:DISCUSSION",
+        "activityTypes:WRITING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "topics:HEALTH",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "c2c17479-6d13-4d83-8fd8-29812884ee50",
+      "title": "[유아/금정북파크] 클레이로 만나는 그림책 이야기",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "ART"
+      ],
+      "operationTypes": [
+        "MULTI_SESSION"
+      ],
+      "sessionCount": 4,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "infant",
+        "reading",
+        "reading writing",
+        "그림책",
+        "금정북파크",
+        "만나는",
+        "유아",
+        "이야기",
+        "클레이로"
+      ],
+      "sourceHash": "3e023a3b1a047dbb473e94745410165b63e702d70f71afcce647cb22b1113826",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "MULTI_SESSION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_MULTI_SESSION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [유아/금정북파크] 클레이로 만나는 그림책 이야기\n대상: CHILD, INFANT\n핵심 주제: ART_CRAFT, READING_WRITING\n활동 형태: ART, READING\n운영 형태: MULTI_SESSION\n회차 구성: 4\n검색어: art, art craft, child, infant, reading, reading writing, 그림책, 금정북파크, 만나는, 유아, 이야기, 클레이로",
+      "representativeDocumentHash": "e222c1a8e57a5e624266696f7ac414c290e772816adfdc4c7471c41c59dd4c9c",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:READING",
+        "operationTypes:MULTI_SESSION",
+        "rules:EASY",
+        "sessions:MULTI",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:ART_CRAFT",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "d74b297c-dfb2-429e-8b0d-c8eb46a81be4",
+      "title": "[방학특강/금정아이꿈자람] 함께하는 추리! 빛나는 협력! 비밀코드 보드게임",
+      "topics": [
+        "UNKNOWN"
+      ],
+      "targetAgeGroups": [
+        "CHILD"
+      ],
+      "activityTypes": [
+        "UNKNOWN"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "GROUP"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "child",
+        "금정아이꿈자람",
+        "방학특강",
+        "보드게임",
+        "비밀코드",
+        "빛나는",
+        "추리",
+        "함께하는",
+        "협력"
+      ],
+      "sourceHash": "67e30daa0a687f15b0b5423bdce128e23d81feb99c28430b8f26c5daec3a9ee0",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "UNKNOWN",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_UNKNOWN",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "INSUFFICIENT",
+          "insufficientEvidence": true
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "GROUP",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_GROUP",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [방학특강/금정아이꿈자람] 함께하는 추리! 빛나는 협력! 비밀코드 보드게임\n대상: CHILD\n운영 형태: GROUP, ONE_OFF\n회차 구성: 1\n검색어: child, 금정아이꿈자람, 방학특강, 보드게임, 비밀코드, 빛나는, 추리, 함께하는, 협력",
+      "representativeDocumentHash": "e10234b0e0fdad30b33f207cce008379d87bdf4f46819e85fd104c26c972b3be",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:UNKNOWN",
+        "operationTypes:GROUP",
+        "operationTypes:ONE_OFF",
+        "rules:HARD",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "topics:UNKNOWN"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "dc5aa2cf-d9fc-42d4-9b94-3f99029bf675",
+      "title": "[5월행사/북파크] 우리가족 힐링 정원 <미니테라리움 만들기>",
+      "topics": [
+        "ART_CRAFT",
+        "HEALTH"
+      ],
+      "targetAgeGroups": [
+        "CHILD",
+        "FAMILY"
+      ],
+      "activityTypes": [
+        "CRAFT"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "FAMILY_PARTICIPATION"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "5월행사",
+        "art craft",
+        "child",
+        "craft",
+        "family",
+        "health",
+        "만들기",
+        "미니테라리움",
+        "북파크",
+        "우리가족",
+        "정원",
+        "힐링"
+      ],
+      "sourceHash": "0b25265c3d20e0c2573c0768b8614b05f67b2e53ee044aee7a8add99afa17a29",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "HEALTH",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_HEALTH",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "FAMILY",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_FAMILY",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "FAMILY_PARTICIPATION",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_FAMILY_PARTICIPATION",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [5월행사/북파크] 우리가족 힐링 정원 <미니테라리움 만들기>\n대상: CHILD, FAMILY\n핵심 주제: ART_CRAFT, HEALTH\n활동 형태: CRAFT\n운영 형태: FAMILY_PARTICIPATION, ONE_OFF\n회차 구성: 1\n검색어: 5월행사, art craft, child, craft, family, health, 만들기, 미니테라리움, 북파크, 우리가족, 정원, 힐링",
+      "representativeDocumentHash": "9b00c3b01fc6fadcf9eedf6eee2ca2b58e69bf41ccb9e3b106f9a8b300acba77",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:CRAFT",
+        "operationTypes:FAMILY_PARTICIPATION",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:FAMILY",
+        "topics:ART_CRAFT",
+        "topics:HEALTH"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "e0bb9b0a-71c8-4791-8614-b35bbf8f51cd",
+      "title": "부산대학교와 함께하는 「제10기 금정시민인문아카데미」: 인문학으로 세상을 읽다",
+      "topics": [
+        "CULTURE"
+      ],
+      "targetAgeGroups": [
+        "ADULT"
+      ],
+      "activityTypes": [
+        "CRAFT",
+        "DIGITAL_PRACTICE",
+        "EXPERIMENT"
+      ],
+      "operationTypes": [
+        "ONE_OFF",
+        "GROUP"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "adult",
+        "craft",
+        "culture",
+        "digital practice",
+        "experiment",
+        "금정시민인문아카데미",
+        "부산대학교와",
+        "세상을",
+        "인문학으로",
+        "읽다",
+        "제10기",
+        "함께하는"
+      ],
+      "sourceHash": "6f3c3f80e0c685fb6c4f527ed04aa495fd67f0589b85519f5fcc8b41b29d91e5",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "CULTURE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_CULTURE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "ADULT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_ADULT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "DIGITAL_PRACTICE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_DIGITAL_PRACTICE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "EXPERIMENT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_EXPERIMENT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "GROUP",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_GROUP",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: 부산대학교와 함께하는 「제10기 금정시민인문아카데미」: 인문학으로 세상을 읽다\n대상: ADULT\n핵심 주제: CULTURE\n활동 형태: CRAFT, DIGITAL_PRACTICE, EXPERIMENT\n운영 형태: GROUP, ONE_OFF\n회차 구성: 1\n검색어: adult, craft, culture, digital practice, experiment, 금정시민인문아카데미, 부산대학교와, 세상을, 인문학으로, 읽다, 제10기, 함께하는",
+      "representativeDocumentHash": "553ae8f47e0a3f5e9cbaf1b3483c7187516415a970338ac01f5a29ce4623f536",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:CRAFT",
+        "activityTypes:DIGITAL_PRACTICE",
+        "activityTypes:EXPERIMENT",
+        "operationTypes:GROUP",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:ADULT",
+        "topics:CULTURE"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "e26b69c1-93a9-434c-9936-71ce563a7ef6",
+      "title": "[머드레] 삼국지로 배우는 한자",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT",
+        "DIGITAL"
+      ],
+      "targetAgeGroups": [
+        "ADULT",
+        "SENIOR"
+      ],
+      "activityTypes": [
+        "READING",
+        "WRITING",
+        "ART"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "adult",
+        "art",
+        "art craft",
+        "digital",
+        "reading",
+        "reading writing",
+        "senior",
+        "writing",
+        "머드레",
+        "배우는",
+        "삼국지로",
+        "한자"
+      ],
+      "sourceHash": "47929624763e0a5706697b68baec309d65b18ce589fe8e1bfbdfdc50937f00aa",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "DIGITAL",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_DIGITAL",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "ADULT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_ADULT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "SENIOR",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_SENIOR",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "ATTACHMENT",
+      "representativeDocument": "프로그램명: [머드레] 삼국지로 배우는 한자\n대상: ADULT, SENIOR\n핵심 주제: ART_CRAFT, DIGITAL, READING_WRITING\n활동 형태: ART, READING, WRITING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: adult, art, art craft, digital, reading, reading writing, senior, writing, 머드레, 배우는, 삼국지로, 한자",
+      "representativeDocumentHash": "762ea6f9d77bff497975c53672926d43f8ecf2712d9079308d05edb7dd9370fc",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:READING",
+        "activityTypes:WRITING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:ATTACHMENT",
+        "targetAgeGroups:ADULT",
+        "targetAgeGroups:SENIOR",
+        "topics:ART_CRAFT",
+        "topics:DIGITAL",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    },
+    {
+      "programCaseId": "f6904787-b70c-4bfe-9964-d954f115df04",
+      "title": "[어린이/섯골] 그림책이랑 미술이랑 연극놀이",
+      "topics": [
+        "READING_WRITING",
+        "ART_CRAFT",
+        "CULTURE"
+      ],
+      "targetAgeGroups": [
+        "INFANT",
+        "CHILD"
+      ],
+      "activityTypes": [
+        "READING",
+        "ART",
+        "PERFORMANCE"
+      ],
+      "operationTypes": [
+        "ONE_OFF"
+      ],
+      "sessionCount": 1,
+      "searchKeywords": [
+        "art",
+        "art craft",
+        "child",
+        "culture",
+        "infant",
+        "performance",
+        "reading",
+        "reading writing",
+        "그림책이랑",
+        "미술이랑",
+        "섯골",
+        "어린이",
+        "연극놀이"
+      ],
+      "sourceHash": "08e31816d50324e1e5da2bcfa5b588e92a9edc8ef04007e2ee898d3fa3983e3e",
+      "profileVersion": "program-case-search-profile-v1",
+      "templateVersion": "program-case-representative-document-v1",
+      "extraction": [
+        {
+          "field": "topics",
+          "value": "READING_WRITING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_READING_WRITING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "ART_CRAFT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_ART_CRAFT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "topics",
+          "value": "CULTURE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TOPICS_CULTURE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "INFANT",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_INFANT",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "targetAgeGroups",
+          "value": "CHILD",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_TARGETAGEGROUPS_CHILD",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "READING",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_READING",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "ART",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_ART",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "activityTypes",
+          "value": "PERFORMANCE",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_ACTIVITYTYPES_PERFORMANCE",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        },
+        {
+          "field": "operationTypes",
+          "value": "ONE_OFF",
+          "method": "RULE",
+          "sourceField": "titleTargetSessionAttachment",
+          "evidenceCode": "RULE_OPERATIONTYPES_ONE_OFF",
+          "ruleVersion": "program-case-search-profile-rule-v1",
+          "confidence": "CONFIRMED",
+          "insufficientEvidence": false
+        }
+      ],
+      "sourceDependency": "TITLE_TARGET",
+      "representativeDocument": "프로그램명: [어린이/섯골] 그림책이랑 미술이랑 연극놀이\n대상: CHILD, INFANT\n핵심 주제: ART_CRAFT, CULTURE, READING_WRITING\n활동 형태: ART, PERFORMANCE, READING\n운영 형태: ONE_OFF\n회차 구성: 1\n검색어: art, art craft, child, culture, infant, performance, reading, reading writing, 그림책이랑, 미술이랑, 섯골, 어린이, 연극놀이",
+      "representativeDocumentHash": "518eb3b2b3048344894426c482d6cd6ed691f1460944fbb576647d6b97579bc2",
+      "validation": {
+        "valid": true,
+        "privacyPatternHits": 0,
+        "maxLengthExceeded": false
+      },
+      "selectionTags": [
+        "activityTypes:ART",
+        "activityTypes:PERFORMANCE",
+        "activityTypes:READING",
+        "operationTypes:ONE_OFF",
+        "rules:EASY",
+        "sessions:SINGLE",
+        "source:TITLE_TARGET",
+        "targetAgeGroups:CHILD",
+        "targetAgeGroups:INFANT",
+        "topics:ART_CRAFT",
+        "topics:CULTURE",
+        "topics:READING_WRITING"
+      ],
+      "selectionReasonCode": "DETERMINISTIC_STRATIFIED_COVERAGE_V1"
+    }
+  ]
+}
