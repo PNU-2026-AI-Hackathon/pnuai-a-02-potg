@@ -5545,38 +5545,6 @@ html.isFullPageScroll:has(.moiraPage) {
   padding: 22px 26px;
 }
 
-.mypageProfileCardLive {
-  grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.1fr) auto;
-}
-
-.mypageProfileSummary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin: 0;
-}
-
-.mypageProfileSummary div {
-  min-width: 0;
-}
-
-.mypageProfileSummary dt,
-.mypageDetails dt {
-  color: var(--moira-muted);
-  font-size: 12px;
-  font-weight: 750;
-}
-
-.mypageProfileSummary dd {
-  margin: 6px 0 0;
-  overflow: hidden;
-  color: var(--moira-ink);
-  font-size: 13px;
-  font-weight: 750;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .mypageIdentity {
   display: flex;
   min-width: 0;
@@ -5666,188 +5634,6 @@ html.isFullPageScroll:has(.moiraPage) {
 
 .mypageContent {
   padding-block: 40px 60px;
-}
-
-.mypageAccountContent {
-  display: grid;
-  gap: 20px;
-}
-
-.mypageAccountCard,
-.mypageComingSoon {
-  border: 1px solid var(--moira-border);
-  border-radius: var(--moira-radius-md);
-  background: #fff;
-  box-shadow: 0 12px 32px rgba(33, 70, 61, 0.06);
-  padding: clamp(20px, 3vw, 30px);
-}
-
-.mypageAccountHeading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.mypageAccountHeading h2,
-.mypageComingSoon h2 {
-  margin: 6px 0 0;
-  color: var(--moira-ink);
-  font-size: clamp(24px, 3vw, 30px);
-  letter-spacing: -0.03em;
-}
-
-.mypageAccountHeading > div > p:last-child,
-.mypageComingSoon > p:last-child {
-  margin: 8px 0 0;
-  color: var(--moira-muted);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.mypageDetails {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  border-top: 1px solid var(--moira-border);
-  border-left: 1px solid var(--moira-border);
-}
-
-.mypageDetails div {
-  min-width: 0;
-  border-right: 1px solid var(--moira-border);
-  border-bottom: 1px solid var(--moira-border);
-  padding: 17px;
-}
-
-.mypageDetails dd {
-  margin: 7px 0 0;
-  overflow-wrap: anywhere;
-  color: var(--moira-ink);
-  font-size: 15px;
-  font-weight: 750;
-}
-
-.mypageProfileForm {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.mypageProfileForm label {
-  display: grid;
-  gap: 7px;
-  color: var(--moira-ink);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.mypageProfileForm input,
-.mypageProfileForm select {
-  width: 100%;
-  border: 1px solid #cfdad5;
-  border-radius: 12px;
-  background: #fff;
-  color: var(--moira-ink);
-  padding: 12px 13px;
-  font: inherit;
-  font-weight: 500;
-}
-
-.mypageProfileForm input:focus,
-.mypageProfileForm select:focus {
-  border-color: var(--moira-green);
-  outline: 3px solid rgba(48, 129, 105, 0.12);
-}
-
-.mypageProfileForm small {
-  color: #b64141;
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.mypageFormActions {
-  display: flex;
-  grid-column: 1 / -1;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.mypageInterestOptions {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.mypageInterestOptions label {
-  cursor: pointer;
-}
-
-.mypageInterestOptions input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0;
-}
-
-.mypageInterestOptions span {
-  display: grid;
-  min-height: 48px;
-  place-items: center;
-  border: 1px solid var(--moira-border);
-  border-radius: 13px;
-  background: #f8faf9;
-  color: var(--moira-muted);
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 800;
-  text-align: center;
-  transition: 150ms ease;
-}
-
-.mypageInterestOptions label:hover span,
-.mypageInterestOptions input:focus-visible + span {
-  border-color: var(--moira-green);
-}
-
-.mypageInterestOptions label.selected span {
-  border-color: var(--moira-green);
-  background: var(--moira-mint);
-  color: var(--moira-green-dark);
-}
-
-.mypageInterestActions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.mypageInterestActions p,
-.mypageEmptyState {
-  margin: 0;
-  color: var(--moira-muted);
-  font-size: 13px;
-}
-
-.mypageStatusMessage {
-  margin: 16px 0 0;
-  border-radius: 10px;
-  background: #edf8f3;
-  color: var(--moira-green-dark);
-  padding: 11px 13px;
-  font-size: 13px;
-  font-weight: 750;
-}
-
-.mypageComingSoon {
-  background: #f7f8f7;
-  box-shadow: none;
-  text-align: center;
 }
 
 .mypageActivityGrid {
@@ -6104,19 +5890,6 @@ html.isFullPageScroll:has(.moiraPage) {
     grid-row: 2;
   }
 
-  .mypageProfileCardLive {
-    grid-template-columns: 1fr auto;
-  }
-
-  .mypageProfileSummary {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .mypageInterestOptions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .mypageActivityGrid,
   .mypageEventGrid,
   .mypageInterestGrid {
@@ -6155,16 +5928,6 @@ html.isFullPageScroll:has(.moiraPage) {
     padding: 18px;
   }
 
-  .mypageProfileCardLive {
-    grid-template-columns: 1fr;
-  }
-
-  .mypageProfileSummary {
-    grid-column: auto;
-    grid-row: auto;
-    grid-template-columns: 1fr;
-  }
-
   .mypageIdentity {
     align-items: flex-start;
   }
@@ -6185,24 +5948,6 @@ html.isFullPageScroll:has(.moiraPage) {
 
   .mypageContent {
     padding-block: 26px 42px;
-  }
-
-  .mypageDetails,
-  .mypageProfileForm {
-    grid-template-columns: 1fr;
-  }
-
-  .mypageInterestOptions {
-    grid-template-columns: 1fr;
-  }
-
-  .mypageInterestActions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .mypageInterestActions .uiButton {
-    width: 100%;
   }
 
   .mypageActivityGrid {
