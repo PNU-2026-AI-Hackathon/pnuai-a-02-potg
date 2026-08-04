@@ -52,6 +52,37 @@ class EmbeddingRepository:
         if selector.kind is SelectorKind.CHUNK_ID:
             query = _CANDIDATE_SELECT + ' WHERE c."id" = %s ORDER BY c."id"'
             params = (selector.chunk_id,)
+        elif selector.kind is SelectorKind.PILOT:
+            query = """
+WITH ranked AS (
+  SELECT
+    c."id", c."content", c."contentHash",
+    e."status"::text, (e."embedding" IS NOT NULL) AS "embeddingExists",
+    e."provider", e."model", e."modelRevision", e."embeddingVersion",
+    e."dimension", e."embeddedContentHash", e."lastAttemptedAt",
+    ROW_NUMBER() OVER (
+      PARTITION BY c."chunkType"
+      ORDER BY c."characterCount", c."id"
+    ) AS type_rank
+  FROM "ProgramCaseDocumentChunk" c
+  JOIN "ProgramCaseDocument" d ON d."id" = c."programCaseDocumentId"
+  LEFT JOIN "ProgramCaseDocumentChunkEmbedding" e
+    ON e."programCaseDocumentChunkId" = c."id"
+  WHERE d."version" = '2'
+    AND c."builderVersion" = 'program-case-chunk-v2'
+    AND btrim(c."content") <> ''
+    AND e."programCaseDocumentChunkId" IS NULL
+)
+SELECT "id", "content", "contentHash", "status", "embeddingExists",
+       "provider", "model", "modelRevision", "embeddingVersion",
+       "dimension", "embeddedContentHash", "lastAttemptedAt"
+FROM ranked
+ORDER BY type_rank,
+  CASE WHEN "id" IS NULL THEN 1 ELSE 0 END,
+  "id"
+LIMIT %s
+"""
+            params = (selector.limit,)
         elif selector.kind is SelectorKind.FAILED:
             query = _CANDIDATE_SELECT + """
  WHERE e."status" = 'FAILED'

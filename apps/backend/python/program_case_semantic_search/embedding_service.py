@@ -11,7 +11,6 @@ from .errors import (
     ChunkNotFoundError,
     DatabaseOperationError,
     ModelInferenceError,
-    VectorValidationError,
 )
 from .selectors import EmbeddingSelector, SelectorKind
 from .types import (
@@ -121,11 +120,9 @@ class EmbeddingService:
                 summary.max_input_tokens = max(
                     summary.max_input_tokens, result.max_input_tokens
                 )
-            except MemoryError as error:
-                raise ModelInferenceError("KURE-v1 inference ran out of memory") from error
-            except (VectorValidationError, ModelInferenceError):
-                raise
             except Exception as error:
+                if isinstance(error, MemoryError):
+                    error = ModelInferenceError("KURE-v1 inference ran out of memory")
                 message = sanitize_failure(error)
                 self.repository.save_batch_failure(
                     batch, "MODEL_BATCH_FAILED", message, self.metadata

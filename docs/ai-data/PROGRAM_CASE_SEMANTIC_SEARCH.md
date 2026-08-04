@@ -372,3 +372,389 @@ Transformers와 모델을 설치하지 않는다. 후속 배포가 필요하면 
 - 운영 DB migration/extension 생성
 - 운영 청크 임베딩과 검색
 - EC2 변경
+
+## 2026-08-03 운영 검증 결과
+
+운영 DB `moira`에서 pgvector `0.8.2`와 KURE-v1 고정 revision을 사용해
+유효 청크 888건의 임베딩 및 의미 검색을 검증했다. 모든 청크는 document
+version `2`, builder version `program-case-chunk-v2`, 비어 있지 않은 content를
+가졌으며 개인정보 금지 패턴, stale document 연결, 중복 ID·chunkKey가 없었다.
+
+### 실행 환경과 전체 집계
+
+| 항목 | 결과 |
+|---|---:|
+| Python | 3.11.15 |
+| 실행 장치 | CPU |
+| cache | `apps/backend/.model-cache` (약 2.29GB, Git ignored) |
+| batch size | 8 |
+| 유효 청크 | 888 |
+| CORE / SESSIONS / ATTACHMENT | 349 / 5 / 534 |
+| 최초 정상 완료 | 9 |
+| 전체 실행 신규 생성 | 879 |
+| 전체 실행 unchanged | 9 |
+| 실패 | 0 |
+| encode batch/call | 110 / 110 |
+| 관찰 실행 시간 | 약 1시간 48분 32초 |
+| 관찰 working set | 약 1.54~1.68GiB |
+
+상위 shell의 30분 제한 이후에도 실제 Python 자식 프로세스가 계속 실행되고
+있음을 확인하여 중복 실행하지 않고 자연 종료까지 모니터링했다. 위 최초 전체
+집계는 실행 시작 당시 정상 9건과 최종 DB 신규 879건, batch size 8에 따른
+결정적 집계다. 상위 shell 종료 때문에 최초 CLI의 최종 stdout 자체는 회수하지
+못했다.
+
+파일럿 8건은 CORE 3, SESSIONS 2, ATTACHMENT 3으로 동적 선택되었고 한 번의
+batch encode로 모두 생성됐다. 이를 위해 미임베딩·document v2·builder v2·
+비어 있지 않은 청크만 제한 선택하는 `--pilot-size`를 추가했다. 함께 발견된
+`--batch-size` 문자열 파싱 오류도 수정했다.
+
+최종 integrity 결과는 다음과 같다.
+
+- embedding/COMPLETED: 888/888
+- PENDING/PROCESSING/FAILED: 0/0/0
+- NULL vector, dimension mismatch: 0
+- provider/model/revision/version mismatch: 0
+- content hash mismatch, orphan, duplicate: 0
+- vector L2 norm 범위: 0.99999987~1.00000018
+- ProgramCase, Session, Attachment, Document, Chunk의 count/SHA-256 baseline 불변
+
+동일 전체 명령의 즉시 재실행 결과는 `TOTAL 888`, `UNCHANGED 888`,
+`CREATED 0`, `UPDATED 0`, `FAILED 0`, `BATCHES 0`, `MODEL_ENCODE_CALLS 0`,
+`ELAPSED_SECONDS 0.266`이었다. 재실행 전후 embedding의 updatedAt,
+attemptCount, vector hash, embeddedContentHash 집계 fingerprint도 동일했다.
+
+### 한국어 검색 평가
+
+아래 결과는 threshold 없이 exact cosine Top 5를 조회한 것이다. 프로그램명은
+운영 DB의 기존 CP949 mojibake를 DB 변경 없이 보고 단계에서만 가역 복원했다.
+본문, target, 첨부 원문과 vector는 출력하거나 문서에 저장하지 않았다.
+
+#### 유아와 부모가 함께하는 그림책 활동
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [유아/금정북파크] 클레이로 만나는 그림책 이야기 | 0.650287 | SESSIONS | `c2c17479-6d13-4d83-8fd8-29812884ee50` |
+| 2 | [미리내] 생각 쑥쑥 그림책 | 0.629984 | ATTACHMENT | `43727bca-99ab-46f3-8d19-8ab0ffe4d83a` |
+| 3 | [방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자 | 0.615471 | ATTACHMENT | `1d61aa19-329d-442e-93ed-0c378027c43a` |
+| 4 | [아이꿈자람] 그림책 놀이터 | 0.609402 | ATTACHMENT | `ecd157f7-4ee7-4599-8dae-86560610aec7` |
+| 5 | [사립 로뎀나무] 그림책 예술놀이 | 0.606451 | ATTACHMENT | `4ef4279d-a332-4eba-b02c-acc39b15ae9f` |
+
+그림책 활동은 잘 포착하지만 부모 동반 조건은 제목만으로 확인되지 않아 5건
+모두 부분 적합으로 보수적으로 판정했다.
+
+#### 초등학생 독서 프로그램
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [미리내] 자녀 독서지도 | 0.638605 | ATTACHMENT | `cd224f35-ed08-4990-ad3b-8d4784f16a92` |
+| 2 | [금샘마을] 그림책 독서논술 | 0.629367 | CORE | `0104706d-6567-41ee-968a-fa36201c0974` |
+| 3 | [아이꿈자람] 내 마음 토닥토닥 책읽기&글쓰기 | 0.626997 | CORE | `045feb8f-ce21-4213-a77a-96287c140322` |
+| 4 | [금샘마을] 그림책 독서논술 | 0.626230 | ATTACHMENT | `0104706d-6567-41ee-968a-fa36201c0974` |
+| 5 | [금정북파크] I Love English story | 0.626076 | ATTACHMENT | `d3c18b3a-5860-4667-ad2f-f3fc96ef63b5` |
+
+3건 적합, 2건 부분 적합이며 같은 프로그램의 CORE/ATTACHMENT 중복 1건이 있다.
+
+#### 노년층 디지털 교육
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [성인/게이트웨이(사립)] 디지털로 그리는 나의 하루, 스마트 라이프 교실 | 0.553443 | CORE | `41a9dfbf-f4f3-40c9-a58f-792b26c23162` |
+| 2 | [어린이/부곡1동] 나도 일러스트 작가! 디지털드로잉 | 0.538638 | CORE | `72454ab4-1084-4e9f-b79f-488800256bee` |
+| 3 | [성인/구서sk뷰 1단지] 누구나 쉽게 따라하는 스마트폰 | 0.536136 | CORE | `abbed79d-2044-40f7-b0b0-346464804a36` |
+| 4 | [금정북파크] 신나는 스마트폰 교실 | 0.534024 | CORE | `59b5f7c0-0d9b-488a-a0a7-53477a8a13fc` |
+| 5 | [성인/게이트웨이(사립)] 디지털로 그리는 나의 하루, 스마트 라이프 교실 | 0.525848 | ATTACHMENT | `41a9dfbf-f4f3-40c9-a58f-792b26c23162` |
+
+노년층이 명시되지 않아 4건 부분 적합, 어린이 디지털드로잉 1건 부적합으로
+판정했다. 동일 프로그램 중복 1건이 있다.
+
+#### 부모와 아이 문화 활동
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(초등반) | 0.542072 | ATTACHMENT | `dac90a63-290d-4ba6-bf75-c934a5a40f7a` |
+| 2 | [어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(유아반) | 0.537939 | ATTACHMENT | `7619dc94-dc9f-47a6-b3a6-21ae15d8fea3` |
+| 3 | [우지] 보테니컬 아트 | 0.517032 | ATTACHMENT | `23a1b6fb-0ff3-4e43-ae38-6c1ee2736e0e` |
+| 4 | [미리내] 자녀 독서지도 | 0.512439 | ATTACHMENT | `cd224f35-ed08-4990-ad3b-8d4784f16a92` |
+| 5 | [어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(초등반) | 0.512397 | CORE | `dac90a63-290d-4ba6-bf75-c934a5a40f7a` |
+
+부모 동반이 명시되지 않아 4건 부분 적합, 보테니컬 아트 1건 부적합으로
+판정했다. 동일 프로그램 중복 1건이 있다.
+
+#### 주민 공예 프로그램
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | [아이꿈자람/어린이] 3D펜으로 생활소품 만들기 | 0.567726 | CORE | `05814221-1991-4a81-b568-ca87687df2ec` |
+| 2 | [아이꿈자람] 풍선아트 체험 16:40~17:00 | 0.551712 | ATTACHMENT | `99068bd9-8518-4b80-87df-99cbc12573cd` |
+| 3 | [아이꿈자람] 풍선아트 체험 15:00~15:20 | 0.551215 | ATTACHMENT | `7148f37d-e963-4ed9-9345-0f5762bbd54c` |
+| 4 | [아이꿈자람] 풍선아트 체험 14:00~14:20 | 0.550120 | ATTACHMENT | `4c253691-b671-474d-94ea-47927790c323` |
+| 5 | [아이꿈자람] 풍선아트 체험 14:40~15:00 | 0.549725 | ATTACHMENT | `a4cbbaa3-2849-454a-b192-c70096d22ae3` |
+
+공예·만들기 활동은 일치하지만 주민 일반보다 어린이 대상이므로 5건 모두
+부분 적합으로 판정했다.
+
+#### 건강 프로그램
+
+| 순위 | 프로그램 | similarity | type | ProgramCase ID |
+|---:|---|---:|---|---|
+| 1 | 박민수 원장의 「생체 나이 10년 젊게」 강연 | 0.524286 | CORE | `03bafacf-b661-4496-bc41-b97ac8381df4` |
+| 2 | 박민수 원장의 「생체 나이 10년 젊게」 강연 | 0.516099 | ATTACHMENT | `03bafacf-b661-4496-bc41-b97ac8381df4` |
+| 3 | [어린이/아이꿈] 원어민 선생님과 Joyful English | 0.510967 | ATTACHMENT | `c22a7dbd-a864-499c-b163-4ec1d0e907a1` |
+| 4 | [초등/구서2동어린이] Cool Summer! Cool English! | 0.497522 | SESSIONS | `2a38d135-591f-4b39-bcbd-f348c11e60b8` |
+| 5 | [초등/부곡1동] 똑똑한 지구인 프로젝트 | 0.494328 | SESSIONS | `95756897-676f-4e06-b029-679135624716` |
+
+상위 2건은 적합하지만 같은 프로그램 중복이고, 나머지 3건은 부적합이다.
+
+### 분포와 후속 판단
+
+질의별 1위/5위/Top 5 평균은 각각 다음과 같다.
+
+| 질의 | 1위 | 5위 | 평균 |
+|---|---:|---:|---:|
+| 유아·부모 그림책 | 0.650287 | 0.606451 | 0.622319 |
+| 초등 독서 | 0.638605 | 0.626076 | 0.629455 |
+| 노년층 디지털 | 0.553443 | 0.525848 | 0.537618 |
+| 부모·아이 문화 | 0.542072 | 0.512397 | 0.524376 |
+| 주민 공예 | 0.567726 | 0.549725 | 0.554100 |
+| 건강 | 0.524286 | 0.494328 | 0.508640 |
+
+전체 Top 30의 score 범위는 0.494328~0.650287이다. 건강 질의의 부적합
+3위 점수 0.510967과 다른 질의의 부분 적합 점수 범위가 겹치며, 노년층
+질의에서도 부적합 결과가 일부 부분 적합 결과보다 높다. 따라서 현재 결과만으로
+고정 threshold를 두는 것은 부적절하고 더 많은 relevance label이 필요하다.
+
+Top 30의 청크 유형은 CORE 9, SESSIONS 3, ATTACHMENT 18로 ATTACHMENT가
+60%다. 여섯 질의 중 세 질의에서 같은 ProgramCase의 CORE/ATTACHMENT가
+동시에 노출되어 총 3건의 중복이 있었다. 다음 우선순위는 검색 후 프로그램
+단위 dedupe 또는 프로그램별 최고 청크 점수 집계이며, 그 다음에 labeled
+evaluation을 통한 threshold와 reranking을 검토한다.
+
+### 검증 명령 결과
+
+- TypeScript build: 통과
+- Python unit test: 53개 통과
+- 전용 `moira_pgvector_integration_test` synthetic pgvector integration: 통과
+- 운영 integrity 및 원본 SHA-256 비교: 통과
+- `git diff --check`: 통과
+
+## 2026-08-04 ProgramCase dedupe와 metadata filter 재평가
+
+기본 검색이 Chunk 단위 Top K에 바로 limit을 적용하여 같은 ProgramCase의
+CORE와 ATTACHMENT가 함께 노출되는 문제를 보완했다. Repository는 vector
+후보 검색과 metadata filter에 집중하고, SearchService가 ProgramCase 검색
+정책을 담당한다.
+
+권장 검색 흐름은 다음과 같다.
+
+```text
+사용자 질의
+  -> 선택적 metadata filter
+  -> vector Chunk 후보 oversampling
+  -> ProgramCase 단위 dedupe
+  -> Top K 프로그램 사례
+  -> 후속 RAG context
+```
+
+### 대표 청크와 oversampling 정책
+
+- 후보 수: `max(requested limit × 5, 20)`
+- 같은 ProgramCase에서는 similarity가 가장 높은 Chunk 선택
+- similarity 완전 동점에서만 CORE, SESSIONS, ATTACHMENT 순으로 선택
+- similarity와 type도 같으면 Chunk ID 오름차순
+- dedupe 이후 requested limit 적용
+- 고유 ProgramCase가 부족하면 존재하는 결과만 반환
+
+더 낮은 CORE가 더 높은 ATTACHMENT를 대체하지 않는다. 현재 888건 규모에서는
+exact cosine 검색을 유지하며 reranker는 구현하지 않았다.
+
+### metadata filter와 CLI
+
+실제 구조화 metadata 중 검색에 유효한 것은 `ProgramCase.targetAudience`와
+Chunk type이다. 별도 organization/library 필드는 없고 조직명은 title 접두부에
+섞여 있으므로 organization filter를 상상해 추가하지 않았다. `sourceType`은
+349건 모두 `GEUMJEONG_SMALL_LIBRARY`라 변별력이 없다.
+
+target은 자유문자열로 분산되어 있다. 대표 분포는 `일반인 성인` 31건,
+`어린이 유아 6-7세` 21건, `어린이 어린이(유아, 초등)` 15건,
+`일반인 지역주민` 13건, `초등학생 1~3학년` 11건이다. 자동 동의어 매핑 없이
+사용자가 지정한 문자열을 대소문자 무시 literal 부분일치로 검색하며 SQL 값은
+모두 parameter binding한다.
+
+```powershell
+npm.cmd run program-case-semantic-search -- `
+  --query="노년층 디지털 교육" `
+  --limit=5 `
+  --target="일반인" `
+  --chunk-type=CORE
+```
+
+필터는 선택 사항이고 빈 target은 거부한다. 기본 threshold는 계속 없으며 기존
+`--threshold`만 명시적 옵션으로 유지한다. CLI JSON과 text 출력에는 다음
+집계를 추가했다.
+
+```text
+RAW_CHUNK_CANDIDATES
+UNIQUE_PROGRAMS
+DUPLICATES_REMOVED
+RETURNED_RESULTS
+```
+
+결과에는 rank, program title, similarity, representative Chunk type,
+ProgramCase ID, Chunk ID만 포함한다. content, preview, target, source label,
+document ID와 vector는 출력하지 않는다.
+
+### dedupe 운영 재평가
+
+| 질의 | raw 후보 | 후보 고유 프로그램 | 후보 중복 제거 | 최종 중복 | CORE/SESSIONS/ATTACHMENT | 1위/5위 |
+|---|---:|---:|---:|---:|---:|---:|
+| 유아·부모 그림책 | 25 | 18 | 7 | 0 | 0/1/4 | 0.650287/0.606451 |
+| 초등 독서 | 25 | 14 | 11 | 0 | 2/0/3 | 0.638605/0.625073 |
+| 노년층 디지털 | 25 | 13 | 12 | 0 | 4/0/1 | 0.553443/0.515968 |
+| 부모·아이 문화 | 25 | 18 | 7 | 0 | 0/0/5 | 0.542072/0.508386 |
+| 주민 공예 | 25 | 20 | 5 | 0 | 1/0/4 | 0.567726/0.549725 |
+| 건강 | 25 | 21 | 4 | 0 | 1/2/2 | 0.524286/0.485258 |
+
+기존 Top 5에서 같은 프로그램이 중복된 질의는 초등 독서, 노년층 디지털,
+부모·아이 문화, 건강의 4개였다. dedupe 후 여섯 질의 모두 최종 중복은 0이다.
+Top 30 type 비중은 기존 CORE 9, SESSIONS 3, ATTACHMENT 18에서 CORE 8,
+SESSIONS 3, ATTACHMENT 19로 바뀌었다. dedupe는 프로그램 중복을 해결하지만
+ATTACHMENT 과다 노출 자체를 해결하지는 않는다.
+
+dedupe 후 대표 결과는 다음과 같다. 이전 표와 같은 결과는 생략하지 않고 실제
+운영 검색 점수를 사용했다.
+
+| 질의 | 순위 | 프로그램 | similarity | type |
+|---|---:|---|---:|---|
+| 유아·부모 그림책 | 1 | 클레이로 만나는 그림책 이야기 | 0.650287 | SESSIONS |
+|  | 2 | 생각 쑥쑥 그림책 | 0.629984 | ATTACHMENT |
+|  | 3 | 어서와~ 그림책이랑 연극이랑 같이 놀자 | 0.615471 | ATTACHMENT |
+|  | 4 | 그림책 놀이터 | 0.609402 | ATTACHMENT |
+|  | 5 | 그림책 예술놀이 | 0.606451 | ATTACHMENT |
+| 초등 독서 | 1 | 자녀 독서지도 | 0.638605 | ATTACHMENT |
+|  | 2 | 그림책 독서논술 | 0.629367 | CORE |
+|  | 3 | 내 마음 토닥토닥 책읽기&글쓰기 | 0.626997 | CORE |
+|  | 4 | I Love English story | 0.626076 | ATTACHMENT |
+|  | 5 | 어린이 논술 | 0.625073 | ATTACHMENT |
+| 노년층 디지털 | 1 | 스마트 라이프 교실 | 0.553443 | CORE |
+|  | 2 | 어린이 디지털드로잉 | 0.538638 | CORE |
+|  | 3 | 누구나 쉽게 따라하는 스마트폰 | 0.536136 | CORE |
+|  | 4 | 신나는 스마트폰 교실 | 0.534024 | CORE |
+|  | 5 | 삼국지로 배우는 한자 | 0.515968 | ATTACHMENT |
+| 부모·아이 문화 | 1 | 크리스마스 문화체험(초등반) | 0.542072 | ATTACHMENT |
+|  | 2 | 크리스마스 문화체험(유아반) | 0.537939 | ATTACHMENT |
+|  | 3 | 보테니컬 아트 | 0.517032 | ATTACHMENT |
+|  | 4 | 자녀 독서지도 | 0.512439 | ATTACHMENT |
+|  | 5 | 생각톡톡! 미술아 놀자 | 0.508386 | ATTACHMENT |
+| 주민 공예 | 1 | 3D펜으로 생활소품 만들기 | 0.567726 | CORE |
+|  | 2 | 풍선아트 체험 16:40 | 0.551712 | ATTACHMENT |
+|  | 3 | 풍선아트 체험 15:00 | 0.551215 | ATTACHMENT |
+|  | 4 | 풍선아트 체험 14:00 | 0.550120 | ATTACHMENT |
+|  | 5 | 풍선아트 체험 14:40 | 0.549725 | ATTACHMENT |
+| 건강 | 1 | 생체 나이 10년 젊게 강연 | 0.524286 | CORE |
+|  | 2 | Joyful English | 0.510967 | ATTACHMENT |
+|  | 3 | Cool Summer! Cool English! | 0.497522 | SESSIONS |
+|  | 4 | 똑똑한 지구인 프로젝트 | 0.494328 | SESSIONS |
+|  | 5 | 아침을 깨우는 싱잉볼 명상 | 0.485258 | ATTACHMENT |
+
+### target filter 비교와 한계
+
+| 질의 | 수동 target | 결과 | 판단 |
+|---|---|---|---|
+| 유아·부모 그림책 | `유아` | 유아 대상만 유지, 5건 반환 | 적용 가능 |
+| 초등 독서 | `초등` | 연령 불일치는 감소하나 키즈스피치 노출 | 주제 filter가 아니므로 선택적 사용 |
+| 노년층 디지털 | `일반인` | 어린이 디지털 결과 제거, 비디지털 성인 결과 노출 | 노년 전용 metadata 부재 |
+| 부모·아이 문화 | `어린이` | 성인 보테니컬 아트 제거 | 적용 가능하나 부모 동반은 판별 불가 |
+| 주민 공예 | 미적용 | `지역주민` 적용 시 공예 관련성이 악화 | category metadata 부재 |
+| 건강 | `일반인` | 어린이 영어 결과 제거, 건강 외 성인 결과 잔존 | 대상 불일치만 감소 |
+
+metadata filter는 예상한 target 후보만 제한했고 SQL injection 가능한 문자열
+연결은 없다. 그러나 target은 활동 category가 아니므로 주제 관련성까지 높이지
+않는다. 특히 노년/부모 동반/공예를 직접 표현하는 정규화 metadata가 없다.
+
+보수적 적합도 판단에서 dedupe는 중복을 0으로 만들고 고유 프로그램 다양성을
+높였지만, 중복 자리에 다음 저점수 부적합 후보가 들어오는 질의도 있었다.
+target filter는 적용 가능한 질의에서 어린이/성인 대상 불일치를 줄였으나 전체
+부적합을 항상 줄이지는 않았다. 따라서 현재 6개 질의만으로 전역 threshold를
+고정하지 않는다. 적합·부적합 score overlap도 계속 존재한다.
+
+다음 단계에서 reranker를 검토할 조건은 프로그램 dedupe와 명시적 target filter
+후에도 주제 불일치 후보가 Top K에 반복 노출되는 경우다. 현재 건강·노년층
+디지털·부모 동반·공예 질의가 이에 해당한다. reranker 전에 프로그램 단위
+relevance label을 더 수집하고, ATTACHMENT type 가중치 또는 프로그램별 score
+aggregation을 별도 이슈로 비교해야 한다.
+
+### 재검증
+
+- TypeScript build: 통과
+- Python unit test: 58개 통과
+- synthetic integration: 동일 ProgramCase 중복 후보, 최고 similarity 선택,
+  tie CORE 선택, target+chunk type 조합, 0건 filter, stale 제외, cleanup 통과
+- 운영 DB: read-only 검색만 수행
+- Document 349, Chunk 888, Embedding 888/COMPLETED 888 유지
+- embedding/document/chunk fingerprint 전후 동일
+
+## 2026-08-04 검색 품질 정책 실험
+
+### 범위와 안전 원칙
+
+이번 실험은 RAG, LLM 호출, 외부 데이터 수집 없이 기존 KURE-v1 임베딩 후보를 재정렬하는 범위로 제한했다. 추론 입력은 `ProgramCase.title`과 `ProgramCase.targetAudience`뿐이며 개인정보, Chunk 원문, 첨부 본문은 사용하지 않는다. 추론 결과는 원본 데이터나 사실값이 아니라 검색 보조 신호이고 DB에 저장하지 않는다.
+
+MOIRA Studio의 별도 구조화 검색 DTO나 API는 저장소에서 확인되지 않았다. 따라서 내부 실험용 `ProgramCaseSearchRequest`가 기존 query, target, chunk type과 다음 추론 필드를 표현하며, 운영 API 필드를 임의로 만들거나 변경하지 않았다.
+
+- 연령: 유아, 아동, 성인, 노년, 가족, 부모-자녀, 일반, 미상
+- 분야: 독서, 글쓰기, 공예, 예술, 디지털, 건강, 언어, 문화, 환경, 과학, 역사, 음악, 요리, 공동체, 미상
+- 참여 형태: 부모-자녀, 가족, 단체, 미상
+- 운영 형태: 강의, 체험, 워크숍, 공연, 다회차, 일일, 미상
+
+정규식 규칙은 충돌하는 근거를 숨기지 않고 복수 라벨을 허용하며, 근거가 없으면 `UNKNOWN`을 반환한다. 구조화 요청은 한국어 라벨을 원문 질의 뒤에 결정적으로 추가해 최대 1,000자로 제한한다.
+
+### 메타데이터 분포 감사
+
+운영 DB의 349개 ProgramCase를 읽기 전용으로 평가했다.
+
+| 구분 | 근거 있음 | 미상 | 복수 라벨 |
+|---|---:|---:|---:|
+| 연령 | 348 | 1 (0.3%) | 152 (43.6%) |
+| 분야 | 208 | 141 (40.4%) | 59 (16.9%) |
+| 참여 형태 | 29 | 320 (91.7%) | 0 |
+| 운영 형태 | 110 | 239 (68.5%) | 26 (7.4%) |
+
+연령 충돌 후보는 1건이었다. 특히 참여 형태와 운영 형태의 미상 비율이 높으므로 이 메타데이터를 사실값이나 강한 필터로 간주할 수 없다.
+
+### P0-P4 재정렬 정책
+
+| 정책 | 구성 |
+|---|---|
+| P0 baseline | 현재 운영 방식: 최고 cosine 청크로 ProgramCase 중복 제거 |
+| P1 metadata | 연령·분야·참여·운영 일치에 작은 소프트 보너스 |
+| P2 weighted | CORE 1.00, SESSIONS 0.98, ATTACHMENT 0.95 |
+| P3 aggregate | 동일 ProgramCase의 두 번째 청크 점수를 0.10 반영 |
+| P4 combined | P1-P3 결합과 명확한 메타데이터 불일치 제외 |
+
+대표 청크와 raw similarity는 언제나 원래 cosine 최고 후보를 보존하며, 보정된 final score와 분리한다. 집계는 두 번째 청크까지만 반영하고 모든 정렬은 결정적 tie-break를 사용한다. P0는 계속 기본값이며 P1-P4는 평가 전용이다.
+
+### 15개 질의 평가 결과
+
+기존 6개 질의와 추가 9개 한국어 질의에 대해 질의당 DB 후보 100개를 가져와 Top 5를 비교했다. 모든 정책에서 ProgramCase 중복은 0건이었다.
+
+| 정책 | 반환 결과 | ATTACHMENT 대표 | ATTACHMENT 비율 | 중복 |
+|---|---:|---:|---:|---:|
+| P0 | 75 | 46 | 61.3% | 0 |
+| P1 | 75 | 40 | 53.3% | 0 |
+| P2 | 75 | 27 | 36.0% | 0 |
+| P3 | 75 | 54 | 72.0% | 0 |
+| P4 | 67 | 34 | 50.7% | 0 |
+
+단계별 중앙 지연 시간은 query embedding 461.21ms, DB 후보 조회 127.24ms였다. 100개 후보의 Python 재정렬 중앙값은 P0 26.40ms, P1 24.78ms, P2 24.10ms, P3 22.93ms, P4 23.18ms였다. 이 값은 동일 실행 내 관측치이며 서비스 SLO가 아니다.
+
+P2는 ATTACHMENT 비율을 가장 크게 낮췄지만 일부 질의에서 관련 ATTACHMENT 대신 주제 적합성이 불분명한 CORE가 진입했다. P3는 오히려 ATTACHMENT 비율을 높였다. P4는 75개 중 8개를 잃어 recall 저하 위험이 확인됐다. 수동 relevance label이 없으므로 평균 적합도, MRR 같은 지표를 만들어 내지 않았다.
+
+따라서 기본 정책과 threshold는 변경하지 않는다. P1-P4를 운영 CLI에 노출하지 않으며, 공개 가능한 제목 기반 수동 라벨을 팀이 먼저 작성한 뒤 같은 평가 스크립트로 품질 게이트를 다시 확인한다. 채택 조건은 적합도 저하 없이 중복 0을 유지하고, recall 손실 없이 ATTACHMENT 편향을 의미 있게 줄이는 것이다.
+
+### 검증
+
+- Python unit test: 70개 통과
+- synthetic TEST DB integration: 정책별 중복 제거, 소프트 보너스, 명확한 연령 불일치 제외, 두 번째 청크 집계 통과
+- 운영 DB 평가는 read-only로 수행했으며 원본과 임베딩을 변경하지 않음
+- RAG, LLM 호출, 외부 데이터 수집 미사용

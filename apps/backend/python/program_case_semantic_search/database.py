@@ -22,6 +22,21 @@ def _load_psycopg():
     return psycopg
 
 
+def inspect_current_database(database_url: str) -> str:
+    """Read the effective database name without requiring pgvector."""
+    psycopg = _load_psycopg()
+    try:
+        with psycopg.connect(database_url, autocommit=False) as connection:
+            connection.execute("SET TRANSACTION READ ONLY")
+            row = connection.execute("SELECT current_database()").fetchone()
+            connection.rollback()
+    except Exception as exc:
+        raise DatabaseConnectionError("PostgreSQL identity check failed") from exc
+    if row is None or not row[0]:
+        raise DatabaseConnectionError("PostgreSQL identity check returned no database")
+    return str(row[0])
+
+
 @contextmanager
 def connect(database_url: str, *, read_only: bool = False) -> Iterator[object]:
     psycopg = _load_psycopg()
