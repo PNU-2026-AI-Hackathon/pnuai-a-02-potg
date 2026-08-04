@@ -3961,6 +3961,7 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 .introPage {
+  --intro-section-padding: clamp(72px, 7vw, 96px);
   background: #f7f8f5;
 }
 
@@ -4251,6 +4252,16 @@ html.isFullPageScroll:has(.moiraPage) {
   border-radius: 24px;
   padding: 28px;
   box-shadow: 0 20px 40px rgba(30, 57, 44, 0.06);
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .introPage .introCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px rgba(30, 57, 44, 0.11);
+  }
 }
 
 .introCard strong {
@@ -4563,17 +4574,17 @@ html.isFullPageScroll:has(.moiraPage) {
 
 .introPage .homeSection {
   min-height: auto;
-  padding-block: clamp(76px, 8vw, 104px);
+  padding-block: var(--intro-section-padding);
 }
 
 .introPage .homeSection > .uiContainer,
-.aboutCtaInner {
+.visionInner {
   width: min(1120px, calc(100% - 48px));
 }
 
 .introPage .homeSectionHeading {
   max-width: 760px;
-  margin-bottom: clamp(34px, 4vw, 52px);
+  margin-bottom: clamp(32px, 3vw, 44px);
 }
 
 .audienceSection {
@@ -4581,7 +4592,6 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 .introPage .valueSection {
-  padding-top: clamp(96px, 9vw, 124px);
   background: #eef5f0;
   border-top: 1px solid rgba(22, 116, 95, 0.08);
 }
@@ -4657,62 +4667,173 @@ html.isFullPageScroll:has(.moiraPage) {
   line-height: 1.65;
 }
 
-.aboutCtaSection {
-  padding-block: clamp(76px, 8vw, 104px);
+.visionSection {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: clamp(64px, 7vw, 88px);
   background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.1), transparent 36%),
-    linear-gradient(135deg, #0f4137 0%, #1d5d50 100%);
+    radial-gradient(circle at 50% 24%, rgba(71, 153, 130, 0.2), transparent 34%),
+    linear-gradient(145deg, #093b32 0%, #145649 54%, #0d463c 100%);
 }
 
-.aboutCtaInner {
+.visionSection::before,
+.visionSection::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(2px);
+}
+
+.visionSection::before {
+  top: -22%;
+  right: -12%;
+  width: 52vw;
+  height: 52vw;
+  background: radial-gradient(circle, rgba(123, 190, 167, 0.12), transparent 66%);
+}
+
+.visionSection::after {
+  bottom: -34%;
+  left: -18%;
+  width: 46vw;
+  height: 46vw;
+  background: radial-gradient(circle, rgba(5, 39, 33, 0.3), transparent 68%);
+}
+
+.visionInner {
+  position: relative;
+  z-index: 1;
   display: grid;
   justify-items: center;
   text-align: center;
 }
 
-.aboutCtaInner .uiEyebrow {
+.visionInner .uiEyebrow {
   color: #b9ddcf;
 }
 
-.aboutCtaInner h2 {
+.visionInner h2 {
   margin: 0;
   color: #ffffff;
-  font-size: clamp(32px, 4vw, 48px);
-  line-height: 1.24;
-  letter-spacing: -0.055em;
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1.3;
+  letter-spacing: -0.06em;
   word-break: keep-all;
+  white-space: nowrap;
 }
 
-.aboutCtaInner > p:not(.uiEyebrow) {
-  margin: 18px 0 0;
+.visionLead {
+  max-width: 780px;
+  margin: 24px 0 0;
   color: rgba(255, 255, 255, 0.74);
   font-size: 16px;
   line-height: 1.7;
+  word-break: keep-all;
 }
 
-.aboutCtaActions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 30px;
+.visionConnection {
+  display: grid;
+  grid-template-columns: auto minmax(24px, 1fr) auto minmax(24px, 1fr) auto;
+  width: min(590px, 100%);
+  align-items: center;
+  margin-block: 44px 42px;
 }
 
-.aboutCtaActions .uiButtonPrimary {
-  background: #ffffff;
-  color: var(--moira-green-dark);
+.visionNode {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  width: clamp(66px, 7.5vw, 84px);
+  height: clamp(66px, 7.5vw, 84px);
+  border: 1px solid rgba(216, 238, 229, 0.72);
+  border-radius: 50%;
+  background: rgba(9, 59, 50, 0.46);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  backdrop-filter: blur(4px);
 }
 
-.aboutCtaActions .uiButtonSecondary {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: transparent;
+.visionNode.isMoira {
+  width: clamp(88px, 9.5vw, 108px);
+  height: clamp(88px, 9.5vw, 108px);
+  border-color: #d8eee5;
+  background: rgba(216, 238, 229, 0.09);
   color: #ffffff;
+  box-shadow:
+    0 0 0 7px rgba(185, 221, 207, 0.05),
+    0 16px 30px rgba(3, 34, 29, 0.18);
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
-.aboutCtaActions .uiButtonSecondary:hover,
-.aboutCtaActions .uiButtonSecondary:focus-visible {
-  border-color: #ffffff;
-  color: #ffffff;
+.visionNodeSymbol {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: #d8eee5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.visionNodeLogo {
+  width: 48px;
+  height: 37px;
+  object-fit: contain;
+}
+
+.visionArrow {
+  position: relative;
+  height: 1px;
+  background: rgba(185, 221, 207, 0.44);
+}
+
+.visionArrow::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 1px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid rgba(185, 221, 207, 0.68);
+  border-right: 1px solid rgba(185, 221, 207, 0.68);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.visionClosing {
+  max-width: 820px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: clamp(18px, 1.8vw, 20px);
+  font-weight: 700;
+  line-height: 1.65;
+  letter-spacing: -0.025em;
+  word-break: keep-all;
+}
+
+.visionPromise {
+  margin: 24px 0 0;
+  color: #b9ddcf;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.7;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+.visionSparkle {
+  display: block;
+  margin-top: 20px;
+  color: #b9ddcf;
+  font-size: 30px;
+  line-height: 1;
+  text-shadow: 0 0 24px rgba(185, 221, 207, 0.32);
 }
 
 @media (max-width: 980px) {
@@ -4769,8 +4890,32 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 @media (max-width: 720px) {
+  .introPage {
+    --intro-section-padding: 60px;
+  }
+
   .introHeroGrid {
     gap: 28px;
+  }
+
+  .visionInner h2 {
+    white-space: normal;
+  }
+
+  .visionSection {
+    padding-block: 56px;
+  }
+
+  .visionLead {
+    margin-top: 20px;
+  }
+
+  .visionConnection {
+    margin-block: 30px 28px;
+  }
+
+  .visionPromise {
+    margin-top: 20px;
   }
 
   .homeHeroLead,
@@ -4803,19 +4948,6 @@ html.isFullPageScroll:has(.moiraPage) {
 
   .homeHeroActions .uiButton {
     width: 100%;
-  }
-
-  .aboutCtaActions {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .aboutCtaActions .uiButton {
-    width: 100%;
-  }
-
-  .aboutCtaInner h2 br {
-    display: none;
   }
 
   .valueConclusion {

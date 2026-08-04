@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import SiteHeader from '@/components/layout/SiteHeader';
 import { getCurrentUser } from '@/lib/server-auth';
 import SectionHeading from '@/components/home/SectionHeading';
+import AboutExperience from '@/components/about/AboutExperience';
 
 const valueItems = [
   {
@@ -129,6 +131,7 @@ export default async function AboutPage() {
 
   return (
     <div className="introPage">
+      <AboutExperience />
       <SiteHeader user={user} activeMenu="about" />
       <section className="introHero">
         <div className="uiContainer introHeroGrid">
@@ -339,19 +342,48 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="aboutCtaSection">
-        <div className="uiContainer aboutCtaInner">
-          <p className="uiEyebrow">CONNECT WITH MOIRA</p>
-          <h2>주민과 사서를 연결하는<br />지역 도서관 프로그램 플랫폼</h2>
-          <p>우리 동네에 필요한 아이디어를 나누고, 함께할 프로그램을 만나보세요.</p>
-          <div className="aboutCtaActions">
-            <Link className="uiButton uiButtonPrimary" href="/community/proposals">
-              우리 동네 아이디어 제안하기
-            </Link>
-            <Link className="uiButton uiButtonSecondary" href="/#library-finder">
-              프로그램 둘러보기
-            </Link>
+      <section className="visionSection">
+        <div className="uiContainer visionInner">
+          <p className="uiEyebrow">MOIRA VISION</p>
+          <h2>더 나은 도서관은 주민의 목소리에서 시작됩니다.</h2>
+          <p className="visionLead">
+            도서관이 지역사회의 커뮤니티 거점으로 자리 잡고,<br />
+            주민의 의견이 지역에 꼭 필요한 문화·교육 프로그램으로 이어질 수 있도록.
+          </p>
+          <div className="visionConnection" role="img" aria-label="주민의 의견이 모이라를 통해 사서의 전문성과 연결됩니다">
+            <span className="visionNode">
+              <svg className="visionNodeSymbol" viewBox="0 0 32 32" aria-hidden="true">
+                <circle cx="12" cy="10" r="4" />
+                <circle cx="22" cy="12" r="3" />
+                <path d="M4.5 25c.7-5 3.2-7.5 7.5-7.5s6.8 2.5 7.5 7.5M19 18.5c4.7 0 7.3 2.1 8 6.5" />
+              </svg>
+              <span>주민</span>
+            </span>
+            <span className="visionArrow" aria-hidden="true" />
+            <span className="visionNode isMoira">
+              <Image
+                className="visionNodeLogo"
+                src="/moira-logo-mark-no-ai.png"
+                alt=""
+                width={54}
+                height={42}
+              />
+              <span>MOIRA</span>
+            </span>
+            <span className="visionArrow" aria-hidden="true" />
+            <span className="visionNode">
+              <svg className="visionNodeSymbol" viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M4.5 6.5h7.2c2.2 0 3.8.8 4.3 2.1.5-1.3 2.1-2.1 4.3-2.1h7.2v18h-7.2c-2.2 0-3.8.7-4.3 2-.5-1.3-2.1-2-4.3-2H4.5zM16 8.6v17.9" />
+              </svg>
+              <span>사서</span>
+            </span>
           </div>
+          <p className="visionClosing">
+            모이라는 주민과 사서를 연결하며,<br />
+            함께 만드는 지역 도서관의 새로운 시작이 되고자 합니다.
+          </p>
+          <p className="visionPromise">더 많은 주민의 목소리가 더 좋은 프로그램으로 이어질 수 있도록, 모이라가 함께하겠습니다.</p>
+          <span className="visionSparkle" aria-hidden="true">✦</span>
         </div>
       </section>
       <footer className="moiraFooter">
