@@ -45,6 +45,22 @@ function response(lineBreak = true) {
     assert.equal(stableJson(ocr), stableJson(repeat), 'same OCR response must produce byte-identical structures');
     const coordinate = buildOcrRepresentation(imageSource, sanitizeClovaResponse(response(false), imageSource.sourceSha256));
     assert.equal(coordinate.lines.length, 2); assert.equal(coordinate.lines[0].derivationRule, 'Y_COORDINATE_CLUSTER');
+    assert.ok(ocr.blocks.every((block) => block.role && block.roleClassifierVersion && block.readingOrder));
+    const footer = { ...ocr.blocks[0], recordId: 'footer-block', role: 'CONTACT_OR_FOOTER', text: '주변 안내', structuralOrder: 99 };
+    const singleSections = buildSectionCandidates(imageSource, [...ocr.lines, ...ocr.blocks, footer]);
+    assert.equal(singleSections.length, 1, 'single linked image with many visual blocks must remain one section');
+    assert.ok(singleSections[0].excludedPeripheralBlockRefs.includes('footer-block'), 'footer must not become an independent section');
+
+    const line = (base, recordId, text, order, height) => ({ ...base, recordId, text, structuralOrder: order,
+      boundingPoly: [{ x: 0, y: order * 40 }, { x: 200, y: order * 40 }, { x: 200, y: order * 40 + height }, { x: 0, y: order * 40 + height }] });
+    const sharedSource = { ...imageSource, linkedProgramCaseIds: ['program-1', 'program-2'] };
+    const semanticLines = [line(ocr.lines[0], 'title-a', '프로그램 하나', 0, 30), line(ocr.lines[0], 'meta-a', '일시 10:00', 1, 10),
+      line(ocr.lines[0], 'body-a', '활동 설명', 2, 10), line(ocr.lines[0], 'title-b', '프로그램 둘', 3, 30),
+      line(ocr.lines[0], 'meta-b', '대상 어린이', 4, 10), line(ocr.lines[0], 'body-b', '활동 설명', 5, 10)];
+    const sharedSections = buildSectionCandidates(sharedSource, semanticLines);
+    assert.equal(sharedSections.length, 2, 'repeated title and metadata evidence must create multiple program sections');
+    const gapOnly = semanticLines.map((item) => ({ ...item, text: '일반 본문', boundingPoly: item.boundingPoly.map((point) => ({ ...point, y: point.y * 5 })) }));
+    assert.equal(buildSectionCandidates(sharedSource, gapOnly).length, 1, 'vertical gap alone must not split a section');
 
     const hwpSource = { ...imageSource, detectedType: 'HWP', mimeType: 'application/x-hwp' };
     const markdown = '# 프로그램 안내\n\n본문입니다.\n\n<table><tr><th rowspan="2">구분</th><td colspan="2">내용</td></tr><tr><td>A</td><td>B</td></tr></table>';

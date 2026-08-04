@@ -4,6 +4,7 @@ import { OcrBlock, OcrField, OcrLine, SourceBinary } from './types';
 const OCR_PARSER_VERSION = 'clova-structure-parser-v1';
 const LINE_DERIVATION_VERSION = 'ocr-line-clustering-v1';
 const BLOCK_DERIVATION_VERSION = 'ocr-block-clustering-v1';
+const ROLE_CLASSIFIER_VERSION = 'ocr-block-role-classifier-v1';
 
 type Point = { x: number; y: number };
 type RawField = { inferText: string; inferConfidence: number; boundingPoly: { vertices: Point[] }; lineBreak?: boolean };
@@ -68,6 +69,46 @@ function left(field: OcrField) { return Math.min(...field.boundingPoly.map((poin
 function height(field: OcrField) { return Math.max(...field.boundingPoly.map((point) => point.y)) - top(field); }
 function average(values: number[]) { return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0; }
 
+function classifyBlock(group: OcrLine[], allLines: OcrLine[], index: number, total: number) {
+  const text = group.map((line) => line.text).join(' ');
+  const evidence: string[] = [];
+  const lineHeights = group.map((line) => Math.max(...line.boundingPoly.map((point) => point.y)) - Math.min(...line.boundingPoly.map((point) => point.y)));
+  const allHeights = allLines.map((line) => Math.max(...line.boundingPoly.map((point) => point.y)) - Math.min(...line.boundingPoly.map((point) => point.y)));
+  const meanHeight = average(lineHeights); const baseline = Math.max(1, average(allHeights));
+  let role: OcrBlock['role'] = 'UNKNOWN'; let confidence = 0.45;
+  if (/(?:0\d{1,2}[- )]?\d{3,4}[- ]?\d{4}|문의|연락처|담당자)/.test(text) && index >= Math.floor(total * 0.6)) {
+    role = 'CONTACT_OR_FOOTER'; confidence = 0.86; evidence.push('CONTACT_PATTERN', 'LOWER_DOCUMENT_REGION');
+  } else if (/(?:환불|취소|접수|신청방법|신청기간|유의사항)/.test(text) && group.length >= 3) {
+    role = 'ADMINISTRATIVE_NOTICE'; confidence = 0.78; evidence.push('ADMINISTRATIVE_PATTERN');
+  } else if (group.length >= 8 && /(?:회차|차시|일자|교육일자|수업|활동|준비물)/.test(text)) {
+    role = 'TABLE_OR_GRID'; confidence = 0.84; evidence.push('REPEATED_ROW_LABELS', 'MANY_LINES');
+  } else if (group.length <= 3 && meanHeight >= baseline * 1.35) {
+    role = 'TITLE_CANDIDATE'; confidence = 0.78; evidence.push('LARGE_TEXT_RELATIVE_TO_DOCUMENT', 'SHORT_BLOCK');
+  } else if (index === 0 && group.length <= 3) {
+    role = 'HEADER_OR_BRANDING'; confidence = 0.7; evidence.push('TOP_DOCUMENT_REGION', 'SHORT_BLOCK');
+  } else if (/(?:대상|일시|장소|기간|시간|모집|정원)/.test(text) && group.length <= 12) {
+    role = 'PROGRAM_METADATA'; confidence = 0.7; evidence.push('PROGRAM_METADATA_LABEL');
+  } else if (group.length >= 2) {
+    role = 'PROGRAM_CONTENT'; confidence = 0.62; evidence.push('MULTI_LINE_CONTENT');
+  } else evidence.push('INSUFFICIENT_ROLE_EVIDENCE');
+  return { role, roleConfidence: confidence, roleEvidence: evidence, roleClassifierVersion: ROLE_CLASSIFIER_VERSION };
+}
+
+function readingOrder(group: OcrLine[]): OcrBlock['readingOrder'] {
+  if (group.length < 2) return 'UNRESOLVED';
+  const tops = group.map((line) => Math.min(...line.boundingPoly.map((point) => point.y)));
+  const lefts = group.map((line) => Math.min(...line.boundingPoly.map((point) => point.x)));
+  let upward = 0; let lateral = 0;
+  for (let index = 1; index < group.length; index += 1) {
+    if (tops[index] + 20 < tops[index - 1]) upward += 1;
+    if (Math.abs(lefts[index] - lefts[index - 1]) > 100) lateral += 1;
+  }
+  if (upward > 0 && lateral > 0) return 'HYBRID_LAYOUT';
+  if (upward > 0) return 'COLUMN_MAJOR';
+  if (lateral > Math.floor(group.length / 3)) return 'ROW_MAJOR';
+  return 'ROW_MAJOR';
+}
+
 export function buildOcrRepresentation(source: SourceBinary, safe: SafeOcrResponse) {
   if (safe.sourceSha256 !== source.sourceSha256) throw new Error('OCR artifact source hash mismatch.');
   const fields = safe.fields.map((raw) => {
@@ -115,8 +156,9 @@ export function buildOcrRepresentation(source: SourceBinary, safe: SafeOcrRespon
     if (!current || lineTop - currentBottom > Math.max(12, lineHeight * 1.4)) blockGroups.push([line]); else current.push(line);
   }
   const blocks = blockGroups.map((group, index) => {
+    const classification = classifyBlock(group, lines, index, blockGroups.length);
     const content = { lineRefs: group.map((line) => line.recordId), text: group.map((line) => line.text).join('\n'),
-      boundingPoly: bounds(group.map((line) => line.boundingPoly)) };
+      boundingPoly: bounds(group.map((line) => line.boundingPoly)), ...classification, readingOrder: readingOrder(group) };
     return { ...baseRecord({ source, kind: 'DERIVED_OCR_BLOCK', origin: 'DERIVED', parser: safe.ocrEngine,
       parserVersion: OCR_PARSER_VERSION, structuralOrder: index, structuralPosition: `block:${index}`, content,
       confidence: average(group.map((line) => line.confidence)), derivationRule: 'VERTICAL_GAP_CLUSTER',

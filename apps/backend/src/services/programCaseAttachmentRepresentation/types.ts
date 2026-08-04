@@ -86,6 +86,11 @@ export type OcrBlock = BaseRecord & {
   lineRefs: string[];
   text: string;
   boundingPoly: Array<{ x: number; y: number }>;
+  role: 'PROGRAM_CONTENT' | 'TITLE_CANDIDATE' | 'PROGRAM_METADATA' | 'TABLE_OR_GRID' | 'HEADER_OR_BRANDING' | 'CONTACT_OR_FOOTER' | 'ADMINISTRATIVE_NOTICE' | 'UNKNOWN';
+  roleConfidence: number;
+  roleEvidence: string[];
+  roleClassifierVersion: string;
+  readingOrder: 'COLUMN_MAJOR' | 'ROW_MAJOR' | 'HYBRID_LAYOUT' | 'UNRESOLVED';
 };
 
 export type HwpStructuralUnit = BaseRecord & {
@@ -103,6 +108,9 @@ export type SectionCandidate = BaseRecord & {
   kind: 'ATTACHMENT_SECTION_CANDIDATE';
   sectionId: string;
   orderedUnitRefs: string[];
+  includedBlockRefs: string[];
+  excludedPeripheralBlockRefs: string[];
+  sectionType: 'WHOLE_DOCUMENT' | 'PROGRAM_REGION' | 'PAGE_REGION' | 'STRUCTURAL_REGION';
   boundaryEvidence: string[];
   sectionBuilderVersion: typeof SECTION_BUILDER_VERSION;
 };
