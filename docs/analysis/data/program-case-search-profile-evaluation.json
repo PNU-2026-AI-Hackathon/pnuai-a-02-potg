@@ -1,0 +1,808 @@
+{
+  "generatedAt": "2026-08-04T13:35:55Z",
+  "databaseVerified": "moira",
+  "chunkCandidateScope": "349 ProgramCase / 888 chunks",
+  "profileCandidateScope": "30 representative ProgramCases",
+  "judgmentMethod": "Expected taxonomy match using the same deterministic rules for both result sets. INDETERMINATE requires manual review.",
+  "queries": [
+    {
+      "query": "초등학생 환경 실험 프로그램",
+      "expectedTaxonomy": {
+        "topics": "ENVIRONMENT_SCIENCE",
+        "targetAgeGroups": "CHILD"
+      },
+      "profileRelevantRank": 1,
+      "chunkTitleSignalRank": 1,
+      "outcome": "EQUAL",
+      "attachmentBiasInChunkTop5": 3,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "95756897-676f-4e06-b029-679135624716",
+          "title": "[초등/부곡1동] 똑똑한 지구인 프로젝트(1.5℃를 지키는 아이들)",
+          "similarity": 0.6325396864896735,
+          "chunkType": "SESSIONS"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "ac6aacc6-b651-4111-bb95-6f9e44c8f8f2",
+          "title": "[초등/아이꿈자람] 리틀 브레이닝! 창의융합 사고력 보드게임",
+          "similarity": 0.6252798475074974,
+          "chunkType": "SESSIONS"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "dab88dcd-36fd-459b-95ce-8da618ed8458",
+          "title": "[아이꿈자람] 어린이 과학탐구교실",
+          "similarity": 0.6039727746256384,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "62f37027-d9a1-435f-8b1c-afb9ac8836a3",
+          "title": "[방학특강/부곡1동] 환경과 함께하는 창의과학메이커",
+          "similarity": 0.6024504361346041,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "7ff935c6-0773-4cd4-8a59-02a246df4870",
+          "title": "[어린이/아이꿈자람] 2025년 들락날락 영어랑 놀자 1기(초등반)",
+          "similarity": 0.591484147056465,
+          "chunkType": "ATTACHMENT"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "95756897-676f-4e06-b029-679135624716",
+          "title": "[초등/부곡1동] 똑똑한 지구인 프로젝트(1.5℃를 지키는 아이들)",
+          "similarity": 0.6012925397495029
+        },
+        {
+          "rank": 2,
+          "programCaseId": "ac6aacc6-b651-4111-bb95-6f9e44c8f8f2",
+          "title": "[초등/아이꿈자람] 리틀 브레이닝! 창의융합 사고력 보드게임",
+          "similarity": 0.5701802456896548
+        },
+        {
+          "rank": 3,
+          "programCaseId": "9497a9c4-0972-40e7-961e-c1ce0af2a4ae",
+          "title": "[방학특강/책마을보드랑] 창의융합: 수학과학보드게임",
+          "similarity": 0.5543770695918612
+        },
+        {
+          "rank": 4,
+          "programCaseId": "2a38d135-591f-4b39-bcbd-f348c11e60b8",
+          "title": "[초등/구서2동어린이] Cool Summer! Cool English!",
+          "similarity": 0.5436015850869662
+        },
+        {
+          "rank": 5,
+          "programCaseId": "d74b297c-dfb2-429e-8b0d-c8eb46a81be4",
+          "title": "[방학특강/금정아이꿈자람] 함께하는 추리! 빛나는 협력! 비밀코드 보드게임",
+          "similarity": 0.5066088669160651
+        }
+      ]
+    },
+    {
+      "query": "유아 그림책 활동",
+      "expectedTaxonomy": {
+        "topics": "READING_WRITING",
+        "targetAgeGroups": "INFANT"
+      },
+      "profileRelevantRank": 1,
+      "chunkTitleSignalRank": 1,
+      "outcome": "EQUAL",
+      "attachmentBiasInChunkTop5": 3,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "c2c17479-6d13-4d83-8fd8-29812884ee50",
+          "title": "[유아/금정북파크] 클레이로 만나는 그림책 이야기",
+          "similarity": 0.6457663774490402,
+          "chunkType": "SESSIONS"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "43727bca-99ab-46f3-8d19-8ab0ffe4d83a",
+          "title": "[미리내] 생각 쑥쑥 그림책",
+          "similarity": 0.6045761815471336,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "0104706d-6567-41ee-968a-fa36201c0974",
+          "title": "[금샘마을] 그림책 독서논술",
+          "similarity": 0.5855501541167416,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "04cc3292-a71c-47b2-834f-a90bd121bef1",
+          "title": "[어린이/아이꿈자람] 들락날락 영어랑 놀자 (유아반) 2기",
+          "similarity": 0.5834511940642859,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "ecd157f7-4ee7-4599-8dae-86560610aec7",
+          "title": "[아이꿈자람] 그림책 놀이터",
+          "similarity": 0.576105679505726,
+          "chunkType": "CORE"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "c2c17479-6d13-4d83-8fd8-29812884ee50",
+          "title": "[유아/금정북파크] 클레이로 만나는 그림책 이야기",
+          "similarity": 0.6225448390167098
+        },
+        {
+          "rank": 2,
+          "programCaseId": "f6904787-b70c-4bfe-9964-d954f115df04",
+          "title": "[어린이/섯골] 그림책이랑 미술이랑 연극놀이",
+          "similarity": 0.5930295385107773
+        },
+        {
+          "rank": 3,
+          "programCaseId": "5ace1761-470d-4629-b5e7-62866e21fa08",
+          "title": "[아이꿈자람] I Love story",
+          "similarity": 0.5711556570624334
+        },
+        {
+          "rank": 4,
+          "programCaseId": "1d61aa19-329d-442e-93ed-0c378027c43a",
+          "title": "[방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자",
+          "similarity": 0.5675616534540052
+        },
+        {
+          "rank": 5,
+          "programCaseId": "9a6c3861-a236-4367-b2c0-38097722c2b1",
+          "title": "[아이꿈자람] 큐! 감성자극놀이",
+          "similarity": 0.5667885298303159
+        }
+      ]
+    },
+    {
+      "query": "성인 대상 디지털 교육",
+      "expectedTaxonomy": {
+        "topics": "DIGITAL",
+        "targetAgeGroups": "ADULT"
+      },
+      "profileRelevantRank": 1,
+      "chunkTitleSignalRank": 1,
+      "outcome": "EQUAL",
+      "attachmentBiasInChunkTop5": 1,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "41a9dfbf-f4f3-40c9-a58f-792b26c23162",
+          "title": "[성인/게이트웨이(사립)] 디지털로 그리는 나의 하루, 스마트 라이프 교실",
+          "similarity": 0.6285483394322812,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "14941efb-ec89-4521-a35b-1d428ff0cc94",
+          "title": "[성인/지혜의샘] 평생독자로 성장하기",
+          "similarity": 0.5731313995460096,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "bbb55504-7ea2-41a6-8f33-81ecca162415",
+          "title": "[성인/북뱅크]삶의 지혜를 발견하는 어른이 읽는 그림책",
+          "similarity": 0.5710802248442243,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "72454ab4-1084-4e9f-b79f-488800256bee",
+          "title": "[어린이/부곡1동] 나도 일러스트 작가! 디지털드로잉",
+          "similarity": 0.566610822086565,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "a5772760-6047-4468-b416-696335d71e0d",
+          "title": "[성인/금정북뱅크] 하루30분, 블로그로 파이프라인 만들기",
+          "similarity": 0.5659539868221878,
+          "chunkType": "CORE"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "46b74048-fcb4-47ec-84f1-7746ae4c1f69",
+          "title": "[성인/우지(사립)] 모바일로 쉽게 시작하는 네이버블로그 운영 8주 완성",
+          "similarity": 0.5699191734217129
+        },
+        {
+          "rank": 2,
+          "programCaseId": "e26b69c1-93a9-434c-9936-71ce563a7ef6",
+          "title": "[머드레] 삼국지로 배우는 한자",
+          "similarity": 0.5667548885695312
+        },
+        {
+          "rank": 3,
+          "programCaseId": "2a38d135-591f-4b39-bcbd-f348c11e60b8",
+          "title": "[초등/구서2동어린이] Cool Summer! Cool English!",
+          "similarity": 0.55506110455634
+        },
+        {
+          "rank": 4,
+          "programCaseId": "9c00ac76-7ebb-42f5-a59e-d8c3f77fd44b",
+          "title": "[사립 금샘마을] 스마트폰 기초 활용",
+          "similarity": 0.5410598169801798
+        },
+        {
+          "rank": 5,
+          "programCaseId": "30741b86-b683-4aee-bbd7-aeae563a6983",
+          "title": "[성인/위드맘 블루밍(사립)] 아침을 깨우는 싱잉볼 명상",
+          "similarity": 0.5325446799445364
+        }
+      ]
+    },
+    {
+      "query": "부모와 아이가 함께하는 공예",
+      "expectedTaxonomy": {
+        "topics": "ART_CRAFT",
+        "targetAgeGroups": "FAMILY"
+      },
+      "profileRelevantRank": null,
+      "chunkTitleSignalRank": null,
+      "outcome": "INDETERMINATE",
+      "attachmentBiasInChunkTop5": 5,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "7050bdaa-2fd1-416c-8e33-ce44d73be511",
+          "title": "[아이꿈자람] 풍선아트 체험 13:00 ~ 13:20(20분)",
+          "similarity": 0.5499699279656988,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "a4cbbaa3-2849-454a-b192-c70096d22ae3",
+          "title": "[아이꿈자람] 풍선아트 체험 14:40 ~ 15:00(20분)",
+          "similarity": 0.5497382178668577,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "99068bd9-8518-4b80-87df-99cbc12573cd",
+          "title": "[아이꿈자람] 풍선아트 체험 16:40 ~ 17:00(20분)",
+          "similarity": 0.5496142074350779,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "e9b5b406-6a56-4561-9383-c80231580d6a",
+          "title": "[아이꿈자람] 풍선아트 체험 13:40 ~ 14:00(20분)",
+          "similarity": 0.5496003136396189,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "7148f37d-e963-4ed9-9345-0f5762bbd54c",
+          "title": "[아이꿈자람] 풍선아트 체험 15:00 ~ 15:20(20분)",
+          "similarity": 0.5495242640234314,
+          "chunkType": "ATTACHMENT"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "9224fbaa-35f7-45bd-b851-6e82f2d95918",
+          "title": "[어린이/구서2동어린이] 동시와 함께 감성자극 놀이터",
+          "similarity": 0.5471457474759864
+        },
+        {
+          "rank": 2,
+          "programCaseId": "5ace1761-470d-4629-b5e7-62866e21fa08",
+          "title": "[아이꿈자람] I Love story",
+          "similarity": 0.5274298097840129
+        },
+        {
+          "rank": 3,
+          "programCaseId": "9a6c3861-a236-4367-b2c0-38097722c2b1",
+          "title": "[아이꿈자람] 큐! 감성자극놀이",
+          "similarity": 0.525554263046632
+        },
+        {
+          "rank": 4,
+          "programCaseId": "c2c17479-6d13-4d83-8fd8-29812884ee50",
+          "title": "[유아/금정북파크] 클레이로 만나는 그림책 이야기",
+          "similarity": 0.5246335438072318
+        },
+        {
+          "rank": 5,
+          "programCaseId": "f6904787-b70c-4bfe-9964-d954f115df04",
+          "title": "[어린이/섯골] 그림책이랑 미술이랑 연극놀이",
+          "similarity": 0.5232138238217671
+        }
+      ]
+    },
+    {
+      "query": "어르신 건강 프로그램",
+      "expectedTaxonomy": {
+        "topics": "HEALTH",
+        "targetAgeGroups": "SENIOR"
+      },
+      "profileRelevantRank": null,
+      "chunkTitleSignalRank": null,
+      "outcome": "INDETERMINATE",
+      "attachmentBiasInChunkTop5": 0,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "03bafacf-b661-4496-bc41-b97ac8381df4",
+          "title": "박민수 원장의 「생체 나이 10년 젊게」 강연",
+          "similarity": 0.5795783149944742,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "abbed79d-2044-40f7-b0b0-346464804a36",
+          "title": "[성인/구서sk뷰 1단지] 누구나 쉽게 따라하는 스마트폰",
+          "similarity": 0.526566414441681,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "59b5f7c0-0d9b-488a-a0a7-53477a8a13fc",
+          "title": "[금정북파크] 신나는 스마트폰 교실",
+          "similarity": 0.5184407388699277,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "9c00ac76-7ebb-42f5-a59e-d8c3f77fd44b",
+          "title": "[사립 금샘마을] 스마트폰 기초 활용",
+          "similarity": 0.5009583533381443,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "382160d5-245f-441a-980a-c640c56f9ebc",
+          "title": "[성인/우지] 아침의 클래식 산책",
+          "similarity": 0.49724191427230835,
+          "chunkType": "CORE"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "30741b86-b683-4aee-bbd7-aeae563a6983",
+          "title": "[성인/위드맘 블루밍(사립)] 아침을 깨우는 싱잉볼 명상",
+          "similarity": 0.5065581270879035
+        },
+        {
+          "rank": 2,
+          "programCaseId": "9c00ac76-7ebb-42f5-a59e-d8c3f77fd44b",
+          "title": "[사립 금샘마을] 스마트폰 기초 활용",
+          "similarity": 0.49925468695017716
+        },
+        {
+          "rank": 3,
+          "programCaseId": "6a390f7a-6a7f-4226-95ee-9bd945ca6ad7",
+          "title": "[12/2 아이꿈자람] 초록마술사 <가족사랑 스토리텔링매직쇼> 공연",
+          "similarity": 0.48642252503699956
+        },
+        {
+          "rank": 4,
+          "programCaseId": "0f303a92-177e-4499-b624-b4a9671638a7",
+          "title": "[은빛사랑채] 한자를 알면 세상이 보인다!(풍수지리 익히기 등)",
+          "similarity": 0.47726630098366996
+        },
+        {
+          "rank": 5,
+          "programCaseId": "787a228f-77bf-45cd-a880-9fc66912c92a",
+          "title": "[북파크] 빅마마 선생님과 함께하는 도서관 놀이터(1~7차시)",
+          "similarity": 0.4727745398468752
+        }
+      ]
+    },
+    {
+      "query": "여러 회차로 진행되는 글쓰기 수업",
+      "expectedTaxonomy": {
+        "topics": "READING_WRITING",
+        "operationTypes": "MULTI_SESSION"
+      },
+      "profileRelevantRank": 1,
+      "chunkTitleSignalRank": null,
+      "outcome": "IMPROVED",
+      "attachmentBiasInChunkTop5": 4,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "8804ba7d-5fbd-4b04-a63a-711ba4681554",
+          "title": "[비대면-금정북파크] 어린이를 위한 슬기로운 글쓰기 생활",
+          "similarity": 0.6173534761281905,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "7b1e6f7a-14f0-418c-adac-f589eae22667",
+          "title": "[아이꿈자람] 문학과 놀아보는 글쓰기 수업",
+          "similarity": 0.6107969648120989,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "643df2b3-479d-438b-9579-cd8c978b5cac",
+          "title": "[비대면-아이꿈자람] 미리 써보는 오감만족 글쓰기",
+          "similarity": 0.6010811091113762,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "cd224f35-ed08-4990-ad3b-8d4784f16a92",
+          "title": "[미리내] 자녀 독서지도",
+          "similarity": 0.5853159427642863,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "e26b69c1-93a9-434c-9936-71ce563a7ef6",
+          "title": "[머드레] 삼국지로 배우는 한자",
+          "similarity": 0.582876684669759,
+          "chunkType": "ATTACHMENT"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "2a38d135-591f-4b39-bcbd-f348c11e60b8",
+          "title": "[초등/구서2동어린이] Cool Summer! Cool English!",
+          "similarity": 0.5817395754816445
+        },
+        {
+          "rank": 2,
+          "programCaseId": "e26b69c1-93a9-434c-9936-71ce563a7ef6",
+          "title": "[머드레] 삼국지로 배우는 한자",
+          "similarity": 0.5686621523138881
+        },
+        {
+          "rank": 3,
+          "programCaseId": "46b74048-fcb4-47ec-84f1-7746ae4c1f69",
+          "title": "[성인/우지(사립)] 모바일로 쉽게 시작하는 네이버블로그 운영 8주 완성",
+          "similarity": 0.5666478352083716
+        },
+        {
+          "rank": 4,
+          "programCaseId": "4274b332-a5ec-48dc-bf00-238d4091572c",
+          "title": "[여름나기] 「내마음ㅅㅅㅎ」 김지영 작가와의 만남",
+          "similarity": 0.5474341590631298
+        },
+        {
+          "rank": 5,
+          "programCaseId": "5ace1761-470d-4629-b5e7-62866e21fa08",
+          "title": "[아이꿈자람] I Love story",
+          "similarity": 0.5450479722769759
+        }
+      ]
+    },
+    {
+      "query": "지역 주민이 참여하는 공동체 활동",
+      "expectedTaxonomy": {
+        "topics": "COMMUNITY"
+      },
+      "profileRelevantRank": 1,
+      "chunkTitleSignalRank": 3,
+      "outcome": "IMPROVED",
+      "attachmentBiasInChunkTop5": 1,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "95756897-676f-4e06-b029-679135624716",
+          "title": "[초등/부곡1동] 똑똑한 지구인 프로젝트(1.5℃를 지키는 아이들)",
+          "similarity": 0.4768736674264944,
+          "chunkType": "SESSIONS"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "c2c17479-6d13-4d83-8fd8-29812884ee50",
+          "title": "[유아/금정북파크] 클레이로 만나는 그림책 이야기",
+          "similarity": 0.47603979849578915,
+          "chunkType": "SESSIONS"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "815c7175-25da-4fda-9ff1-ea9ddc9c01c5",
+          "title": "[금정북파크] 샌드아트 공연",
+          "similarity": 0.46848455634989405,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "2251848f-32d7-4041-bf76-37e66ea34cde",
+          "title": "[5월행사/북파크] 온가족이 즐기는 인형극 <똥돼지 왕방구>",
+          "similarity": 0.45925895991150667,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "0ec9475b-b365-4d31-baf0-550746791ca3",
+          "title": "[스포원-체험부스] 마스크 스트랩 만들기(토요일 15:00~16:00)",
+          "similarity": 0.45453072678310225,
+          "chunkType": "ATTACHMENT"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "9497a9c4-0972-40e7-961e-c1ce0af2a4ae",
+          "title": "[방학특강/책마을보드랑] 창의융합: 수학과학보드게임",
+          "similarity": 0.5283950469639032
+        },
+        {
+          "rank": 2,
+          "programCaseId": "2251848f-32d7-4041-bf76-37e66ea34cde",
+          "title": "[5월행사/북파크] 온가족이 즐기는 인형극 <똥돼지 왕방구>",
+          "similarity": 0.5191034127007126
+        },
+        {
+          "rank": 3,
+          "programCaseId": "9c00ac76-7ebb-42f5-a59e-d8c3f77fd44b",
+          "title": "[사립 금샘마을] 스마트폰 기초 활용",
+          "similarity": 0.5078485994650919
+        },
+        {
+          "rank": 4,
+          "programCaseId": "6a390f7a-6a7f-4226-95ee-9bd945ca6ad7",
+          "title": "[12/2 아이꿈자람] 초록마술사 <가족사랑 스토리텔링매직쇼> 공연",
+          "similarity": 0.5045863931180895
+        },
+        {
+          "rank": 5,
+          "programCaseId": "0f303a92-177e-4499-b624-b4a9671638a7",
+          "title": "[은빛사랑채] 한자를 알면 세상이 보인다!(풍수지리 익히기 등)",
+          "similarity": 0.5031927379918085
+        }
+      ]
+    },
+    {
+      "query": "영어를 활용한 어린이 프로그램",
+      "expectedTaxonomy": {
+        "topics": "LANGUAGE",
+        "targetAgeGroups": "CHILD"
+      },
+      "profileRelevantRank": 1,
+      "chunkTitleSignalRank": 3,
+      "outcome": "IMPROVED",
+      "attachmentBiasInChunkTop5": 4,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "c22a7dbd-a864-499c-b163-4ec1d0e907a1",
+          "title": "[어린이/아이꿈] 원어민 선생님과 Joyful English",
+          "similarity": 0.649165253366078,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "2a38d135-591f-4b39-bcbd-f348c11e60b8",
+          "title": "[초등/구서2동어린이] Cool Summer! Cool English!",
+          "similarity": 0.6485972001730564,
+          "chunkType": "SESSIONS"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "c024386f-838d-4cac-992b-7887846b8678",
+          "title": "[어린이/아이꿈자람] 들락날락 영어랑 놀자 (유아반)",
+          "similarity": 0.6404068707813655,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "af6246e1-ee68-49b1-93fe-49217d42b33b",
+          "title": "[어린이/아이꿈자람] 들락날락 영어랑 놀자 (초등반)",
+          "similarity": 0.6340182016497318,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "dac90a63-290d-4ba6-bf75-c934a5a40f7a",
+          "title": "[어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(초등반)",
+          "similarity": 0.6337032725303415,
+          "chunkType": "ATTACHMENT"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "2f260ab3-cb87-4745-a86d-86a97ff58aef",
+          "title": "[어린이/금정북파크] ORT와 함께하는 차근차근 영어",
+          "similarity": 0.6671562235929275
+        },
+        {
+          "rank": 2,
+          "programCaseId": "2a38d135-591f-4b39-bcbd-f348c11e60b8",
+          "title": "[초등/구서2동어린이] Cool Summer! Cool English!",
+          "similarity": 0.6568599448066891
+        },
+        {
+          "rank": 3,
+          "programCaseId": "f6904787-b70c-4bfe-9964-d954f115df04",
+          "title": "[어린이/섯골] 그림책이랑 미술이랑 연극놀이",
+          "similarity": 0.6277870710714157
+        },
+        {
+          "rank": 4,
+          "programCaseId": "1d61aa19-329d-442e-93ed-0c378027c43a",
+          "title": "[방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자",
+          "similarity": 0.6173263782292431
+        },
+        {
+          "rank": 5,
+          "programCaseId": "c2c17479-6d13-4d83-8fd8-29812884ee50",
+          "title": "[유아/금정북파크] 클레이로 만나는 그림책 이야기",
+          "similarity": 0.6155277843069562
+        }
+      ]
+    },
+    {
+      "query": "과학 체험과 만들기가 포함된 프로그램",
+      "expectedTaxonomy": {
+        "topics": "ENVIRONMENT_SCIENCE",
+        "activityTypes": "CRAFT"
+      },
+      "profileRelevantRank": 2,
+      "chunkTitleSignalRank": null,
+      "outcome": "IMPROVED",
+      "attachmentBiasInChunkTop5": 5,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "5ace1761-470d-4629-b5e7-62866e21fa08",
+          "title": "[아이꿈자람] I Love story",
+          "similarity": 0.6482028188463711,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "58bc5d9e-0ec9-4e96-aa2b-52ea4e401676",
+          "title": "[미리내] 책과 나를 연결하는 하브루타",
+          "similarity": 0.6479580822040982,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "43727bca-99ab-46f3-8d19-8ab0ffe4d83a",
+          "title": "[미리내] 생각 쑥쑥 그림책",
+          "similarity": 0.6437518253918111,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "dab88dcd-36fd-459b-95ce-8da618ed8458",
+          "title": "[아이꿈자람] 어린이 과학탐구교실",
+          "similarity": 0.6435908291583862,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "c6fafbdd-4141-4aa5-82b8-d71f3b61b77b",
+          "title": "[아이꿈자람] 영어로 배우는 사회과학",
+          "similarity": 0.6430781738571706,
+          "chunkType": "ATTACHMENT"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "1d61aa19-329d-442e-93ed-0c378027c43a",
+          "title": "[방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자",
+          "similarity": 0.5808789625912755
+        },
+        {
+          "rank": 2,
+          "programCaseId": "95756897-676f-4e06-b029-679135624716",
+          "title": "[초등/부곡1동] 똑똑한 지구인 프로젝트(1.5℃를 지키는 아이들)",
+          "similarity": 0.5762170879624574
+        },
+        {
+          "rank": 3,
+          "programCaseId": "9497a9c4-0972-40e7-961e-c1ce0af2a4ae",
+          "title": "[방학특강/책마을보드랑] 창의융합: 수학과학보드게임",
+          "similarity": 0.5747813329441251
+        },
+        {
+          "rank": 4,
+          "programCaseId": "ac6aacc6-b651-4111-bb95-6f9e44c8f8f2",
+          "title": "[초등/아이꿈자람] 리틀 브레이닝! 창의융합 사고력 보드게임",
+          "similarity": 0.5714675575457357
+        },
+        {
+          "rank": 5,
+          "programCaseId": "4530158d-f3ef-47a7-be50-f76f7ae2fb07",
+          "title": "[어린이/북파크] 지도로 떠나는 우리나라 지리 여행",
+          "similarity": 0.5696028415759109
+        }
+      ]
+    },
+    {
+      "query": "문화 공연 또는 음악 활동",
+      "expectedTaxonomy": {
+        "topics": "CULTURE",
+        "activityTypes": "PERFORMANCE"
+      },
+      "profileRelevantRank": 1,
+      "chunkTitleSignalRank": 3,
+      "outcome": "IMPROVED",
+      "attachmentBiasInChunkTop5": 4,
+      "chunkTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "dac90a63-290d-4ba6-bf75-c934a5a40f7a",
+          "title": "[어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(초등반)",
+          "similarity": 0.5103404217755552,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 2,
+          "programCaseId": "7619dc94-dc9f-47a6-b3a6-21ae15d8fea3",
+          "title": "[어린이/아이꿈자람] 들락날락 영어랑 놀자 1일 크리스마스 문화체험(유아반)",
+          "similarity": 0.5075297337699716,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 3,
+          "programCaseId": "3671fa6f-c9e4-4812-8740-3e129e622a86",
+          "title": "[여름나기] 클래식 악기로 만나는 애니메이션 콘서트",
+          "similarity": 0.4796815514564514,
+          "chunkType": "ATTACHMENT"
+        },
+        {
+          "rank": 4,
+          "programCaseId": "815c7175-25da-4fda-9ff1-ea9ddc9c01c5",
+          "title": "[금정북파크] 샌드아트 공연",
+          "similarity": 0.47622585438335896,
+          "chunkType": "CORE"
+        },
+        {
+          "rank": 5,
+          "programCaseId": "53481a2a-d135-48a1-97b4-93921cb8889a",
+          "title": "[어린이/아이꿈자람] 들락날락 영어랑 놀자 (초등반) 2기",
+          "similarity": 0.46674141684277193,
+          "chunkType": "ATTACHMENT"
+        }
+      ],
+      "profileTop5": [
+        {
+          "rank": 1,
+          "programCaseId": "f6904787-b70c-4bfe-9964-d954f115df04",
+          "title": "[어린이/섯골] 그림책이랑 미술이랑 연극놀이",
+          "similarity": 0.5278128515175676
+        },
+        {
+          "rank": 2,
+          "programCaseId": "1d61aa19-329d-442e-93ed-0c378027c43a",
+          "title": "[방학특강/북파크] 어서와~ 그림책이랑 연극이랑 같이 놀자",
+          "similarity": 0.5205656098989572
+        },
+        {
+          "rank": 3,
+          "programCaseId": "6a390f7a-6a7f-4226-95ee-9bd945ca6ad7",
+          "title": "[12/2 아이꿈자람] 초록마술사 <가족사랑 스토리텔링매직쇼> 공연",
+          "similarity": 0.5180763013293249
+        },
+        {
+          "rank": 4,
+          "programCaseId": "3097bece-27e6-4fb3-9630-68d4c28c5a8a",
+          "title": "부산대학교와 함께하는 「제9기 금정시민인문아카데미」: 도서관에서 만나는 인문학",
+          "similarity": 0.47902504945237506
+        },
+        {
+          "rank": 5,
+          "programCaseId": "4274b332-a5ec-48dc-bf00-238d4091572c",
+          "title": "[여름나기] 「내마음ㅅㅅㅎ」 김지영 작가와의 만남",
+          "similarity": 0.47765363886702833
+        }
+      ]
+    }
+  ]
+}
