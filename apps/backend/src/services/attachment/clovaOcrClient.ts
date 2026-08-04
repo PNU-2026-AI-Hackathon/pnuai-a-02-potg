@@ -126,6 +126,30 @@ async function fetchWithTimeout(fetchImplementation: ClovaOcrFetch, config: Clov
   }
 }
 
+export async function requestClovaOcrResponse(input: {
+  filePath: string;
+  format: OcrImageFormat;
+  signal?: AbortSignal;
+}, config: ClovaOcrConfig, dependencies: ClovaOcrClientDependencies = {}) {
+  validateClovaOcrExecutionConfig(config);
+  const body = await buildClovaOcrMultipart({
+    filePath: input.filePath,
+    format: input.format,
+    requestId: (dependencies.randomUuid ?? crypto.randomUUID)(),
+    timestamp: (dependencies.now ?? Date.now)(),
+  });
+  const pending = await fetchWithTimeout(dependencies.fetchImplementation ?? fetch, config, body, input.signal, 1);
+  try {
+    if (!pending.response.ok) {
+      await pending.response.body?.cancel().catch(() => undefined);
+      throw httpError(pending.response.status, 1);
+    }
+    return await readJsonResponse(pending.response, config.responseMaxBytes, 1, pending.timedOut);
+  } finally {
+    pending.cleanup();
+  }
+}
+
 export function createClovaOcrEngine(config: ClovaOcrConfig, dependencies: ClovaOcrClientDependencies = {}): OcrEngine {
   const fetchImplementation = dependencies.fetchImplementation || fetch;
   const sleep = dependencies.sleep || ((milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds)));
