@@ -11,7 +11,8 @@ CHUNK_TYPES = frozenset({"CORE", "SESSIONS", "ATTACHMENT"})
 class SearchRepositoryProtocol(Protocol):
     def search(
         self, vector: list[float], metadata: EmbeddingMetadata, *,
-        limit: int, threshold: float | None = None, chunk_type: str | None = None
+        limit: int, threshold: float | None = None, chunk_type: str | None = None,
+        target: str | None = None,
     ) -> list[SearchResult]: ...
 
 
@@ -21,7 +22,8 @@ class SearchRepository:
 
     def search(
         self, vector: list[float], metadata: EmbeddingMetadata, *,
-        limit: int, threshold: float | None = None, chunk_type: str | None = None
+        limit: int, threshold: float | None = None, chunk_type: str | None = None,
+        target: str | None = None,
     ) -> list[SearchResult]:
         checked = validate_vector(vector, metadata.dimension)
         if chunk_type is not None and chunk_type not in CHUNK_TYPES:
@@ -68,13 +70,15 @@ WHERE e."status" = 'COMPLETED'
        OR (1 - (e."embedding" <=> q.value)) >= %s::double precision)
   AND (%s::"ProgramCaseDocumentChunkType" IS NULL
        OR c."chunkType" = %s::"ProgramCaseDocumentChunkType")
+  AND (%s::text IS NULL
+       OR POSITION(lower(%s::text) IN lower(p."targetAudience")) > 0)
 ORDER BY e."embedding" <=> q.value ASC, c."id" ASC
 LIMIT %s
 """
         params = (
             query_vector, metadata.provider, metadata.model, metadata.model_revision,
             metadata.embedding_version, metadata.dimension, threshold, threshold,
-            chunk_type, chunk_type, limit,
+            chunk_type, chunk_type, target, target, limit,
         )
         with self.connection.cursor() as cursor:
             cursor.execute(statement, params)

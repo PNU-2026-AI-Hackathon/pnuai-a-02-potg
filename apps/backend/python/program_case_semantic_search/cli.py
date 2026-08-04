@@ -65,6 +65,7 @@ def build_parser() -> argparse.ArgumentParser:
     search.add_argument("--limit", type=int, default=5)
     search.add_argument("--threshold", type=float)
     search.add_argument("--chunk-type", choices=sorted(CHUNK_TYPES))
+    search.add_argument("--target")
     search.add_argument("--json", action="store_true")
     search.add_argument("--debug", action="store_true")
     diagnose = subcommands.add_parser("diagnose")
@@ -129,9 +130,7 @@ def _print_search(
                 "programTitle": result.program_title,
                 "similarity": result.similarity,
                 "chunkType": result.chunk_type,
-                "sourceLabel": result.source_label,
                 "programCaseId": result.program_case_id,
-                "programCaseDocumentId": result.program_case_document_id,
                 "chunkId": result.chunk_id,
             }
             for result in response.results
@@ -141,6 +140,16 @@ def _print_search(
             "embeddingVersion": EMBEDDING_VERSION,
             "dimension": MODEL_DIMENSION, "elapsedSeconds": response.elapsed_seconds,
             "limit": limit, "threshold": threshold,
+            "dedupeApplied": True,
+            "candidateLimit": response.candidate_limit,
+            "filters": {
+                "target": response.target_filter,
+                "chunkType": response.chunk_type_filter,
+            },
+            "rawChunkCandidates": response.raw_chunk_candidates,
+            "uniquePrograms": response.unique_programs,
+            "duplicatesRemoved": response.duplicates_removed,
+            "returnedResults": len(response.results),
             "results": safe_results,
         }, ensure_ascii=False, indent=2))
         return
@@ -151,12 +160,19 @@ def _print_search(
     print(f"Limit: {limit}")
     if threshold is not None:
         print(f"Threshold: {threshold}")
+    print("Dedupe applied: yes")
+    print(f"Target filter: {response.target_filter or '-'}")
+    print(f"Chunk type filter: {response.chunk_type_filter or '-'}")
+    print(f"RAW_CHUNK_CANDIDATES: {response.raw_chunk_candidates}")
+    print(f"UNIQUE_PROGRAMS: {response.unique_programs}")
+    print(f"DUPLICATES_REMOVED: {response.duplicates_removed}")
+    print(f"RETURNED_RESULTS: {len(response.results)}")
     print(f"Elapsed time: {response.elapsed_seconds:.3f}s")
     print("Results:")
     for result in response.results:
         print(
             f"{result.rank}. {result.program_title} | similarity={result.similarity:.6f} | "
-            f"chunk_type={result.chunk_type} | source={result.source_label or '-'} | "
+            f"chunk_type={result.chunk_type} | "
             f"program_case_id={result.program_case_id} | chunk_id={result.chunk_id}"
         )
 
@@ -254,7 +270,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 SearchRepository(connection), provider, metadata()
             ).search(
                 args.query, limit=args.limit, threshold=args.threshold,
-                chunk_type=args.chunk_type
+                chunk_type=args.chunk_type, target=args.target,
             )
         _print_search(
             response, json_output=args.json, limit=args.limit,
