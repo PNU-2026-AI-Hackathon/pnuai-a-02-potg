@@ -129,6 +129,8 @@ function failureSnapshot(attachment: ProgramCaseAttachment, status: SnapshotStat
     sourceSha256: attachment.checksumSha256,
     downloadedSha256: null,
     binarySnapshotRef: null,
+    httpSucceeded: false,
+    nonEmptyResponse: false,
     byteSize: null,
     declaredType: attachment.fileType,
     detectedType: null,
@@ -162,7 +164,14 @@ async function reusableSnapshot(
   if (prior.sourceSha256 !== attachment.checksumSha256) return null;
   const binaryPath = path.join(outputDirectory, ...prior.binarySnapshotRef.split('/'));
   if (!(await exists(binaryPath)) || await fileHash(binaryPath) !== attachment.checksumSha256) return null;
-  return { ...prior, snapshotStatus: 'VERIFIED' as const, failureCode: null, unresolvedReasons: [] };
+  return {
+    ...prior,
+    httpSucceeded: true,
+    nonEmptyResponse: true,
+    snapshotStatus: 'VERIFIED' as const,
+    failureCode: null,
+    unresolvedReasons: [],
+  };
 }
 
 async function snapshotOne(
@@ -181,6 +190,8 @@ async function snapshotOne(
     if (downloaded.checksumSha256 !== attachment.checksumSha256) {
       const result = failureSnapshot(attachment, 'HASH_MISMATCH', 'SOURCE_SHA256_MISMATCH');
       result.downloadedSha256 = downloaded.checksumSha256;
+      result.httpSucceeded = true;
+      result.nonEmptyResponse = true;
       result.byteSize = downloaded.byteSize;
       result.mimeType = downloaded.responseContentType;
       return result;
@@ -223,6 +234,8 @@ async function snapshotOne(
       sourceSha256: attachment.checksumSha256,
       downloadedSha256: downloaded.checksumSha256,
       binarySnapshotRef,
+      httpSucceeded: true,
+      nonEmptyResponse: true,
       byteSize: downloaded.byteSize,
       declaredType: attachment.fileType,
       detectedType: detection.detectedFileType,
@@ -288,6 +301,7 @@ function unresolvedCounts(records: ProgramCaseSourceRecord[]) {
 
 function reportFor(manifest: SnapshotManifest | null, records: ProgramCaseSourceRecord[], correspondence: ReturnType<typeof validateSourceCorrespondence>): ValidationReport {
   const snapshots = manifest?.attachmentSnapshots ?? records.flatMap((record) => record.attachments.map((attachment) => attachment.snapshot));
+  const attachmentSources = records.flatMap((record) => record.attachments);
   const counts: Record<string, number> = {
     programCases: records.length,
     attachments: snapshots.length,
@@ -295,9 +309,18 @@ function reportFor(manifest: SnapshotManifest | null, records: ProgramCaseSource
     jsonUrlsMatched: correspondence.attachmentCount - correspondence.dbUrlsMissingFromCrawler,
     attachmentsWithSourceSha256: correspondence.attachmentsWithSourceSha256,
     verifiedSnapshots: snapshots.filter((item) => item.snapshotStatus === 'VERIFIED').length,
-    failedSnapshots: snapshots.filter((item) => item.snapshotStatus !== 'VERIFIED').length,
+    plannedSnapshots: snapshots.filter((item) => item.snapshotStatus === 'NOT_BUILT').length,
+    failedSnapshots: snapshots.filter((item) => item.snapshotStatus !== 'VERIFIED' && item.snapshotStatus !== 'NOT_BUILT').length,
     hashMatches: snapshots.filter((item) => item.downloadedSha256 && item.downloadedSha256 === item.sourceSha256).length,
     hashMismatches: snapshots.filter((item) => item.snapshotStatus === 'HASH_MISMATCH').length,
+    httpSuccessful: snapshots.filter((item) => item.httpSucceeded).length,
+    nonEmptyResponses: snapshots.filter((item) => item.nonEmptyResponse).length,
+    dbByteSizeMatches: attachmentSources.filter((item) => item.dbByteSize !== null && item.snapshot.byteSize === item.dbByteSize).length,
+    dbByteSizeMismatches: attachmentSources.filter((item) => item.dbByteSize !== null && item.snapshot.byteSize !== item.dbByteSize).length,
+    dbDetectedTypeMatches: attachmentSources.filter((item) => item.dbDetectedType !== null && item.snapshot.detectedType === item.dbDetectedType).length,
+    dbDetectedTypeMismatches: attachmentSources.filter((item) => item.dbDetectedType !== null && item.snapshot.detectedType !== item.dbDetectedType).length,
+    dbMimeTypeMatches: attachmentSources.filter((item) => item.dbMimeType !== null && item.snapshot.mimeType === item.dbMimeType).length,
+    dbMimeTypeMismatches: attachmentSources.filter((item) => item.dbMimeType !== null && item.snapshot.mimeType !== item.dbMimeType).length,
     uniqueVerifiedBinaries: new Set(snapshots.filter((item) => item.snapshotStatus === 'VERIFIED').map((item) => item.downloadedSha256)).size,
     sharedHashGroups: new Set(snapshots.filter((item) => item.snapshotStatus === 'VERIFIED' && item.linkedAttachmentIds.length > 1).map((item) => item.downloadedSha256)).size,
     missingSnapshotReferences: snapshots.filter((item) => item.snapshotStatus === 'VERIFIED' && !item.binarySnapshotRef).length,
@@ -307,11 +330,13 @@ function reportFor(manifest: SnapshotManifest | null, records: ProgramCaseSource
     crawlerUrlsMissingFromDb: correspondence.crawlerUrlsMissingFromDb,
   };
   const failures = snapshots
-    .filter((snapshot) => snapshot.snapshotStatus !== 'VERIFIED')
+    .filter((snapshot) => snapshot.snapshotStatus !== 'VERIFIED' && snapshot.snapshotStatus !== 'NOT_BUILT')
     .map((snapshot) => ({ attachmentId: snapshot.attachmentId, status: snapshot.snapshotStatus, failureCode: snapshot.failureCode }));
   const valid = counts.programCases === 349 && counts.attachments === 237
     && counts.jsonUrlsMatched === 237 && counts.attachmentsWithSourceSha256 === 237
     && counts.failedSnapshots === 0 && counts.hashMismatches === 0
+    && counts.httpSuccessful === 237 && counts.nonEmptyResponses === 237
+    && counts.dbByteSizeMismatches === 0 && counts.dbDetectedTypeMismatches === 0 && counts.dbMimeTypeMismatches === 0
     && counts.missingSnapshotReferences === 0 && counts.missingCrawlerRecords === 0
     && counts.identityMismatches === 0 && counts.dbUrlsMissingFromCrawler === 0
     && counts.crawlerUrlsMissingFromDb === 0;

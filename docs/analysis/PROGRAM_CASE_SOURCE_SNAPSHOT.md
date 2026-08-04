@@ -41,7 +41,38 @@
 
 ## 전수 실행 결과
 
-전수 `--build`와 `--validate` 실행 후 이 절에 실제 결과를 기록한다.
+2026-08-05에 운영 DB `moira`를 read-only transaction으로 조회하고 명시적 `--build`를 실행했다.
+
+| 항목 | 결과 |
+|---|---:|
+| ProgramCase record | 349 |
+| 활성 Attachment | 237 |
+| HTTP 성공 | 237 |
+| 비어 있지 않은 응답 | 237 |
+| 기존 DB SHA-256 일치 | 237 |
+| SHA-256 불일치 | 0 |
+| 다운로드 실패 | 0 |
+| DB byte size 일치 | 237 |
+| DB 탐지 유형 일치 | 237 |
+| DB MIME 일치 | 237 |
+| 고유 검증 binary | 136 |
+| 공유 hash 그룹 | 21 |
+| 누락 snapshot reference | 0 |
+| 생성된 `original.bin` | 136 |
+| binary 총 크기 | 53,337,501 bytes |
+| DB write | 0 |
+
+Dataset snapshot hash:
+
+```text
+16c7135e1620dd07c9be3b57bcbb60865a34dec2ef19c55438f839f0e73a2e9c
+```
+
+독립 `--validate`가 manifest content hash, 349개 record hash와 136개 binary SHA-256을 다시 계산해 같은 dataset hash와 `valid: true`를 반환했다.
+
+동일 source에서 `--build`를 다시 실행했을 때 기존 검증 snapshot을 재사용했으며 dataset hash가 유지됐다. `generatedAt`과 `downloadedAt`은 변경될 수 있지만 content hash 영역에는 포함되지 않는다.
+
+`git check-ignore`로 `.local/program-case-search-v2/sources/manifest.json`이 제외되는 것을 확인했다. 생성된 binary와 JSONL은 Git 변경 목록에 나타나지 않았다.
 
 ## 해석 주의사항
 

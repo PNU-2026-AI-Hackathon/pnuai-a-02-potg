@@ -95,6 +95,8 @@ export type VerifiedBinarySnapshot = {
   sourceSha256: string | null;
   downloadedSha256: string | null;
   binarySnapshotRef: string | null;
+  httpSucceeded: boolean;
+  nonEmptyResponse: boolean;
   byteSize: number | null;
   declaredType: string | null;
   detectedType: string | null;

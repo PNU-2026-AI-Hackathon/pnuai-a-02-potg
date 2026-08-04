@@ -54,6 +54,8 @@ function notBuiltSnapshot(attachment: ProgramCaseAttachment): VerifiedBinarySnap
     sourceSha256: attachment.checksumSha256,
     downloadedSha256: null,
     binarySnapshotRef: null,
+    httpSucceeded: false,
+    nonEmptyResponse: false,
     byteSize: null,
     declaredType: attachment.fileType,
     detectedType: null,
