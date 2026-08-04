@@ -10755,6 +10755,17 @@ html:has(.moiraPage) {
   padding: clamp(24px, 5vw, 58px);
 }
 
+.studioDocumentWorkspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.studioDocumentWorkspace.hasAiPanel {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+}
+
 .studioDocumentTitleField,
 .studioDocumentBodyField {
   display: grid;
@@ -10762,10 +10773,45 @@ html:has(.moiraPage) {
 }
 
 .studioDocumentTitleField > span,
-.studioDocumentBodyField > span {
+.studioDocumentBodyHeader > span {
   color: var(--moira-green-dark);
   font-size: 12px;
   font-weight: 850;
+}
+
+.studioDocumentBodyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.studioTextAiButton {
+  min-height: 34px;
+  border: 1px solid var(--moira-green);
+  border-radius: 999px;
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+  padding: 0 13px;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.studioTextAiButton:hover:not(:disabled),
+.studioTextAiButton:focus-visible:not(:disabled) {
+  background: #d1eadf;
+  transform: translateY(-1px);
+}
+
+.studioTextAiButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
 }
 
 .studioDocumentTitleField input {
@@ -10821,6 +10867,182 @@ html:has(.moiraPage) {
 
 .studioDocumentBodyField textarea:focus {
   box-shadow: inset 0 3px 0 rgba(22, 116, 95, 0.12);
+}
+
+.studioAiEditPanel {
+  position: sticky;
+  top: 94px;
+  display: grid;
+  gap: 16px;
+  max-height: calc(100vh - 122px);
+  overflow-y: auto;
+  border: 1px solid #d8e5df;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 22px 48px rgba(33, 70, 61, 0.12);
+  padding: 20px;
+}
+
+.studioAiEditPanelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.studioAiEditPanelHeader h2 {
+  margin: 4px 0 0;
+  color: var(--moira-ink);
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.studioAiEditPanelHeader button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #d8e5df;
+  border-radius: 50%;
+  background: #fff;
+  color: #66766f;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.studioAiSelectedSource {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #dfe8e3;
+  border-radius: 8px;
+  background: #f8fbf9;
+  padding: 14px;
+}
+
+.studioAiSelectedSource strong,
+.studioAiRequestField span {
+  color: var(--moira-green-dark);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.studioAiSelectedSource p {
+  max-height: 180px;
+  overflow-y: auto;
+  margin: 0;
+  color: #33483f;
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.studioAiSelectedSource .studioAiEmptySource {
+  color: #7a8b85;
+}
+
+.studioAiRequestField {
+  display: grid;
+  gap: 10px;
+}
+
+.studioAiRequestField textarea {
+  width: 100%;
+  min-height: 118px;
+  resize: vertical;
+  border: 1px solid #d8e5df;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--moira-ink);
+  outline: none;
+  padding: 13px 14px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.studioAiRequestField textarea:focus {
+  border-color: var(--moira-green);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.1);
+}
+
+.studioAiQuickRequests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.studioAiQuickRequests button {
+  min-height: 32px;
+  border: 1px solid #d8e5df;
+  border-radius: 999px;
+  background: #fff;
+  color: #52635e;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.studioAiQuickRequests button:hover,
+.studioAiQuickRequests button:focus-visible,
+.studioAiQuickRequests button.isSelected {
+  border-color: var(--moira-green);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.studioAiRequestState {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #d8e5df;
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px 13px;
+}
+
+.studioAiRequestState strong {
+  color: var(--moira-ink);
+  font-size: 13px;
+}
+
+.studioAiRequestState span {
+  color: #71817b;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.studioAiRequestState.is-submitting {
+  border-color: #f1c895;
+  background: #fff8ef;
+}
+
+.studioAiRequestState.is-ready {
+  border-color: var(--moira-green);
+  background: #f0faf5;
+}
+
+.studioAiRequestState.is-failed {
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+.studioAiEditActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.studioAiEditActions .uiButton {
+  min-height: 40px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.studioAiEditActions .uiButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
 }
 
 @media (max-width: 980px) {
@@ -10897,6 +11119,16 @@ html:has(.moiraPage) {
 
   .studioDocumentEditor {
     padding: 20px;
+  }
+
+  .studioDocumentWorkspace.hasAiPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .studioAiEditPanel {
+    position: static;
+    max-height: none;
+    margin-bottom: 42px;
   }
 
   .studioDocumentTitleField input {

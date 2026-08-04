@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildStudioDraftContent, studioDraftStorageKey, type StudioDraft } from '@/lib/studio-draft';
 
 type SaveState = 'saved' | 'dirty' | 'saving';
+type AiRequestState = 'idle' | 'submitting' | 'ready' | 'failed';
 
 type StudioDocument = {
   id: string;
@@ -125,6 +126,21 @@ const saveStateLabel: Record<SaveState, string> = {
   saving: '저장 중',
 };
 
+const aiStateLabel: Record<AiRequestState, string> = {
+  idle: '요청 전',
+  submitting: '수정 요청 중',
+  ready: '수정안 준비됨',
+  failed: '요청 실패',
+};
+
+const aiQuickRequests = [
+  '더 공공기관 문서답게 다듬어 주세요.',
+  '초등학생 대상 프로그램에 맞게 쉽게 바꿔 주세요.',
+  '문장을 짧고 명확하게 정리해 주세요.',
+  '운영 내용이 더 구체적으로 보이게 다듬어 주세요.',
+  '홍보 문구처럼 참여하고 싶게 바꿔 주세요.',
+];
+
 type StudioDocumentEditorProps = {
   documentId: string;
 };
@@ -191,9 +207,33 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [content, setContent] = useState(storedDraft?.content || document.content);
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
+  const [selectedText, setSelectedText] = useState('');
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+  const [aiRequest, setAiRequest] = useState('');
+  const [aiRequestState, setAiRequestState] = useState<AiRequestState>('idle');
 
   const hasEmptyTitle = title.trim().length === 0;
   const canSave = saveState === 'dirty' && !hasEmptyTitle;
+  const hasSelectedText = selectedText.trim().length > 0;
+  const canRequestAiEdit = hasSelectedText && aiRequest.trim().length > 0 && aiRequestState !== 'submitting';
+
+  useEffect(() => {
+    if (!isAiPanelOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        closeAiPanel();
+      }
+    }
+
+    globalThis.document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      globalThis.document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAiPanelOpen]);
 
   useEffect(() => {
     const textarea = bodyTextareaRef.current;
@@ -222,6 +262,40 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       setSaveState('saved');
       setLastSavedAt('방금 전');
     }, 450);
+  }
+
+  function updateSelectedText() {
+    const textarea = bodyTextareaRef.current;
+
+    if (!textarea || textarea.selectionStart === textarea.selectionEnd) {
+      setSelectedText('');
+      return;
+    }
+
+    setSelectedText(content.slice(textarea.selectionStart, textarea.selectionEnd));
+  }
+
+  function openAiPanel() {
+    updateSelectedText();
+    setIsAiPanelOpen(true);
+    setAiRequestState('idle');
+  }
+
+  function closeAiPanel() {
+    setIsAiPanelOpen(false);
+    setAiRequest('');
+    setAiRequestState('idle');
+  }
+
+  function handleAiRequest() {
+    if (!canRequestAiEdit) {
+      return;
+    }
+
+    setAiRequestState('submitting');
+    window.setTimeout(() => {
+      setAiRequestState('ready');
+    }, 720);
   }
 
   return (
@@ -296,40 +370,134 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             <button className="uiButton uiButtonPrimary" type="button" disabled={!canSave} onClick={handleSave}>
               저장
             </button>
+            <button className="uiButton uiButtonSecondary" type="button" onClick={openAiPanel}>
+              AI 수정
+            </button>
             <Link className="uiButton uiButtonSecondary" href="/studio">
               새 기획서
             </Link>
           </div>
         </section>
 
-        <section className="studioDocumentEditor" aria-labelledby="studio-document-title-label">
-          <label className="studioDocumentTitleField">
-            <span id="studio-document-title-label">기획서 제목</span>
-            <input
-              aria-invalid={hasEmptyTitle}
-              placeholder="기획서 제목을 입력하세요"
-              value={title}
-              onChange={(event) => {
-                setTitle(event.target.value);
-                markDirty();
-              }}
-            />
-          </label>
-          {hasEmptyTitle ? <p className="studioDocumentError">제목은 비워둘 수 없습니다.</p> : null}
+        <div className={isAiPanelOpen ? 'studioDocumentWorkspace hasAiPanel' : 'studioDocumentWorkspace'}>
+          <section className="studioDocumentEditor" aria-labelledby="studio-document-title-label">
+            <label className="studioDocumentTitleField">
+              <span id="studio-document-title-label">기획서 제목</span>
+              <input
+                aria-invalid={hasEmptyTitle}
+                placeholder="기획서 제목을 입력하세요"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  markDirty();
+                }}
+              />
+            </label>
+            {hasEmptyTitle ? <p className="studioDocumentError">제목은 비워둘 수 없습니다.</p> : null}
 
-          <label className="studioDocumentBodyField">
-            <span>기획서 본문</span>
-            <textarea
-              aria-label="기획서 본문 편집"
-              ref={bodyTextareaRef}
-              value={content}
-              onChange={(event) => {
-                setContent(event.target.value);
-                markDirty();
-              }}
-            />
-          </label>
-        </section>
+            <div className="studioDocumentBodyField">
+              <div className="studioDocumentBodyHeader">
+                <span>기획서 본문</span>
+                <button
+                  className="studioTextAiButton"
+                  type="button"
+                  disabled={!hasSelectedText}
+                  onClick={openAiPanel}
+                >
+                  AI 수정
+                </button>
+              </div>
+              <textarea
+                aria-label="기획서 본문 편집"
+                ref={bodyTextareaRef}
+                value={content}
+                onBlur={updateSelectedText}
+                onKeyUp={updateSelectedText}
+                onMouseUp={updateSelectedText}
+                onSelect={updateSelectedText}
+                onChange={(event) => {
+                  setContent(event.target.value);
+                  markDirty();
+                  window.requestAnimationFrame(updateSelectedText);
+                }}
+              />
+            </div>
+          </section>
+
+          {isAiPanelOpen ? (
+            <aside className="studioAiEditPanel" aria-labelledby="studio-ai-edit-title">
+              <div className="studioAiEditPanelHeader">
+                <div>
+                  <p className="uiEyebrow">SELECTED TEXT AI EDIT</p>
+                  <h2 id="studio-ai-edit-title">AI 수정 요청</h2>
+                </div>
+                <button type="button" aria-label="AI 수정 패널 닫기" onClick={closeAiPanel}>
+                  ×
+                </button>
+              </div>
+
+              <section className="studioAiSelectedSource" aria-label="선택한 원문">
+                <strong>선택한 원문</strong>
+                {hasSelectedText ? (
+                  <p>{selectedText}</p>
+                ) : (
+                  <p className="studioAiEmptySource">수정할 문장을 먼저 선택해 주세요.</p>
+                )}
+              </section>
+
+              <label className="studioAiRequestField">
+                <span>수정 요청</span>
+                <textarea
+                  placeholder="더 공공기관 문서답게 다듬어 주세요."
+                  value={aiRequest}
+                  onChange={(event) => {
+                    setAiRequest(event.target.value);
+                    setAiRequestState('idle');
+                  }}
+                />
+              </label>
+
+              <div className="studioAiQuickRequests" aria-label="빠른 수정 요청">
+                {aiQuickRequests.map((request) => (
+                  <button
+                    className={aiRequest === request ? 'isSelected' : ''}
+                    key={request}
+                    type="button"
+                    onClick={() => {
+                      setAiRequest(request);
+                      setAiRequestState('idle');
+                    }}
+                  >
+                    {request.replace(' 주세요.', '')}
+                  </button>
+                ))}
+              </div>
+
+              <div className={`studioAiRequestState is-${aiRequestState}`} aria-live="polite">
+                <strong>{aiStateLabel[aiRequestState]}</strong>
+                <span>
+                  {aiRequestState === 'ready'
+                    ? '후속 이슈에서 수정안 비교 화면으로 연결됩니다.'
+                    : '이번 단계에서는 실제 문서 내용이 변경되지 않습니다.'}
+                </span>
+              </div>
+
+              <div className="studioAiEditActions">
+                <button className="uiButton uiButtonSecondary" type="button" onClick={closeAiPanel}>
+                  취소
+                </button>
+                <button
+                  className="uiButton uiButtonPrimary"
+                  type="button"
+                  disabled={!canRequestAiEdit}
+                  onClick={handleAiRequest}
+                >
+                  {aiRequestState === 'submitting' ? '요청 중' : '수정 요청'}
+                </button>
+              </div>
+            </aside>
+          ) : null}
+        </div>
       </main>
     </div>
   );
