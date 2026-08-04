@@ -35,7 +35,10 @@ export async function searchProgramCases(
       env: {
         ...process.env,
         KURE_MODEL_CACHE_DIR: process.env.KURE_MODEL_CACHE_DIR || modelCacheDirectory,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUTF8: '1',
       },
+      encoding: 'utf8',
       maxBuffer: 1024 * 1024,
     },
   );
