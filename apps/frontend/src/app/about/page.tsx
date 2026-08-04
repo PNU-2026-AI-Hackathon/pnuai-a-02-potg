@@ -49,26 +49,31 @@ const valueItems = [
   },
 ];
 
-const flowSteps = [
+const serviceSteps = [
   {
-    icon: '📌',
-    title: '지역 주민이 지역 의제를 제안',
+    number: '01',
+    title: '주민 아이디어',
+    description: '주민이 필요한 프로그램이나 지역 이야기를 제안합니다.',
   },
   {
-    icon: '💡',
-    title: '사서가 모이라 스튜디오에서 AI 기획안 생성',
+    number: '02',
+    title: '지역 의제 도출',
+    description: 'AI가 주민 의견을 분류해 지역 의제를 도출합니다.',
   },
   {
-    icon: '📊',
-    title: '주민 대상 수요조사 진행',
+    number: '03',
+    title: 'MOIRA Studio',
+    description: '사서가 AI 기획안을 검토하고 보완합니다.',
   },
   {
-    icon: '📚',
-    title: '실제 프로그램 개설 및 운영',
+    number: '04',
+    title: '주민 수요조사',
+    description: '기획안을 공개해 주민 참여 의향을 확인합니다.',
   },
   {
-    icon: '🤝',
-    title: '지역사회 참여 확대',
+    number: '05',
+    title: '프로그램 운영',
+    description: '확정된 프로그램을 실제 도서관 운영으로 연결합니다.',
   },
 ];
 
@@ -205,32 +210,6 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="homeSection whySection" id="why-moira">
-        <div className="uiContainer">
-          <SectionHeading
-            eyebrow="WHY MOIRA"
-            title="작은도서관이 지금 더 필요한 이유"
-            description="금정구 작은도서관은 주민과 프로그램을 잇는 연결고리이지만, 기획과 참여 사이에서 어려움을 겪고 있습니다. 모이라는 그 간극을 메우는 플랫폼입니다."
-          />
-          <div className="problemGrid">
-            {problemItems.map((item) => (
-              <article key={item.title} className="introCard">
-                <strong>{item.title}</strong>
-                <p>{item.description}</p>
-              </article>
-            ))}
-          </div>
-          <div className="whyNarrative">
-            <p>
-              작은도서관은 지역 커뮤니티의 중심입니다. 하지만 주민의 목소리를
-              프로그램으로 연결하는 일은 사서의 부담으로 남았습니다.
-              모이라는 AI와 지역 데이터를 결합하여 이 과정을 단순화하고,
-              사서와 주민이 함께 만들어가는 선순환을 지원합니다.
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section className="homeSection valueSection">
         <div className="uiContainer">
           <SectionHeading
@@ -256,22 +235,40 @@ export default async function AboutPage() {
         <div className="uiContainer">
           <SectionHeading
             eyebrow="HOW MOIRA WORKS"
-            title="모이라는 이렇게 동작합니다"
+            title="모이라는 이렇게 작동합니다."
             description="지역 의제 제안부터 프로그램 운영까지, 5단계로 이어지는 서비스 흐름을 시각적으로 보여줍니다."
           />
-          <ol className="flowGrid">
-            {flowSteps.map((step, index) => (
-              <li key={step.title}>
-                <span className="flowIcon" aria-hidden="true">
-                  {step.icon}
-                </span>
-                <strong>{step.title}</strong>
-                {index < flowSteps.length - 1 ? (
-                  <span className="flowArrow" aria-hidden="true">→</span>
-                ) : null}
-              </li>
-            ))}
-          </ol>
+          <div className="pipeline" aria-label="모이라는 이렇게 작동합니다.">
+            {serviceSteps.map((step, index) => {
+              const isStudio = step.title === 'MOIRA Studio';
+
+              return (
+                <div key={step.number} className={`pipelineItem ${isStudio ? 'isStudioHighlight' : ''}`}>
+                  <div className="pipelineStep">
+                    <span className={`pipelineNumber ${isStudio ? 'isStudioNumber' : ''}`}>
+                      {step.number}
+                    </span>
+                    {index < serviceSteps.length - 1 && (
+                      <span className="pipelineConnector" aria-hidden="true" />
+                    )}
+                  </div>
+
+                  <div className="pipelineMeta">
+                    <h3 className={isStudio ? 'studioHighlightTitle' : ''}>
+                      {isStudio ? (
+                        <>
+                          <span className="flowStudioBrand">MOIRA Studio</span>
+                        </>
+                      ) : (
+                        step.title
+                      )}
+                    </h3>
+                    <p>{step.description}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
