@@ -44,7 +44,7 @@ export default function StudioSection() {
           <aside className="studioSectionCta" aria-label="모이라 스튜디오 사서 안내">
             <span className="studioCtaEyebrow">사서라면 지금 바로</span>
             <strong>AI 프로그램 기획을 시작해보세요.</strong>
-            <Link className="uiButton studioBrandButton" href="#studio-details">
+            <Link className="uiButton studioBrandButton" href="/studio">
               <span className="studioBrandButtonIcon" aria-hidden="true">✦</span>
               MOIRA Studio 시작하기
               <span className="studioBrandButtonArrow" aria-hidden="true">→</span>

@@ -18,6 +18,26 @@ enum Gender {
   OTHER
 }
 
+enum AttachmentExtractionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ProgramCaseDocumentChunkType {
+  CORE
+  SESSIONS
+  ATTACHMENT
+}
+
+enum ProgramCaseDocumentChunkEmbeddingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id          String         @id @default(uuid())
   userId      String?        @unique
@@ -96,6 +116,7 @@ model ProgramCase {
   parseWarnings          Json
   sessions               ProgramCaseSession[]
   attachments            ProgramCaseAttachment[]
+  documents              ProgramCaseDocument[]
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
 
@@ -121,15 +142,94 @@ model ProgramCaseSession {
 }
 
 model ProgramCaseAttachment {
-  id               String      @id @default(uuid())
+  id               String                     @id @default(uuid())
   programCaseId    String
   fileName         String
   fileUrl          String
-  fileType         String
-  extractionStatus String
-  programCase      ProgramCase @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  fileType         String?
+  detectedFileType String?
+  detectedMimeType String?
+  fileSizeBytes    Int?
+  checksumSha256   String?
+  extractionStatus AttachmentExtractionStatus @default(PENDING)
+  rawText          String?                    @db.Text
+  cleanedText      String?                    @db.Text
+  extractorType    String?
+  extractorVersion String?
+  failureCode      String?
+  failureMessage   String?                    @db.Text
+  attemptCount     Int                        @default(0)
+  lastAttemptedAt  DateTime?
+  extractedAt      DateTime?
+  isActive         Boolean                    @default(true)
+  programCase      ProgramCase                @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
+  documentChunks   ProgramCaseDocumentChunk[]
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
 
   @@unique([programCaseId, fileUrl])
+}
+
+model ProgramCaseDocument {
+  id            String      @id @default(uuid())
+  programCaseId String
+  documentType  String
+  content       String      @db.Text
+  contentHash   String
+  version       String
+  programCase   ProgramCase @relation(fields: [programCaseId], references: [id], onDelete: Cascade)
+  chunks        ProgramCaseDocumentChunk[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([programCaseId, documentType])
+  @@index([documentType])
+}
+
+model ProgramCaseDocumentChunk {
+  id                      String                       @id @default(uuid())
+  programCaseDocumentId   String
+  programCaseAttachmentId String?
+  chunkKey                String
+  chunkOrder              Int
+  chunkType               ProgramCaseDocumentChunkType
+  sourceLabel             String?
+  content                 String                       @db.Text
+  contentHash             String
+  builderVersion          String
+  characterCount          Int
+  programCaseDocument     ProgramCaseDocument          @relation(fields: [programCaseDocumentId], references: [id], onDelete: Cascade)
+  programCaseAttachment   ProgramCaseAttachment?       @relation(fields: [programCaseAttachmentId], references: [id], onDelete: Cascade)
+  embedding               ProgramCaseDocumentChunkEmbedding?
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+
+  @@unique([programCaseDocumentId, chunkKey])
+  @@index([programCaseDocumentId, chunkOrder])
+  @@index([programCaseAttachmentId])
+  @@index([chunkType])
+}
+
+model ProgramCaseDocumentChunkEmbedding {
+  id                         String                                  @id @default(uuid())
+  programCaseDocumentChunkId String                                  @unique(map: "ProgramCaseChunkEmbedding_chunkId_key")
+  embedding                  Unsupported("vector(1024)")?
+  provider                   String
+  model                      String
+  modelRevision              String
+  embeddingVersion           String
+  dimension                  Int
+  embeddedContentHash        String?
+  status                     ProgramCaseDocumentChunkEmbeddingStatus @default(PENDING)
+  failureCode                String?
+  failureMessage             String?                                 @db.VarChar(500)
+  attemptCount               Int                                     @default(0)
+  lastAttemptedAt            DateTime?
+  embeddedAt                 DateTime?
+  programCaseDocumentChunk   ProgramCaseDocumentChunk                @relation(fields: [programCaseDocumentChunkId], references: [id], onDelete: Cascade, map: "ProgramCaseChunkEmbedding_chunkId_fkey")
+  createdAt                  DateTime                                @default(now())
+  updatedAt                  DateTime                                @updatedAt
+
+  @@index([status])
+  @@index([provider, model, modelRevision], map: "ProgramCaseChunkEmbedding_modelRevision_idx")
 }

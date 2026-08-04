@@ -4,3 +4,13 @@ global-bundle.pem
 dist
 node_modules
 /src/generated/prisma
+.local/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.huggingface/
+hf-cache/
+.model-cache/
+embedding-exports/
