@@ -79,21 +79,47 @@ const featureItems = [
 
 const audienceList = [
   {
+    icon: '👥',
     label: '지역 주민',
+    description: '우리 동네 문화·교육 프로그램을 찾고, 필요한 프로그램을 제안하며 다양한 도서관 서비스에 참여합니다.',
     items: [
-      '지역 의제 제안',
-      '수요조사 참여',
-      '프로그램 참여',
-      '커뮤니티 이용',
+      {
+        icon: '▦',
+        label: '프로그램 정보 확인',
+        description: '프로그램 검색, 필터, 캘린더를 통해 원하는 문화·교육 프로그램을 쉽게 찾아볼 수 있습니다.',
+      },
+      {
+        icon: '✎',
+        label: '아이디어 제안',
+        description: '우리 동네에 필요한 문화·교육 프로그램이나 지역 아이디어를 자유롭게 제안합니다.',
+      },
+      {
+        icon: '✓',
+        label: '수요조사 참여',
+        description: '프로그램 기획안에 의견을 남기고 참여 의향을 표시합니다.',
+      },
     ],
   },
   {
-    label: '사서',
+    icon: '🧑‍💻',
+    label: '사서 및 프로그램 기획 담당자',
+    description: '주민 의견을 바탕으로 AI의 도움을 받아 지역 맞춤형 문화·교육 프로그램을 기획하고 운영합니다.',
     items: [
-      '모이라 스튜디오 이용',
-      'AI 프로그램 기획',
-      '수요조사 결과 확인',
-      '프로그램 운영',
+      {
+        icon: 'AI',
+        label: 'MOIRA Studio',
+        description: '주민 의견과 기존 프로그램 사례를 분석하여 AI가 프로그램 기획 초안을 생성합니다.',
+      },
+      {
+        icon: '◔',
+        label: '수요조사 및 프로그램 관리',
+        description: '수요조사를 진행하고 결과를 반영하여 프로그램을 확정·운영합니다.',
+      },
+      {
+        icon: '▤',
+        label: '행사·소식 관리',
+        description: '공지사항을 등록·수정하고 프로그램 정보를 통합 관리합니다.',
+      },
     ],
   },
 ];
@@ -285,16 +311,26 @@ export default async function AboutPage() {
         <div className="uiContainer">
           <SectionHeading
             eyebrow="WHO IT'S FOR"
-            title="이용 대상"
-            description="모이라는 지역 주민과 사서를 모두 위한 서비스입니다. 각 사용자는 서로 다른 방식으로 참여합니다."
+            title="누구나 참여하고, 함께 만들어갑니다"
+            description="주민은 필요한 문화·교육 프로그램을 제안하고, 프로그램 기획 담당자는 AI의 도움을 받아 지역 맞춤형 프로그램을 기획합니다."
           />
           <div className="audienceGrid">
             {audienceList.map((audience) => (
               <article key={audience.label} className="introCard audienceCard">
-                <strong>{audience.label}</strong>
+                <div className="audienceCardHeader">
+                  <span className="audienceCardIcon" aria-hidden="true">{audience.icon}</span>
+                  <div>
+                    <strong>{audience.label}</strong>
+                    <p>{audience.description}</p>
+                  </div>
+                </div>
                 <ul>
                   {audience.items.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item.label}>
+                      <span aria-hidden="true">{item.icon}</span>
+                      <strong>{item.label}</strong>
+                      <p>{item.description}</p>
+                    </li>
                   ))}
                 </ul>
               </article>
