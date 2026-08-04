@@ -30,14 +30,21 @@ type UpdateCommunityPostBody = {
   password?: string;
 };
 
+type CreateCommunityCommentBody = {
+  content?: string;
+  author?: string;
+  parentId?: string;
+};
+
 const DEFAULT_BOARD_SLUG = 'library-news';
 const DEFAULT_POST_TYPE = 'normal';
-const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'proposals']);
+const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'proposals', 'ideas']);
 const VALID_POST_TYPES = new Set(['notice', 'normal']);
 const MIN_PASSWORD_LENGTH = 4;
 const MAX_PASSWORD_LENGTH = 64;
 const MAX_TITLE_LENGTH = 100;
 const MAX_CONTENT_LENGTH = 5000;
+const MAX_COMMENT_LENGTH = 2000;
 
 const router = Router();
 
@@ -101,7 +108,7 @@ router.get('/', async (req: Request, res: Response) => {
   if (!VALID_BOARD_SLUGS.has(boardSlug)) {
     return res.status(400).json({
       code: 'INVALID_BOARD_SLUG',
-      error: 'boardSlug must be library-news, free, or proposals.',
+      error: 'boardSlug must be library-news, free, proposals, or ideas.',
     });
   }
 
@@ -190,6 +197,79 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
     return res.status(500).json({ code: 'POST_CREATE_FAILED', error: 'Unable to create post.' });
   }
 });
+
+router.get('/:postId/comments', async (req: Request<{ postId: string }>, res: Response) => {
+  try {
+    const post = await prisma.communityPost.findUnique({
+      where: { id: req.params.postId },
+      select: { id: true },
+    });
+    if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+
+    const comments = await prisma.communityComment.findMany({
+      where: { postId: post.id },
+      orderBy: { createdAt: 'asc' },
+    });
+    return res.status(200).json({
+      comments: comments.map((comment) => ({
+        ...comment,
+        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt.toISOString(),
+      })),
+    });
+  } catch (error) {
+    console.error('Community comment list lookup failed:', error);
+    return res.status(500).json({ code: 'COMMENT_LIST_FAILED', error: 'Unable to load comments.' });
+  }
+});
+
+router.post(
+  '/:postId/comments',
+  async (req: Request<{ postId: string }, {}, CreateCommunityCommentBody>, res: Response) => {
+    const content = readString(req.body.content);
+    const author = readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
+    const parentId = readString(req.body.parentId) || null;
+
+    if (!content) {
+      return res.status(400).json({ code: 'COMMENT_REQUIRED', error: 'content is required.' });
+    }
+    if (content.length > MAX_COMMENT_LENGTH) {
+      return res.status(400).json({ code: 'COMMENT_TOO_LONG', error: 'comment is too long.' });
+    }
+
+    try {
+      const post = await prisma.communityPost.findUnique({
+        where: { id: req.params.postId },
+        select: { id: true },
+      });
+      if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+
+      if (parentId) {
+        const parent = await prisma.communityComment.findFirst({
+          where: { id: parentId, postId: post.id },
+          select: { id: true },
+        });
+        if (!parent) {
+          return res.status(400).json({ code: 'INVALID_PARENT_COMMENT', error: 'Parent comment not found.' });
+        }
+      }
+
+      const comment = await prisma.communityComment.create({
+        data: { postId: post.id, parentId, content, author },
+      });
+      return res.status(201).json({
+        comment: {
+          ...comment,
+          createdAt: comment.createdAt.toISOString(),
+          updatedAt: comment.updatedAt.toISOString(),
+        },
+      });
+    } catch (error) {
+      console.error('Community comment creation failed:', error);
+      return res.status(500).json({ code: 'COMMENT_CREATE_FAILED', error: 'Unable to create comment.' });
+    }
+  },
+);
 
 async function updatePost(
   req: Request<{ postId: string }, {}, UpdateCommunityPostBody>,

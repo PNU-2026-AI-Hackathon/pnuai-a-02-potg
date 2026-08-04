@@ -71,10 +71,27 @@ model CommunityPost {
   passwordHash String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  comments     CommunityComment[]
 
   @@index([boardSlug])
   @@index([type])
   @@index([createdAt])
+}
+
+model CommunityComment {
+  id        String             @id @default(uuid())
+  postId    String
+  parentId  String?
+  content   String
+  author    String
+  post      CommunityPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent    CommunityComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   CommunityComment[] @relation("CommentReplies")
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([postId, createdAt])
+  @@index([parentId])
 }
 
 model ProgramCase {

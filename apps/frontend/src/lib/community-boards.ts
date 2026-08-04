@@ -1,6 +1,6 @@
 import { getBackendUrl } from './backend-url';
 
-export type CommunityBoardSlug = 'library-news' | 'free' | 'proposals';
+export type CommunityBoardSlug = 'library-news' | 'free' | 'proposals' | 'ideas';
 
 export type CommunityPostType = 'notice' | 'normal';
 
@@ -27,6 +27,19 @@ export type CommunityPost = {
 };
 
 export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
+  ideas: {
+    slug: 'ideas',
+    href: '/community/ideas',
+    title: '함께 만드는 행사',
+    shortTitle: '아이디어 게시판',
+    description: '시민이 행사 아이디어를 제안하고 대화로 함께 발전시키는 게시판입니다.',
+    purpose: '아이디어에 의견과 답글을 보태 실행 가능한 지역 행사로 구체화합니다.',
+    typeLabels: {
+      notice: '공지',
+      normal: '아이디어',
+    },
+    tags: ['문화·예술', '책·배움', '환경', '생활'],
+  },
   'library-news': {
     slug: 'library-news',
     href: '/community/library-news',
@@ -222,7 +235,7 @@ function isCommunityPost(value: unknown): value is CommunityPost {
 
   return (
     typeof post.id === 'string' &&
-    (post.boardSlug === 'library-news' || post.boardSlug === 'free' || post.boardSlug === 'proposals') &&
+    (post.boardSlug === 'library-news' || post.boardSlug === 'free' || post.boardSlug === 'proposals' || post.boardSlug === 'ideas') &&
     (post.type === 'notice' || post.type === 'normal') &&
     typeof post.title === 'string' &&
     typeof post.content === 'string' &&
