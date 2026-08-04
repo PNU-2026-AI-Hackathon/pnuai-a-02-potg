@@ -18,7 +18,7 @@ export function parseRepresentationArguments(args: string[]): RepresentationArgu
     ['--plan-ocr', 'plan-ocr'], ['--build-ocr', 'build-ocr'], ['--build-sections', 'build-sections'],
     ['--build-candidates', 'build-candidates'], ['--validate', 'validate']]);
   let mode: Mode | null = null; let sourceDirectory = resolveDefault(DEFAULT_SOURCE_DIRECTORY);
-  let outputDirectory = resolveDefault(DEFAULT_REPRESENTATION_DIRECTORY); let allowExternalApi = false; let maximumCalls = 0;
+  let outputDirectory: string | null = null; let allowExternalApi = false; let maximumCalls = 0;
   const sourceHashes: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -38,7 +38,8 @@ export function parseRepresentationArguments(args: string[]): RepresentationArgu
     throw new Error('External OCR requires at least one --source-hash and --max-calls >= 1.');
   }
   if (selectedMode !== 'build-ocr' && (sourceHashes.length || maximumCalls)) throw new Error('OCR selection options are only valid with --build-ocr.');
-  return { mode: selectedMode, sourceDirectory, outputDirectory, allowExternalApi, maximumCalls, sourceHashes: [...new Set(sourceHashes)].sort() };
+  return { mode: selectedMode, sourceDirectory, outputDirectory: outputDirectory ?? path.join(path.dirname(sourceDirectory), 'representation'),
+    allowExternalApi, maximumCalls, sourceHashes: [...new Set(sourceHashes)].sort() };
 }
 
 export async function main(args = process.argv.slice(2)) {
