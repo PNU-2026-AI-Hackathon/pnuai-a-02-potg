@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/backend-url';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
-
-type RouteContext = {
-  params: Promise<{
-    postId: string;
-  }>;
-};
+type RouteContext = { params: Promise<{ postId: string }> };
 
 async function readBackendResponse(response: Response) {
+  if (response.status === 204) return null;
   const contentType = response.headers.get('content-type');
-
   return contentType?.includes('application/json')
     ? response.json()
     : { error: await response.text() };
@@ -18,65 +13,44 @@ async function readBackendResponse(response: Response) {
 
 async function getPostUrl(context: RouteContext) {
   const { postId } = await context.params;
+  return getBackendUrl(`/api/posts/${encodeURIComponent(postId)}`);
+}
 
-  return `${BACKEND_URL}/api/posts/${encodeURIComponent(postId)}`;
+async function forwardMutation(request: Request, context: RouteContext) {
+  try {
+    const response = await fetch(await getPostUrl(context), {
+      method: request.method,
+      headers: { 'Content-Type': 'application/json' },
+      body: await request.text(),
+    });
+    const data = await readBackendResponse(response);
+    return data === null
+      ? new NextResponse(null, { status: response.status })
+      : NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Post mutation proxy request failed:', error);
+    return NextResponse.json({ error: 'Backend posts server is unavailable.' }, { status: 503 });
+  }
 }
 
 export async function GET(_request: Request, context: RouteContext) {
   try {
-    const response = await fetch(await getPostUrl(context), {
-      cache: 'no-store',
-    });
-    const data = await readBackendResponse(response);
-
-    return NextResponse.json(data, { status: response.status });
+    const response = await fetch(await getPostUrl(context), { cache: 'no-store' });
+    return NextResponse.json(await readBackendResponse(response), { status: response.status });
   } catch (error) {
     console.error('Post proxy request failed:', error);
-
-    return NextResponse.json(
-      { error: 'Backend posts server is unavailable.' },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: 'Backend posts server is unavailable.' }, { status: 503 });
   }
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  return forwardMutation(request, context);
 }
 
 export async function PUT(request: Request, context: RouteContext) {
-  try {
-    const body = await request.json();
-    const response = await fetch(await getPostUrl(context), {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await readBackendResponse(response);
-
-    return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error('Update post proxy request failed:', error);
-
-    return NextResponse.json(
-      { error: 'Backend posts server is unavailable.' },
-      { status: 503 },
-    );
-  }
+  return forwardMutation(request, context);
 }
 
-export async function DELETE(_request: Request, context: RouteContext) {
-  try {
-    const response = await fetch(await getPostUrl(context), {
-      method: 'DELETE',
-    });
-    const data = await readBackendResponse(response);
-
-    return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error('Delete post proxy request failed:', error);
-
-    return NextResponse.json(
-      { error: 'Backend posts server is unavailable.' },
-      { status: 503 },
-    );
-  }
+export async function DELETE(request: Request, context: RouteContext) {
+  return forwardMutation(request, context);
 }

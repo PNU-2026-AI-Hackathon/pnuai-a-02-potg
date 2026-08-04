@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import type { CommunityBoard, CommunityPost } from '@/lib/community-boards';
 
 type CommunityBoardViewProps = {
@@ -37,9 +40,24 @@ export default function CommunityBoardView({
   board,
   posts,
 }: CommunityBoardViewProps) {
-  const orderedPosts = getOrderedPosts(posts);
-  const noticeCount = posts.filter((post) => post.type === 'notice').length;
-  const normalCount = posts.length - noticeCount;
+  const [createdPosts, setCreatedPosts] = useState<CommunityPost[]>([]);
+  const [loadMessage, setLoadMessage] = useState('');
+  const visiblePosts = [...createdPosts, ...posts];
+  const orderedPosts = getOrderedPosts(visiblePosts);
+  const noticeCount = visiblePosts.filter((post) => post.type === 'notice').length;
+  const normalCount = visiblePosts.length - noticeCount;
+
+  useEffect(() => {
+    if (board.slug !== 'free') return;
+
+    fetch('/api/posts?boardSlug=free', { cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.error || '작성된 글을 불러오지 못했습니다.');
+        setCreatedPosts(data.posts || []);
+      })
+      .catch(() => setLoadMessage('새로 작성된 글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'));
+  }, [board.slug]);
 
   return (
     <main className="communityPage communityBoardPage">
@@ -67,13 +85,25 @@ export default function CommunityBoardView({
         <section className="communityPostSection" aria-labelledby={`${board.slug}-posts`}>
           <div className="communityBoardControls" aria-label="게시판 상태">
             <p>
-              총 <strong>{posts.length}</strong>건
+              총 <strong>{visiblePosts.length}</strong>건
               <span aria-hidden="true"> / </span>
               공지 <strong>{noticeCount}</strong>건
               <span aria-hidden="true"> / </span>
               {board.typeLabels.normal} <strong>{normalCount}</strong>건
             </p>
+            {board.slug === 'free' ? (
+              <Link
+                className="communityWriteButton"
+                href="/community/free/write"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                게시글 작성
+              </Link>
+            ) : null}
           </div>
+
+          {loadMessage ? <p className="communityLoadMessage" role="status">{loadMessage}</p> : null}
 
           <div className="communityPostList">
             {orderedPosts.length > 0 ? (
