@@ -158,52 +158,84 @@ export default async function AboutPage() {
       <section className="introHero">
         <div className="uiContainer introHeroGrid">
           <div className="introHeroCopy">
-            <p className="uiEyebrow">금정구 작은도서관을 위한 AI 기반 지역 커뮤니티 플랫폼</p>
+            <p className="uiEyebrow">도서관 프로그램 특화 플랫폼</p>
             <h1>
-              모이라,
-              <br />
-              모두가 이어지는 라이브러리
+              주민의 아이디어가
+              <span className="h1LineBreak">도서관 프로그램이 되는 곳</span>
             </h1>
-            <p className="homeHeroLead">
-              모이라는 지역 주민과 작은도서관을 연결해,
-              <br />
-              생활 속 의제를 프로그램으로 바꾸는 커뮤니티 경험을 만듭니다.
+            <p className="introHeroLead">
+              모이라는 주민이 제안한 프로그램 아이디어와 지역 의견을 AI가 분석해
+              사서의 문화·교육 프로그램 기획을 지원하는 AI 기반 도서관 프로그램
+              특화 플랫폼입니다. 프로그램 수요조사와 통합 정보 제공을 통해
+              주민과 도서관이 함께 지역 맞춤형 프로그램을 만들어갑니다.
             </p>
+
             <div className="homeHeroActions">
-              <Link className="uiButton uiButtonPrimary" href="/community">
-                지역 커뮤니티 둘러보기
+              <Link className="uiButton uiButtonPrimary" href="/community/proposals">
+                우리 동네 아이디어 제안하기
                 <span aria-hidden="true">→</span>
               </Link>
-              <Link className="uiButton uiButtonSecondary" href="#why-moira">
-                모이라 스튜디오 알아보기
+              <Link className="uiButton uiButtonSecondary" href="/#library-finder">
+                프로그램 둘러보기
               </Link>
+            </div>
+
+            <div className="introHeroPills" aria-label="모이라 핵심 키워드">
+              <span># 주민 아이디어</span>
+              <span># AI 기획 지원</span>
+              <span># MOIRA Studio</span>
+              <span># 프로그램 수요 조사</span>
             </div>
           </div>
 
-          <div className="introHeroVisual" aria-hidden="true">
-            <div className="introHeroBadge">
-              <span>MOIRA</span>
-              <small>지역 커뮤니티를 잇는 플랫폼</small>
-            </div>
-            <div className="introHeroCard">
-              <div className="introHeroCardHeader">
-                <p>금정구 작은도서관</p>
-                <strong>AI 기반 기획 흐름</strong>
-              </div>
-              <ul className="introHeroKeypoints">
-                <li>주민 제안 → AI 기획 → 수요조사 → 운영</li>
-                <li>사서 검토로 지역 특성에 맞게 조정</li>
-                <li>커뮤니티 참여가 다시 새로운 프로그램으로</li>
-              </ul>
-            </div>
-            <div className="introHeroStats">
-              <div>
-                <strong>5</strong>
-                <span>단계로 연결되는 서비스</span>
-              </div>
-              <div>
-                <strong>금정구</strong>
-                <span>작은도서관 전용</span>
+          <div className="introHeroVisual" aria-label="MOIRA Studio 목업">
+            <div className="studioMockupShell">
+              <div className="studioMockupInner">
+                <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
+                <h2 className="studioMockupTitle">MOIRA STUDIO</h2>
+                <p className="studioMockupSubtitle">
+                  주민의 이야기에서 시작하는 도서관 프로그램 기획을 짧은 메모로 시작하세요.
+                </p>
+
+                <div className="studioMockupCard">
+                  <div className="studioModeTabs" role="tablist" aria-label="기획 모드">
+                    <button type="button" className="isActive">
+                      프로그램 기획
+                    </button>
+                    <button type="button">지역 의제</button>
+                  </div>
+
+                  <div className="studioFieldGroup">
+                    <label className="studioFieldLabel">기획 메모</label>
+                    <div className="studioTextBlock">
+                      예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램
+                    </div>
+                  </div>
+
+                  <div className="studioSelectRow">
+                    <div className="studioSelectBox">
+                      <span>프로그램 분야</span>
+                      <strong>문화예술</strong>
+                    </div>
+                    <div className="studioSelectBox">
+                      <span>대상</span>
+                      <strong>초등학생</strong>
+                    </div>
+                    <div className="studioSelectBox">
+                      <span>운영 기간</span>
+                      <strong>8주</strong>
+                    </div>
+                  </div>
+
+                  <div className="studioActionBar">
+                    <span>만들고 싶은 프로그램을 한 줄로 적어주세요.</span>
+                    <button type="button">기획안 만들기</button>
+                  </div>
+                </div>
+
+                <p className="studioMockupFootnote">
+                  기획 초안은 사서의 검토와 지역 상황에 맞춘 조정을 전제로 합니다.
+                </p>
               </div>
             </div>
           </div>
