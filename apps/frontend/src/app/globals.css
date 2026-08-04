@@ -3064,8 +3064,6 @@ button {
 }
 
 .moiraPage .siteHeader {
-  position: sticky;
-  top: 0;
   background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -3087,7 +3085,8 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 .siteHeader {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 30;
   border-bottom: 1px solid #e3eae6;
   background: rgba(255, 255, 255, 0.98);
@@ -4384,24 +4383,17 @@ html.isFullPageScroll:has(.moiraPage) {
   line-height: 1.7;
 }
 
-.pipelineItem.isStudioHighlight {
-  position: relative;
-  padding: 10px 10px 0;
-  border-radius: 18px;
-  background: rgba(242, 135, 45, 0.06);
-}
-
 .pipelineNumber.isStudioNumber {
-  background: linear-gradient(135deg, #ffb55a 0%, #f2872d 100%);
+  background: linear-gradient(135deg, #e9964a 0%, #cf712b 100%);
   color: #fff;
-  box-shadow: 0 10px 22px rgba(242, 135, 45, 0.25);
+  box-shadow: 0 10px 22px rgba(207, 113, 43, 0.2);
   font-size: 15px;
   font-weight: 900;
 }
 
 .studioHighlightTitle {
   display: inline-block;
-  color: #d96d1f;
+  color: #c76725;
   font-size: clamp(18px, 1.8vw, 24px);
   font-weight: 900;
   letter-spacing: -0.05em;
@@ -4410,72 +4402,8 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 .flowStudioBrand {
-  color: #d96d1f;
+  color: #c76725;
   font-weight: 900;
-}
-
-.timelineShell {
-  max-width: 900px;
-  margin: 24px auto 0;
-}
-
-.timelineList {
-  display: grid;
-  gap: 0;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.timelineList li {
-  position: relative;
-  display: grid;
-  grid-template-columns: 58px 1fr;
-  gap: 20px;
-  align-items: center;
-  min-height: 112px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--moira-border);
-}
-
-.timelineList li:last-child {
-  border-bottom: 0;
-}
-
-.timelineList li:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  top: 66px;
-  bottom: -47px;
-  left: 23px;
-  width: 1px;
-  background: rgba(22, 116, 95, 0.2);
-}
-
-.timelineList span {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 16px;
-  background: #eef5ee;
-  color: var(--moira-green-dark);
-  font-weight: 800;
-}
-
-.timelineList strong {
-  margin: 0 0 8px;
-  font-size: 16px;
-}
-
-.timelineList p {
-  margin: 0;
-  color: var(--moira-muted);
-  font-size: 15px;
-  line-height: 1.7;
 }
 
 .audienceGrid {
@@ -4531,7 +4459,6 @@ html.isFullPageScroll:has(.moiraPage) {
   margin-bottom: clamp(34px, 4vw, 52px);
 }
 
-.exampleSection,
 .audienceSection {
   background: #ffffff;
 }
@@ -4554,6 +4481,10 @@ html.isFullPageScroll:has(.moiraPage) {
 .valueSection .homeSectionHeading h2,
 .valueSection .homeSectionDescription {
   white-space: pre-line;
+}
+
+.flowSection .homeSectionHeading {
+  max-width: none;
 }
 
 .valueConclusion {
@@ -4709,8 +4640,7 @@ html.isFullPageScroll:has(.moiraPage) {
 
   .homeHeroLead,
   .introHeroCardHeader strong,
-  .introCard p,
-  .timelineList p {
+  .introCard p {
     font-size: 14px;
   }
 
@@ -4718,7 +4648,6 @@ html.isFullPageScroll:has(.moiraPage) {
   .valueGrid,
   .featureGrid,
   .audienceGrid,
-  .timelineList,
   .flowGrid {
     width: 100%;
   }
@@ -4730,15 +4659,6 @@ html.isFullPageScroll:has(.moiraPage) {
 
   .flowGrid {
     grid-template-columns: 1fr;
-  }
-
-  .timelineList li {
-    grid-template-columns: 48px 1fr;
-    gap: 14px;
-  }
-
-  .timelineList li:not(:last-child)::before {
-    left: 23px;
   }
 
   .homeHeroActions {

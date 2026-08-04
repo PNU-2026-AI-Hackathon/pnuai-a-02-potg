@@ -25,50 +25,27 @@ const serviceSteps = [
   {
     number: '01',
     title: '주민 아이디어',
-    description: '주민이 필요한 프로그램이나 지역 이야기를 제안합니다.',
+    description: '주민이 우리 동네에 필요한 문화·교육 프로그램과 지역 의견을 자유롭게 제안합니다.',
   },
   {
     number: '02',
     title: '지역 의제 도출',
-    description: 'AI가 주민 의견을 분류해 지역 의제를 도출합니다.',
+    description: 'AI가 주민 의견을 분석·분류하여 주요 관심 주제와 지역 의제를 정리합니다.',
   },
   {
     number: '03',
     title: 'MOIRA Studio',
-    description: '사서가 AI 기획안을 검토하고 보완합니다.',
+    description: '사서가 주민 의견과 기존 프로그램 사례를 바탕으로 AI 기획안 초안을 만들고 검토·보완합니다.',
   },
   {
     number: '04',
     title: '주민 수요조사',
-    description: '기획안을 공개해 주민 참여 의향을 확인합니다.',
+    description: '기획안을 공개하여 참여 의향, 희망 요일·시간대와 주민 의견을 확인합니다.',
   },
   {
     number: '05',
     title: '프로그램 운영',
-    description: '확정된 프로그램을 실제 도서관 운영으로 연결합니다.',
-  },
-];
-
-const exampleSteps = [
-  {
-    title: '주민 제안 등록',
-    description: '“청소년을 위한 AI 교육 프로그램이 있었으면 좋겠어요.”',
-  },
-  {
-    title: '사서가 의제 선택',
-    description: '작은도서관 사서가 제안을 확인하고 기획 후보로 올립니다.',
-  },
-  {
-    title: 'MOIRA Studio가 기획안 생성',
-    description: '기존 사례와 주민 요구를 바탕으로 프로그램 초안을 만듭니다.',
-  },
-  {
-    title: '수요조사 참여',
-    description: '많은 주민이 참여 의사를 표시하며 프로그램 실행 가능성을 확인합니다.',
-  },
-  {
-    title: '작은도서관 프로그램 운영',
-    description: '검증된 기획이 실제 라이브러리 프로그램으로 이어집니다.',
+    description: '수요조사 결과를 반영해 기획안을 보완하고 실제 도서관 문화·교육 프로그램으로 운영합니다.',
   },
 ];
 
@@ -246,8 +223,8 @@ export default async function AboutPage() {
         <div className="uiContainer">
           <SectionHeading
             eyebrow="HOW MOIRA WORKS"
-            title="모이라는 이렇게 작동합니다."
-            description="지역 의제 제안부터 프로그램 운영까지, 5단계로 이어지는 서비스 흐름을 시각적으로 보여줍니다."
+            title="주민의 아이디어가 프로그램이 되기까지"
+            description="주민이 제안한 아이디어는 AI 분석과 사서의 기획, 주민 수요조사를 거쳐 실제 도서관 문화·교육 프로그램으로 이어집니다."
           />
           <div className="pipeline" aria-label="모이라는 이렇게 작동합니다.">
             {serviceSteps.map((step, index) => {
@@ -279,29 +256,6 @@ export default async function AboutPage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      <section className="homeSection exampleSection">
-        <div className="uiContainer">
-          <SectionHeading
-            eyebrow="REAL EXAMPLE"
-            title="실제 이용 예시로 보는 모이라의 연결 과정"
-            description="한 건의 지역 제안이 작은도서관 프로그램으로 운영되기까지의 흐름을 타임라인으로 정리했습니다."
-          />
-          <div className="timelineShell">
-            <ol className="timelineList">
-              {exampleSteps.map((step, index) => (
-                <li key={step.title}>
-                  <span>{index + 1}</span>
-                  <div>
-                    <strong>{step.title}</strong>
-                    <p>{step.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
           </div>
         </div>
       </section>
