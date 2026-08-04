@@ -4487,6 +4487,14 @@ html.isFullPageScroll:has(.moiraPage) {
   max-width: none;
 }
 
+.featureSection {
+  background: #fffaf4;
+}
+
+.featureSection .homeSectionHeading {
+  max-width: none;
+}
+
 .valueConclusion {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);

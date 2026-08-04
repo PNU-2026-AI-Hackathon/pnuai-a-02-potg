@@ -52,28 +52,28 @@ const serviceSteps = [
 const featureItems = [
   {
     icon: '📝',
-    title: '지역 의제 제안 게시판',
-    description: '주민이 동네 변화와 필요한 프로그램을 쉽게 제안할 수 있습니다.',
+    title: '우리 동네 아이디어',
+    description: '주민이 우리 동네에 필요한 문화·교육 프로그램이나 지역 의견을 자유롭게 제안하고 다른 주민과 함께 의견을 나눌 수 있습니다.',
   },
   {
     icon: '⚙️',
-    title: 'AI 프로그램 기획(MOIRA Studio)',
-    description: 'AI가 의견을 분석해 도서관 운영에 맞는 기획안을 빠르게 작성합니다.',
+    title: 'AI 기반 프로그램 기획 (MOIRA Studio)',
+    description: '주민 의견과 기존 프로그램 사례를 바탕으로 AI가 문화·교육 프로그램 기획안을 생성하고 사서의 기획을 지원합니다.',
   },
   {
     icon: '📈',
-    title: '주민 수요조사 및 투표',
-    description: '주민 의견을 수치로 확인해 프로그램 우선순위를 정합니다.',
+    title: '프로그램 수요조사',
+    description: '생성된 기획안을 주민에게 공개하여 참여 의향, 희망 요일·시간 등 운영 전 필요한 의견을 수집합니다.',
   },
   {
     icon: '🗂️',
-    title: '행사 및 소식 / 자유게시판',
-    description: '지역 소통과 정보 공유를 위한 커뮤니티 기능을 제공합니다.',
+    title: '문화·교육 프로그램 정보',
+    description: '금정구 공공도서관과 작은도서관의 문화·교육 프로그램을 한곳에서 검색하고 확인할 수 있습니다.',
   },
   {
     icon: '📍',
-    title: '금정구 작은도서관 위치 정보',
-    description: '우리 동네 작은도서관 정보를 한눈에 확인할 수 있습니다.',
+    title: '우리 동네 도서관',
+    description: '가까운 공공도서관과 작은도서관의 위치와 운영 정보를 확인하고 해당 도서관의 프로그램까지 바로 살펴볼 수 있습니다.',
   },
 ];
 
@@ -265,7 +265,7 @@ export default async function AboutPage() {
           <SectionHeading
             eyebrow="KEY FEATURES"
             title="모이라의 주요 기능"
-            description="지역 커뮤니티와 도서관 프로그램을 자연스럽게 연결하는 기능을 카드로 만나보세요."
+            description="주민 의견 수렴부터 AI 기반 문화·교육 프로그램 기획, 수요 조사, 프로그램 정보 제공까지 하나의 플랫폼에서 지원합니다."
           />
           <div className="featureGrid">
             {featureItems.map((item) => (
