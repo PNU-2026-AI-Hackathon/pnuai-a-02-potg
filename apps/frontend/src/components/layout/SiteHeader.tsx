@@ -5,7 +5,7 @@ import type { AuthUser } from '@/lib/auth-config';
 
 type SiteHeaderProps = {
   user: AuthUser | null;
-  activeMenu?: 'home' | 'community';
+  activeMenu?: 'home' | 'community' | 'about';
 };
 
 export default function SiteHeader({
@@ -32,7 +32,7 @@ export default function SiteHeader({
 
         <nav className="siteNav" aria-label="주요 메뉴">
           <div className="siteNavPrimary">
-            <Link className={activeMenu === 'home' ? 'isActive' : ''} href="/#about">
+            <Link className={activeMenu === 'home' ? 'isActive' : ''} href="/about">
               모이라 소개
             </Link>
             <Link href="/#library-finder">우리동네 도서관</Link>
