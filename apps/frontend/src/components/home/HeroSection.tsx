@@ -24,14 +24,9 @@ export default function HeroSection() {
             <Link className="uiButton uiButtonPrimary" href="/community">
               우리동네 이야기 둘러보기 <span aria-hidden="true">→</span>
             </Link>
-            <button
-              className="uiButton uiButtonSecondary"
-              type="button"
-              disabled
-              title="모이라 소개 페이지와 연결될 예정입니다."
-            >
+            <Link className="uiButton uiButtonSecondary" href="/about">
               모이라 알아보기
-            </button>
+            </Link>
           </div>
         </div>
 
