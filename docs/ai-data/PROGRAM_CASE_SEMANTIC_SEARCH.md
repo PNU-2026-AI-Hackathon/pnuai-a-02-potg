@@ -537,3 +537,159 @@ evaluation을 통한 threshold와 reranking을 검토한다.
 - 전용 `moira_pgvector_integration_test` synthetic pgvector integration: 통과
 - 운영 integrity 및 원본 SHA-256 비교: 통과
 - `git diff --check`: 통과
+
+## 2026-08-04 ProgramCase dedupe와 metadata filter 재평가
+
+기본 검색이 Chunk 단위 Top K에 바로 limit을 적용하여 같은 ProgramCase의
+CORE와 ATTACHMENT가 함께 노출되는 문제를 보완했다. Repository는 vector
+후보 검색과 metadata filter에 집중하고, SearchService가 ProgramCase 검색
+정책을 담당한다.
+
+권장 검색 흐름은 다음과 같다.
+
+```text
+사용자 질의
+  -> 선택적 metadata filter
+  -> vector Chunk 후보 oversampling
+  -> ProgramCase 단위 dedupe
+  -> Top K 프로그램 사례
+  -> 후속 RAG context
+```
+
+### 대표 청크와 oversampling 정책
+
+- 후보 수: `max(requested limit × 5, 20)`
+- 같은 ProgramCase에서는 similarity가 가장 높은 Chunk 선택
+- similarity 완전 동점에서만 CORE, SESSIONS, ATTACHMENT 순으로 선택
+- similarity와 type도 같으면 Chunk ID 오름차순
+- dedupe 이후 requested limit 적용
+- 고유 ProgramCase가 부족하면 존재하는 결과만 반환
+
+더 낮은 CORE가 더 높은 ATTACHMENT를 대체하지 않는다. 현재 888건 규모에서는
+exact cosine 검색을 유지하며 reranker는 구현하지 않았다.
+
+### metadata filter와 CLI
+
+실제 구조화 metadata 중 검색에 유효한 것은 `ProgramCase.targetAudience`와
+Chunk type이다. 별도 organization/library 필드는 없고 조직명은 title 접두부에
+섞여 있으므로 organization filter를 상상해 추가하지 않았다. `sourceType`은
+349건 모두 `GEUMJEONG_SMALL_LIBRARY`라 변별력이 없다.
+
+target은 자유문자열로 분산되어 있다. 대표 분포는 `일반인 성인` 31건,
+`어린이 유아 6-7세` 21건, `어린이 어린이(유아, 초등)` 15건,
+`일반인 지역주민` 13건, `초등학생 1~3학년` 11건이다. 자동 동의어 매핑 없이
+사용자가 지정한 문자열을 대소문자 무시 literal 부분일치로 검색하며 SQL 값은
+모두 parameter binding한다.
+
+```powershell
+npm.cmd run program-case-semantic-search -- `
+  --query="노년층 디지털 교육" `
+  --limit=5 `
+  --target="일반인" `
+  --chunk-type=CORE
+```
+
+필터는 선택 사항이고 빈 target은 거부한다. 기본 threshold는 계속 없으며 기존
+`--threshold`만 명시적 옵션으로 유지한다. CLI JSON과 text 출력에는 다음
+집계를 추가했다.
+
+```text
+RAW_CHUNK_CANDIDATES
+UNIQUE_PROGRAMS
+DUPLICATES_REMOVED
+RETURNED_RESULTS
+```
+
+결과에는 rank, program title, similarity, representative Chunk type,
+ProgramCase ID, Chunk ID만 포함한다. content, preview, target, source label,
+document ID와 vector는 출력하지 않는다.
+
+### dedupe 운영 재평가
+
+| 질의 | raw 후보 | 후보 고유 프로그램 | 후보 중복 제거 | 최종 중복 | CORE/SESSIONS/ATTACHMENT | 1위/5위 |
+|---|---:|---:|---:|---:|---:|---:|
+| 유아·부모 그림책 | 25 | 18 | 7 | 0 | 0/1/4 | 0.650287/0.606451 |
+| 초등 독서 | 25 | 14 | 11 | 0 | 2/0/3 | 0.638605/0.625073 |
+| 노년층 디지털 | 25 | 13 | 12 | 0 | 4/0/1 | 0.553443/0.515968 |
+| 부모·아이 문화 | 25 | 18 | 7 | 0 | 0/0/5 | 0.542072/0.508386 |
+| 주민 공예 | 25 | 20 | 5 | 0 | 1/0/4 | 0.567726/0.549725 |
+| 건강 | 25 | 21 | 4 | 0 | 1/2/2 | 0.524286/0.485258 |
+
+기존 Top 5에서 같은 프로그램이 중복된 질의는 초등 독서, 노년층 디지털,
+부모·아이 문화, 건강의 4개였다. dedupe 후 여섯 질의 모두 최종 중복은 0이다.
+Top 30 type 비중은 기존 CORE 9, SESSIONS 3, ATTACHMENT 18에서 CORE 8,
+SESSIONS 3, ATTACHMENT 19로 바뀌었다. dedupe는 프로그램 중복을 해결하지만
+ATTACHMENT 과다 노출 자체를 해결하지는 않는다.
+
+dedupe 후 대표 결과는 다음과 같다. 이전 표와 같은 결과는 생략하지 않고 실제
+운영 검색 점수를 사용했다.
+
+| 질의 | 순위 | 프로그램 | similarity | type |
+|---|---:|---|---:|---|
+| 유아·부모 그림책 | 1 | 클레이로 만나는 그림책 이야기 | 0.650287 | SESSIONS |
+|  | 2 | 생각 쑥쑥 그림책 | 0.629984 | ATTACHMENT |
+|  | 3 | 어서와~ 그림책이랑 연극이랑 같이 놀자 | 0.615471 | ATTACHMENT |
+|  | 4 | 그림책 놀이터 | 0.609402 | ATTACHMENT |
+|  | 5 | 그림책 예술놀이 | 0.606451 | ATTACHMENT |
+| 초등 독서 | 1 | 자녀 독서지도 | 0.638605 | ATTACHMENT |
+|  | 2 | 그림책 독서논술 | 0.629367 | CORE |
+|  | 3 | 내 마음 토닥토닥 책읽기&글쓰기 | 0.626997 | CORE |
+|  | 4 | I Love English story | 0.626076 | ATTACHMENT |
+|  | 5 | 어린이 논술 | 0.625073 | ATTACHMENT |
+| 노년층 디지털 | 1 | 스마트 라이프 교실 | 0.553443 | CORE |
+|  | 2 | 어린이 디지털드로잉 | 0.538638 | CORE |
+|  | 3 | 누구나 쉽게 따라하는 스마트폰 | 0.536136 | CORE |
+|  | 4 | 신나는 스마트폰 교실 | 0.534024 | CORE |
+|  | 5 | 삼국지로 배우는 한자 | 0.515968 | ATTACHMENT |
+| 부모·아이 문화 | 1 | 크리스마스 문화체험(초등반) | 0.542072 | ATTACHMENT |
+|  | 2 | 크리스마스 문화체험(유아반) | 0.537939 | ATTACHMENT |
+|  | 3 | 보테니컬 아트 | 0.517032 | ATTACHMENT |
+|  | 4 | 자녀 독서지도 | 0.512439 | ATTACHMENT |
+|  | 5 | 생각톡톡! 미술아 놀자 | 0.508386 | ATTACHMENT |
+| 주민 공예 | 1 | 3D펜으로 생활소품 만들기 | 0.567726 | CORE |
+|  | 2 | 풍선아트 체험 16:40 | 0.551712 | ATTACHMENT |
+|  | 3 | 풍선아트 체험 15:00 | 0.551215 | ATTACHMENT |
+|  | 4 | 풍선아트 체험 14:00 | 0.550120 | ATTACHMENT |
+|  | 5 | 풍선아트 체험 14:40 | 0.549725 | ATTACHMENT |
+| 건강 | 1 | 생체 나이 10년 젊게 강연 | 0.524286 | CORE |
+|  | 2 | Joyful English | 0.510967 | ATTACHMENT |
+|  | 3 | Cool Summer! Cool English! | 0.497522 | SESSIONS |
+|  | 4 | 똑똑한 지구인 프로젝트 | 0.494328 | SESSIONS |
+|  | 5 | 아침을 깨우는 싱잉볼 명상 | 0.485258 | ATTACHMENT |
+
+### target filter 비교와 한계
+
+| 질의 | 수동 target | 결과 | 판단 |
+|---|---|---|---|
+| 유아·부모 그림책 | `유아` | 유아 대상만 유지, 5건 반환 | 적용 가능 |
+| 초등 독서 | `초등` | 연령 불일치는 감소하나 키즈스피치 노출 | 주제 filter가 아니므로 선택적 사용 |
+| 노년층 디지털 | `일반인` | 어린이 디지털 결과 제거, 비디지털 성인 결과 노출 | 노년 전용 metadata 부재 |
+| 부모·아이 문화 | `어린이` | 성인 보테니컬 아트 제거 | 적용 가능하나 부모 동반은 판별 불가 |
+| 주민 공예 | 미적용 | `지역주민` 적용 시 공예 관련성이 악화 | category metadata 부재 |
+| 건강 | `일반인` | 어린이 영어 결과 제거, 건강 외 성인 결과 잔존 | 대상 불일치만 감소 |
+
+metadata filter는 예상한 target 후보만 제한했고 SQL injection 가능한 문자열
+연결은 없다. 그러나 target은 활동 category가 아니므로 주제 관련성까지 높이지
+않는다. 특히 노년/부모 동반/공예를 직접 표현하는 정규화 metadata가 없다.
+
+보수적 적합도 판단에서 dedupe는 중복을 0으로 만들고 고유 프로그램 다양성을
+높였지만, 중복 자리에 다음 저점수 부적합 후보가 들어오는 질의도 있었다.
+target filter는 적용 가능한 질의에서 어린이/성인 대상 불일치를 줄였으나 전체
+부적합을 항상 줄이지는 않았다. 따라서 현재 6개 질의만으로 전역 threshold를
+고정하지 않는다. 적합·부적합 score overlap도 계속 존재한다.
+
+다음 단계에서 reranker를 검토할 조건은 프로그램 dedupe와 명시적 target filter
+후에도 주제 불일치 후보가 Top K에 반복 노출되는 경우다. 현재 건강·노년층
+디지털·부모 동반·공예 질의가 이에 해당한다. reranker 전에 프로그램 단위
+relevance label을 더 수집하고, ATTACHMENT type 가중치 또는 프로그램별 score
+aggregation을 별도 이슈로 비교해야 한다.
+
+### 재검증
+
+- TypeScript build: 통과
+- Python unit test: 58개 통과
+- synthetic integration: 동일 ProgramCase 중복 후보, 최고 similarity 선택,
+  tie CORE 선택, target+chunk type 조합, 0건 filter, stale 제외, cleanup 통과
+- 운영 DB: read-only 검색만 수행
+- Document 349, Chunk 888, Embedding 888/COMPLETED 888 유지
+- embedding/document/chunk fingerprint 전후 동일
