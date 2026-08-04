@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-08-04T13:24:40Z",
+  "sourceCount": 349,
+  "taxonomyVersion": "program-case-search-taxonomy-v1",
+  "percentageBasis": "program cases; multi-label categories may exceed 100%",
+  "items": [
+    {
+      "category": "ADULT",
+      "count": 71,
+      "percentage": 20.34
+    },
+    {
+      "category": "CHILD",
+      "count": 276,
+      "percentage": 79.08
+    },
+    {
+      "category": "FAMILY",
+      "count": 4,
+      "percentage": 1.15
+    },
+    {
+      "category": "INFANT",
+      "count": 114,
+      "percentage": 32.66
+    },
+    {
+      "category": "SENIOR",
+      "count": 4,
+      "percentage": 1.15
+    },
+    {
+      "category": "TEEN",
+      "count": 1,
+      "percentage": 0.29
+    }
+  ]
+}

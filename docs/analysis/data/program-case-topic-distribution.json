@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-08-04T13:24:40Z",
+  "sourceCount": 349,
+  "taxonomyVersion": "program-case-search-taxonomy-v1",
+  "percentageBasis": "program cases; multi-label categories may exceed 100%",
+  "items": [
+    {
+      "category": "ART_CRAFT",
+      "count": 117,
+      "percentage": 33.52
+    },
+    {
+      "category": "COMMUNITY",
+      "count": 29,
+      "percentage": 8.31
+    },
+    {
+      "category": "CULTURE",
+      "count": 43,
+      "percentage": 12.32
+    },
+    {
+      "category": "DIGITAL",
+      "count": 36,
+      "percentage": 10.32
+    },
+    {
+      "category": "ENVIRONMENT_SCIENCE",
+      "count": 21,
+      "percentage": 6.02
+    },
+    {
+      "category": "HEALTH",
+      "count": 9,
+      "percentage": 2.58
+    },
+    {
+      "category": "LANGUAGE",
+      "count": 23,
+      "percentage": 6.59
+    },
+    {
+      "category": "READING_WRITING",
+      "count": 170,
+      "percentage": 48.71
+    },
+    {
+      "category": "UNKNOWN",
+      "count": 36,
+      "percentage": 10.32
+    }
+  ]
+}

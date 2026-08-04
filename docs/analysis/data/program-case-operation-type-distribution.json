@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-08-04T13:24:40Z",
+  "sourceCount": 349,
+  "taxonomyVersion": "program-case-search-taxonomy-v1",
+  "percentageBasis": "program cases; multi-label categories may exceed 100%",
+  "items": [
+    {
+      "category": "FAMILY_PARTICIPATION",
+      "count": 6,
+      "percentage": 1.72
+    },
+    {
+      "category": "GROUP",
+      "count": 26,
+      "percentage": 7.45
+    },
+    {
+      "category": "MULTI_SESSION",
+      "count": 5,
+      "percentage": 1.43
+    },
+    {
+      "category": "ONE_OFF",
+      "count": 344,
+      "percentage": 98.57
+    }
+  ]
+}

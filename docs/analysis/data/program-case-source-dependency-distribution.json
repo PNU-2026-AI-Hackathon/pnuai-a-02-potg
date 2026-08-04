@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-08-04T13:24:40Z",
+  "sourceCount": 349,
+  "taxonomyVersion": "program-case-search-taxonomy-v1",
+  "percentageBasis": "program cases",
+  "items": [
+    {
+      "category": "ATTACHMENT",
+      "count": 128,
+      "percentage": 36.68
+    },
+    {
+      "category": "SESSION",
+      "count": 3,
+      "percentage": 0.86
+    },
+    {
+      "category": "TITLE_TARGET",
+      "count": 218,
+      "percentage": 62.46
+    }
+  ]
+}

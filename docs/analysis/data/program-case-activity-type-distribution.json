@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-08-04T13:24:40Z",
+  "sourceCount": 349,
+  "taxonomyVersion": "program-case-search-taxonomy-v1",
+  "percentageBasis": "program cases; multi-label categories may exceed 100%",
+  "items": [
+    {
+      "category": "ART",
+      "count": 77,
+      "percentage": 22.06
+    },
+    {
+      "category": "COMMUNITY_ACTIVITY",
+      "count": 26,
+      "percentage": 7.45
+    },
+    {
+      "category": "CRAFT",
+      "count": 97,
+      "percentage": 27.79
+    },
+    {
+      "category": "DIGITAL_PRACTICE",
+      "count": 34,
+      "percentage": 9.74
+    },
+    {
+      "category": "DISCUSSION",
+      "count": 9,
+      "percentage": 2.58
+    },
+    {
+      "category": "EXERCISE",
+      "count": 1,
+      "percentage": 0.29
+    },
+    {
+      "category": "EXPERIMENT",
+      "count": 21,
+      "percentage": 6.02
+    },
+    {
+      "category": "PERFORMANCE",
+      "count": 14,
+      "percentage": 4.01
+    },
+    {
+      "category": "READING",
+      "count": 135,
+      "percentage": 38.68
+    },
+    {
+      "category": "UNKNOWN",
+      "count": 68,
+      "percentage": 19.48
+    },
+    {
+      "category": "WRITING",
+      "count": 32,
+      "percentage": 9.17
+    }
+  ]
+}
