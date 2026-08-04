@@ -72,6 +72,10 @@ export type OcrField = BaseRecord & {
   responseFormatVersion: string;
   ocrEngine: string;
   ocrEngineVersion: string;
+  imageWidth: number;
+  imageHeight: number;
+  imageOrientation: number | null;
+  safeResponseArtifactHash: string;
 };
 
 export type OcrLine = BaseRecord & {

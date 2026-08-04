@@ -1,5 +1,6 @@
 import { mkdir, readFile } from 'fs/promises';
 import path from 'path';
+import sharp from 'sharp';
 import { buildPdfRepresentation } from './pdfRepresentation';
 import { buildHwpRepresentation } from './hwpRepresentation';
 import { buildOcrRepresentation, SafeOcrResponse, sanitizeClovaResponse } from './ocrRepresentation';
@@ -19,6 +20,22 @@ export const DEFAULT_SOURCE_DIRECTORY = 'apps/backend/.local/program-case-search
 
 function file(output: string, name: string) { return path.join(output, name); }
 function sourceOutput(output: string, source: SourceBinary) { return path.join(output, 'sha256', source.sourceSha256); }
+
+async function imageMetadata(source: SourceBinary) {
+  const metadata = await sharp(source.absolutePath, { animated: true, failOn: 'error' }).metadata();
+  if (!metadata.width || !metadata.height) throw new Error('IMAGE_DIMENSIONS_MISSING');
+  return { width: metadata.width, height: metadata.height, orientation: metadata.orientation ?? null };
+}
+
+async function ensureSafeImageMetadata(source: SourceBinary, safe: SafeOcrResponse) {
+  if (Number.isSafeInteger(safe.imageWidth) && safe.imageWidth > 0 && Number.isSafeInteger(safe.imageHeight) && safe.imageHeight > 0
+    && Object.prototype.hasOwnProperty.call(safe, 'imageOrientation')) return safe;
+  const metadata = await imageMetadata(source);
+  const content = { ...Object.fromEntries(Object.entries(safe).filter(([key]) => key !== 'contentHash')), ...{
+    imageWidth: metadata.width, imageHeight: metadata.height, imageOrientation: metadata.orientation,
+  } } as Omit<SafeOcrResponse, 'contentHash'>;
+  return { ...content, contentHash: stableHash(content) } as SafeOcrResponse;
+}
 
 export async function planRepresentation(sourceDirectory: string, outputDirectory: string) {
   const sources = await loadVerifiedSources(sourceDirectory);
@@ -85,6 +102,10 @@ export async function buildOcrArtifacts(input: {
   for (const source of selected) {
     const directory = sourceOutput(input.outputDirectory, source);
     let safe = await readJson<SafeOcrResponse>(file(directory, 'ocr-response.safe.json'));
+    if (safe?.sourceSha256 === source.sourceSha256) {
+      const enriched = await ensureSafeImageMetadata(source, safe);
+      if (enriched.contentHash !== safe.contentHash) { safe = enriched; await writeJson(file(directory, 'ocr-response.safe.json'), safe); }
+    }
     const reusable = safe && safe.sourceSha256 === source.sourceSha256 && safe.contentHash === stableHash(Object.fromEntries(Object.entries(safe).filter(([key]) => key !== 'contentHash')));
     if (reusable) reused += 1;
     else {
@@ -93,7 +114,7 @@ export async function buildOcrArtifacts(input: {
       const raw = await requestClovaOcrResponse({ filePath: source.absolutePath, format: source.detectedType === 'PNG' ? 'png' : 'jpg' },
         { ...getClovaOcrConfig(), maxRetries: 0 });
       apiCalls += 1;
-      safe = sanitizeClovaResponse(raw, source.sourceSha256);
+      safe = sanitizeClovaResponse(raw, source.sourceSha256, await imageMetadata(source));
       await writeJson(file(directory, 'ocr-response.safe.json'), safe);
     }
     const result = buildOcrRepresentation(source, safe!);
@@ -103,7 +124,9 @@ export async function buildOcrArtifacts(input: {
     await writeJson(file(directory, 'parser-manifest.json'), { schemaVersion: REPRESENTATION_SCHEMA_VERSION,
       representationVersion: REPRESENTATION_VERSION, sourceSha256: source.sourceSha256, parser: 'CLOVA_OCR_GENERAL',
       parserVersion: 'clova-structure-parser-v1', providerVersion: 'V2', fieldCount: result.fields.length,
-      lineCount: result.lines.length, blockCount: result.blocks.length, contentHash: stableHash({ fields: result.fields, lines: result.lines, blocks: result.blocks }) });
+      lineCount: result.lines.length, blockCount: result.blocks.length, imageWidth: safe!.imageWidth, imageHeight: safe!.imageHeight,
+      imageOrientation: safe!.imageOrientation, safeResponseArtifactHash: safe!.contentHash,
+      contentHash: stableHash({ fields: result.fields, lines: result.lines, blocks: result.blocks }) });
   }
   await writeJsonl(file(input.outputDirectory, 'ocr-fields.jsonl'), fields); await writeJsonl(file(input.outputDirectory, 'ocr-lines.jsonl'), lines);
   await writeJsonl(file(input.outputDirectory, 'ocr-blocks.jsonl'), blocks);

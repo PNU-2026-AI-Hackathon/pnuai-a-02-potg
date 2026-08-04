@@ -33,17 +33,20 @@ function response(lineBreak = true) {
     assert.equal(id1, id2, 'record ID must use stable serialization');
     assert.equal(stableJson({ b: 2, a: 1 }), '{"a":1,"b":2}');
 
-    const safe = sanitizeClovaResponse(response(true), imageSource.sourceSha256);
+    const imageMetadata = { width: 100, height: 100, orientation: null };
+    const safe = sanitizeClovaResponse(response(true), imageSource.sourceSha256, imageMetadata);
     assert.deepEqual(safe.fields[0].boundingPoly[0], { x: 10, y: 10 });
     assert.equal(safe.fields[0].inferConfidence, 0.9);
     assert.deepEqual(safe.fields.map((field) => field.fieldOrder), [0, 1, 2]);
+    assert.equal(safe.imageWidth, 100); assert.equal(safe.imageHeight, 100); assert.equal(safe.imageOrientation, null);
     const ocr = buildOcrRepresentation(imageSource, safe);
     assert.equal(ocr.fields.length, 3); assert.equal(ocr.lines.length, 2); assert.equal(ocr.blocks.length, 2);
     assert.ok(Math.abs(ocr.lines[0].confidence - 0.85) < 1e-12); assert.equal(ocr.lines[0].origin, 'DERIVED');
     assert.equal(ocr.fields[0].origin, 'PARSER_NATIVE'); assertRecord(ocr.fields[0]); assertRecord(ocr.lines[0]);
     const repeat = buildOcrRepresentation(imageSource, safe);
     assert.equal(stableJson(ocr), stableJson(repeat), 'same OCR response must produce byte-identical structures');
-    const coordinate = buildOcrRepresentation(imageSource, sanitizeClovaResponse(response(false), imageSource.sourceSha256));
+    assert.equal(ocr.fields[0].safeResponseArtifactHash, safe.contentHash);
+    const coordinate = buildOcrRepresentation(imageSource, sanitizeClovaResponse(response(false), imageSource.sourceSha256, imageMetadata));
     assert.equal(coordinate.lines.length, 2); assert.equal(coordinate.lines[0].derivationRule, 'Y_COORDINATE_CLUSTER');
     assert.ok(ocr.blocks.every((block) => block.role && block.roleClassifierVersion && block.readingOrder));
     const footer = { ...ocr.blocks[0], recordId: 'footer-block', role: 'CONTACT_OR_FOOTER', text: '주변 안내', structuralOrder: 99 };

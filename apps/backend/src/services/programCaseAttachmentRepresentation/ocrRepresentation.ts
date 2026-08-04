@@ -16,6 +16,9 @@ export type SafeOcrResponse = {
   responseFormatVersion: string;
   ocrEngine: 'CLOVA_OCR_GENERAL';
   ocrEngineVersion: 'V2';
+  imageWidth: number;
+  imageHeight: number;
+  imageOrientation: number | null;
   inferResult: 'SUCCESS';
   fields: Array<{ fieldOrder: number; inferText: string; inferConfidence: number; boundingPoly: Point[]; lineBreak: boolean | null }>;
   contentHash: string;
@@ -36,7 +39,9 @@ function points(value: unknown) {
   });
 }
 
-export function sanitizeClovaResponse(value: unknown, sourceSha256: string): SafeOcrResponse {
+export function sanitizeClovaResponse(value: unknown, sourceSha256: string, imageMetadata: {
+  width: number; height: number; orientation: number | null;
+}): SafeOcrResponse {
   const response = record(value);
   if (!Array.isArray(response.images) || response.images.length !== 1) throw new Error('Exactly one OCR image is required.');
   const image = record(response.images[0]);
@@ -52,7 +57,8 @@ export function sanitizeClovaResponse(value: unknown, sourceSha256: string): Saf
   const content = {
     safeArtifactVersion: 'clova-ocr-safe-response/v1' as const, sourceSha256,
     requestFormatVersion: 'V2', responseFormatVersion: 'V2', ocrEngine: 'CLOVA_OCR_GENERAL' as const,
-    ocrEngineVersion: 'V2' as const, inferResult: 'SUCCESS' as const, fields,
+    ocrEngineVersion: 'V2' as const, imageWidth: imageMetadata.width, imageHeight: imageMetadata.height,
+    imageOrientation: imageMetadata.orientation, inferResult: 'SUCCESS' as const, fields,
   };
   return { ...content, contentHash: stableHash(content) };
 }
@@ -114,7 +120,9 @@ export function buildOcrRepresentation(source: SourceBinary, safe: SafeOcrRespon
   const fields = safe.fields.map((raw) => {
     const content = { fieldOrder: raw.fieldOrder, inferText: raw.inferText, inferConfidence: raw.inferConfidence,
       boundingPoly: raw.boundingPoly, lineBreak: raw.lineBreak, requestFormatVersion: safe.requestFormatVersion,
-      responseFormatVersion: safe.responseFormatVersion, ocrEngine: safe.ocrEngine, ocrEngineVersion: safe.ocrEngineVersion };
+      responseFormatVersion: safe.responseFormatVersion, ocrEngine: safe.ocrEngine, ocrEngineVersion: safe.ocrEngineVersion,
+      imageWidth: safe.imageWidth, imageHeight: safe.imageHeight, imageOrientation: safe.imageOrientation,
+      safeResponseArtifactHash: safe.contentHash };
     return { ...baseRecord({ source, kind: 'CLOVA_OCR_FIELD', origin: 'PARSER_NATIVE', parser: safe.ocrEngine,
       parserVersion: OCR_PARSER_VERSION, structuralOrder: raw.fieldOrder, structuralPosition: `field:${raw.fieldOrder}`, content,
       confidence: raw.inferConfidence }), ...content } as OcrField;
