@@ -13,6 +13,7 @@ import agendaRouter from './routes/agenda';
 import searchRouter from './routes/search';
 import internalProgramCasesRouter from './routes/internalProgramCases';
 import programCaseSemanticSearchRouter from './routes/programCaseSemanticSearch';
+import meRouter from './routes/me';
 import { announcements, libraries, programs, volunteers, agendaItems } from './data/mockData';
 
 const app = express();
@@ -37,6 +38,7 @@ app.get('/api/summary', (_req: Request, res: Response) => {
 app.use('/api/announcements', announcementsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/interests', interestsRouter);
+app.use('/api/me', meRouter);
 app.use('/api/libraries', librariesRouter);
 app.use('/api/programs', programsRouter);
 app.use('/api/posts', postsRouter);
