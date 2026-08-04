@@ -131,3 +131,38 @@ cddd5214725ee367cf40664f9c82658b89c7dc569418e2d133a8a1e3fcb0a6aa
 6. 공유 포스터는 큰 block 내부의 제목형 line과 반복 일정 패턴을 section 후보 근거로 사용한다.
 
 최종 권고는 `C. section/block 전략을 수정한 뒤 새 표본 검증 필요`다. 구조화 OCR은 field 좌표, confidence와 재처리 가능한 provenance를 제공하므로 평탄화 OCR보다 분명한 이점이 있지만, 현재 section 결과 그대로 전수 호출할 품질은 아니다.
+
+## Section 전략 2차 검증
+
+기존 9개 safe response만 재사용하여 외부 API 호출 없이 visual block과 program section 책임을 분리했다.
+
+- block role 후보와 confidence/evidence/version 추가
+- block reading order 후보 추가
+- 단일 linked ProgramCase는 강한 복수 프로그램 근거가 없으면 whole-document section 하나 유지
+- table row, vertical gap, header/footer/contact를 단독 경계에서 제외
+- 공유 image는 제목형 line과 근접 metadata의 반복 근거가 있을 때만 분할
+- title token을 그대로 복사하던 keyword evidence의 이중 점수 제거
+
+표본 block 역할은 program content 28, title candidate 5, program metadata 5, table/grid 4, header/branding 1, contact/footer 2, administrative notice 8, unknown 3으로 분류됐다. Reading order는 row-major 27, hybrid 24, unresolved 5였으며 불확실한 block을 column-major로 억지 확정하지 않았다.
+
+| sourceSha256 | 수정 전 section | 수정 후 section | 예상 프로그램 구간 | 수정 후 candidate/ambiguous/no-match | 판정 |
+|---|---:|---:|---:|---:|---|
+| `5ac25cc062ef…c1bed` | 6 | 4 | 약 6 | 7/6/3 | `UNDER_SEGMENTED` |
+| `ff8e4ca3737b…61121a` | 4 | 6 | 약 6~8 일정 항목 | 0/0/6 | `CANDIDATE_MATCH_WEAK` |
+| `5ee58be5081c…642138` | 5 | 6 | 약 6 일정 항목 | 0/0/6 | `CANDIDATE_MATCH_WEAK` |
+| `be306b643bc2…a3dc68` | 10 | 3 | 1~2 | 0/0/3 | `USABLE_WITH_MINOR_RULES` |
+| `826f59cebfb3…bf752f` | 5 | 1 | 1 | 0/0/1 | `GOOD` |
+| `99ba2e1ce938…dee6d2` | 10 | 1 | 1 | 1/0/0 | `GOOD` |
+| `76c855230729…84b091` | 1 | 1 | 1 | 0/0/1 | `CANDIDATE_MATCH_WEAK` |
+| `00433a31b458…306785` | 13 | 1 | 1 | 1/0/0 | `GOOD` |
+| `f68a6abfda32…8377e7` | 2 | 1 | 1 | 1/0/0 | `GOOD` |
+
+단일 연결 표본 5개는 모두 1 section으로 안정화되어 행·footer·문의 영역 과분할이 해소됐다. 공유 일정형 포스터는 시각적 일정 항목 분리는 개선됐지만 source ProgramCase title과 section title의 표현 차이로 candidate가 약하다. 최대 공유 포스터는 layout region 6개를 그대로 section으로 쓰던 문제는 제거했으나 약 6개 프로그램 영역 중 4개만 감지하여 여전히 미분할이다.
+
+재실행 validation은 dangling reference와 parser/provenance 누락 0으로 통과했다. 동일 safe response 재실행에서 block/section/candidate 파일 hash와 전체 dataset hash가 일치했다.
+
+```text
+d16a025967991b46176d00397f6e0b81fc48a231d4464b913104873f0824be3b
+```
+
+최종 권고는 여전히 `C`다. 단일 프로그램 정책은 전체 실행 가능한 수준으로 개선됐지만, 공유 포스터의 제목 anchor recall과 일정형 section의 candidate 연결이 해결되지 않았다. 전체 102건 호출 전에 같은 safe artifact로 공유 포스터 anchor와 column-local title-to-body attachment를 한 번 더 개선해야 한다.

@@ -63,6 +63,8 @@ CLOVA OCR V2 응답에서 인증정보와 endpoint를 제외한 다음을 `ocr-r
 
 Field는 parser-native이다. Line은 전체 field에 lineBreak가 있으면 API 순서와 lineBreak로, 아니면 y 좌표 clustering으로 생성한다. Block은 line 간 vertical gap으로 생성한다. Line/block은 모두 derived다.
 
+Visual block은 program section과 동일하지 않다. 각 block은 deterministic rule로 `PROGRAM_CONTENT`, `TITLE_CANDIDATE`, `PROGRAM_METADATA`, `TABLE_OR_GRID`, `HEADER_OR_BRANDING`, `CONTACT_OR_FOOTER`, `ADMINISTRATIVE_NOTICE`, `UNKNOWN` 중 하나의 역할 후보와 confidence/evidence를 가진다. Reading order는 `COLUMN_MAJOR`, `ROW_MAJOR`, `HYBRID_LAYOUT`, `UNRESOLVED` 중 하나로 기록한다.
+
 동일 source hash, provider, parser version, representation version의 safe artifact가 유효하면 API를 다시 호출하지 않는다. 외부 호출에는 `--allow-external-api`, 1개 이상의 `--source-hash`, 1~10의 `--max-calls`가 모두 필요하며 retry는 0이다.
 
 ## HWP
@@ -74,6 +76,8 @@ kordoc 4.2.7 Markdown block 순서와 HTML table을 파싱한다. Paragraph와 t
 ## Section Candidate
 
 PDF page, HWP paragraph/table, OCR block 같은 기존 unit reference를 순서대로 보유한다. 빈 section을 만들지 않는다. 경계 근거가 약하면 전체 attachment를 하나의 section으로 유지한다. Section은 프로그램 구간의 확정값이 아니다.
+
+Image section은 visual block을 그대로 승격하지 않는다. linked ProgramCase가 하나면 강한 복수 프로그램 근거가 없는 한 `WHOLE_DOCUMENT` 하나를 만든다. 표 행·vertical gap·header·footer·contact는 단독 경계가 아니다. 공유 image는 반복되는 제목형 line과 근접한 날짜·시간·대상·장소·강사 metadata가 두 묶음 이상일 때만 `PROGRAM_REGION`으로 분할한다. 주변 block은 삭제하지 않고 `excludedPeripheralBlockRefs`로 보존한다.
 
 ## ProgramCase Candidate
 
@@ -114,4 +118,3 @@ npm.cmd run program-case-attachment-representation -- --validate
 ```
 
 기본 실행은 외부 API 호출 0, 외부 URL 다운로드 0, DB write 0이다. Source binary의 SHA-256과 `binarySnapshotRef`를 처리 전에 검증하며 snapshot은 수정하지 않는다.
-
