@@ -232,7 +232,13 @@ export default async function AboutPage() {
               </article>
             ))}
           </div>
-          <p className="valueConclusion">모이라는 이 모든 과정을 하나의 플랫폼에서 연결합니다.</p>
+          <aside className="valueConclusion">
+            <span className="valueConclusionIcon" aria-hidden="true">“</span>
+            <div>
+              <strong>모이라는 이 모든 과정을 하나의 플랫폼에서 연결합니다.</strong>
+              <p>주민 아이디어 제안부터 AI 기반 프로그램 기획, 수요조사까지 모두 모이라에서 가능합니다.</p>
+            </div>
+          </aside>
         </div>
       </section>
 
