@@ -3,49 +3,21 @@ import SiteHeader from '@/components/layout/SiteHeader';
 import { getCurrentUser } from '@/lib/server-auth';
 import SectionHeading from '@/components/home/SectionHeading';
 
-const problemItems = [
-  {
-    title: '사서의 프로그램 기획 부담 증가',
-    description:
-      '작은도서관 사서가 지역 의제와 참여를 모두 고려해 프로그램을 기획하기 어렵습니다.',
-  },
-  {
-    title: '다양한 프로그램, 낮은 주민 참여',
-    description:
-      '좋은 프로그램이 있어도 주민 참여가 부족해 지속 가능한 운영이 힘듭니다.',
-  },
-  {
-    title: '작은도서관의 지역 커뮤니티 기능 약화',
-    description:
-      '지역 주민 활동과 도서관 프로그램이 쉽게 연결되지 않아 공동체 성장이 멈춥니다.',
-  },
-];
-
 const valueItems = [
   {
     icon: '🗣️',
-    title: '주민의 의견에서 시작됩니다.',
-    description: '동네 사람들이 제안한 이야기들이 모이라의 출발점입니다.',
+    title: '주민 의견을 반영할 창구가 부족합니다.',
+    description: '기존 도서관 홈페이지는 문화·교육 프로그램 안내와 신청 중심으로 운영되어 주민이 필요한 프로그램을 제안하고 기획에 참여하기 어렵습니다.',
   },
   {
-    icon: '🤖',
-    title: 'AI가 프로그램 기획을 돕습니다.',
-    description: '모이라 스튜디오가 제안을 분석하고 실현 가능한 기획을 만듭니다.',
+    icon: '⏱️',
+    title: '프로그램 기획에는 많은 시간과 노력이 필요합니다.',
+    description: '사서는 다양한 업무와 함께 문화·교육 프로그램을 기획해야 하므로 주민 수요를 지속적으로 반영하기 어렵습니다.',
   },
   {
-    icon: '🧑‍💼',
-    title: '사서가 지역 상황에 맞게 검토합니다.',
-    description: '사서는 AI 기획안을 지역에 맞게 다듬어 실제 운영으로 연결합니다.',
-  },
-  {
-    icon: '✅',
-    title: '주민이 다시 프로그램에 참여합니다.',
-    description: '수요조사와 참여 기회를 통해 주민들이 직접 프로그램을 만들어갑니다.',
-  },
-  {
-    icon: '🌱',
-    title: '지역 공동체가 활성화됩니다.',
-    description: '작은도서관 중심으로 선순환하는 지역 커뮤니티를 만듭니다.',
+    icon: '🔗',
+    title: '의견 수렴부터 수요조사까지 연결되지 않습니다.',
+    description: '주민 의견 수렴, AI 프로그램 기획, 운영 전 수요조사가 하나의 흐름으로 이어지는 서비스가 부족합니다.',
   },
 ];
 
@@ -246,8 +218,8 @@ export default async function AboutPage() {
         <div className="uiContainer">
           <SectionHeading
             eyebrow="MOIRA VALUE"
-            title="지역 주민과 작은도서관을 연결하는 플랫폼"
-            description="모이라는 단순한 AI 도구가 아니라, 주민의 참여와 사서의 실행력이 만나는 커뮤니티 허브입니다."
+            title={'주민의 의견을 반영한\n도서관 문화·교육 프로그램 기획, 더 쉽게 할 수 없을까요?'}
+            description={'도서관의 문화·교육 프로그램은 점점 중요해지고 있지만,\n주민 의견을 반영하면서 새로운 프로그램을 기획하기에는 현실적인 어려움이 있습니다.'}
           />
           <div className="valueGrid">
             {valueItems.map((item) => (
@@ -260,6 +232,7 @@ export default async function AboutPage() {
               </article>
             ))}
           </div>
+          <p className="valueConclusion">모이라는 이 모든 과정을 하나의 플랫폼에서 연결합니다.</p>
         </div>
       </section>
 
@@ -370,39 +343,18 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="homeSection futureSection">
-        <div className="uiContainer">
-          <SectionHeading
-            eyebrow="WHAT'S NEXT"
-            title="앞으로의 계획"
-            description="현재 금정구 작은도서관을 시작으로, 공공도서관과 부산 지역, 전국 작은도서관으로 확장하는 것을 목표로 합니다."
-          />
-          <div className="futureContent">
-            <div className="futureText">
-              <p>
-                현재 모이라는 금정구 작은도서관을 중심으로 지역 주민의 참여와
-                도서관 프로그램을 연결하는 실험을 진행하고 있습니다. 향후에는
-                공공도서관과 부산 전역, 전국 작은도서관까지 서비스를 확장하여
-                더 많은 지역 커뮤니티가 함께 성장할 수 있도록 합니다.
-              </p>
-            </div>
-            <div className="futureList">
-              <article className="introCard futureCard">
-                <span>01</span>
-                <strong>공공도서관</strong>
-                <p>지역 의제를 반영한 공공도서관 프로그램 운영 지원</p>
-              </article>
-              <article className="introCard futureCard">
-                <span>02</span>
-                <strong>부산 지역</strong>
-                <p>금정구를 넘어 부산 전체 작은도서관 커뮤니티로 확장</p>
-              </article>
-              <article className="introCard futureCard">
-                <span>03</span>
-                <strong>전국 작은도서관</strong>
-                <p>전국 작은도서관이 주민과 함께 프로그램을 기획하고 운영하는 플랫폼</p>
-              </article>
-            </div>
+      <section className="aboutCtaSection">
+        <div className="uiContainer aboutCtaInner">
+          <p className="uiEyebrow">CONNECT WITH MOIRA</p>
+          <h2>주민과 사서를 연결하는<br />지역 도서관 프로그램 플랫폼</h2>
+          <p>우리 동네에 필요한 아이디어를 나누고, 함께할 프로그램을 만나보세요.</p>
+          <div className="aboutCtaActions">
+            <Link className="uiButton uiButtonPrimary" href="/community/proposals">
+              우리 동네 아이디어 제안하기
+            </Link>
+            <Link className="uiButton uiButtonSecondary" href="/#library-finder">
+              프로그램 둘러보기
+            </Link>
           </div>
         </div>
       </section>
