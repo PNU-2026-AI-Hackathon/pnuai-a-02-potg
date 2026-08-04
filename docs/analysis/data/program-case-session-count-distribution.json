@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-08-04T14:45:20Z",
+  "sourceCount": 349,
+  "taxonomyVersion": "program-case-search-taxonomy-v1",
+  "percentageBasis": "program cases",
+  "items": [
+    {
+      "category": "MULTI_SESSION",
+      "count": 5,
+      "percentage": 1.43
+    },
+    {
+      "category": "ONE_OFF",
+      "count": 344,
+      "percentage": 98.57
+    }
+  ]
+}
