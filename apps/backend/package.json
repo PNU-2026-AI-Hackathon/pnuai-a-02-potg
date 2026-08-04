@@ -19,6 +19,8 @@
     "program-case-search:rebuild": "npm run build && node scripts/rebuild-program-case-search-data.js",
     "program-case-embeddings:build": "node scripts/run-program-case-semantic-search.js embed",
     "program-case-semantic-search": "node scripts/run-program-case-semantic-search.js search",
+    "program-case-source-snapshot": "npm run build && node dist/cli/programCaseSourceSnapshot.js",
+    "test:program-case-source-snapshot": "npm run build && node scripts/test-program-case-source-contract.js && node scripts/test-program-case-source-snapshot.js && node scripts/test-program-case-source-snapshot-cli.js",
     "program-case-embedding-model:diagnose": "node scripts/run-program-case-semantic-search.js diagnose",
     "test:program-case-document-chunk-service": "npm run build && node scripts/test-program-case-document-chunk-service.js",
     "test:program-case-document-chunk-cli": "npm run build && node scripts/test-program-case-document-chunk-cli.js",
