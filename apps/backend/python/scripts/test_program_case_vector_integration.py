@@ -7,6 +7,10 @@ from program_case_semantic_search.cli import metadata
 from program_case_semantic_search.database import connect
 from program_case_semantic_search.search_repository import SearchRepository
 from program_case_semantic_search.search_service import SearchService
+from program_case_semantic_search.metadata_inference import (
+    AgeGroup, ProgramCaseSearchRequest, ProgramCategory,
+)
+from program_case_semantic_search.ranking_policy import ScoringPolicy, rank_programs
 from program_case_semantic_search.test_database import test_database_url_from_environment
 from program_case_semantic_search.vector_utils import make_test_vector
 
@@ -69,7 +73,8 @@ INSERT INTO "ProgramCase" (
   '테스트', 1, 0, 'TEST', %s, %s, 'test', 'test', '', '', false,
   %s, true, '[]'::jsonb, %s, %s
 )
-""", (program_id, suffix, "VECTOR_TEST_" + suffix, now, now, now, now, now))
+""", (program_id, suffix, "어르신 스마트폰 교육 " + suffix,
+          now, now, now, now, now))
                 cursor.execute("""
 INSERT INTO "ProgramCase" (
   "id", "sourceType", "sourcePostId", "sourceUrl", "title", "targetAudience",
@@ -82,7 +87,7 @@ INSERT INTO "ProgramCase" (
   '테스트', 1, 0, 'TEST', %s, %s, 'test', 'test', '', '', false,
   %s, true, '[]'::jsonb, %s, %s
 )
-""", (other_program_id, suffix + "-other", "VECTOR_OTHER_" + suffix,
+""", (other_program_id, suffix + "-other", "어린이 스마트폰 교육 " + suffix,
           now, now, now, now, now))
                 cursor.execute("""
 INSERT INTO "ProgramCaseDocument" (
@@ -161,6 +166,25 @@ INSERT INTO "ProgramCaseDocumentChunkEmbedding" (
                 raise AssertionError("equal similarity tie did not prefer CORE")
             if response.duplicates_removed < 1:
                 raise AssertionError("dedupe aggregate did not report removed duplicates")
+            ranking_request = ProgramCaseSearchRequest(
+                "스마트폰 교육", age_groups=frozenset({AgeGroup.SENIOR}),
+                categories=frozenset({ProgramCategory.DIGITAL}), limit=2,
+            )
+            policy_results = {
+                policy: rank_programs(candidate_results, ranking_request, policy, limit=2)
+                for policy in ScoringPolicy
+            }
+            if any(len({item.representative.program_case_id for item in values}) != len(values)
+                   for values in policy_results.values()):
+                raise AssertionError("ranking policy returned duplicate programs")
+            if policy_results[ScoringPolicy.METADATA][0].representative.program_case_id != program_id:
+                raise AssertionError("metadata bonus did not prefer the matching program")
+            if any(item.representative.program_case_id == other_program_id
+                   for item in policy_results[ScoringPolicy.COMBINED]):
+                raise AssertionError("hybrid metadata filter retained an age mismatch")
+            if policy_results[ScoringPolicy.AGGREGATE][0].final_score <= \
+                    policy_results[ScoringPolicy.AGGREGATE][0].raw_similarity:
+                raise AssertionError("second chunk aggregation was not applied")
             filtered = SearchService(
                 SearchRepository(connection), FixedQueryProvider(), current
             ).search("fixture", limit=5, target="성인", chunk_type="CORE")
