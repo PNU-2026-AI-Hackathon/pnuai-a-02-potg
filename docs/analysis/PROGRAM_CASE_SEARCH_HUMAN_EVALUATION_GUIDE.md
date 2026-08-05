@@ -1,5 +1,23 @@
 # ProgramCase 사람 Relevance 평가 가이드
 
+> **[보류] 현재 pool로 사람 평가를 시작하지 않는다.**
+>
+> 이 문서의 절차와 평가 harness는 유효하지만, 2026-08-05 시스템 검토에서 다음이 확인되어
+> 현 781개 pool은 **baseline 보존용**으로만 사용한다.
+>
+> - `programCaseSearchCorpus/builder.ts`가 `core.notices`를 참조하나 source snapshot 계약은
+>   해당 값을 `core.flattenedRepresentations[PROGRAM_CASE_NOTICES]`에 둔다. 349건 전부
+>   `undefined`가 되어 본문 설명 텍스트가 corpus에 반영되지 않았다.
+>   그 결과 Core denseText 중앙값이 51자이다.
+> - 크롤러의 첨부 selector가 `a[href*="upload_data"]`뿐이라 본문 `<img>`로 삽입된 프로그램
+>   내용이 수집되지 않았다. 표본 23건 중 19건(83%)이 본문에 이미지를 포함하고, 5건은
+>   본문 텍스트가 0자이다.
+> - 평가 UI가 노출하는 `description`이 검색이 사용하는 Core `denseText`와 동일하여,
+>   평가자가 검색기와 같은 정보만 보고 판단하게 된다.
+>
+> 위 항목이 해소되고 pool이 재생성된 뒤에 평가를 시작한다.
+> 상세 근거는 후속 이슈에서 관리한다.
+
 ## 1. 실행 준비
 
 PowerShell 창 1에서 backend를 실행한다.
