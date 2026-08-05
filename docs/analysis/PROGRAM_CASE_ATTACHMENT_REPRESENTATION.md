@@ -166,3 +166,43 @@ d16a025967991b46176d00397f6e0b81fc48a231d4464b913104873f0824be3b
 ```
 
 최종 권고는 여전히 `C`다. 단일 프로그램 정책은 전체 실행 가능한 수준으로 개선됐지만, 공유 포스터의 제목 anchor recall과 일정형 section의 candidate 연결이 해결되지 않았다. 전체 102건 호출 전에 같은 safe artifact로 공유 포스터 anchor와 column-local title-to-body attachment를 한 번 더 개선해야 한다.
+
+## 전수 실행 및 #117 완료 판단
+
+계약 감사에서 이미지 크기와 좌표 연결, orientation unresolved 상태, safe response artifact hash의 직접 추적을 보완했다. 기존 9건과 신규 일반화 표본 5건에서 polygon, field order, source hash 연결과 parser-native/derived 구분을 확인한 뒤 나머지 이미지를 처리했다.
+
+| 항목 | 결과 |
+|---|---:|
+| 기존 safe artifact 재사용 | 9 |
+| 일반화 표본 신규 호출 | 5 |
+| 나머지 이미지 신규 호출 | 88 |
+| 전체 신규 호출 | 93 |
+| retry | 0 |
+| 성공/실패 | 93/0 |
+| 최종 Image artifact | 102/102 |
+| 외부 URL 다운로드 / DB write | 0 / 0 |
+
+전체 Representation 통계:
+
+| 항목 | 수 |
+|---|---:|
+| PDF page / text item | 63 / 7,109 |
+| OCR image / field / line / block | 102 / 21,395 / 7,180 / 996 |
+| HWP structural unit | 2,070 |
+| Section candidate | 249 |
+| ProgramCase candidate | 269 |
+| AMBIGUOUS / NO_RELIABLE_MATCH | 21 / 122 |
+| Representation 없는 snapshot | 0 |
+| dangling reference / provenance failure | 0 / 0 |
+
+공유 binary 21건의 관계 후보는 날짜 차이 7, 시간 차이 5, 차수 차이 1, 대상 차이 2, 여러 프로그램 통합 문서 5, 행사 개요와 활동 슬롯 1건이다. 동일 ProgramCase 내부 중복은 없었다. 최대 22개 공유 이미지는 약 6개 의미 활동을 시간대별 22개 접수 ProgramCase로 확장한 행사 개요 포스터이므로 section 수를 22로 강제하지 않는다.
+
+전수 예외 탐지는 확정 오류가 아니라 후속 rule 개선 후보이다. 주요 분포는 multi-column 94, reading-order unresolved 82, low-confidence field 후보 67, no-reliable-match source 63, merged-cell HWP 21, ambiguous source 8, under-segmentation 후보 6이다. 25건 층화 표본에는 단일/공유 이미지, 최대 공유 그룹, PDF text/OCR candidate, HWP paragraph/table, ambiguous/no-match 및 과소분할 후보를 포함했다.
+
+저장된 parser-native artifact만 사용한 전수 재실행에서 외부 호출은 0이었다. OCR field/line/block, section, candidate, 공유 관계, 예외와 층화 표본 파일 hash가 모두 동일했고 dataset hash는 다음과 같다.
+
+```text
+c5337769c4d2a498ee54045752552fb9a10bf5750d9d11322bbd20b508e86b6d
+```
+
+#117의 완료 조건인 136건 Representation 상태, parser-native 재사용, 전체 section/candidate, validation, 결정성, 예외 분포와 층화 검토가 충족됐다. 공유 포스터 section과 candidate 품질은 완벽하지 않지만 `AMBIGUOUS`, `NO_RELIABLE_MATCH`, 예외 후보로 안전하게 보류되며 OCR 재호출 없이 후속 Search Corpus 단계에서 개선할 수 있다. 따라서 #117 완료를 권장한다.

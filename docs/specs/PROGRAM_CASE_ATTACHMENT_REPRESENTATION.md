@@ -118,3 +118,22 @@ npm.cmd run program-case-attachment-representation -- --validate
 ```
 
 기본 실행은 외부 API 호출 0, 외부 URL 다운로드 0, DB write 0이다. Source binary의 SHA-256과 `binarySnapshotRef`를 처리 전에 검증하며 snapshot은 수정하지 않는다.
+
+## 전수 실행 완료 계약
+
+2026-08-05 기준 고유 binary 136건(PDF 12, Image 102, HWP 22)의 parser-native Representation이 모두 생성됐다. Image safe response는 source SHA-256, 원본 field order, text, confidence, 전체 polygon, lineBreak, provider/format version뿐 아니라 image width/height/orientation과 safe artifact hash를 보존한다. 얻을 수 없는 orientation은 `null`로 유지한다.
+
+전체 Image safe artifact가 존재하면 `--build-ocr`은 외부 호출 없이 102건을 재구성한다. Section, candidate, 공유 관계, 예외 후보와 층화 표본은 parser-native artifact에서 파생되며 parser를 다시 호출하지 않는다.
+
+추가 local artifact는 다음과 같다.
+
+```text
+shared-binary-relationships.jsonl
+representation-exceptions.jsonl
+stratified-quality-review.jsonl
+representation-analysis-report.json
+```
+
+공유 관계 유형은 `SAME_PROGRAM_DIFFERENT_DATE`, `SAME_PROGRAM_DIFFERENT_TIME`, `SAME_PROGRAM_DIFFERENT_ROUND`, `SAME_PROGRAM_DIFFERENT_TARGET`, `MULTI_PROGRAM_SHARED_DOCUMENT`, `EVENT_OVERVIEW_WITH_ACTIVITY_SLOTS`, `POSSIBLE_FALSE_ATTACHMENT_LINK`, `UNRESOLVED`을 사용한다. 이는 binary 공유 이유의 설명 가능한 후보이며 운영 연결 판정이 아니다.
+
+`attachment-sections.jsonl`과 `program-case-candidates.jsonl`은 후속 Search Corpus의 공통 입력이다. Section 수가 linked ProgramCase 수와 같다는 가정, candidate를 최종 연결로 승격하는 처리, Search Corpus 포함 판정은 이 계약에 포함하지 않는다.
