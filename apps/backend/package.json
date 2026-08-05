@@ -24,6 +24,8 @@
     "program-case-attachment-representation": "npm run build && node dist/cli/programCaseAttachmentRepresentation.js",
     "test:program-case-attachment-representation": "npm run build && node scripts/test-program-case-attachment-representation.js",
     "program-case-search-corpus": "npm run build && node dist/cli/programCaseSearchCorpus.js",
+    "program-case-search-retrieval": "npm run build && node dist/cli/programCaseSearchRetrieval.js",
+    "test:program-case-search-retrieval": "npm run build && node scripts/test-program-case-search-retrieval.js",
     "test:program-case-search-corpus": "npm run build && node scripts/test-program-case-search-corpus.js",
     "analyze:program-case-attachment-representation": "node scripts/analyze-program-case-attachment-representation.js",
     "program-case-search-profile": "node scripts/run-program-case-search-profile.js",
