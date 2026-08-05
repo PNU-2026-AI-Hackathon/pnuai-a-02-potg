@@ -14,6 +14,7 @@ import searchRouter from './routes/search';
 import internalProgramCasesRouter from './routes/internalProgramCases';
 import programCaseSemanticSearchRouter from './routes/programCaseSemanticSearch';
 import programCaseSearchInspectorRouter from './routes/programCaseSearchInspector';
+import programCaseSearchRouter from './routes/programCaseSearch';
 import meRouter from './routes/me';
 import { announcements, libraries, programs, volunteers, agendaItems } from './data/mockData';
 
@@ -49,6 +50,7 @@ app.use('/api/search', searchRouter);
 app.use('/api/internal/program-cases', internalProgramCasesRouter);
 app.use('/api/program-case', programCaseSemanticSearchRouter);
 app.use('/api/internal/program-case-search-inspector', programCaseSearchInspectorRouter);
+app.use('/api/internal/program-case-search', programCaseSearchRouter);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'API route not found' });
