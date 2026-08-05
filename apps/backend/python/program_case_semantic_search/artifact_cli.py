@@ -20,7 +20,7 @@ def main() -> int:
         batch=rows[offset:offset+8]; reusable=[]; pending=[]
         for row in batch:
             old=existing.get(row["corpusId"])
-            if old and old.get("contentHash")==row["contentHash"] and old.get("modelRevision")==MODEL_REVISION and old.get("providerVersion")==PROVIDER_VERSION: reusable.append(old)
+            if old and old.get("contentHash")==row["contentHash"] and old.get("model")==MODEL_ID and old.get("modelRevision")==MODEL_REVISION and old.get("providerVersion")==PROVIDER_VERSION and old.get("normalized")==NORMALIZE_EMBEDDINGS: reusable.append(old)
             else: pending.append(row)
         output.extend(reusable)
         if pending:
