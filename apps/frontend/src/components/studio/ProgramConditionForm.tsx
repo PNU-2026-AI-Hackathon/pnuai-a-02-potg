@@ -100,10 +100,10 @@ export default function ProgramConditionForm() {
             <span aria-hidden="true">+</span>
             새 기획
           </button>
-          <button type="button">
+          <Link href="/studio/documents">
             <span aria-hidden="true">≡</span>
             작업내역
-          </button>
+          </Link>
           <button type="button" onClick={() => setIsTutorialOpen(true)}>
             <span aria-hidden="true">?</span>
             도움말
