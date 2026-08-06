@@ -282,10 +282,10 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             <span aria-hidden="true">+</span>
             새 기획
           </Link>
-          <button className="isActive" type="button">
+          <Link className="isActive" href="/studio/documents">
             <span aria-hidden="true">≡</span>
             작업내역
-          </button>
+          </Link>
         </nav>
       </aside>
 
