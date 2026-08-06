@@ -159,7 +159,7 @@ export default function StudioDocumentEditor({ documentId }: StudioDocumentEdito
           <div>
             <p className="uiEyebrow">
               <span className="studioBrandSpark" aria-hidden="true">✦</span>
-              AI PROGRAM DOCUMENT
+              MOIRA STUDIO
             </p>
             <h1>프로그램 기획서 편집</h1>
           </div>

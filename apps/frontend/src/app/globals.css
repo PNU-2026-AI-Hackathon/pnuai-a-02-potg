@@ -7243,15 +7243,16 @@ html.isFullPageScroll:has(.moiraPage) {
 
 .studioDocumentToolbar {
   position: sticky;
-  top: 0;
+  top: 18px;
   z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  border-bottom: 1px solid #dfe8e3;
-  background: rgba(245, 248, 246, 0.94);
-  padding: 18px 0 16px;
+  border: 1px solid #dfe8e3;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 24px 28px;
   backdrop-filter: blur(18px);
 }
 
