@@ -7372,7 +7372,8 @@ html.isFullPageScroll:has(.moiraPage) {
 .studioDocumentBodyField textarea {
   width: 100%;
   min-height: 960px;
-  resize: vertical;
+  resize: none;
+  overflow-y: hidden;
   border: 0;
   background:
     linear-gradient(#fff, #fff) padding-box,

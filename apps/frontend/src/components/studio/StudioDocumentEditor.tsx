@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type SaveState = 'saved' | 'dirty' | 'saving';
 
@@ -72,6 +72,7 @@ type StudioDocumentEditorProps = {
 };
 
 export default function StudioDocumentEditor({ documentId }: StudioDocumentEditorProps) {
+  const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const document = useMemo(() => ({ ...dummyDocument, id: documentId || dummyDocument.id }), [documentId]);
   const [title, setTitle] = useState(document.title);
   const [content, setContent] = useState(document.content);
@@ -80,6 +81,17 @@ export default function StudioDocumentEditor({ documentId }: StudioDocumentEdito
 
   const hasEmptyTitle = title.trim().length === 0;
   const canSave = saveState === 'dirty' && !hasEmptyTitle;
+
+  useEffect(() => {
+    const textarea = bodyTextareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [content]);
 
   function markDirty() {
     if (saveState !== 'dirty') {
@@ -196,6 +208,7 @@ export default function StudioDocumentEditor({ documentId }: StudioDocumentEdito
             <span>기획서 본문</span>
             <textarea
               aria-label="기획서 본문 편집"
+              ref={bodyTextareaRef}
               value={content}
               onChange={(event) => {
                 setContent(event.target.value);
