@@ -7596,9 +7596,78 @@ html.isFullPageScroll:has(.moiraPage) {
   background: #fff5f5;
 }
 
+.studioAiRevisionCompare {
+  display: grid;
+  gap: 12px;
+}
+
+.studioAiRevisionCompareHeader h3 {
+  margin: 0;
+  color: var(--moira-ink);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.studioAiRevisionCompareHeader p {
+  margin: 5px 0 0;
+  color: #71817b;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.studioAiRevisionCompareGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.studioAiRevisionPane {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 280px;
+  max-height: 420px;
+  overflow: hidden;
+  border: 1px solid #dfe8e3;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.studioAiRevisionPane.isRevised {
+  border-color: #bfe3d4;
+}
+
+.studioAiRevisionPane h4 {
+  margin: 0;
+  border-bottom: 1px solid #edf2ef;
+  background: #f8fbf9;
+  color: var(--moira-green-dark);
+  padding: 11px 12px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.studioAiRevisionPane p {
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  color: #33483f;
+  padding: 13px;
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.studioAiRevisionPane mark {
+  border-radius: 6px;
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+  padding: 2px 4px;
+  font-weight: 850;
+}
+
 .studioAiEditActions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -7699,6 +7768,10 @@ html.isFullPageScroll:has(.moiraPage) {
     position: static;
     max-height: none;
     margin-bottom: 42px;
+  }
+
+  .studioAiRevisionCompareGrid {
+    grid-template-columns: 1fr;
   }
 
   .studioDocumentTitleField input {
