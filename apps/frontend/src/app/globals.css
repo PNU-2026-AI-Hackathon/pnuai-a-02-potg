@@ -7242,8 +7242,7 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 .studioDocumentToolbar {
-  position: sticky;
-  top: 18px;
+  position: relative;
   z-index: 30;
   display: flex;
   align-items: center;
