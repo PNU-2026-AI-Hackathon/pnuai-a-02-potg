@@ -38,7 +38,7 @@ type CreateCommunityCommentBody = {
 
 const DEFAULT_BOARD_SLUG = 'library-news';
 const DEFAULT_POST_TYPE = 'normal';
-const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'proposals', 'ideas']);
+const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'ideas']);
 const VALID_POST_TYPES = new Set(['notice', 'normal']);
 const MIN_PASSWORD_LENGTH = 4;
 const MAX_PASSWORD_LENGTH = 64;

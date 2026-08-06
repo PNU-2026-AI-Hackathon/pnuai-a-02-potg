@@ -188,7 +188,7 @@ export default function ProgramConditionForm() {
                 <section className="studioAgendaPicker" aria-label="지역 의제 제안 글 선택">
                   <div className="studioAgendaPickerHeader">
                     <strong>지역 의제 제안 글</strong>
-                    <Link href="/community/proposals">게시판 보기</Link>
+                    <Link href="/community/free">동네 광장 보기</Link>
                   </div>
                   <div className="studioAgendaList">
                     {agendaPosts.map((post) => (

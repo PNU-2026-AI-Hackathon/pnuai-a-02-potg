@@ -61,7 +61,7 @@ export default function CommunityBoardView({
 
   return (
     <main className="communityPage communityBoardPage">
-      <section className="communityShell" aria-labelledby={`${board.slug}-title`}>
+      <section className="uiContainer communityShell" aria-labelledby={`${board.slug}-title`}>
         <nav className="communityBreadcrumb" aria-label="현재 위치">
           <Link href="/">홈</Link>
           <span aria-hidden="true">/</span>
@@ -72,7 +72,7 @@ export default function CommunityBoardView({
 
         <header className="communityBoardHeader">
           <div>
-            <p className="communityEyebrow">지역 커뮤니티</p>
+            <p className="uiEyebrow communityEyebrow">지역 커뮤니티</p>
             <h1 id={`${board.slug}-title`}>{board.title}</h1>
             <p>{board.description}</p>
           </div>
@@ -93,7 +93,7 @@ export default function CommunityBoardView({
             </p>
             {board.slug === 'free' ? (
               <Link
-                className="communityWriteButton"
+                className="uiButton uiButtonPrimary communityWriteButton"
                 href="/community/free/write"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -146,14 +146,14 @@ function CommunityPostCard({ board, number, post }: CommunityPostCardProps) {
         <span>{number}</span>
       </td>
       <td>
-        <span className="communityPostType">{board.typeLabels[post.type]}</span>
+        <span className="uiTag communityPostType">{board.typeLabels[post.type]}</span>
       </td>
       <td className="communityPostBody">
         <h3>{post.title}</h3>
         <p>{post.content}</p>
         <div className="communityPostMetaRow" aria-label="게시글 태그">
           {post.tags.map((tag) => (
-            <span className="communityPostTag" key={`${post.id}-${tag}`}>
+            <span className="uiTag communityPostTag" key={`${post.id}-${tag}`}>
               {tag}
             </span>
           ))}

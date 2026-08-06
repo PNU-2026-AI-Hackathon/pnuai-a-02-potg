@@ -92,8 +92,8 @@ export default function FreePostWriteForm() {
       {message ? <p className="communityWriteError" role="alert">{message}</p> : null}
 
       <div className="communityWriteActions">
-        <Link href="/community/free">취소</Link>
-        <button type="submit" disabled={isDisabled}>
+        <Link className="uiButton uiButtonSecondary" href="/community/free">취소</Link>
+        <button className="uiButton uiButtonPrimary" type="submit" disabled={isDisabled}>
           {isSubmitting ? '등록 중…' : '게시글 등록'}
         </button>
       </div>
