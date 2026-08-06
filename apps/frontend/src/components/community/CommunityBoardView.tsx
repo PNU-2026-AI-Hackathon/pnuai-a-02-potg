@@ -36,13 +36,23 @@ function getOrderedPosts(posts: CommunityPost[]) {
   });
 }
 
+function getUniquePosts(posts: CommunityPost[]) {
+  const uniquePosts = new Map<string, CommunityPost>();
+
+  posts.forEach((post) => {
+    uniquePosts.set(post.id, post);
+  });
+
+  return Array.from(uniquePosts.values());
+}
+
 export default function CommunityBoardView({
   board,
   posts,
 }: CommunityBoardViewProps) {
   const [createdPosts, setCreatedPosts] = useState<CommunityPost[]>([]);
   const [loadMessage, setLoadMessage] = useState('');
-  const visiblePosts = [...createdPosts, ...posts];
+  const visiblePosts = getUniquePosts([...posts, ...createdPosts]);
   const orderedPosts = getOrderedPosts(visiblePosts);
   const noticeCount = visiblePosts.filter((post) => post.type === 'notice').length;
   const normalCount = visiblePosts.length - noticeCount;
