@@ -8539,7 +8539,7 @@ html.isFullPageScroll:has(.moiraPage) {
   gap: 6px;
   margin: 0;
   border-radius: 999px;
-  background: var(--moira-mint);
+  background: #fff0df;
   padding: 5px;
 }
 
@@ -8556,9 +8556,10 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 .studioModeTabs button.isActive {
-  border: 1px solid var(--moira-green);
+  border: 1px solid var(--moira-warm);
   background: #fff;
-  color: var(--moira-green-dark);
+  color: #9a520b;
+  box-shadow: 0 6px 16px rgba(241, 168, 91, 0.18);
 }
 
 .studioPromptBox {
@@ -8669,9 +8670,20 @@ html.isFullPageScroll:has(.moiraPage) {
   min-height: 40px;
   flex: 0 0 auto;
   border-radius: 999px;
-  padding: 0 16px;
+  padding: 0 18px;
+  background: var(--moira-warm);
+  color: #17352f;
   font-size: 12px;
+  font-weight: 900;
   white-space: nowrap;
+  box-shadow: 0 10px 22px rgba(241, 168, 91, 0.26);
+}
+
+.studioPromptCard .studioGenerateButton:hover:not(:disabled),
+.studioPromptCard .studioGenerateButton:focus-visible:not(:disabled) {
+  background: #f4ba72;
+  color: #17352f;
+  transform: translateY(-1px);
 }
 
 .studioFlowPreview {
@@ -8860,8 +8872,8 @@ html.isFullPageScroll:has(.moiraPage) {
 .studioPage .studioMain {
   display: grid;
   min-height: 100vh;
-  align-content: center;
-  padding: clamp(36px, 7vh, 72px) 0 24px;
+  align-content: start;
+  padding: clamp(54px, 10vh, 96px) 0 24px;
 }
 
 .studioPage .studioStartSection {
@@ -8886,10 +8898,11 @@ html.isFullPageScroll:has(.moiraPage) {
 }
 
 .studioPage .studioStartCopy p:not(.uiEyebrow) {
-  max-width: 46ch;
+  max-width: none;
   margin: 14px auto 0;
   font-size: 14px;
   line-height: 1.7;
+  white-space: nowrap;
 }
 
 .studioPage .studioStartBoard {
@@ -8899,12 +8912,26 @@ html.isFullPageScroll:has(.moiraPage) {
 
 .studioPage .studioPromptCard {
   gap: 12px;
+  border-color: rgba(241, 168, 91, 0.34);
   border-radius: 22px;
   padding: 18px;
 }
 
 .studioPage .studioPromptBox textarea {
   min-height: 96px;
+}
+
+.studioBrandSpark {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: rgba(241, 168, 91, 0.2);
+  color: var(--moira-warm);
+  font-size: 13px;
+  vertical-align: middle;
 }
 
 .studioAgendaPicker {
@@ -8956,12 +8983,12 @@ html.isFullPageScroll:has(.moiraPage) {
 .studioAgendaList button:hover,
 .studioAgendaList button:focus-visible,
 .studioAgendaList button.isSelected {
-  border-color: var(--moira-green);
-  background: #eef8f2;
+  border-color: var(--moira-warm);
+  background: #fff8ef;
 }
 
 .studioAgendaList span {
-  color: var(--moira-green);
+  color: #a85e12;
   font-size: 11px;
   font-weight: 850;
 }
@@ -8982,14 +9009,14 @@ html.isFullPageScroll:has(.moiraPage) {
 .studioSelectedAgenda {
   display: grid;
   gap: 4px;
-  border-left: 3px solid var(--moira-green);
+  border-left: 3px solid var(--moira-warm);
   border-radius: 12px;
-  background: #f1faf5;
+  background: #fff8ef;
   padding: 11px 13px;
 }
 
 .studioSelectedAgenda span {
-  color: var(--moira-green);
+  color: #a85e12;
   font-size: 11px;
   font-weight: 850;
 }
@@ -9070,6 +9097,7 @@ html.isFullPageScroll:has(.moiraPage) {
 
   .studioPage .studioStartCopy p:not(.uiEyebrow) {
     margin-left: 0;
+    white-space: normal;
   }
 }
 
@@ -9089,14 +9117,63 @@ html.isFullPageScroll:has(.moiraPage) {
 .studioPage .studioRailLogo {
   display: grid;
   width: 40px;
-  height: 40px;
+  min-height: 48px;
   place-items: center;
+  align-content: center;
+  gap: 2px;
   border-radius: 14px;
   background: var(--moira-mint);
   color: var(--moira-green-dark);
-  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.studioPage .studioRailLogo:hover,
+.studioPage .studioRailLogo:focus-visible {
+  background: #fff4e6;
+  color: #9a520b;
+  transform: translateY(-1px);
+}
+
+.studioHomeIcon {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 18px;
+}
+
+.studioHomeIcon::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 3px 0 0 0;
+  transform: rotate(45deg);
+}
+
+.studioHomeIcon::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+}
+
+.studioPage .studioRailLogo small {
+  font-size: 10px;
+  line-height: 1;
 }
 
 .studioRailNav {
@@ -9106,7 +9183,8 @@ html.isFullPageScroll:has(.moiraPage) {
   margin-top: 28px;
 }
 
-.studioRailNav button {
+.studioRailNav button,
+.studioRailNav a {
   display: grid;
   justify-items: center;
   gap: 5px;
@@ -9120,7 +9198,8 @@ html.isFullPageScroll:has(.moiraPage) {
   cursor: pointer;
 }
 
-.studioRailNav button span {
+.studioRailNav button span,
+.studioRailNav a span {
   display: grid;
   width: 31px;
   height: 31px;
@@ -9134,15 +9213,19 @@ html.isFullPageScroll:has(.moiraPage) {
 
 .studioRailNav button:hover,
 .studioRailNav button:focus-visible,
-.studioRailNav button.isActive {
-  color: var(--moira-green-dark);
+.studioRailNav button.isActive,
+.studioRailNav a:hover,
+.studioRailNav a:focus-visible {
+  color: #9a520b;
 }
 
 .studioRailNav button:hover span,
 .studioRailNav button:focus-visible span,
-.studioRailNav button.isActive span {
-  background: var(--moira-mint);
-  color: var(--moira-green-dark);
+.studioRailNav button.isActive span,
+.studioRailNav a:hover span,
+.studioRailNav a:focus-visible span {
+  background: #fff4e6;
+  color: #9a520b;
 }
 
 .studioPage .studioHistoryPanel {
@@ -9156,6 +9239,13 @@ html.isFullPageScroll:has(.moiraPage) {
   background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(18px);
   padding: 28px 16px 18px;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 0.24s ease,
+    transform 0.28s ease,
+    visibility 0.28s ease;
+  visibility: visible;
 }
 
 .studioPage .studioHistoryHeader {
@@ -9242,12 +9332,12 @@ html.isFullPageScroll:has(.moiraPage) {
 .studioHistoryItem:hover,
 .studioHistoryItem:focus-visible,
 .studioHistoryItem.isCurrent {
-  border-color: var(--moira-green);
-  background: #f0faf5;
+  border-color: var(--moira-warm);
+  background: #fff8ef;
 }
 
 .studioHistoryItem span {
-  color: var(--moira-green);
+  color: #a85e12;
   font-size: 11px;
   font-weight: 850;
 }
@@ -9278,10 +9368,285 @@ html.isFullPageScroll:has(.moiraPage) {
 .studioPage .studioMain {
   margin-left: 340px;
   padding-inline: 28px;
+  transition: margin-left 0.28s ease;
+}
+
+.studioPage.isHistoryCollapsed .studioHistoryPanel {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-18px);
+  visibility: hidden;
+}
+
+.studioPage.isHistoryCollapsed .studioMain {
+  margin-left: 72px;
 }
 
 .studioPage .studioStartSection {
   width: min(100%, 860px);
+}
+
+.studioPage .studioPromptCard {
+  border-color: rgba(194, 213, 204, 0.92);
+}
+
+.studioModeTabs button.isActive {
+  border-color: var(--moira-green);
+  color: var(--moira-green-dark);
+  box-shadow: none;
+}
+
+.studioAgendaList button:hover,
+.studioAgendaList button:focus-visible,
+.studioAgendaList button.isSelected {
+  border-color: var(--moira-green);
+  background: #eef8f2;
+}
+
+.studioAgendaList span,
+.studioSelectedAgenda span,
+.studioHistoryItem span {
+  color: var(--moira-green);
+}
+
+.studioSelectedAgenda {
+  border-left-color: var(--moira-green);
+  background: #f1faf5;
+}
+
+.studioPage .studioRailLogo:hover,
+.studioPage .studioRailLogo:focus-visible {
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.studioHomeIcon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.studioHomeIcon::before,
+.studioHomeIcon::after {
+  content: none;
+}
+
+.studioRailNav button:hover,
+.studioRailNav button:focus-visible,
+.studioRailNav button.isActive,
+.studioRailNav a:hover,
+.studioRailNav a:focus-visible {
+  color: var(--moira-green-dark);
+}
+
+.studioRailNav button:hover span,
+.studioRailNav button:focus-visible span,
+.studioRailNav button.isActive span,
+.studioRailNav a:hover span,
+.studioRailNav a:focus-visible span {
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.studioHistoryItem:hover,
+.studioHistoryItem:focus-visible,
+.studioHistoryItem.isCurrent {
+  border-color: var(--moira-green);
+  background: #f0faf5;
+}
+
+.studioGeneratingLayout .studioMain {
+  align-content: start;
+}
+
+.studioGeneratingInlineCard {
+  justify-items: center;
+  text-align: center;
+}
+
+.studioGeneratingInlineCard > strong {
+  color: var(--moira-ink);
+  font-size: 20px;
+}
+
+.studioGeneratingInlineCard > p {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--moira-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.studioGeneratingInlineCard .uiButton {
+  margin-top: 4px;
+}
+
+.studioDocumentPage .studioMain {
+  align-content: start;
+  min-height: 100vh;
+  padding-top: 28px;
+}
+
+.studioDocumentMain {
+  display: grid;
+  gap: 18px;
+}
+
+.studioDocumentToolbar {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid #dfe8e3;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 24px 28px;
+  backdrop-filter: blur(18px);
+}
+
+.studioDocumentToolbar h1 {
+  margin: 6px 0 0;
+  color: var(--moira-ink);
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.studioDocumentActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.studioSaveBadge {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  border: 1px solid #cfe0d8;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--moira-green-dark);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.studioSaveBadge.is-dirty {
+  border-color: #f1c895;
+  background: #fff8ef;
+  color: #9a520b;
+}
+
+.studioSaveBadge.is-saving {
+  border-color: #cfe0d8;
+  background: var(--moira-mint);
+}
+
+.studioSavedMeta {
+  color: #7a8b85;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.studioDocumentActions .uiButton {
+  min-height: 38px;
+  border-radius: 999px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.studioDocumentActions .uiButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
+}
+
+.studioDocumentEditor {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 920px);
+  margin: 0 auto 64px;
+  border: 1px solid #d8e5df;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 22px 54px rgba(33, 70, 61, 0.1);
+  padding: clamp(24px, 5vw, 58px);
+}
+
+.studioDocumentTitleField,
+.studioDocumentBodyField {
+  display: grid;
+  gap: 10px;
+}
+
+.studioDocumentTitleField > span,
+.studioDocumentBodyField > span {
+  color: var(--moira-green-dark);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.studioDocumentTitleField input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid #d8e5df;
+  background: transparent;
+  color: var(--moira-ink);
+  outline: none;
+  padding: 0 0 16px;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 850;
+  line-height: 1.18;
+}
+
+.studioDocumentTitleField input:focus {
+  border-color: var(--moira-green);
+}
+
+.studioDocumentTitleField input[aria-invalid='true'] {
+  border-color: #dc2626;
+}
+
+.studioDocumentError {
+  margin: -4px 0 4px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.studioDocumentBodyField textarea {
+  width: 100%;
+  min-height: 960px;
+  resize: none;
+  overflow-y: hidden;
+  border: 0;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      rgba(216, 229, 223, 0.55) 32px
+    );
+  color: #263b34;
+  outline: none;
+  padding: 8px 0 0;
+  font-size: 15px;
+  line-height: 2.12;
+  white-space: pre-wrap;
+}
+
+.studioDocumentBodyField textarea:focus {
+  box-shadow: inset 0 3px 0 rgba(22, 116, 95, 0.12);
 }
 
 @media (max-width: 980px) {
@@ -9325,8 +9690,49 @@ html.isFullPageScroll:has(.moiraPage) {
     padding-inline: 16px;
   }
 
+  .studioPage.isHistoryCollapsed .studioMain {
+    margin-left: 0;
+  }
+
   .studioInlineConditions {
     grid-template-columns: 1fr;
+  }
+
+  .studioDocumentPage .studioMain {
+    padding-top: 0;
+  }
+
+  .studioDocumentToolbar {
+    position: static;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .studioDocumentActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .studioSavedMeta {
+    width: 100%;
+  }
+
+  .studioDocumentActions .uiButton {
+    flex: 1 1 132px;
+  }
+
+  .studioDocumentEditor {
+    padding: 20px;
+  }
+
+  .studioDocumentTitleField input {
+    font-size: 28px;
+  }
+
+  .studioDocumentBodyField textarea {
+    min-height: 740px;
+    font-size: 14px;
+    line-height: 2;
   }
 }
 
