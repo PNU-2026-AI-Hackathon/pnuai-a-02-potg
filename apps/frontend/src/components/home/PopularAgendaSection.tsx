@@ -11,8 +11,8 @@ export default function PopularAgendaSection() {
           title="우리 동네 인기 의제"
           description="최근 주민들의 공감을 많이 받은 지역 의제를 살펴보세요."
           action={
-            <Link className="uiTextLink" href="/community/proposals">
-              전체 의제 보기 <span aria-hidden="true">→</span>
+            <Link className="uiTextLink" href="/community/free">
+              동네 이야기 보기 <span aria-hidden="true">→</span>
             </Link>
           }
         />
@@ -36,8 +36,8 @@ export default function PopularAgendaSection() {
           ))}
         </div>
         <div className="homeCenteredAction">
-          <Link className="uiButton uiButtonPrimary" href="/community/proposals">
-            의제 제안하기 <span aria-hidden="true">＋</span>
+          <Link className="uiButton uiButtonPrimary" href="/community/free/write">
+            동네 이야기 남기기 <span aria-hidden="true">＋</span>
           </Link>
         </div>
       </div>

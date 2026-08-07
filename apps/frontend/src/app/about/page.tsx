@@ -149,7 +149,7 @@ export default async function AboutPage() {
             </p>
 
             <div className="homeHeroActions">
-              <Link className="uiButton uiButtonPrimary" href="/community/proposals">
+              <Link className="uiButton uiButtonPrimary" href="/community/free/write">
                 우리 동네 아이디어 제안하기
                 <span aria-hidden="true">→</span>
               </Link>

@@ -1,6 +1,6 @@
 import { getBackendUrl } from './backend-url';
 
-export type CommunityBoardSlug = 'library-news' | 'free' | 'proposals' | 'ideas';
+export type CommunityBoardSlug = 'library-news' | 'free' | 'ideas';
 
 export type CommunityPostType = 'notice' | 'normal';
 
@@ -65,19 +65,6 @@ export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
       normal: '일반 글',
     },
     tags: ['소통', '정보 공유', '동네 이야기'],
-  },
-  proposals: {
-    slug: 'proposals',
-    href: '/community/proposals',
-    title: '지역 제안 게시판',
-    shortTitle: '지역 제안',
-    description: '주민이 지역 의제와 프로그램 아이디어를 간단히 제안하는 게시판입니다.',
-    purpose: '생활 불편, 개선 요청, 프로그램 아이디어를 모아 지역 커뮤니티 의제로 발전시킵니다.',
-    typeLabels: {
-      notice: '공지',
-      normal: '일반 제안 글',
-    },
-    tags: ['의제 제안', '개선 요청', '아이디어'],
   },
 };
 
@@ -170,50 +157,6 @@ export const communityPosts: CommunityPost[] = [
     createdAt: '2026-07-03T03:25:00.000Z',
     tags: ['책 추천', '일상'],
   },
-  {
-    id: 'proposals-1',
-    boardSlug: 'proposals',
-    type: 'notice',
-    title: '지역 제안 게시판 운영 안내',
-    content:
-      '지역 프로그램 아이디어, 생활 불편, 개선 요청을 자유롭게 남겨 주세요. 제안은 이후 의제 검토에 활용됩니다.',
-    author: '모이라 운영팀',
-    createdAt: '2026-07-08T01:00:00.000Z',
-    tags: ['공지', '운영 안내'],
-  },
-  {
-    id: 'proposals-2',
-    boardSlug: 'proposals',
-    type: 'normal',
-    title: '시니어 대상 스마트폰 반복 교육이 필요합니다',
-    content:
-      '키오스크, 공공앱, 모바일 은행 사용을 여러 번 연습할 수 있는 소규모 프로그램을 제안합니다.',
-    author: '정금정',
-    createdAt: '2026-07-07T07:30:00.000Z',
-    tags: ['디지털 교육', '시니어'],
-  },
-  {
-    id: 'proposals-3',
-    boardSlug: 'proposals',
-    type: 'normal',
-    title: '방과후 숙제 도움 프로그램을 운영하면 좋겠습니다',
-    content:
-      '맞벌이 가정 아이들이 도서관에서 안전하게 머물며 숙제를 도울 수 있는 시간이 있으면 좋겠습니다.',
-    author: '최학부모',
-    createdAt: '2026-07-05T06:00:00.000Z',
-    tags: ['아동', '방과후'],
-  },
-  {
-    id: 'proposals-4',
-    boardSlug: 'proposals',
-    type: 'normal',
-    title: '도서관 주변 분리배출 캠페인을 제안합니다',
-    content:
-      '작은도서관을 거점으로 어린이와 주민이 함께 참여하는 자원순환 캠페인을 열면 좋겠습니다.',
-    author: '한환경',
-    createdAt: '2026-07-02T08:40:00.000Z',
-    tags: ['환경', '캠페인'],
-  },
 ];
 
 export function getCommunityBoard(slug: CommunityBoardSlug) {
@@ -235,7 +178,7 @@ function isCommunityPost(value: unknown): value is CommunityPost {
 
   return (
     typeof post.id === 'string' &&
-    (post.boardSlug === 'library-news' || post.boardSlug === 'free' || post.boardSlug === 'proposals' || post.boardSlug === 'ideas') &&
+    (post.boardSlug === 'library-news' || post.boardSlug === 'free' || post.boardSlug === 'ideas') &&
     (post.type === 'notice' || post.type === 'normal') &&
     typeof post.title === 'string' &&
     typeof post.content === 'string' &&
