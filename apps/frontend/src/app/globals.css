@@ -6821,6 +6821,167 @@ html.isFullPageScroll:has(.moiraPage) {
   }
 }
 
+.communityPostActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.communityPostActions button,
+.mypageInlineAction {
+  border: 1px solid var(--moira-border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--moira-muted);
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.communityPostActions button.isActive,
+.communityPostActions button:hover,
+.mypageInlineAction:hover {
+  border-color: var(--moira-green);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.communityPostActions > span {
+  align-self: center;
+  color: #b42318;
+  font-size: 12px;
+}
+
+.mypageProfileForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+  border: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-md);
+  background: var(--surface);
+  box-shadow: var(--moira-shadow);
+  padding: 24px;
+}
+
+.mypageProfileForm label {
+  display: grid;
+  gap: 8px;
+  color: var(--moira-ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.mypageProfileForm input,
+.mypageProfileForm select {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  border-radius: var(--moira-radius-sm);
+  background: var(--surface);
+  padding: 14px 16px;
+}
+
+.mypageProfileForm input:focus,
+.mypageProfileForm select:focus {
+  border-color: var(--moira-green);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+  outline: none;
+}
+
+.mypageProfileForm > p,
+.mypageDataMessage {
+  grid-column: 1 / -1;
+  margin: 0;
+  border-radius: var(--moira-radius-sm);
+  background: var(--moira-cream);
+  padding: 14px 16px;
+  color: var(--moira-ink);
+}
+
+.mypageProfileForm > button {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
+
+.mypageInterestPicker {
+  grid-column: 1 / -1;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.mypageInterestPicker legend {
+  margin-bottom: 10px;
+  color: var(--moira-ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.mypageInterestPicker > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.mypageInterestPicker button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--moira-border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--moira-muted);
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mypageInterestPicker button:hover,
+.mypageInterestPicker button:focus-visible,
+.mypageInterestPicker button.isSelected {
+  border-color: var(--moira-green);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.mypageInterestPicker button:focus-visible {
+  outline: 3px solid rgba(241, 168, 91, 0.55);
+  outline-offset: 2px;
+}
+
+.mypageInterestPicker button span {
+  font-size: 15px;
+}
+
+.mypageInterestPicker small {
+  display: block;
+  margin-top: 10px;
+  color: var(--moira-muted);
+  font-size: 12px;
+}
+
+.mypageEmptyState {
+  margin: 0;
+  padding: 28px;
+  color: var(--moira-muted);
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .mypageProfileForm {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .mypageProfileForm > button {
+    width: 100%;
+  }
+}
+
 /* My page */
 .mypageRoot {
   min-height: 100vh;

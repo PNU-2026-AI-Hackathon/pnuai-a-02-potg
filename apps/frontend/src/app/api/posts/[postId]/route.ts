@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getBackendUrl } from '@/lib/backend-url';
+import { getBackendAuthHeaders } from '@/lib/backend-auth';
 
 type RouteContext = { params: Promise<{ postId: string }> };
 
@@ -20,7 +21,7 @@ async function forwardMutation(request: Request, context: RouteContext) {
   try {
     const response = await fetch(await getPostUrl(context), {
       method: request.method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(await getBackendAuthHeaders()) },
       body: await request.text(),
     });
     const data = await readBackendResponse(response);
@@ -35,7 +36,7 @@ async function forwardMutation(request: Request, context: RouteContext) {
 
 export async function GET(_request: Request, context: RouteContext) {
   try {
-    const response = await fetch(await getPostUrl(context), { cache: 'no-store' });
+    const response = await fetch(await getPostUrl(context), { headers: await getBackendAuthHeaders(), cache: 'no-store' });
     return NextResponse.json(await readBackendResponse(response), { status: response.status });
   } catch (error) {
     console.error('Post proxy request failed:', error);

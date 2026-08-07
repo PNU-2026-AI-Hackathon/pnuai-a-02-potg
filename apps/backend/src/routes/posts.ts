@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma';
+import { authenticateJwt, authenticateOptionalJwt } from '../middleware/auth';
 
 type CommunityPostResponse = {
   id: string;
@@ -47,6 +48,8 @@ const MAX_CONTENT_LENGTH = 5000;
 const MAX_COMMENT_LENGTH = 2000;
 
 const router = Router();
+
+router.use(authenticateOptionalJwt);
 
 function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
@@ -162,7 +165,7 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
   const requestedType = readString(req.body.type) || DEFAULT_POST_TYPE;
   const title = readString(req.body?.title);
   const content = readString(req.body?.content);
-  const author = readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
+  const author = req.user?.name || readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
   const password = readPassword(req.body.password);
   const requestedTags = readTags(req.body.tags);
   const tags = boardSlug === 'free' && requestedTags.length === 0 ? ['자유글'] : requestedTags;
@@ -189,7 +192,7 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
   try {
     const passwordHash = boardSlug === 'free' ? await bcrypt.hash(password, 10) : null;
     const post = await prisma.communityPost.create({
-      data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash },
+      data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash, authorId: req.user?.id },
     });
     return res.status(201).json({ post: serializePost(post) });
   } catch (error) {
@@ -223,11 +226,78 @@ router.get('/:postId/comments', async (req: Request<{ postId: string }>, res: Re
   }
 });
 
+router.get('/:postId/activity', async (req: Request<{ postId: string }>, res: Response) => {
+  try {
+    const post = await prisma.communityPost.findUnique({
+      where: { id: req.params.postId },
+      select: {
+        id: true,
+        _count: { select: { likes: true, saves: true } },
+        likes: { where: { userId: req.user?.id ?? '' }, select: { userId: true } },
+        saves: { where: { userId: req.user?.id ?? '' }, select: { userId: true } },
+      },
+    });
+    if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+    return res.status(200).json({
+      activity: {
+        likeCount: post._count.likes,
+        saveCount: post._count.saves,
+        liked: post.likes.length > 0,
+        saved: post.saves.length > 0,
+      },
+    });
+  } catch (error) {
+    console.error('Community post activity lookup failed:', error);
+    return res.status(500).json({ code: 'POST_ACTIVITY_FAILED', error: 'Unable to load post activity.' });
+  }
+});
+
+router.put('/:postId/like', authenticateJwt, async (req: Request<{ postId: string }>, res: Response) => {
+  await setPostActivity(req, res, 'like', true);
+});
+router.delete('/:postId/like', authenticateJwt, async (req: Request<{ postId: string }>, res: Response) => {
+  await setPostActivity(req, res, 'like', false);
+});
+router.put('/:postId/save', authenticateJwt, async (req: Request<{ postId: string }>, res: Response) => {
+  await setPostActivity(req, res, 'save', true);
+});
+router.delete('/:postId/save', authenticateJwt, async (req: Request<{ postId: string }>, res: Response) => {
+  await setPostActivity(req, res, 'save', false);
+});
+
+async function setPostActivity(
+  req: Request<{ postId: string }>,
+  res: Response,
+  kind: 'like' | 'save',
+  active: boolean,
+) {
+  if (!req.user) return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
+
+  const key = { userId_postId: { userId: req.user.id, postId: req.params.postId } };
+  try {
+    if (kind === 'like') {
+      if (active) await prisma.communityPostLike.upsert({ where: key, create: key.userId_postId, update: {} });
+      else await prisma.communityPostLike.deleteMany({ where: key.userId_postId });
+    } else if (active) {
+      await prisma.communityPostSave.upsert({ where: key, create: key.userId_postId, update: {} });
+    } else {
+      await prisma.communityPostSave.deleteMany({ where: key.userId_postId });
+    }
+    return res.status(200).json({ active });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+      return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+    }
+    console.error('Community post activity update failed:', error);
+    return res.status(500).json({ code: 'POST_ACTIVITY_UPDATE_FAILED', error: 'Unable to update post activity.' });
+  }
+}
+
 router.post(
   '/:postId/comments',
   async (req: Request<{ postId: string }, {}, CreateCommunityCommentBody>, res: Response) => {
     const content = readString(req.body.content);
-    const author = readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
+    const author = req.user?.name || readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
     const parentId = readString(req.body.parentId) || null;
 
     if (!content) {
@@ -255,7 +325,7 @@ router.post(
       }
 
       const comment = await prisma.communityComment.create({
-        data: { postId: post.id, parentId, content, author },
+        data: { postId: post.id, parentId, content, author, authorId: req.user?.id },
       });
       return res.status(201).json({
         comment: {

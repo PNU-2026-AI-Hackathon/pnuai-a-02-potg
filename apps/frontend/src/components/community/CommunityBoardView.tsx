@@ -172,11 +172,53 @@ function CommunityPostCard({ board, number, post }: CommunityPostCardProps) {
           <span>{post.author}</span>
           <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
         </div>
+        <PostActivityActions postId={post.id} />
       </td>
       <td className="communityPostAuthor">{post.author}</td>
       <td className="communityPostDate">
         <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
       </td>
     </tr>
+  );
+}
+
+function PostActivityActions({ postId }: { postId: string }) {
+  const [activity, setActivity] = useState({ likeCount: 0, saveCount: 0, liked: false, saved: false });
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    fetch(`/api/posts/${encodeURIComponent(postId)}/activity`, { cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json();
+        if (response.ok) setActivity(data.activity);
+      })
+      .catch(() => undefined);
+  }, [postId]);
+
+  async function toggle(kind: 'like' | 'save') {
+    const active = kind === 'like' ? activity.liked : activity.saved;
+    const response = await fetch(`/api/posts/${encodeURIComponent(postId)}/${kind}`, {
+      method: active ? 'DELETE' : 'PUT',
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setMessage(response.status === 401 ? '로그인 후 이용해 주세요.' : data.error || '처리하지 못했습니다.');
+      return;
+    }
+    setMessage('');
+    setActivity((current) => ({
+      ...current,
+      ...(kind === 'like'
+        ? { liked: !active, likeCount: Math.max(0, current.likeCount + (active ? -1 : 1)) }
+        : { saved: !active, saveCount: Math.max(0, current.saveCount + (active ? -1 : 1)) }),
+    }));
+  }
+
+  return (
+    <div className="communityPostActions">
+      <button className={activity.liked ? 'isActive' : ''} type="button" onClick={() => toggle('like')} aria-pressed={activity.liked}>♥ 좋아요 {activity.likeCount}</button>
+      <button className={activity.saved ? 'isActive' : ''} type="button" onClick={() => toggle('save')} aria-pressed={activity.saved}>☆ 관심글 {activity.saveCount}</button>
+      {message ? <span role="status">{message}</span> : null}
+    </div>
   );
 }

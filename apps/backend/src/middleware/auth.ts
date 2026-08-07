@@ -105,6 +105,14 @@ export async function authenticateJwt(req: Request, res: Response, next: NextFun
   }
 }
 
+export async function authenticateOptionalJwt(req: Request, res: Response, next: NextFunction) {
+  if (!getBearerToken(req)) {
+    return next();
+  }
+
+  return authenticateJwt(req, res, next);
+}
+
 export function requireRoles(...allowedRoles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
