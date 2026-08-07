@@ -6883,6 +6883,10 @@ html.isFullPageScroll:has(.moiraPage) {
   padding: 14px 16px;
 }
 
+.mypageProfileForm input::placeholder {
+  color: #94a3b8;
+}
+
 .mypageProfileForm input:focus,
 .mypageProfileForm select:focus {
   border-color: var(--moira-green);

@@ -47,6 +47,26 @@ const emptyActivity: Activity = {
 };
 
 const dateFormatter = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium' });
+const BUSAN_DISTRICTS = [
+  '강서구',
+  '금정구',
+  '기장군',
+  '남구',
+  '동구',
+  '동래구',
+  '부산진구',
+  '북구',
+  '사상구',
+  '사하구',
+  '서구',
+  '수영구',
+  '연제구',
+  '영도구',
+  '중구',
+  '해운대구',
+] as const;
+
+const PHONE_DISPLAY_PATTERN = /^\d{3}-\d{3,4}-\d{4}$/;
 
 function postHref(postId: string) {
   return `/board/${encodeURIComponent(postId)}`;
@@ -149,6 +169,9 @@ function ProfileForm({ profile, availableInterests, onSaved }: { profile: Profil
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (selectedInterestIds.length === 0) return setMessage('관심분야를 하나 이상 선택해 주세요.');
+    if (form.phone.trim() && !PHONE_DISPLAY_PATTERN.test(form.phone.trim())) {
+      return setMessage('전화번호 형식에 맞게 입력해 주세요. 예: 010-0000-0000');
+    }
     const [profileResponse, interestsResponse] = await Promise.all([
       fetch('/api/me/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, region: form.region || null, phone: form.phone || null, birthDate: form.birthDate || null, gender: form.gender || null }) }),
       fetch('/api/user-interests', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ interestIds: selectedInterestIds }) }),
@@ -160,5 +183,5 @@ function ProfileForm({ profile, availableInterests, onSaved }: { profile: Profil
     onSaved({ ...profileData.profile, interests: interestsData.interests });
   }
   function toggleInterest(id: string) { setSelectedInterestIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]); }
-  return <form className="mypageProfileForm" onSubmit={submit}><label><span>이름</span><input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required /></label><label><span>지역</span><input value={form.region} onChange={(event) => setForm({ ...form, region: event.target.value })} /></label><label><span>전화번호</span><input value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} /></label><label><span>생년월일</span><input type="date" value={form.birthDate} onChange={(event) => setForm({ ...form, birthDate: event.target.value })} /></label><label><span>성별</span><select value={form.gender} onChange={(event) => setForm({ ...form, gender: event.target.value })}><option value="">선택 안 함</option><option value="FEMALE">여성</option><option value="MALE">남성</option><option value="OTHER">기타</option></select></label><fieldset className="mypageInterestPicker"><legend>관심분야</legend><div>{availableInterests.map((interest) => { const selected = selectedInterestIds.includes(interest.id); return <button className={selected ? 'isSelected' : ''} key={interest.id} type="button" aria-pressed={selected} onClick={() => toggleInterest(interest.id)}>{interest.name}<span>{selected ? '✓' : '+'}</span></button>; })}</div><small>하나 이상 선택해 주세요.</small></fieldset>{message ? <p role="alert">{message}</p> : null}<button className="uiButton uiButtonPrimary" type="submit">저장</button></form>;
+  return <form className="mypageProfileForm" onSubmit={submit}><label><span>이름</span><input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required /></label><label><span>지역</span><select value={form.region} onChange={(event) => setForm({ ...form, region: event.target.value })}><option value="">선택해 주세요</option>{BUSAN_DISTRICTS.map((district) => <option key={district} value={district}>{district}</option>)}</select></label><label><span>전화번호</span><input type="tel" inputMode="tel" placeholder="010-0000-0000" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} /></label><label><span>생년월일</span><input type="date" value={form.birthDate} onChange={(event) => setForm({ ...form, birthDate: event.target.value })} /></label><label><span>성별</span><select value={form.gender} onChange={(event) => setForm({ ...form, gender: event.target.value })}><option value="">선택 안 함</option><option value="FEMALE">여성</option><option value="MALE">남성</option><option value="OTHER">기타</option></select></label><fieldset className="mypageInterestPicker"><legend>관심분야</legend><div>{availableInterests.map((interest) => { const selected = selectedInterestIds.includes(interest.id); return <button className={selected ? 'isSelected' : ''} key={interest.id} type="button" aria-pressed={selected} onClick={() => toggleInterest(interest.id)}>{interest.name}<span>{selected ? '✓' : '+'}</span></button>; })}</div><small>하나 이상 선택해 주세요.</small></fieldset>{message ? <p role="alert">{message}</p> : null}<button className="uiButton uiButtonPrimary" type="submit">저장</button></form>;
 }
