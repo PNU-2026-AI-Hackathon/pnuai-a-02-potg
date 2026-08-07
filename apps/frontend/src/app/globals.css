@@ -9329,3 +9329,291 @@ html.isFullPageScroll:has(.moiraPage) {
     grid-template-columns: 1fr;
   }
 }
+
+/* Authentication pages — DESIGN.md aligned */
+.loginPage,
+.signupPage {
+  background:
+    radial-gradient(circle at 16% 8%, rgba(223, 243, 233, 0.95), transparent 36%),
+    radial-gradient(circle at 88% 92%, rgba(241, 168, 91, 0.16), transparent 28%),
+    var(--moira-cream);
+}
+
+.loginShell,
+.signupShell {
+  display: grid;
+  gap: 18px;
+}
+
+.authBrand {
+  display: inline-flex;
+  width: fit-content;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--moira-ink);
+}
+
+.authBrand strong {
+  font-family: var(--font-do-hyeon), Arial, "Noto Sans KR", sans-serif;
+  color: var(--moira-green-dark);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.authBrand span {
+  color: var(--moira-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.authBrand:focus-visible {
+  border-radius: 6px;
+  outline: 3px solid rgba(241, 168, 91, 0.55);
+  outline-offset: 5px;
+}
+
+.loginCard,
+.signupCard {
+  border-color: var(--moira-border);
+  border-radius: var(--moira-radius-md);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--moira-shadow);
+}
+
+.loginCard {
+  padding: 36px;
+}
+
+.signupCard {
+  padding: 40px;
+}
+
+.loginEyebrow,
+.signupEyebrow {
+  color: var(--moira-green);
+  font-weight: 800;
+}
+
+.loginTitle,
+.signupTitle,
+.signupWelcomeTitle {
+  color: var(--moira-ink);
+}
+
+.loginDescription,
+.loginNote,
+.loginSignupLink,
+.signupFieldHint,
+.signupWelcomeText {
+  color: var(--moira-muted);
+}
+
+.loginDescription strong {
+  color: var(--moira-ink);
+}
+
+.loginRegistrationMessage {
+  border: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-sm);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.loginField span,
+.signupField span,
+.signupInterestHeader span {
+  color: var(--moira-ink);
+  font-weight: 800;
+}
+
+.loginField input,
+.signupField input,
+.signupField select {
+  border-color: #cfd8e3;
+  border-radius: var(--moira-radius-sm);
+  padding: 14px 16px;
+}
+
+.loginField input:focus,
+.signupField input:focus,
+.signupField select:focus {
+  border-color: var(--moira-green);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+}
+
+.loginButton,
+.signupPrimaryButton,
+.signupGhostButton {
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0 22px;
+  font-weight: 800;
+}
+
+.loginButton,
+.signupPrimaryButton {
+  background: var(--moira-green);
+}
+
+.loginButton:hover:not(:disabled),
+.signupPrimaryButton:hover:not(:disabled) {
+  background: var(--moira-green-dark);
+  transform: translateY(-2px);
+}
+
+.signupGhostButton {
+  border: 1px solid var(--moira-border);
+  background: var(--surface);
+  color: var(--moira-green-dark);
+}
+
+.signupGhostButton:hover:not(:disabled) {
+  border-color: var(--moira-green);
+  background: var(--moira-mint);
+  transform: translateY(-2px);
+}
+
+.loginButton:focus-visible,
+.signupGhostButton:focus-visible,
+.signupPrimaryButton:focus-visible,
+.signupBackLink:focus-visible {
+  outline: 3px solid rgba(241, 168, 91, 0.55);
+  outline-offset: 3px;
+}
+
+.loginSignupLink a,
+.signupBackLink {
+  color: var(--moira-green-dark);
+  font-weight: 800;
+}
+
+.signupStepBadge {
+  border-color: var(--moira-border);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.signupProgressTrack {
+  background: #e8f0ec;
+}
+
+.signupProgressBar {
+  background: var(--moira-green);
+  transition: width 0.3s ease;
+}
+
+.signupProgressMeta,
+.signupChoiceCard em,
+.signupInterestButton em {
+  color: var(--moira-muted);
+}
+
+.signupProgressMeta strong,
+.signupInterestHeader strong {
+  color: var(--moira-green-dark);
+}
+
+.signupChoiceCard,
+.signupInterestButton,
+.signupWelcomeSummary div {
+  border-color: var(--moira-border);
+  border-radius: var(--moira-radius-sm);
+  background: #fbfdfc;
+}
+
+.signupChoiceCard span,
+.signupInterestButton span,
+.signupWelcomeSummary strong {
+  color: var(--moira-ink);
+}
+
+.signupChoiceCard:hover,
+.signupInterestButton:hover {
+  border-color: var(--moira-green);
+  box-shadow: 0 10px 24px rgba(33, 70, 61, 0.08);
+  transform: translateY(-2px);
+}
+
+.signupChoiceCard.selected,
+.signupInterestButton.selected {
+  border-color: var(--moira-green);
+  background: var(--moira-mint);
+  box-shadow: 0 0 0 2px rgba(22, 116, 95, 0.1);
+}
+
+.signupChoiceCard.selected em,
+.signupInterestButton.selected em {
+  color: var(--moira-green-dark);
+  font-weight: 800;
+}
+
+.signupMessage,
+.loginMessage.error {
+  border-radius: var(--moira-radius-sm);
+  background: #fff1f1;
+  padding: 12px 14px;
+}
+
+.signupWelcome {
+  border-radius: var(--moira-radius-md);
+  background: var(--moira-cream);
+  padding: 24px;
+}
+
+.signupWelcomeEyebrow {
+  color: var(--moira-green);
+}
+
+.signupWelcomeChips span {
+  border-color: var(--moira-border);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+@media (max-width: 640px) {
+  .loginPage,
+  .signupPage {
+    align-items: start;
+    padding: 24px 16px;
+  }
+
+  .authBrand {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .loginCard,
+  .signupCard {
+    border-radius: var(--moira-radius-sm);
+    padding: 24px 20px;
+  }
+
+  .signupTopRow {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .signupActions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .signupPrimaryButton,
+  .signupGhostButton {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signupProgressBar,
+  .signupChoiceCard,
+  .signupInterestButton,
+  .loginButton,
+  .signupPrimaryButton,
+  .signupGhostButton {
+    transition: none;
+  }
+}

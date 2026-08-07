@@ -82,7 +82,7 @@ export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
           {errorMessage}
         </p>
       ) : null}
-      <button type="submit" className="loginButton" disabled={isSubmitDisabled}>
+      <button type="submit" className="uiButton uiButtonPrimary loginButton" disabled={isSubmitDisabled}>
         {isSubmitting ? '로그인 중...' : '로그인'}
       </button>
     </form>

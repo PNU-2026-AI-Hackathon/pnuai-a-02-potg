@@ -25,8 +25,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="loginPage">
       <section className="loginShell" aria-labelledby="login-title">
+        <Link className="authBrand" href="/" aria-label="모이라 홈">
+          <strong>모이라</strong>
+          <span>모두가 이어지는 라이브러리</span>
+        </Link>
         <div className="loginCard">
-          <p className="loginEyebrow">모이라 로그인</p>
+          <p className="uiEyebrow loginEyebrow">모이라 로그인</p>
           <h1 id="login-title" className="loginTitle">
             다시 만나서 반갑습니다
           </h1>

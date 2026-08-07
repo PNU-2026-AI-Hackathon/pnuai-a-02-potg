@@ -194,6 +194,10 @@ export default function SignupPage() {
   return (
     <main className="signupPage">
       <section className="signupShell" aria-labelledby="signup-title">
+        <Link className="authBrand" href="/" aria-label="모이라 홈">
+          <strong>모이라</strong>
+          <span>모두가 이어지는 라이브러리</span>
+        </Link>
         <div className="signupCard">
           <div className="signupTopRow">
             <Link href="/login" className="signupBackLink">
@@ -204,7 +208,7 @@ export default function SignupPage() {
             </span>
           </div>
 
-          <p className="signupEyebrow">모이라 회원가입</p>
+          <p className="uiEyebrow signupEyebrow">모이라 회원가입</p>
           <h1 id="signup-title" className="signupTitle">
             {step === 8 ? '환영합니다' : `${stepTitle}을 입력해 주세요`}
           </h1>
@@ -500,14 +504,14 @@ export default function SignupPage() {
           ) : null}
 
           <div className="signupActions">
-            <button type="button" className="signupGhostButton" onClick={handlePrevious} disabled={step === 1 || isSubmitting}>
+            <button type="button" className="uiButton uiButtonSecondary signupGhostButton" onClick={handlePrevious} disabled={step === 1 || isSubmitting}>
               이전
             </button>
 
             {step < 7 ? (
               <button
                 type="button"
-                className="signupPrimaryButton"
+                className="uiButton uiButtonPrimary signupPrimaryButton"
                 onClick={handleNext}
                 disabled={
                   step === 1
@@ -530,14 +534,14 @@ export default function SignupPage() {
             ) : step === 7 ? (
               <button
                 type="button"
-                className="signupPrimaryButton"
+                className="uiButton uiButtonPrimary signupPrimaryButton"
                 onClick={handleComplete}
                 disabled={!isStepSevenValid || isSubmitting}
               >
                 {isSubmitting ? '가입 처리 중...' : '완료'}
               </button>
             ) : (
-              <Link href="/login?registered=true" className="signupPrimaryButton">
+              <Link href="/login?registered=true" className="uiButton uiButtonPrimary signupPrimaryButton">
                 확인
               </Link>
             )}
