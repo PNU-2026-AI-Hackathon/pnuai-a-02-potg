@@ -159,7 +159,7 @@ function CommunityPostCard({ board, number, post }: CommunityPostCardProps) {
         <span className="uiTag communityPostType">{board.typeLabels[post.type]}</span>
       </td>
       <td className="communityPostBody">
-        <h3>{post.title}</h3>
+        <h3><Link href={`/community/posts/${encodeURIComponent(post.id)}`}>{post.title}</Link></h3>
         <p>{post.content}</p>
         <div className="communityPostMetaRow" aria-label="게시글 태그">
           {post.tags.map((tag) => (

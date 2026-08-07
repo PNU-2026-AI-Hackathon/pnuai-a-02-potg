@@ -49,7 +49,7 @@ const emptyActivity: Activity = {
 const dateFormatter = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium' });
 
 function postHref(postId: string) {
-  return `/board/${encodeURIComponent(postId)}`;
+  return `/community/posts/${encodeURIComponent(postId)}`;
 }
 
 async function fetchDashboardData() {
