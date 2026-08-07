@@ -23,6 +23,7 @@ const profileSelect = {
   phone: true,
   createdAt: true,
   updatedAt: true,
+  interests: { select: { interest: { select: { id: true, name: true } } } },
 } satisfies Prisma.UserSelect;
 
 type ProfileRecord = Prisma.UserGetPayload<{ select: typeof profileSelect }>;
@@ -35,6 +36,7 @@ type ValidationResult =
 export function serializeProfile(user: ProfileRecord) {
   return {
     ...user,
+    interests: user.interests.map(({ interest }) => interest),
     birthDate: user.birthDate?.toISOString().slice(0, 10) ?? null,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
@@ -147,6 +149,72 @@ export function validateProfileUpdate(body: unknown): ValidationResult {
 router.use((_req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
+});
+
+router.get('/activity', authenticateJwt, async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
+  }
+
+  try {
+    const [posts, comments, likes, saves, postCount, commentCount, likeCount, saveCount] = await prisma.$transaction([
+      prisma.communityPost.findMany({
+        where: { authorId: req.user.id },
+        orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { comments: true, likes: true } } },
+      }),
+      prisma.communityComment.findMany({
+        where: { authorId: req.user.id },
+        orderBy: { createdAt: 'desc' },
+        include: { post: { select: { id: true, boardSlug: true, title: true } } },
+      }),
+      prisma.communityPostLike.findMany({
+        where: { userId: req.user.id },
+        orderBy: { createdAt: 'desc' },
+        include: { post: { include: { _count: { select: { comments: true, likes: true } } } } },
+      }),
+      prisma.communityPostSave.findMany({
+        where: { userId: req.user.id },
+        orderBy: { createdAt: 'desc' },
+        include: { post: { include: { _count: { select: { comments: true, likes: true } } } } },
+      }),
+      prisma.communityPost.count({ where: { authorId: req.user.id } }),
+      prisma.communityComment.count({ where: { authorId: req.user.id } }),
+      prisma.communityPostLike.count({ where: { userId: req.user.id } }),
+      prisma.communityPostSave.count({ where: { userId: req.user.id } }),
+    ]);
+
+    const serializeActivityPost = (post: (typeof posts)[number]) => ({
+      id: post.id,
+      boardSlug: post.boardSlug,
+      type: post.type,
+      title: post.title,
+      content: post.content,
+      author: post.author,
+      createdAt: post.createdAt.toISOString(),
+      tags: post.tags,
+      commentCount: post._count.comments,
+      likeCount: post._count.likes,
+    });
+
+    return res.status(200).json({
+      activity: {
+        counts: { posts: postCount, comments: commentCount, likes: likeCount, saves: saveCount },
+        posts: posts.map(serializeActivityPost),
+        comments: comments.map((comment) => ({
+          id: comment.id,
+          content: comment.content,
+          createdAt: comment.createdAt.toISOString(),
+          post: comment.post,
+        })),
+        likedPosts: likes.map(({ post, createdAt }) => ({ ...serializeActivityPost(post), activityAt: createdAt.toISOString() })),
+        savedPosts: saves.map(({ post, createdAt }) => ({ ...serializeActivityPost(post), activityAt: createdAt.toISOString() })),
+      },
+    });
+  } catch (error) {
+    console.error('User activity lookup failed:', error);
+    return res.status(500).json({ code: 'ACTIVITY_LOOKUP_FAILED', error: 'Unable to load user activity.' });
+  }
 });
 
 router.get('/profile', authenticateJwt, async (req: Request, res: Response) => {

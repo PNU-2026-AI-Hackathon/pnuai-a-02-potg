@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getBackendUrl } from '@/lib/backend-url';
+import { getBackendAuthHeaders } from '@/lib/backend-auth';
 
 type RouteContext = {
   params: Promise<{
@@ -24,6 +25,7 @@ async function getCommentsUrl(context: RouteContext) {
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const response = await fetch(await getCommentsUrl(context), {
+      headers: await getBackendAuthHeaders(),
       cache: 'no-store',
     });
     const data = await readBackendResponse(response);
@@ -46,6 +48,7 @@ export async function POST(request: Request, context: RouteContext) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(await getBackendAuthHeaders()),
       },
       body: JSON.stringify(body),
     });

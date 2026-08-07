@@ -50,6 +50,10 @@ model User {
   region      String?
   phone       String?
   interests   UserInterest[]
+  posts       CommunityPost[]
+  comments    CommunityComment[]
+  postLikes   CommunityPostLike[]
+  savedPosts  CommunityPostSave[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }
@@ -82,13 +86,18 @@ model CommunityPost {
   author       String
   tags         String[]
   passwordHash String?
+  authorId     String?
+  authorUser   User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   comments     CommunityComment[]
+  likes        CommunityPostLike[]
+  saves        CommunityPostSave[]
 
   @@index([boardSlug])
   @@index([type])
   @@index([createdAt])
+  @@index([authorId, createdAt])
 }
 
 model CommunityComment {
@@ -97,6 +106,8 @@ model CommunityComment {
   parentId  String?
   content   String
   author    String
+  authorId  String?
+  authorUser User?              @relation(fields: [authorId], references: [id], onDelete: SetNull)
   post      CommunityPost      @relation(fields: [postId], references: [id], onDelete: Cascade)
   parent    CommunityComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   CommunityComment[] @relation("CommentReplies")
@@ -105,6 +116,31 @@ model CommunityComment {
 
   @@index([postId, createdAt])
   @@index([parentId])
+  @@index([authorId, createdAt])
+}
+
+model CommunityPostLike {
+  userId    String
+  postId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@index([userId, createdAt])
+}
+
+model CommunityPostSave {
+  userId    String
+  postId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@id([userId, postId])
+  @@index([postId])
+  @@index([userId, createdAt])
 }
 
 model ProgramCase {
