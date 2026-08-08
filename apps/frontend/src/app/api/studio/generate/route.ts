@@ -6,7 +6,9 @@ import {
   type StudioGenerateRequest,
 } from '@/lib/studio-draft';
 
-const geminiModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const geminiModels = [process.env.GEMINI_MODEL, 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
+  .filter((model): model is string => typeof model === 'string' && model.trim().length > 0)
+  .map((model) => model.trim());
 
 function readGeminiText(responseBody: unknown) {
   if (!responseBody || typeof responseBody !== 'object') {
@@ -27,6 +29,48 @@ function readGeminiText(responseBody: unknown) {
   return text.length > 0 ? text : null;
 }
 
+function isUnsupportedModelError(message: string) {
+  const lowerMessage = message.toLowerCase();
+
+  return lowerMessage.includes('not found') || lowerMessage.includes('not supported');
+}
+
+async function generateDraftWithModel(model: string, apiKey: string, prompt: string, conditions: Record<string, string[]>, agenda: StudioGenerateRequest['agenda']) {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: buildStudioPrompt({
+                  prompt,
+                  conditions,
+                  agenda,
+                }),
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.4,
+          responseMimeType: 'application/json',
+        },
+      }),
+    },
+  );
+
+  const responseBody = await response.json();
+
+  return { response, responseBody };
+}
+
 export async function POST(request: Request) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -44,49 +88,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '기획 메모를 입력해 주세요.' }, { status: 400 });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                {
-                  text: buildStudioPrompt({
-                    prompt,
-                    conditions: conditions as Record<string, string[]>,
-                    agenda,
-                  }),
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.4,
-            responseMimeType: 'application/json',
-          },
-        }),
-      },
-    );
+    let lastErrorMessage = 'Gemini API 호출에 실패했습니다.';
+    let generatedText: string | null = null;
 
-    const responseBody = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: responseBody?.error?.message || 'Gemini API 호출에 실패했습니다.' },
-        { status: 502 },
+    for (const model of geminiModels) {
+      const { response, responseBody } = await generateDraftWithModel(
+        model,
+        apiKey,
+        prompt,
+        conditions as Record<string, string[]>,
+        agenda,
       );
+
+      if (!response.ok) {
+        const errorMessage = responseBody?.error?.message || `Gemini API 호출에 실패했습니다. (${model})`;
+        lastErrorMessage = errorMessage;
+
+        if (response.status === 404 || response.status === 400 || isUnsupportedModelError(errorMessage)) {
+          continue;
+        }
+
+        return NextResponse.json({ error: errorMessage }, { status: 502 });
+      }
+
+      generatedText = readGeminiText(responseBody);
+
+      if (generatedText) {
+        break;
+      }
+
+      lastErrorMessage = 'Gemini 응답 본문을 읽지 못했습니다.';
     }
 
-    const generatedText = readGeminiText(responseBody);
-
     if (!generatedText) {
-      return NextResponse.json({ error: 'Gemini 응답 본문을 읽지 못했습니다.' }, { status: 502 });
+      return NextResponse.json({ error: lastErrorMessage }, { status: 502 });
     }
 
     let parsedDraft = null;
