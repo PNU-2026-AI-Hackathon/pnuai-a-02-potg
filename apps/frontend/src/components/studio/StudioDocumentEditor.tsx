@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { buildStudioDraftContent, studioDraftStorageKey, type StudioDraft } from '@/lib/studio-draft';
 
 type SaveState = 'saved' | 'dirty' | 'saving';
 
@@ -74,10 +75,53 @@ type StudioDocumentEditorProps = {
 export default function StudioDocumentEditor({ documentId }: StudioDocumentEditorProps) {
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
   const document = useMemo(() => ({ ...dummyDocument, id: documentId || dummyDocument.id }), [documentId]);
-  const [title, setTitle] = useState(document.title);
-  const [content, setContent] = useState(document.content);
+  const [storedDraft] = useState<StudioDraft | null>(() => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    const storedDraftText = window.sessionStorage.getItem(studioDraftStorageKey);
+
+    if (!storedDraftText) {
+      return null;
+    }
+
+    try {
+      const parsedDraft = JSON.parse(storedDraftText) as Partial<StudioDraft>;
+
+      if (!parsedDraft.title || !parsedDraft.summary || !parsedDraft.target || !parsedDraft.duration || !parsedDraft.expectedEffects) {
+        return null;
+      }
+
+      return {
+        title: parsedDraft.title,
+        summary: parsedDraft.summary,
+        target: parsedDraft.target,
+        duration: parsedDraft.duration,
+        details: Array.isArray(parsedDraft.details) ? parsedDraft.details.filter((item): item is string => typeof item === 'string') : [],
+        expectedEffects: parsedDraft.expectedEffects,
+        notes: Array.isArray(parsedDraft.notes) ? parsedDraft.notes.filter((item): item is string => typeof item === 'string') : [],
+        content:
+          typeof parsedDraft.content === 'string' && parsedDraft.content.trim().length > 0
+            ? parsedDraft.content
+            : buildStudioDraftContent({
+                summary: parsedDraft.summary,
+                target: parsedDraft.target,
+                duration: parsedDraft.duration,
+                details: Array.isArray(parsedDraft.details) ? parsedDraft.details.filter((item): item is string => typeof item === 'string') : [],
+                expectedEffects: parsedDraft.expectedEffects,
+                notes: Array.isArray(parsedDraft.notes) ? parsedDraft.notes.filter((item): item is string => typeof item === 'string') : [],
+              }),
+      };
+    } catch (error) {
+      console.error('Failed to load studio draft from sessionStorage:', error);
+      return null;
+    }
+  });
+  const [title, setTitle] = useState(storedDraft?.title || document.title);
+  const [content, setContent] = useState(storedDraft?.content || document.content);
   const [saveState, setSaveState] = useState<SaveState>('saved');
-  const [lastSavedAt, setLastSavedAt] = useState(document.updatedAt);
+  const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
 
   const hasEmptyTitle = title.trim().length === 0;
   const canSave = saveState === 'dirty' && !hasEmptyTitle;

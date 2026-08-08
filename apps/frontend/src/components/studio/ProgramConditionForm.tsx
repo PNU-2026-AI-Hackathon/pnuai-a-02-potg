@@ -10,6 +10,13 @@ import { studioFields, type StudioConditionKey } from './studio-options';
 const storageKey = 'moira-studio-tutorial-seen';
 const conditionKeys: StudioConditionKey[] = ['category', 'audience', 'period'];
 const planningFields = studioFields.filter((field) => conditionKeys.includes(field.key));
+type AgendaPost = {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+};
+
 const agendaPosts = [
   {
     id: 'proposals-2',
@@ -80,7 +87,7 @@ export default function ProgramConditionForm() {
   }, [isTutorialOpen]);
 
   const canGenerate = prompt.trim().length > 0;
-  const selectedAgenda = agendaPosts.find((post) => post.id === selectedAgendaId);
+  const selectedAgenda = agendaPosts.find((post) => post.id === selectedAgendaId) || null;
 
   function updateCondition(key: StudioConditionKey, value: string[]) {
     setConditions((current) => ({
@@ -239,6 +246,9 @@ export default function ProgramConditionForm() {
               </div>
               <GenerateButton
                 canGenerate={canGenerate}
+                prompt={prompt}
+                conditions={conditions}
+                selectedAgenda={selectedAgenda}
               />
             </div>
           </div>
