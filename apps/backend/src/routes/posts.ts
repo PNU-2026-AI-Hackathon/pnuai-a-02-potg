@@ -81,7 +81,8 @@ function serializePost(post: {
   author: string;
   createdAt: Date;
   tags: string[];
-}): CommunityPostResponse {
+  authorId?: string | null;
+}, viewerId?: string): CommunityPostResponse & { isOwner: boolean } {
   return {
     id: post.id,
     boardSlug: post.boardSlug,
@@ -91,6 +92,7 @@ function serializePost(post: {
     author: post.author,
     createdAt: post.createdAt.toISOString(),
     tags: post.tags,
+    isOwner: Boolean(viewerId && post.authorId === viewerId),
   };
 }
 
@@ -142,7 +144,7 @@ router.get('/', async (req: Request, res: Response) => {
       where,
       orderBy: [{ type: 'asc' }, { createdAt: 'desc' }],
     });
-    return res.status(200).json({ posts: posts.map(serializePost) });
+    return res.status(200).json({ posts: posts.map((post) => serializePost(post, req.user?.id)) });
   } catch (error) {
     console.error('Community post list lookup failed:', error);
     return res.status(500).json({ code: 'POST_LIST_FAILED', error: 'Unable to load posts.' });
@@ -153,7 +155,7 @@ router.get('/:postId', async (req: Request<{ postId: string }>, res: Response) =
   try {
     const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
     if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-    return res.status(200).json({ post: serializePost(post) });
+    return res.status(200).json({ post: serializePost(post, req.user?.id) });
   } catch (error) {
     console.error('Community post detail lookup failed:', error);
     return res.status(500).json({ code: 'POST_DETAIL_FAILED', error: 'Unable to load post.' });
@@ -194,7 +196,7 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
     const post = await prisma.communityPost.create({
       data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash, authorId: req.user?.id },
     });
-    return res.status(201).json({ post: serializePost(post) });
+    return res.status(201).json({ post: serializePost(post, req.user?.id) });
   } catch (error) {
     console.error('Community post creation failed:', error);
     return res.status(500).json({ code: 'POST_CREATE_FAILED', error: 'Unable to create post.' });
@@ -216,6 +218,7 @@ router.get('/:postId/comments', async (req: Request<{ postId: string }>, res: Re
     return res.status(200).json({
       comments: comments.map((comment) => ({
         ...comment,
+        isOwner: Boolean(req.user && comment.authorId === req.user.id),
         createdAt: comment.createdAt.toISOString(),
         updatedAt: comment.updatedAt.toISOString(),
       })),
@@ -358,7 +361,8 @@ async function updatePost(
   try {
     const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
     if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-    if (!(await verifyPostPassword(post.passwordHash, req.body?.password))) {
+    const canEdit = req.user?.id === post.authorId || await verifyPostPassword(post.passwordHash, req.body?.password);
+    if (!canEdit) {
       return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
     }
 
@@ -366,7 +370,7 @@ async function updatePost(
       where: { id: post.id },
       data: { title, content },
     });
-    return res.status(200).json({ post: serializePost(updatedPost) });
+    return res.status(200).json({ post: serializePost(updatedPost, req.user?.id) });
   } catch (error) {
     console.error('Community post update failed:', error);
     return res.status(500).json({ code: 'POST_UPDATE_FAILED', error: 'Unable to update post.' });
@@ -382,7 +386,8 @@ router.delete(
     try {
       const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
       if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-      if (!(await verifyPostPassword(post.passwordHash, req.body?.password))) {
+      const canDelete = req.user?.id === post.authorId || await verifyPostPassword(post.passwordHash, req.body?.password);
+      if (!canDelete) {
         return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
       }
 
@@ -394,5 +399,37 @@ router.delete(
     }
   },
 );
+
+router.patch('/:postId/comments/:commentId', authenticateJwt, async (req: Request<{ postId: string; commentId: string }, {}, { content?: string }>, res: Response) => {
+  if (!req.user) return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
+  const content = readString(req.body.content);
+  if (!content || content.length > MAX_COMMENT_LENGTH) {
+    return res.status(400).json({ code: 'INVALID_COMMENT', error: 'Comment content is required and must be 2000 characters or fewer.' });
+  }
+  try {
+    const comment = await prisma.communityComment.findFirst({ where: { id: req.params.commentId, postId: req.params.postId } });
+    if (!comment) return res.status(404).json({ code: 'COMMENT_NOT_FOUND', error: 'Comment not found.' });
+    if (comment.authorId !== req.user.id) return res.status(403).json({ code: 'FORBIDDEN', error: 'You can only edit your own comment.' });
+    const updated = await prisma.communityComment.update({ where: { id: comment.id }, data: { content } });
+    return res.status(200).json({ comment: { ...updated, isOwner: true, createdAt: updated.createdAt.toISOString(), updatedAt: updated.updatedAt.toISOString() } });
+  } catch (error) {
+    console.error('Community comment update failed:', error);
+    return res.status(500).json({ code: 'COMMENT_UPDATE_FAILED', error: 'Unable to update comment.' });
+  }
+});
+
+router.delete('/:postId/comments/:commentId', authenticateJwt, async (req: Request<{ postId: string; commentId: string }>, res: Response) => {
+  if (!req.user) return res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', error: 'Authentication required.' });
+  try {
+    const comment = await prisma.communityComment.findFirst({ where: { id: req.params.commentId, postId: req.params.postId } });
+    if (!comment) return res.status(404).json({ code: 'COMMENT_NOT_FOUND', error: 'Comment not found.' });
+    if (comment.authorId !== req.user.id) return res.status(403).json({ code: 'FORBIDDEN', error: 'You can only delete your own comment.' });
+    await prisma.communityComment.delete({ where: { id: comment.id } });
+    return res.status(204).send();
+  } catch (error) {
+    console.error('Community comment deletion failed:', error);
+    return res.status(500).json({ code: 'COMMENT_DELETE_FAILED', error: 'Unable to delete comment.' });
+  }
+});
 
 export default router;

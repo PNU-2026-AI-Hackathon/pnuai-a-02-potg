@@ -40,6 +40,33 @@ function mapComments(comments: ApiComment[]) {
   }));
 }
 
+function orderReplies(replies: Reply[], sort: '좋아요 순' | '최신순', likedReplyIds: string[]) {
+  const replyIds = new Set(replies.map((reply) => reply.id));
+  const childrenByParent = new Map<string, Reply[]>();
+
+  replies.forEach((reply) => {
+    if (!reply.parentId || !replyIds.has(reply.parentId)) return;
+    const children = childrenByParent.get(reply.parentId) ?? [];
+    children.push(reply);
+    childrenByParent.set(reply.parentId, children);
+  });
+
+  const roots = replies
+    .filter((reply) => !reply.parentId || !replyIds.has(reply.parentId))
+    .sort((left, right) => sort === '좋아요 순'
+      ? (right.votes + Number(likedReplyIds.includes(right.id))) - (left.votes + Number(likedReplyIds.includes(left.id)))
+      : Date.parse(right.createdAt) - Date.parse(left.createdAt));
+
+  const ordered: Reply[] = [];
+  const appendWithChildren = (reply: Reply) => {
+    ordered.push(reply);
+    (childrenByParent.get(reply.id) ?? []).forEach(appendWithChildren);
+  };
+
+  roots.forEach(appendWithChildren);
+  return ordered;
+}
+
 export default function IdeaThreadBoard() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [repliesByTopic, setRepliesByTopic] = useState<Record<string, Reply[]>>({});
@@ -98,9 +125,7 @@ export default function IdeaThreadBoard() {
       : Date.parse(right.createdAt) - Date.parse(left.createdAt)), [topics, category, sort, likedTopics]);
   const active = selected === null ? null : topics.find((topic) => topic.id === selected) ?? null;
   const activeReplies = active ? repliesByTopic[active.id] ?? [] : [];
-  const orderedReplies = [...activeReplies].sort((left, right) => replySort === '좋아요 순'
-    ? (right.votes + Number(likedReplies.includes(right.id))) - (left.votes + Number(likedReplies.includes(left.id)))
-    : Date.parse(right.createdAt) - Date.parse(left.createdAt));
+  const orderedReplies = orderReplies(activeReplies, replySort, likedReplies);
   const totalReplies = Object.values(repliesByTopic).reduce((sum, items) => sum + items.length, 0);
 
   const toggleTopicLike = (id: string) => setLikedTopics((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id]);

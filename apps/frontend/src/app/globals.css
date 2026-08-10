@@ -149,7 +149,16 @@
 }
 
 .communityBoardPage .communityPostBody h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--moira-green-dark);
+}
+
+.communityBoardPage .communityNoticeIcon {
+  flex: 0 0 auto;
+  font-size: 26px;
+  line-height: 1;
 }
 
 .communityBoardPage .communityPostRow.isNotice {
@@ -6966,6 +6975,207 @@ html.isFullPageScroll:has(.moiraPage) {
   margin-top: 10px;
   color: var(--moira-muted);
   font-size: 12px;
+}
+
+.communityDetailPage {
+  min-height: calc(100vh - var(--site-header-height));
+  background: var(--moira-cream);
+  padding: 36px 0 72px;
+}
+
+.communityDetailShell {
+  width: min(920px, calc(100% - 48px));
+}
+
+.communityDetailCard,
+.communityCommentSection {
+  border: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-md);
+  background: var(--surface);
+  box-shadow: var(--moira-shadow);
+  padding: clamp(24px, 5vw, 42px);
+}
+
+.communityDetailHeader {
+  border-bottom: 1px solid var(--moira-border);
+  padding-bottom: 24px;
+}
+
+.communityDetailTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.communityDetailHeader h1 {
+  margin: 18px 0 0;
+  color: var(--moira-ink);
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.3;
+}
+
+.communityDetailHeader > p,
+.communityCommentList footer {
+  color: var(--moira-muted);
+  font-size: 13px;
+}
+
+.communityDetailContent {
+  min-height: 180px;
+  padding: 30px 0;
+  color: #34483f;
+  line-height: 1.85;
+  white-space: pre-wrap;
+}
+
+.communityDetailToolbar,
+.communityOwnerActions,
+.communityCommentList footer,
+.communityCommentList footer > span:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.communityDetailToolbar {
+  border-top: 1px solid var(--moira-border);
+  padding-top: 20px;
+}
+
+.communityDetailToolbar button,
+.communityDetailActionLink,
+.communityCommentList button {
+  border: 1px solid var(--moira-border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--moira-muted);
+  padding: 8px 13px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.communityDetailToolbar button:hover,
+.communityDetailToolbar button.isActive,
+.communityDetailActionLink:hover,
+.communityCommentList button:hover {
+  border-color: var(--moira-green);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.communityOwnerActions {
+  margin-left: auto;
+}
+
+.communityDetailEditForm,
+.communityCommentSection form {
+  display: grid;
+  gap: 16px;
+}
+
+.communityDetailEditForm label,
+.communityCommentSection form {
+  color: var(--moira-ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.communityDetailEditForm label {
+  display: grid;
+  gap: 8px;
+}
+
+.communityDetailEditForm input,
+.communityDetailEditForm textarea,
+.communityCommentSection textarea {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  border-radius: var(--moira-radius-sm);
+  padding: 14px 16px;
+  resize: vertical;
+}
+
+.communityDetailEditForm input:focus,
+.communityDetailEditForm textarea:focus,
+.communityCommentSection textarea:focus {
+  border-color: var(--moira-green);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+  outline: none;
+}
+
+.communityDetailEditForm > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.communityDetailMessage,
+.communityDetailState {
+  margin: 18px 0;
+  border-radius: var(--moira-radius-sm);
+  background: var(--surface);
+  padding: 18px;
+  color: var(--moira-muted);
+  text-align: center;
+}
+
+.communityCommentSection {
+  margin-top: 22px;
+}
+
+.communityCommentSection h2 {
+  margin: 6px 0 22px;
+  color: var(--moira-ink);
+}
+
+.communityCommentSection form > button {
+  justify-self: end;
+}
+
+.communityCommentList {
+  margin-top: 28px;
+  border-top: 1px solid var(--moira-border);
+}
+
+.communityCommentList article {
+  padding: 20px 0;
+}
+
+.communityCommentList article + article {
+  border-top: 1px solid var(--moira-border);
+}
+
+.communityCommentList article > p {
+  margin: 0 0 12px;
+  color: #34483f;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.communityCommentList footer {
+  justify-content: space-between;
+}
+
+@media (max-width: 720px) {
+  .communityDetailPage {
+    padding: 24px 0 48px;
+  }
+
+  .communityDetailShell {
+    width: min(100% - 32px, 920px);
+  }
+
+  .communityOwnerActions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .communityCommentList footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .mypageEmptyState {

@@ -36,7 +36,7 @@ export default function PopularAgendaSection() {
           ))}
         </div>
         <div className="homeCenteredAction">
-          <Link className="uiButton uiButtonPrimary" href="/community/free/write">
+          <Link className="uiButton uiButtonPrimary" href="/community/free">
             동네 이야기 남기기 <span aria-hidden="true">＋</span>
           </Link>
         </div>

@@ -69,7 +69,7 @@ const BUSAN_DISTRICTS = [
 const PHONE_DISPLAY_PATTERN = /^\d{3}-\d{3,4}-\d{4}$/;
 
 function postHref(postId: string) {
-  return `/board/${encodeURIComponent(postId)}`;
+  return `/community/posts/${encodeURIComponent(postId)}`;
 }
 
 async function fetchDashboardData() {
