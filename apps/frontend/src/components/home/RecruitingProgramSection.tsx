@@ -4,7 +4,7 @@ import { recruitingPrograms } from './home-data';
 
 export default function RecruitingProgramSection() {
   return (
-    <section className="homeSection recruitingSection" id="recruiting-programs">
+    <section className="homeSection recruitingSection">
       <div className="uiContainer">
         <SectionHeading
           eyebrow="OPEN PROGRAMS"

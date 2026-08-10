@@ -10,7 +10,7 @@ export default function ProgramSurveySection() {
     useState<(typeof programSurveys)[number] | null>(null);
 
   return (
-    <section className="homeSection surveySection" id="program-survey">
+    <section className="homeSection surveySection">
       <div className="uiContainer">
         <SectionHeading
           eyebrow="PLANNING NOW"

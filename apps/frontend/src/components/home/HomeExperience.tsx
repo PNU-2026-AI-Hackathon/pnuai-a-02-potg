@@ -1,21 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-const homeSections = [
-  { id: 'about', label: '메인 소개' },
-  { id: 'moira-studio', label: '모이라 스튜디오' },
-  { id: 'neighborhood-stories', label: '동네 이야기' },
-  { id: 'program-survey', label: '프로그램 설문' },
-  { id: 'recruiting-programs', label: '모집 중인 프로그램' },
-  { id: 'library-finder', label: '도서관 찾기' },
-] as const;
-
-type HomeSectionId = (typeof homeSections)[number]['id'];
+import { useEffect } from 'react';
 
 export default function HomeExperience() {
-  const [activeSection, setActiveSection] = useState<HomeSectionId>(homeSections[0].id);
-
   useEffect(() => {
     const sections = Array.from(
       document.querySelectorAll<HTMLElement>('.moiraPage main > section'),
@@ -47,25 +34,6 @@ export default function HomeExperience() {
     );
 
     sections.slice(1).forEach((section) => observer.observe(section));
-
-    const sectionNavigationObserver = new IntersectionObserver(
-      (entries) => {
-        const visibleSection = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
-
-        const visibleSectionId = visibleSection?.target.id;
-        if (homeSections.some((section) => section.id === visibleSectionId)) {
-          setActiveSection(visibleSectionId as HomeSectionId);
-        }
-      },
-      {
-        rootMargin: '-35% 0px -35% 0px',
-        threshold: [0, 0.25, 0.5, 0.75, 1],
-      },
-    );
-
-    sections.forEach((section) => sectionNavigationObserver.observe(section));
 
     const desktopMedia = window.matchMedia(
       '(min-width: 981px) and (hover: hover) and (pointer: fine)',
@@ -316,7 +284,6 @@ export default function HomeExperience() {
 
     return () => {
       observer.disconnect();
-      sectionNavigationObserver.disconnect();
       window.cancelAnimationFrame(heroFrame);
       unlockScroll();
       desktopMedia.removeEventListener('change', syncDesktopMode);
@@ -326,26 +293,5 @@ export default function HomeExperience() {
     };
   }, []);
 
-  return (
-    <nav
-      className={`homeSectionNavigation ${activeSection === 'program-survey' ? 'isInverted' : ''}`}
-      aria-label="메인페이지 섹션 이동"
-    >
-      <ol>
-        {homeSections.map((section) => (
-          <li key={section.id}>
-            <a
-              className={activeSection === section.id ? 'isActive' : ''}
-              href={`#${section.id}`}
-              aria-label={`${section.label} 섹션으로 이동`}
-              aria-current={activeSection === section.id ? 'true' : undefined}
-              title={section.label}
-            >
-              <span aria-hidden="true" />
-            </a>
-          </li>
-        ))}
-      </ol>
-    </nav>
-  );
+  return null;
 }
