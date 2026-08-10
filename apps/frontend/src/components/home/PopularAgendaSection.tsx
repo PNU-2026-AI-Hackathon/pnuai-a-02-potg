@@ -4,7 +4,7 @@ import { popularAgendas } from './home-data';
 
 export default function PopularAgendaSection() {
   return (
-    <section className="homeSection popularAgendaSection">
+    <section className="homeSection popularAgendaSection" id="neighborhood-stories">
       <div className="uiContainer">
         <SectionHeading
           eyebrow="NEIGHBORHOOD VOICES"
