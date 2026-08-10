@@ -122,7 +122,7 @@ export default function CommunityBoardView({
                 <thead>
                   <tr>
                     <th scope="col">번호</th>
-                    <th scope="col">분류</th>
+                    {board.slug !== 'free' ? <th scope="col">분류</th> : null}
                     <th scope="col">제목</th>
                     <th scope="col">작성자</th>
                     <th scope="col">작성일</th>
@@ -133,7 +133,7 @@ export default function CommunityBoardView({
                     <CommunityPostCard
                       board={board}
                       key={post.id}
-                      number={post.type === 'notice' ? '공지' : String(orderedPosts.length - index)}
+                      number={post.type === 'notice' && board.slug !== 'free' ? '공지' : String(orderedPosts.length - index)}
                       post={post}
                     />
                   ))}
@@ -155,11 +155,18 @@ function CommunityPostCard({ board, number, post }: CommunityPostCardProps) {
       <td className="communityPostNumber">
         <span>{number}</span>
       </td>
-      <td>
-        <span className="uiTag communityPostType">{board.typeLabels[post.type]}</span>
-      </td>
+      {board.slug !== 'free' ? (
+        <td>
+          <span className="uiTag communityPostType">{board.typeLabels[post.type]}</span>
+        </td>
+      ) : null}
       <td className="communityPostBody">
-        <h3><Link href={`/community/posts/${encodeURIComponent(post.id)}`}>{post.title}</Link></h3>
+        <h3>
+          {board.slug === 'free' && post.type === 'notice' ? (
+            <span className="communityNoticeIcon" role="img" aria-label="공지">📣</span>
+          ) : null}
+          <Link href={`/community/posts/${encodeURIComponent(post.id)}`}>{post.title}</Link>
+        </h3>
         <p>{post.content}</p>
         <div className="communityPostMetaRow" aria-label="게시글 태그">
           {post.tags.map((tag) => (

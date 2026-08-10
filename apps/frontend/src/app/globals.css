@@ -149,7 +149,16 @@
 }
 
 .communityBoardPage .communityPostBody h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--moira-green-dark);
+}
+
+.communityBoardPage .communityNoticeIcon {
+  flex: 0 0 auto;
+  font-size: 26px;
+  line-height: 1;
 }
 
 .communityBoardPage .communityPostRow.isNotice {
