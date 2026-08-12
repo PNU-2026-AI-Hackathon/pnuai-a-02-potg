@@ -191,12 +191,27 @@
 - HWP, PDF, 이미지 등 첨부파일이 없다.
 - 테스트 레코드가 아니다.
 
-2026-08-12 전체 재크롤 351건을 이 기준으로 분류한 결과 17건이 선택되었다. 이 배치는 `program-text-only-prototype/v1` 데이터로 생성하며, 이미지·HWP·PDF 정제는 다음 단계로 미룬다.
+2026-08-12 전체 재크롤 351건을 이 기준으로 분류한 결과 테스트 글을 제외한 17건이 선택되었다. 이 배치는 단일 `program-board/v1` 파이프라인의 `text-only` 프로파일로 생성하며, 이미지·HWP·PDF 정제는 다음 단계로 미룬다.
+
+로컬 생성 및 검증 명령:
+
+```powershell
+cd apps/backend
+node -r ts-node/register src/cli/buildProgramBoardData.ts --profile text-only
+$env:PROGRAM_BOARD_CRAWL='.local/geumjeong-small-library-crawl/<crawl-file>.json'
+$env:PROGRAM_BOARD_MODULE_ROOT='src'
+node -r ts-node/register scripts/test-program-board-data.js
+```
+
+전체 백엔드 `npm run build`가 성공하는 환경에서는 `npm run program-board:build -- --profile text-only`도 사용할 수 있다.
 
 ## 12. 현재 검증 상태와 알려진 한계
 
 - 대표 20건은 원사이트와 20/20 일치 확인을 거쳤다.
-- 대표 20건 UI에서 표·이미지·자유문·안내사항 유형을 검증 중이다.
+- 현재 게시판 UI는 텍스트형 17건을 `program-board/v1` 산출물에서 읽는다.
+- 텍스트형 17건의 제목·프로그램 소개·구조화 항목 중복 방지 회귀 테스트가 있다.
+- 정제 모듈 격리 실행, 17건 데이터 생성 및 사전 커버리지 분석은 성공했다.
+- 전체 백엔드 빌드는 이 작업과 무관한 기존 Prisma Client 타입 불일치가 있으면 실패할 수 있다.
 - 351건 전체 정제 품질은 아직 확정되지 않았다.
 - 이미지 안의 글자와 이미지 PDF는 OCR 없이는 구조화할 수 없다.
 - HWP/PDF의 복잡한 표는 추출 후에도 사람 검수가 필요할 수 있다.

@@ -66,7 +66,8 @@
     "verify:program-case-documents-limited": "npm run build && node scripts/verify-program-case-documents-limited.js",
     "postinstall": "prisma generate",
     "program-board:build": "npm run build && node dist/cli/buildProgramBoardData.js",
-    "program-board:coverage": "npm run build && node dist/cli/programDictionaryCoverage.js"
+    "program-board:coverage": "npm run build && node dist/cli/programDictionaryCoverage.js",
+    "test:program-board-data": "node scripts/test-program-board-data.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

@@ -5,13 +5,18 @@ const path = require('node:path');
 const moduleRoot = process.env.PROGRAM_BOARD_MODULE_ROOT
   ? path.resolve(process.env.PROGRAM_BOARD_MODULE_ROOT)
   : path.resolve(__dirname, '../dist');
-const { normalizeProgram } = require(path.join(moduleRoot, 'services/programDataNormalization/normalizer.js'));
+const normalizerFile = path.join(moduleRoot, 'services/programDataNormalization/normalizer');
+const { normalizeProgram } = require(normalizerFile);
 
 const crawlPath = process.env.PROGRAM_BOARD_CRAWL;
 if (!crawlPath) throw new Error('PROGRAM_BOARD_CRAWL is required');
 const records = JSON.parse(fs.readFileSync(crawlPath, 'utf8')).records;
 const byId = new Map(records.map((record) => [record.idx, record]));
 const normalize = (idx) => normalizeProgram(byId.get(idx));
+const comparable = (value) => String(value ?? '')
+  .replace(/^[^\p{L}\p{N}]+/u, '')
+  .replace(/[^\p{L}\p{N}]+$/u, '')
+  .replace(/\s+/g, '');
 
 // 제외는 idx 하드코딩이 아니라 조건 규칙으로 판정해야 한다.
 const excluded = records.map(normalizeProgram).filter((item) => item.isExcluded);
@@ -45,6 +50,26 @@ assert.ok(
 const wreath = normalize(2990);
 assert.equal(wreath.libraryName, '금정북파크 작은도서관');
 assert.equal(wreath.evidence.libraryNameSource, 'body_location');
+
+// 텍스트형 17건은 정제 데이터 단계에서 제목과 라벨 항목이 소개에 반복되면 안 된다.
+const textOnlyIds = [2634, 2990, 3052, 3105, 3130, 3175, 3276, 3355, 3390, 3408, 4103, 4104, 4105, 4194, 4351, 4353, 4354];
+for (const idx of textOnlyIds) {
+  const item = normalize(idx);
+  const intro = item.board.intro.map(comparable);
+  assert.ok(!intro.includes(comparable(item.title)), `소개에 제목이 반복됨: ${idx}`);
+  const sectionValues = item.board.sections.flatMap((section) => section.items.map((entry) => comparable(entry.value)));
+  assert.equal(
+    intro.filter((line) => sectionValues.includes(line)).length,
+    0,
+    `소개와 구조화 항목 값이 반복됨: ${idx}`,
+  );
+}
+
+for (const idx of [3052, 3105, 3130]) {
+  const item = normalize(idx);
+  assert.equal(item.board.sections.filter((section) => section.id === 'content').length, 1, `소개 구획 중복: ${idx}`);
+  assert.equal(item.board.intro.filter((line) => /벙개\s*독서회$/.test(line.trim())).length, 0, `독서회 제목 중복: ${idx}`);
+}
 
 // 표가 있는 레코드는 표 내용이 소개에 중복되지 않아야 한다.
 const science = normalize(4350);

@@ -34,7 +34,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
   // 표 셀에 들어 있던 이미지는 아래 안내 이미지에서 크게 보여준다. 어느 칸의 이미지인지
   // 알 수 있도록 번호를 매겨 셀과 연결한다.
   const cellImageNumber = new Map<string, number>();
-  tables.forEach((table) => table.rows.forEach((row) => row.cells.forEach((cell) => cell.images.forEach((image) => {
+  tables.forEach((table) => table.rows.forEach((row) => row.cells.forEach((cell) => (cell.images ?? []).forEach((image) => {
     if (!cellImageNumber.has(image.url)) cellImageNumber.set(image.url, cellImageNumber.size + 1);
   }))));
 
@@ -92,7 +92,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
                         return (
                           <Cell colSpan={cell.colSpan} rowSpan={cell.rowSpan} key={cellIndex}>
                             {cell.text}
-                            {cell.images.map((image) => (
+                            {(cell.images ?? []).map((image) => (
                               <a className="programCellImageRef" href={`#program-image-${cellImageNumber.get(image.url)}`} key={image.url}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={image.url} alt={image.alt || '표 안 이미지'} />
