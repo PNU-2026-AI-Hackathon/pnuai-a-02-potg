@@ -9,6 +9,24 @@ type Attachment = {
   url: string;
 };
 
+export type ProgramContentTable = {
+  rows: Array<{
+    cells: Array<{
+      text: string;
+      header: boolean;
+      colSpan: number;
+      rowSpan: number;
+    }>;
+  }>;
+};
+
+export type ProgramContent = {
+  kind: 'table' | 'image' | 'text' | 'attachment_only' | 'empty';
+  text: string;
+  tables: ProgramContentTable[];
+  images: Array<{ url: string; alt: string }>;
+};
+
 type CrawlResult = {
   idx: number;
   url: string;
@@ -16,6 +34,9 @@ type CrawlResult = {
   basicInfo: BasicInfo;
   bodyText: string;
   detailText: string;
+  onlineApplicationStatus: string | null;
+  programContent: ProgramContent;
+  noticeText: string;
   attachments: Attachment[];
   hasAttachments: boolean;
   fetchedAt: string;
@@ -76,6 +97,29 @@ function normalizeText(value: string | undefined | null) {
     .replace(/\u00a0/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+export function normalizeMultilineText(value: string | undefined | null) {
+  return String(value ?? '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/\u00a0/g, ' ')
+    .split('\n')
+    .map((line) => line.replace(/[\t\f\v ]+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+function elementTextWithBreaks($: CheerioAPI, element: any) {
+  const clone = $(element).clone();
+  clone.find('br').replaceWith('\n');
+  clone.find('p,div,li,dt,dd,blockquote,pre,section,article,h1,h2,h3,h4,h5,h6,tr').each((_, block) => {
+    $(block).append('\n');
+  });
+  return normalizeMultilineText(clone.text());
+}
+
+function elementsTextWithBreaks($: CheerioAPI, elements: any[]) {
+  return normalizeMultilineText(elements.map((element) => elementTextWithBreaks($, element)).join('\n'));
 }
 
 function resolveUrl(url: string, href: string) {
@@ -339,14 +383,64 @@ function parseKeyValueRows($: CheerioAPI, rows: any[]) {
     if (cells.length < 2) continue;
     for (let index = 0; index + 1 < cells.length; index += 2) {
       const key = normalizeText($(cells[index]).text());
-      const value = normalizeText($(cells[index + 1]).text());
+      const valueCell = $(cells[index + 1]);
+      const value = normalizeText(valueCell.text())
+        || normalizeText(valueCell.find('img[alt]').first().attr('alt'))
+        || normalizeText(valueCell.find('[title]').first().attr('title'));
       if (key && value) basicInfo[key] = value;
     }
   }
   return basicInfo;
 }
 
-function parseDetailPage(html: string, url: string, idx: number): CrawlResult {
+function tableStructure($: CheerioAPI, table: any): ProgramContentTable {
+  return {
+    rows: $(table).find('tr').toArray().filter((row) => $(row).parents('table').first().get(0) === table).map((row) => ({
+      cells: $(row).children('th,td').toArray().map((cell) => ({
+        text: elementTextWithBreaks($, cell),
+        header: cell.tagName === 'th',
+        colSpan: Math.max(1, Number($(cell).attr('colspan')) || 1),
+        rowSpan: Math.max(1, Number($(cell).attr('rowspan')) || 1),
+      })),
+    })).filter((row) => row.cells.some((cell) => cell.text)),
+  };
+}
+
+function splitProgramContent($: CheerioAPI, rows: any[], pageUrl: string, attachments: Attachment[]) {
+  const cells = rows.flatMap((row) => $(row).children('td').toArray());
+  const fullText = elementsTextWithBreaks($, cells);
+  const noticeMatch = fullText.match(/(?:^|\n)\s*[<\[【]?\s*안내\s*사항\s*[>\]】]?\s*(?:\n|$)/m);
+  const programText = normalizeMultilineText(noticeMatch ? fullText.slice(0, noticeMatch.index) : fullText);
+  const noticeText = normalizeMultilineText(noticeMatch
+    ? fullText.slice((noticeMatch.index ?? 0) + noticeMatch[0].length)
+    : '');
+
+  const tables = cells.flatMap((cell) => {
+    const ownerTable = $(cell).parents('table').first().get(0);
+    return $(cell).find('table').toArray().filter((table) => $(table).parents('table').first().get(0) === ownerTable);
+  })
+    .map((table) => tableStructure($, table))
+    .filter((table) => table.rows.length > 0);
+  // 본문에 삽입된 이미지만 담는다. 첨부파일 이미지는 attachments가 이미 갖고 있으므로
+  // 여기에 합치면 본문이 충실한 레코드까지 전부 이미지형으로 잘못 분류된다.
+  const attachmentUrls = new Set(attachments.map((attachment) => attachment.url));
+  const images = cells.flatMap((cell) => $(cell).find('img[src]').toArray()).map((image) => ({
+    url: resolveUrl(pageUrl, normalizeText($(image).attr('src'))),
+    alt: normalizeText($(image).attr('alt')),
+  }))
+    .filter((image) => image.url !== pageUrl && !attachmentUrls.has(image.url))
+    .filter((image, index, values) => values.findIndex((candidate) => candidate.url === image.url) === index);
+
+  // 본문 텍스트가 있으면 이미지가 있어도 텍스트형으로 본다. 이미지는 보조 자료다.
+  const kind: ProgramContent['kind'] = tables.length > 0 ? 'table'
+    : programText ? 'text'
+      : images.length > 0 ? 'image'
+        : attachments.length > 0 ? 'attachment_only'
+          : 'empty';
+  return { programContent: { kind, text: programText, tables, images }, noticeText };
+}
+
+export function parseDetailPage(html: string, url: string, idx: number): CrawlResult {
   const $ = load(html);
   $('script, style, noscript').remove();
   const detailTable = $('table')
@@ -362,19 +456,17 @@ function parseDetailPage(html: string, url: string, idx: number): CrawlResult {
 
   const title = normalizeText(detailTable.children('caption').text()) || `idx-${idx}`;
   const bodyTable = detailTable.find('table').first();
-  const bodyText = bodyTable.length > 0 ? normalizeText(bodyTable.parent().text()) : normalizeText(detailTable.text());
+  const bodyText = bodyTable.length > 0
+    ? elementTextWithBreaks($, bodyTable.parent().get(0))
+    : elementTextWithBreaks($, detailTable.get(0));
 
   // 기본 정보는 `th`(항목명) + `td`(값) 행, 본문은 `th` 없이 td[colspan]만 있는 행에 담긴다.
   const directRows = detailTable.children('tbody').children('tr').toArray();
   const basicInfoRows = directRows.filter((row) => $(row).children('th').length > 0);
   const basicInfo = parseKeyValueRows($, basicInfoRows);
 
-  const detailText = normalizeText(
-    directRows
-      .filter((row) => $(row).children('th').length === 0)
-      .map((row) => $(row).text())
-      .join('\n'),
-  );
+  const contentRows = directRows.filter((row) => $(row).children('th').length === 0);
+  const detailText = elementsTextWithBreaks($, contentRows);
 
   const attachments = $('a[href]')
     .toArray()
@@ -396,6 +488,12 @@ function parseDetailPage(html: string, url: string, idx: number): CrawlResult {
       };
     })
     .filter((attachment, index, array) => array.findIndex((candidate) => candidate.url === attachment.url && candidate.name === attachment.name) === index);
+  const { programContent, noticeText } = splitProgramContent($, contentRows, url, attachments);
+
+  // 온라인접수여부는 조회 시점의 상태값이라 프로그램 메타데이터가 아니다.
+  // basicInfo에 남기면 재수집마다 전건이 변경으로 잡혀 비교가 무의미해지므로 분리한다.
+  const onlineApplicationStatus = basicInfo['온라인접수여부'] ?? null;
+  delete basicInfo['온라인접수여부'];
 
   return {
     idx,
@@ -404,6 +502,9 @@ function parseDetailPage(html: string, url: string, idx: number): CrawlResult {
     basicInfo,
     bodyText,
     detailText,
+    onlineApplicationStatus,
+    programContent,
+    noticeText,
     attachments,
     hasAttachments: attachments.length > 0,
     fetchedAt: new Date().toISOString(),

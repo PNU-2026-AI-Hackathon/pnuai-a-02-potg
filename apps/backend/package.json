@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "crawl:geumjeong-small-library-detail": "npm run build && node dist/cli/geumjeongSmallLibraryCrawler.js",
+    "test:geumjeong-small-library-crawler": "npm run build && node scripts/test-geumjeong-small-library-crawler.js",
     "db:seed": "prisma db seed",
     "db:verify:interests": "node prisma/verify-interests.js",
     "test:program-case-sync": "npm run build && node scripts/test-program-case-sync.js",
