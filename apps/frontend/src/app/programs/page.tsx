@@ -38,7 +38,7 @@ export default async function ProgramsPage() {
           <div><strong>{programs.length}</strong><span>텍스트형 프로그램</span></div>
           <div><strong>{libraries}</strong><span>운영 도서관</span></div>
           <div><strong>{targets}</strong><span>대상 분류</span></div>
-          <p>현재 화면은 본문 텍스트를 읽을 수 있는 프로그램 전체를 정제한 프로토타입입니다. 포스터 이미지와 첨부파일은 보조 자료로 함께 두었으며, 그 안의 내용을 읽어내는 작업은 다음 단계입니다.</p>
+          <p>현재 화면은 본문이 텍스트로만 이루어진 프로그램만 정제한 프로토타입입니다. 내용이 포스터 이미지나 첨부파일에 담긴 프로그램은 아직 정제 규칙이 없어 제외했습니다.</p>
         </section>
 
         <section className="programFilterPreview" aria-label="프로그램 검색 미리보기">
