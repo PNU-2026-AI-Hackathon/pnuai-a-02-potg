@@ -2557,6 +2557,744 @@ button {
   color: #0b5cab;
 }
 
+/* Program board prototype */
+.programPage {
+  min-height: calc(100vh - 86px);
+  padding: 28px 0 64px;
+  background: #fff;
+}
+
+.programShell {
+  width: min(100% - 32px, 1180px);
+}
+
+.programBoardHeader {
+  margin-bottom: 16px;
+}
+
+.programSummary {
+  display: grid;
+  grid-template-columns: repeat(3, 150px) minmax(0, 1fr);
+  align-items: center;
+  border: 1px solid #dfe5ec;
+  background: #f8fafc;
+  padding: 18px 22px;
+}
+
+.programSummary > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  border-right: 1px solid #dfe5ec;
+  margin-right: 20px;
+}
+
+.programSummary strong {
+  color: #0b5cab;
+  font-size: 24px;
+}
+
+.programSummary span,
+.programSummary p {
+  color: #606b78;
+  font-size: 13px;
+}
+
+.programSummary p {
+  margin: 0;
+  text-align: right;
+}
+
+.programFilterPreview {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 150px 150px;
+  gap: 10px;
+  align-items: end;
+  margin-top: 24px;
+  border: 1px solid #e1e5ea;
+  padding: 18px;
+}
+
+.programFilterPreview label {
+  display: grid;
+  gap: 7px;
+  color: #333;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.programFilterPreview input,
+.programFilterPreview button {
+  min-height: 42px;
+  border: 1px solid #cfd7e2;
+  border-radius: 2px;
+  background: #fff;
+  color: #6b7280;
+  padding: 0 14px;
+}
+
+.programFilterPreview input:disabled,
+.programFilterPreview button:disabled {
+  opacity: 1;
+}
+
+.programFilterPreview small {
+  grid-column: 1 / -1;
+  color: #7b8490;
+  font-size: 12px;
+}
+
+.programListSection {
+  margin-top: 32px;
+}
+
+.programListHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  border-bottom: 2px solid #333;
+  padding-bottom: 12px;
+}
+
+.programListHeading h2 {
+  margin: 0;
+  color: #222;
+  font-size: 21px;
+}
+
+.programListHeading span {
+  color: #606b78;
+  font-size: 13px;
+}
+
+.programCardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.programCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 380px;
+  border: 1px solid #dfe4ea;
+  border-top: 3px solid #0b5cab;
+  background: #fff;
+  padding: 21px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.programCard:hover {
+  border-color: #9fb8d4;
+  box-shadow: 0 8px 22px rgba(31, 63, 105, 0.1);
+  transform: translateY(-2px);
+}
+
+.programCardFlags {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.programCardFlags span {
+  border: 1px solid #d8e2ed;
+  background: #f2f6fa;
+  color: #315f94;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.programCardFlags span:last-child {
+  border-color: #d9e9df;
+  background: #f1f8f4;
+  color: #39704f;
+}
+
+.programCardFlags .is-needs_review {
+  border-color: #efdcb1;
+  background: #fff8e7;
+  color: #8a6414;
+}
+
+.programCard h3 {
+  margin: 17px 0 7px;
+  font-size: 19px;
+  line-height: 1.45;
+}
+
+.programCard h3 a {
+  color: #1f3f69;
+}
+
+.programLibrary {
+  margin: 0 0 18px;
+  color: #0b5cab;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.programCard dl {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+}
+
+.programCard dl div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.programCard dt {
+  color: #6b7280;
+}
+
+.programCard dd {
+  margin: 0;
+  color: #333;
+}
+
+.programFee {
+  margin: 17px 0 0;
+  border-top: 1px solid #edf0f3;
+  padding-top: 13px;
+  color: #555;
+  font-size: 13px;
+}
+
+.programCardLink {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 18px;
+  color: #0b5cab;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.programDetailArticle {
+  border-top: 3px solid #1f3f69;
+}
+
+.programDetailHeader {
+  border-bottom: 1px solid #dfe4ea;
+  padding: 30px 28px 26px;
+}
+
+.programDetailBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.programDetailBadges span {
+  border: 1px solid #d8e2ed;
+  background: #f2f6fa;
+  color: #315f94;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.programDetailHeader h1 {
+  margin: 18px 0 9px;
+  color: #1f3f69;
+  font-size: 30px;
+  line-height: 1.35;
+}
+
+.programDetailHeader p {
+  margin: 0;
+  color: #666;
+  font-size: 15px;
+}
+
+.programDataNotice {
+  border: 1px solid #ead7a7;
+  border-left: 4px solid #d69b20;
+  background: #fffaf0;
+  margin-top: 20px;
+  padding: 16px 18px;
+}
+
+.programDataNotice strong {
+  color: #73520e;
+}
+
+.programDataNotice p {
+  margin: 5px 0 0;
+  color: #6c6250;
+  font-size: 13px;
+}
+
+.programInfoPanel,
+.programOperationalDetails,
+.programDescription,
+.programNoticeList,
+.programNoticeGroups,
+.programFeeDetail,
+.programAttachments {
+  margin-top: 30px;
+}
+
+.programDetailArticle h2 {
+  margin: 0 0 13px;
+  border-bottom: 2px solid #333;
+  padding-bottom: 10px;
+  color: #222;
+  font-size: 20px;
+}
+
+.programInfoPanel dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid #dfe4ea;
+  border-left: 1px solid #dfe4ea;
+}
+
+.programInfoPanel dl div {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  border-right: 1px solid #dfe4ea;
+  border-bottom: 1px solid #dfe4ea;
+}
+
+.programInfoPanel dl .isWide {
+  grid-column: 1 / -1;
+}
+
+.programInfoPanel dt,
+.programInfoPanel dd {
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.programInfoPanel dt {
+  background: #f7f8fa;
+  color: #555;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.programInfoPanel dd {
+  margin: 0;
+  color: #333;
+}
+
+.programDescription > p,
+.programFeeDetail > p {
+  margin: 0;
+  border: 1px solid #e1e5ea;
+  background: #fff;
+  padding: 24px;
+  color: #3f4650;
+  font-size: 14px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+.programOperationalDetails dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid #dfe4ea;
+  border-left: 1px solid #dfe4ea;
+}
+
+.programOperationalDetails dl div {
+  display: grid;
+  grid-template-columns: 105px minmax(0, 1fr);
+  border-right: 1px solid #dfe4ea;
+  border-bottom: 1px solid #dfe4ea;
+}
+
+.programOperationalDetails dt,
+.programOperationalDetails dd {
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.programOperationalDetails dt {
+  background: #f7f8fa;
+  color: #555;
+  font-weight: 800;
+}
+
+.programOperationalDetails dd {
+  margin: 0;
+  color: #333;
+}
+
+.programStructuredContent {
+  border: 1px solid #e1e5ea;
+  padding: 24px;
+}
+
+.programStructuredContent p {
+  position: relative;
+  margin: 0;
+  padding-left: 15px;
+  color: #3f4650;
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+.programStructuredContent p + p {
+  margin-top: 7px;
+}
+
+.programStructuredContent p::before {
+  content: '';
+  position: absolute;
+  top: 0.75em;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #7c91aa;
+}
+
+.programTableScroll {
+  overflow-x: auto;
+  border: 1px solid #d9dee5;
+  background: #fff;
+}
+
+.programCurriculumTable {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  color: #303740;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.programCurriculumTable + .programCurriculumTable {
+  border-top: 12px solid #f5f7f9;
+}
+
+.programCurriculumTable th,
+.programCurriculumTable td {
+  border: 1px solid #d9dee5;
+  padding: 12px 14px;
+  text-align: left;
+  white-space: pre-line;
+  vertical-align: top;
+}
+
+.programCurriculumTable th {
+  background: #f3f6f5;
+  color: #344840;
+  font-weight: 800;
+}
+
+.programPosterList {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  border: 1px solid #e1e5ea;
+  background: #f7f8fa;
+  padding: 22px;
+}
+
+.programPosterList a {
+  display: block;
+  max-width: 760px;
+}
+
+.programPosterList img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 4px 18px rgba(28, 43, 37, 0.12);
+}
+
+.programDescription .programPosterList + .programStructuredContent,
+.programDescription .programTableScroll + .programPosterList {
+  margin-top: 16px;
+}
+
+.programTextSections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.programTextSection {
+  overflow: hidden;
+  border: 1px solid #dfe4ea;
+  background: #fff;
+}
+
+.programTextSection.is-other {
+  grid-column: 1 / -1;
+}
+
+.programTextSection h3,
+.programNoticeGroup h3 {
+  margin: 0;
+  background: #f3f6f5;
+  padding: 12px 16px;
+  color: #315449;
+  font-size: 15px;
+}
+
+.programTextSection dl {
+  margin: 0;
+}
+
+.programTextSection dl div {
+  display: grid;
+  grid-template-columns: 105px minmax(0, 1fr);
+}
+
+.programTextSection dl div + div {
+  border-top: 1px solid #e8ebef;
+}
+
+.programTextSection dt,
+.programTextSection dd {
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.programTextSection dt {
+  background: #fafbfc;
+  color: #58636d;
+  font-weight: 800;
+}
+
+.programTextSection dd {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.programTextSection .programStructuredContent {
+  border: 0;
+}
+
+.programNoticeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.programNoticeGroup {
+  overflow: hidden;
+  border: 1px solid #eadfca;
+  background: #fffaf2;
+}
+
+.programNoticeGroup h3 {
+  background: #f8eedb;
+  color: #705720;
+}
+
+.programNoticeGroup ul {
+  margin: 0;
+  padding: 15px 20px 16px 37px;
+}
+
+.programNoticeGroup li {
+  color: #5f584b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.programNoticeGroup li + li {
+  margin-top: 5px;
+}
+
+@media (max-width: 760px) {
+  .programTextSections,
+  .programNoticeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .programTextSection.is-other {
+    grid-column: auto;
+  }
+}
+
+.programNoticeList ul {
+  margin: 0;
+  border: 1px solid #eadfca;
+  border-left: 4px solid #d69b20;
+  background: #fffaf2;
+  padding: 18px 22px 18px 40px;
+}
+
+.programNoticeList li {
+  color: #5f584b;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.programNoticeList li + li {
+  margin-top: 5px;
+}
+
+.programFeeDetail > p {
+  background: #f8fafc;
+}
+
+.programAttachments ul {
+  margin: 0;
+  border: 1px solid #e1e5ea;
+  padding: 0;
+  list-style: none;
+}
+
+.programAttachments li + li {
+  border-top: 1px solid #edf0f3;
+}
+
+.programAttachments a {
+  display: block;
+  padding: 14px 17px;
+  color: #0b5cab;
+  font-size: 14px;
+}
+
+.programAttachments a::before {
+  content: '첨부 ';
+  color: #7b8490;
+  font-size: 12px;
+}
+
+.programEmptyText {
+  margin: 0;
+  border: 1px solid #e1e5ea;
+  padding: 20px;
+  color: #737b86;
+  font-size: 14px;
+}
+
+.programDetailActions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 34px;
+  border-top: 1px solid #dfe4ea;
+  padding-top: 22px;
+}
+
+.programRawDescription {
+  margin-top: 28px;
+  border: 1px solid #dfe4ea;
+  background: #f8fafc;
+}
+
+.programRawDescription summary {
+  cursor: pointer;
+  padding: 14px 17px;
+  color: #385f8a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.programRawDescription p {
+  margin: 0;
+  border-top: 1px solid #dfe4ea;
+  background: #fff;
+  padding: 20px;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.programApplyAction {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.programApplyAction span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+@media (max-width: 960px) {
+  .programSummary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .programSummary p {
+    grid-column: 1 / -1;
+    margin-top: 12px;
+    text-align: left;
+  }
+
+  .programCardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .programPage {
+    padding-top: 20px;
+  }
+
+  .programSummary,
+  .programFilterPreview,
+  .programCardGrid,
+  .programInfoPanel dl,
+  .programOperationalDetails dl {
+    grid-template-columns: 1fr;
+  }
+
+  .programSummary > div {
+    border-right: 0;
+    border-bottom: 1px solid #dfe5ec;
+    margin: 0;
+    padding: 8px 0;
+  }
+
+  .programFilterPreview small,
+  .programInfoPanel dl .isWide {
+    grid-column: auto;
+  }
+
+  .programCard {
+    min-height: 0;
+  }
+
+  .programDetailHeader {
+    padding: 24px 18px;
+  }
+
+  .programDetailHeader h1 {
+    font-size: 25px;
+  }
+
+  .programInfoPanel dl div {
+    grid-template-columns: 105px minmax(0, 1fr);
+  }
+
+  .programDetailActions {
+    flex-direction: column-reverse;
+  }
+
+  .programApplyAction {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .programDetailActions .uiButton {
+    width: 100%;
+  }
+}
+
 .communityWriteButton {
   display: inline-flex;
   min-height: 42px;
