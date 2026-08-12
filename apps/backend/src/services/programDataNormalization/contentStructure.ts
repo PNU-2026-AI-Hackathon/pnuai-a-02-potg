@@ -36,6 +36,18 @@ export type ProgramBoardContent = {
   unmappedLabels: string[];
 };
 
+/**
+ * 비교용 정규화. 글머리표와 앞뒤 장식 기호를 걷어낸다.
+ * '▢ 크리스마스 리스 만들기'처럼 제목을 기호와 함께 다시 적어 둔 줄을 걸러내야
+ * 프로그램 소개에 제목이 한 번 더 나오지 않는다.
+ */
+function comparableOf(value: string) {
+  return value
+    .replace(/^[^\p{L}\p{N}]+/u, '')
+    .replace(/[^\p{L}\p{N}]+$/u, '')
+    .replace(/\s+/g, '');
+}
+
 function noticeTopicOf(line: string) {
   const compact = line.replace(/\s+/g, '');
   for (const topic of NOTICE_TOPICS) {
@@ -81,7 +93,7 @@ export function structureProgramContent(input: StructureInput): ProgramBoardCont
 
   const comparableBasics = [input.title, ...input.basicInfoValues]
     .filter(Boolean)
-    .map((value) => String(value).replace(/\s+/g, ''));
+    .map((value) => comparableOf(String(value)));
   const compactTableText = (input.tableTexts ?? []).join('').replace(/\s+/g, '');
   const isInsideTable = (line: string) => {
     const compact = line.replace(/\s+/g, '');
@@ -128,7 +140,7 @@ export function structureProgramContent(input: StructureInput): ProgramBoardCont
     }
     current = null;
 
-    if (comparableBasics.includes(line.replace(/\s+/g, ''))) continue;
+    if (comparableBasics.includes(comparableOf(line))) continue;
     if (isRoutableNotice(line)) {
       pushNotice(noticeGroups, line);
       continue;

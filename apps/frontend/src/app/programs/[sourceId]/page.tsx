@@ -25,6 +25,8 @@ export default async function ProgramDetailPage({ params }: PageProps) {
   if (!program) notFound();
 
   const occurrences = await getProgramOccurrences(program);
+  const contentSection = program.board.sections.find((section) => section.id === 'content');
+  const otherSections = program.board.sections.filter((section) => section.id !== 'content');
   const hasCapacityConflict = program.warnings.includes('CAPACITY_DETAIL_AMBIGUOUS');
   const tables = program.programContent.tables.filter((table) =>
     table.rows.length > 1 || table.rows.some((row) => row.cells.length > 1));
@@ -106,9 +108,26 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               </div>
             ) : null}
 
-            {program.board.sections.length ? (
+            {program.board.sections.length || program.board.intro.length ? (
               <div className="programTextSections">
-                {program.board.sections.map((section) => (
+                {/* 라벨 없는 자유문은 '프로그램 소개' 구획 안에 함께 넣는다.
+                    따로 그리면 같은 제목이 두 번 나온다. */}
+                {contentSection || program.board.intro.length ? (
+                  <section className="programTextSection is-content">
+                    <h3>{contentSection?.title ?? '프로그램 소개'}</h3>
+                    {contentSection ? (
+                      <dl>{contentSection.items.map((item, index) => (
+                        <div key={`${item.label}-${index}`}><dt>{item.label}</dt><dd>{item.value}</dd></div>
+                      ))}</dl>
+                    ) : null}
+                    {program.board.intro.length ? (
+                      <div className="programStructuredContent">
+                        {program.board.intro.map((line, index) => <p key={`${index}-${line}`}>{line}</p>)}
+                      </div>
+                    ) : null}
+                  </section>
+                ) : null}
+                {otherSections.map((section) => (
                   <section key={section.id} className={`programTextSection is-${section.id}`}>
                     <h3>{section.title}</h3>
                     <dl>{section.items.map((item, index) => (
@@ -117,15 +136,6 @@ export default async function ProgramDetailPage({ params }: PageProps) {
                   </section>
                 ))}
               </div>
-            ) : null}
-
-            {program.board.intro.length ? (
-              <section className="programTextSection is-other">
-                <h3>프로그램 소개</h3>
-                <div className="programStructuredContent">
-                  {program.board.intro.map((line, index) => <p key={`${index}-${line}`}>{line}</p>)}
-                </div>
-              </section>
             ) : null}
 
             {program.programContent.images.length ? (
