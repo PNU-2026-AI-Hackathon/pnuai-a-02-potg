@@ -35,10 +35,10 @@ export default async function ProgramsPage() {
         </header>
 
         <section className="programSummary" aria-label="프로그램 현황">
-          <div><strong>{programs.length}</strong><span>대표 프로그램</span></div>
+          <div><strong>{programs.length}</strong><span>텍스트형 프로그램</span></div>
           <div><strong>{libraries}</strong><span>운영 도서관</span></div>
           <div><strong>{targets}</strong><span>대상 분류</span></div>
-          <p>현재 화면은 정제 규칙 검토를 위한 대표 20건 기반 프로토타입입니다.</p>
+          <p>현재 화면은 본문 텍스트를 읽을 수 있는 프로그램 전체를 정제한 프로토타입입니다. 포스터 이미지와 첨부파일은 보조 자료로 함께 두었으며, 그 안의 내용을 읽어내는 작업은 다음 단계입니다.</p>
         </section>
 
         <section className="programFilterPreview" aria-label="프로그램 검색 미리보기">

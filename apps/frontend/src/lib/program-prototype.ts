@@ -48,8 +48,16 @@ type ReviewFile = {
   }>;
 };
 
-function reviewFileCandidates() {
-  const relative = path.join(
+function prototypeFileCandidates() {
+  const textOnlyRelative = path.join(
+    'apps',
+    'backend',
+    '.local',
+    'program-data-normalization',
+    'text-first',
+    'text-first-programs.json',
+  );
+  const representativeRelative = path.join(
     'apps',
     'backend',
     '.local',
@@ -59,14 +67,16 @@ function reviewFileCandidates() {
   );
 
   return [
-    path.resolve(process.cwd(), relative),
+    path.resolve(process.cwd(), textOnlyRelative),
+    path.resolve(process.cwd(), '..', 'backend', '.local', 'program-data-normalization', 'text-first', 'text-first-programs.json'),
+    path.resolve(process.cwd(), representativeRelative),
     path.resolve(process.cwd(), '..', 'backend', '.local', 'program-data-normalization', 'representative-20', 'representative-20.review.json'),
   ];
 }
 
-async function readReviewFile() {
+async function readPrototypeFile() {
   let lastError: unknown;
-  for (const candidate of reviewFileCandidates()) {
+  for (const candidate of prototypeFileCandidates()) {
     try {
       return JSON.parse(await readFile(candidate, 'utf8')) as ReviewFile;
     } catch (error) {
@@ -77,12 +87,12 @@ async function readReviewFile() {
 }
 
 export async function getProgramPrototypes() {
-  const review = await readReviewFile();
+  const review = await readPrototypeFile();
   const liveUrlById = new Map(review.sourceVerification?.results.map((result) => [result.sourceId, result.liveUrl]) ?? []);
   return review.items
     .map((item) => ({
       ...item.normalized,
-      sourceUrl: liveUrlById.get(item.normalized.sourceId) ?? item.normalized.sourceUrl,
+      sourceUrl: liveUrlById.get(item.normalized.sourceId) ?? `https://www.geumjeong.go.kr/booking/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=${item.normalized.sourceId}`,
       selectionReason: item.selectionReason,
     }))
     .filter((program) => !program.isExcluded)
@@ -130,7 +140,7 @@ type StructuredDescription = {
 };
 
 export type ProgramTextSection = {
-  id: 'content' | 'operation' | 'application' | 'contact';
+  id: 'content' | 'operation' | 'application' | 'notice' | 'contact';
   title: string;
   items: Array<{ label: string; value: string }>;
 };
@@ -168,14 +178,16 @@ const TEXT_FIELD_RULES: Array<{
 }> = [
   { pattern: /^(?:프로그램명|강좌명|수업명)$/, label: '프로그램', section: 'content' },
   { pattern: /^(?:선정도서|주제도서|도서명)$/, label: '선정도서', section: 'content' },
-  { pattern: /^(?:주제|교육내용|수업내용|활동내용|내용)$/, label: '주요 내용', section: 'content' },
+  { pattern: /^(?:주제|운영내용|교육내용|수업내용|활동내용|공연내용|체험내용|행사내용|내용)$/, label: '주요 내용', section: 'content' },
+  { pattern: /^(?:목표|교육목표|수업목표|강의목표)$/, label: '목표', section: 'content' },
+  { pattern: /^(?:비고|추가안내|기타안내)$/, label: '추가 안내', section: 'content' },
   { pattern: /^(?:준비물|학습자준비물)$/, label: '준비물', section: 'content' },
-  { pattern: /^(?:운영기간|교육기간|강의기간|수업기간|운영일시|교육일시|강의일시|수업일시|일시)$/, label: '일시', section: 'operation' },
+  { pattern: /^(?:운영기간|교육기간|강의기간|수업기간|운영일시|교육일시|강의일시|수업일시|공연일시|체험일시|행사일시|일시)$/, label: '일시', section: 'operation' },
   { pattern: /^(?:소요시간|수업시간|강의시간)$/, label: '소요시간', section: 'operation' },
-  { pattern: /^(?:운영장소|교육장소|강의장소|수업장소|장소)$/, label: '장소', section: 'operation' },
+  { pattern: /^(?:운영장소|교육장소|강의장소|수업장소|공연장소|체험장소|행사장소|장소)$/, label: '장소', section: 'operation' },
   { pattern: /^(?:운영방법|교육방법|진행방법)$/, label: '운영방법', section: 'operation' },
-  { pattern: /^(?:신청|접수|신청일시|접수일시|신청기간|접수기간)$/, label: '신청일시', section: 'application' },
-  { pattern: /^(?:신청방법|접수방법)$/, label: '신청방법', section: 'application' },
+  { pattern: /^(?:신청|접수|수강신청|신청일시|접수일시|신청기간|접수기간)$/, label: '신청일시', section: 'application' },
+  { pattern: /^(?:신청방법|접수방법|수강신청방법|온라인신청방법)$/, label: '신청방법', section: 'application' },
   { pattern: /^(?:추첨일시|추첨일자)$/, label: '추첨일시', section: 'application' },
   { pattern: /^(?:추첨발표|당첨발표|결과발표)$/, label: '결과발표', section: 'application' },
   { pattern: /^(?:문의|문의사항|문의전화|연락처)$/, label: '문의', section: 'contact' },
@@ -185,10 +197,11 @@ const SECTION_META: Record<ProgramTextSection['id'], string> = {
   content: '프로그램 소개',
   operation: '운영 정보',
   application: '신청 안내',
+  notice: '이용 안내',
   contact: '문의',
 };
 
-const BASIC_DUPLICATE_LABEL = /^(?:대상|교육대상|강사|강사명|모집인원|모집정원|정원|수강료|교육비|참가비|재료비|온라인접수여부)$/;
+const BASIC_DUPLICATE_LABEL = /^(?:대상|운영대상|교육대상|수업대상|공연대상|체험대상|행사대상|강사|진행자|강사명|모집인원|모집정원|정원|수강료|교육비|참가비|재료비|교재비|온라인접수여부)$/;
 
 function normalizeFieldLabel(value: string) {
   return value.replace(/[\s·ㆍ]/g, '').replace(/[()（）]/g, '');
@@ -206,7 +219,7 @@ export function structureProgramText(text: string | null, title: string, duplica
     if (!line) continue;
     if (skipContinuation && /^[（(]/.test(line)) continue;
     skipContinuation = false;
-    const labeled = line.replace(/^[\s*※★○●■□▢❏◇◆▶▷]+/, '').match(/^(.{1,20}?)\s*[:：]\s*(.*)$/);
+    const labeled = line.replace(/^[^\p{L}\p{N}<]+/u, '').match(/^(.{1,20}?)\s*[:：]\s*(.*)$/);
     if (labeled) {
       const normalizedLabel = normalizeFieldLabel(labeled[1]);
       if (BASIC_DUPLICATE_LABEL.test(normalizedLabel)) {
@@ -236,13 +249,18 @@ export function structureProgramText(text: string | null, title: string, duplica
     if (cleaned && !isDuplicate && !isDuplicatedBasicField) remainingLines.push(cleaned);
   }
 
+  // 라벨이 붙지 않은 자유문은 그대로 둔다.
+  // 키워드('신청', '촬영' 등)만 보고 다른 섹션으로 옮기면 원문에 없는 항목명을 만들어내고,
+  // 이어지는 한 문장이 두 섹션으로 쪼개진다. 정제 원칙상 추측해서 만들지 않는다.
+  const retainedLines = remainingLines;
+
   const sections = (Object.keys(SECTION_META) as ProgramTextSection['id'][]).flatMap((id) => {
     const sectionItems = items.filter((item) => item.section === id).map(({ label, value }) => ({ label, value }));
     return sectionItems.length ? [{ id, title: SECTION_META[id], items: sectionItems }] : [];
   });
-  if (remainingLines.length) {
+  if (retainedLines.length) {
     const contentSection = sections.find((section) => section.id === 'content');
-    const introduction = { label: '소개', value: remainingLines.join('\n') };
+    const introduction = { label: '소개', value: retainedLines.join('\n') };
     if (contentSection) contentSection.items.push(introduction);
     else sections.unshift({ id: 'content', title: SECTION_META.content, items: [introduction] });
   }
