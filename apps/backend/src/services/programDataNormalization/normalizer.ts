@@ -1,4 +1,4 @@
-import { LIBRARY_DICTIONARY_VERSION, lookupLibrary } from './dictionary';
+import { LIBRARY_DICTIONARY_VERSION, lookupLabel, lookupLibrary, parseLabelLine } from './dictionary';
 import {
   PROGRAM_NORMALIZATION_VERSION,
   type NormalizedProgram,
@@ -21,6 +21,23 @@ const EXCLUSION_RULES: Array<{ reason: string; matches: (raw: RawProgram) => boo
 function detectExclusion(raw: RawProgram) {
   const rule = EXCLUSION_RULES.find((candidate) => candidate.matches(raw));
   return { isExcluded: Boolean(rule), exclusionReason: rule?.reason ?? null };
+}
+
+/**
+ * 제목에 태그가 없을 때의 폴백. 본문의 '장소' 항목에 적힌 도서관명을 사전으로 조회한다.
+ * 추측이 아니라 원문에 적힌 이름을 그대로 대조하는 것이므로 정제 원칙에 어긋나지 않는다.
+ * 351건 중 태그 없는 22건 가운데 17건이 이 경로로 식별된다.
+ */
+function libraryFromBody(text: string) {
+  for (const line of text.split('\n')) {
+    const parsed = parseLabelLine(line);
+    if (!parsed) continue;
+    const label = lookupLabel(parsed.label);
+    if (label.status !== 'mapped' || label.field !== 'location') continue;
+    const hit = lookupLibrary([parsed.value]);
+    if (hit.canonical) return { canonical: hit.canonical, matchedText: parsed.value };
+  }
+  return null;
 }
 
 function leadingTags(title: string) {
@@ -82,7 +99,15 @@ function statusFrom(warnings: string[], excluded: boolean) {
 export function normalizeProgram(raw: RawProgram): NormalizedProgram {
   const warnings: string[] = [];
   const parsedTitle = leadingTags(raw.title);
-  const library = lookupLibrary(parsedTitle.tags);
+  let library = lookupLibrary(parsedTitle.tags);
+  let libraryNameSource: 'title_tag' | 'body_location' | null = library.canonical ? 'title_tag' : null;
+  if (!library.canonical) {
+    const fromBody = libraryFromBody(raw.programContent?.text ?? raw.detailText ?? '');
+    if (fromBody) {
+      library = { canonical: fromBody.canonical, matchedText: fromBody.matchedText, knownNonLibrary: false };
+      libraryNameSource = 'body_location';
+    }
+  }
   const targetText = raw.basicInfo['대상'];
   const target = targetFromText(targetText);
   const capacityText = raw.basicInfo['모집인원'];
@@ -149,6 +174,7 @@ export function normalizeProgram(raw: RawProgram): NormalizedProgram {
     evidence: {
       titleTags: parsedTitle.tags,
       libraryMatchedText: library.matchedText,
+      libraryNameSource,
       knownNonLibraryTag: library.knownNonLibrary,
       targetText: targetText ?? null,
       capacityText: capacityText ?? null,

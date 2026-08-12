@@ -1,9 +1,11 @@
 {
-  "version": "2026-08-12",
+  "version": "2026-08-12b",
   "description": "본문의 '라벨 : 값' 줄을 게시판 필드로 옮기는 사전. 351건 실측으로 뽑은 59종 라벨이 기준이며, 새 라벨이 나오면 이 파일에만 추가한다.",
   "matching": {
-    "linePattern": "줄 앞의 글머리표(○ ❏ □ ▢ ◈ ★ * - • · 숫자.)를 걷어낸 뒤 '라벨 : 값' 형태를 찾는다",
-    "normalize": ["라벨 내부 공백 제거(예: '수 강 료' -> '수강료')"],
+    "linePattern": "줄 앞에서 첫 글자가 나오기 전까지(글머리표·기호·숫자·공백)를 걷어낸 뒤 '라벨 : 값' 형태를 찾는다. 원문에 심볼 폰트용 사설영역 글머리표(U+F06D 등)가 섞여 있어 기호를 일일이 나열하는 방식으로는 놓친다.",
+    "normalize": [
+      "라벨 내부 공백 제거(예: '수 강 료' -> '수강료')"
+    ],
     "unmappedPolicy": "사전에 없는 라벨은 버리지 않는다. 원문 줄을 그대로 보존하고 커버리지 보고서의 '미분류 라벨'로 올린다."
   },
   "fields": {
@@ -30,12 +32,9 @@
     "대면전환시운영장소": "location",
     "위치": "location",
     "주소": "location",
-
     "문의": "contact",
     "문의사항": "contact",
-
     "수강료": "tuition",
-
     "재료비": "materialFee",
     "교재비": "materialFee",
     "교구비": "materialFee",
@@ -43,37 +42,31 @@
     "제본비": "materialFee",
     "체험료": "materialFee",
     "비품사용료": "materialFee",
-
     "대상": "targetAudience",
     "운영대상": "targetAudience",
     "공연대상": "targetAudience",
-
     "일시": "scheduleDetail",
     "운영일시": "scheduleDetail",
     "공연일시": "scheduleDetail",
     "운영기간": "scheduleDetail",
     "소요시간": "scheduleDetail",
-
     "접수기간": "applicationInfo",
     "접수일시": "applicationInfo",
     "접수": "applicationInfo",
     "신청": "applicationInfo",
     "신청일시": "applicationInfo",
     "신청방법": "applicationInfo",
+    "접수방법": "applicationInfo",
     "수강신청": "applicationInfo",
     "수강신청방법": "applicationInfo",
     "추첨일시": "applicationInfo",
     "추첨발표": "applicationInfo",
-
     "준비물": "materials",
     "준비": "materials",
     "교재": "materials",
-
     "강사": "instructor",
     "진행자": "instructor",
-
     "운영방법": "method",
-
     "내용": "contentSummary",
     "운영내용": "contentSummary",
     "공연내용": "contentSummary",
@@ -82,18 +75,35 @@
     "어린이체험": "contentSummary",
     "샌드아트공연": "contentSummary",
     "클래식악기소개": "contentSummary",
-
     "선정도서": "referenceBook",
     "주제도서": "referenceBook",
-
     "비고": "note",
-    "개인정보제공동의여부": "note"
+    "개인정보제공동의여부": "note",
+    "초청작가": "instructor",
+    "강연내용": "contentSummary",
+    "공연주제": "contentSummary",
+    "전액면제대상자": "note"
   },
   "ignored": [
-    { "label": "https", "reason": "URL의 스킴이 라벨로 잘못 잡힌 것" },
-    { "label": "운영", "reason": "뒤 문장이 이어지는 서술문. 항목값이 아님" },
-    { "label": "금정북파크작은도서관", "reason": "라벨이 아니라 본문 안의 도서관명 머리글" },
-    { "label": "금정아이꿈자람작은도서관", "reason": "라벨이 아니라 본문 안의 도서관명 머리글" },
-    { "label": "금정북뱅크작은도서관", "reason": "라벨이 아니라 본문 안의 도서관명 머리글" }
+    {
+      "label": "https",
+      "reason": "URL의 스킴이 라벨로 잘못 잡힌 것"
+    },
+    {
+      "label": "운영",
+      "reason": "뒤 문장이 이어지는 서술문. 항목값이 아님"
+    },
+    {
+      "label": "금정북파크작은도서관",
+      "reason": "라벨이 아니라 본문 안의 도서관명 머리글"
+    },
+    {
+      "label": "금정아이꿈자람작은도서관",
+      "reason": "라벨이 아니라 본문 안의 도서관명 머리글"
+    },
+    {
+      "label": "금정북뱅크작은도서관",
+      "reason": "라벨이 아니라 본문 안의 도서관명 머리글"
+    }
   ]
 }

@@ -66,6 +66,8 @@ export type NormalizedProgram = {
   evidence: {
     titleTags: string[];
     libraryMatchedText: string | null;
+    /** 도서관명을 어디서 얻었는지. 제목 태그가 없을 때만 본문 장소로 폴백한다. */
+    libraryNameSource: 'title_tag' | 'body_location' | null;
     knownNonLibraryTag: boolean;
     targetText: string | null;
     capacityText: string | null;

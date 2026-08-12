@@ -73,12 +73,18 @@ export function lookupLabel(rawLabel: string): LabelLookup {
   return field ? { status: 'mapped', field } : { status: 'unknown' };
 }
 
-const LABEL_LINE = /^[\s○❏□▢◈★*\-•·▶\d.]*([가-힣A-Za-z][가-힣A-Za-z\s]{0,12}?)\s*[:：]\s*(.*)$/;
+/**
+ * 글머리표를 문자 목록으로 나열하지 않고 '글자가 시작되기 전까지'를 걷어낸다.
+ * 원문에는 심볼 폰트용 사설영역(U+F06D 등) 글머리표가 섞여 있어 목록으로는 감당되지 않고,
+ * trim()으로도 지워지지 않아 그 줄이 통째로 파싱에서 빠진다.
+ */
+const LEADING_ORNAMENT = /^[^\p{L}]+/u;
+const LABEL_LINE = /^([가-힣A-Za-z][가-힣A-Za-z\s]{0,12}?)\s*[:：]\s*(.*)$/;
 
 export type ParsedLine = { label: string; value: string } | null;
 
 export function parseLabelLine(line: string): ParsedLine {
-  const match = String(line ?? '').trim().match(LABEL_LINE);
+  const match = String(line ?? '').trim().replace(LEADING_ORNAMENT, '').match(LABEL_LINE);
   if (!match) return null;
   return { label: normalizeLabel(match[1]), value: match[2].trim() };
 }
