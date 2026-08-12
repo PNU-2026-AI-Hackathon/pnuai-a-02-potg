@@ -1,4 +1,6 @@
-export const PROGRAM_NORMALIZATION_VERSION = 'geumjeong-program-normalization-v1' as const;
+import type { ProgramBoardContent } from './contentStructure';
+
+export const PROGRAM_NORMALIZATION_VERSION = 'geumjeong-program-normalization-v2' as const;
 
 export type RawAttachment = {
   name: string;
@@ -6,7 +8,7 @@ export type RawAttachment = {
 };
 
 export type ProgramContentTable = {
-  rows: Array<{ cells: Array<{ text: string; header: boolean; colSpan: number; rowSpan: number }> }>;
+  rows: Array<{ cells: Array<{ text: string; header: boolean; colSpan: number; rowSpan: number; images: Array<{ url: string; alt: string }> }> }>;
 };
 
 export type ProgramContent = {
@@ -38,6 +40,12 @@ export type NormalizedProgram = {
   normalizationVersion: typeof PROGRAM_NORMALIZATION_VERSION;
   /** 어느 판본의 사전으로 정제했는지. 사전만 갱신해도 결과가 달라지므로 함께 남긴다. */
   libraryDictionaryVersion: string;
+  noticeDictionaryVersion: string;
+  /** 게시판 구획별 배치 결과. 화면은 이걸 그대로 그리기만 한다. */
+  board: ProgramBoardContent;
+  /** 같은 값이면 같은 프로그램의 다른 회차 */
+  seriesKey: string;
+  occurrenceLabel: string | null;
   sourceId: number;
   sourceUrl: string;
   title: string;

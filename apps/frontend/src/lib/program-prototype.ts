@@ -1,6 +1,30 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
+/**
+ * 게시판 화면이 쓰는 데이터 로더.
+ *
+ * 정제 규칙은 여기에 두지 않는다. 라벨을 항목으로 옮기고 안내문을 주제별로 묶는 일은
+ * 백엔드(programDataNormalization)가 하고, 이 파일은 결과를 읽어 형식만 다듬는다.
+ * 규칙이 화면에 있으면 테스트할 수 없고 DB로 옮길 때 다시 써야 한다.
+ */
+
+export type ProgramSection = {
+  id: 'content' | 'operation' | 'application' | 'contact';
+  title: string;
+  items: Array<{ label: string; value: string }>;
+};
+
+export type ProgramNoticeGroup = { id: string; title: string; lines: string[] };
+
+export type ProgramTableCell = {
+  text: string;
+  header: boolean;
+  colSpan: number;
+  rowSpan: number;
+  images: Array<{ url: string; alt: string }>;
+};
+
 export type ProgramPrototype = {
   sourceId: number;
   sourceUrl: string;
@@ -20,65 +44,42 @@ export type ProgramPrototype = {
   programContent: {
     kind: 'table' | 'image' | 'text' | 'attachment_only' | 'empty';
     text: string;
-    tables: Array<{ rows: Array<{ cells: Array<{ text: string; header: boolean; colSpan: number; rowSpan: number }> }> }>;
+    tables: Array<{ rows: Array<{ cells: ProgramTableCell[] }> }>;
     images: Array<{ url: string; alt: string }>;
   };
-  noticeText: string | null;
+  board: {
+    sections: ProgramSection[];
+    intro: string[];
+    notices: ProgramNoticeGroup[];
+    unmappedLabels: string[];
+  };
+  seriesKey: string;
+  occurrenceLabel: string | null;
+  seriesSize: number;
   isFree: boolean | null;
   feeText: string | null;
   materialFeeAmount: number | null;
   attachments: Array<{ name: string; url: string }>;
-  isExcluded: boolean;
-  exclusionReason: string | null;
   normalizationStatus: 'normalized' | 'partial' | 'needs_review' | 'excluded';
   warnings: string[];
-  evidence: {
-    capacityText: string | null;
-    capacityDetailCandidates?: number[];
-  };
+  evidence: { capacityText: string | null };
 };
 
-type ReviewFile = {
-  sourceVerification?: {
-    results: Array<{ sourceId: number; liveUrl: string }>;
-  };
-  items: Array<{
-    selectionReason: string;
-    normalized: ProgramPrototype;
-  }>;
-};
+type BoardFile = { items: Array<{ normalized: ProgramPrototype }> };
 
-function prototypeFileCandidates() {
-  const textOnlyRelative = path.join(
-    'apps',
-    'backend',
-    '.local',
-    'program-data-normalization',
-    'text-first',
-    'text-first-programs.json',
-  );
-  const representativeRelative = path.join(
-    'apps',
-    'backend',
-    '.local',
-    'program-data-normalization',
-    'representative-20',
-    'representative-20.review.json',
-  );
-
+function boardFileCandidates() {
+  const relative = path.join('apps', 'backend', '.local', 'program-board', 'programs.json');
   return [
-    path.resolve(process.cwd(), textOnlyRelative),
-    path.resolve(process.cwd(), '..', 'backend', '.local', 'program-data-normalization', 'text-first', 'text-first-programs.json'),
-    path.resolve(process.cwd(), representativeRelative),
-    path.resolve(process.cwd(), '..', 'backend', '.local', 'program-data-normalization', 'representative-20', 'representative-20.review.json'),
+    path.resolve(process.cwd(), relative),
+    path.resolve(process.cwd(), '..', 'backend', '.local', 'program-board', 'programs.json'),
   ];
 }
 
-async function readPrototypeFile() {
+async function readBoardFile() {
   let lastError: unknown;
-  for (const candidate of prototypeFileCandidates()) {
+  for (const candidate of boardFileCandidates()) {
     try {
-      return JSON.parse(await readFile(candidate, 'utf8')) as ReviewFile;
+      return JSON.parse(await readFile(candidate, 'utf8')) as BoardFile;
     } catch (error) {
       lastError = error;
     }
@@ -87,15 +88,9 @@ async function readPrototypeFile() {
 }
 
 export async function getProgramPrototypes() {
-  const review = await readPrototypeFile();
-  const liveUrlById = new Map(review.sourceVerification?.results.map((result) => [result.sourceId, result.liveUrl]) ?? []);
-  return review.items
-    .map((item) => ({
-      ...item.normalized,
-      sourceUrl: liveUrlById.get(item.normalized.sourceId) ?? `https://www.geumjeong.go.kr/booking/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=${item.normalized.sourceId}`,
-      selectionReason: item.selectionReason,
-    }))
-    .filter((program) => !program.isExcluded)
+  const board = await readBoardFile();
+  return board.items
+    .map((item) => item.normalized)
     .sort((left, right) => {
       const leftDate = left.programStartDate ?? '';
       const rightDate = right.programStartDate ?? '';
@@ -106,6 +101,14 @@ export async function getProgramPrototypes() {
 export async function getProgramPrototype(sourceId: number) {
   const programs = await getProgramPrototypes();
   return programs.find((program) => program.sourceId === sourceId) ?? null;
+}
+
+/** 같은 프로그램의 다른 회차. 신청은 회차별로 따로 받으므로 링크만 모아 준다. */
+export async function getProgramOccurrences(program: ProgramPrototype) {
+  const programs = await getProgramPrototypes();
+  return programs
+    .filter((candidate) => candidate.seriesKey === program.seriesKey && candidate.sourceId !== program.sourceId)
+    .sort((left, right) => (left.programStartDate ?? '').localeCompare(right.programStartDate ?? ''));
 }
 
 export function formatProgramDate(value: string | null) {
@@ -131,214 +134,4 @@ export function programFeeLabel(program: ProgramPrototype) {
   if (program.materialFeeAmount) return `재료비 ${program.materialFeeAmount.toLocaleString('ko-KR')}원`;
   if (program.feeText) return '비용 안내 있음';
   return '비용 정보 없음';
-}
-
-type StructuredDescription = {
-  operationalDetails: Array<{ label: string; value: string }>;
-  contentLines: string[];
-  notices: string[];
-};
-
-export type ProgramTextSection = {
-  id: 'content' | 'operation' | 'application' | 'notice' | 'contact';
-  title: string;
-  items: Array<{ label: string; value: string }>;
-};
-
-export type StructuredProgramText = {
-  sections: ProgramTextSection[];
-  remainingLines: string[];
-  recognizedCount: number;
-};
-
-export type NoticeGroup = {
-  id: 'location' | 'cost' | 'application' | 'policy' | 'privacy' | 'contact' | 'other';
-  title: string;
-  lines: string[];
-};
-
-const DETAIL_LABELS: Array<{ pattern: RegExp; label: string }> = [
-  { pattern: /^(?:운영)?장소|^강의장소/, label: '장소' },
-  { pattern: /^운영방법/, label: '운영방법' },
-  { pattern: /^신청방법/, label: '신청방법' },
-  { pattern: /^신청일시/, label: '신청일시' },
-  { pattern: /^추첨일시/, label: '추첨일시' },
-  { pattern: /^추첨장소/, label: '추첨장소' },
-  { pattern: /^추첨발표/, label: '추첨발표' },
-  { pattern: /^(?:문의|문의사항)/, label: '문의' },
-  { pattern: /^소요시간/, label: '소요시간' },
-  { pattern: /^(?:선정도서|주제도서)/, label: '도서' },
-  { pattern: /^교재/, label: '교재' },
-];
-
-const TEXT_FIELD_RULES: Array<{
-  pattern: RegExp;
-  label: string;
-  section: ProgramTextSection['id'];
-}> = [
-  { pattern: /^(?:프로그램명|강좌명|수업명)$/, label: '프로그램', section: 'content' },
-  { pattern: /^(?:선정도서|주제도서|도서명)$/, label: '선정도서', section: 'content' },
-  { pattern: /^(?:주제|운영내용|교육내용|수업내용|활동내용|공연내용|체험내용|행사내용|내용)$/, label: '주요 내용', section: 'content' },
-  { pattern: /^(?:목표|교육목표|수업목표|강의목표)$/, label: '목표', section: 'content' },
-  { pattern: /^(?:비고|추가안내|기타안내)$/, label: '추가 안내', section: 'content' },
-  { pattern: /^(?:준비물|학습자준비물)$/, label: '준비물', section: 'content' },
-  { pattern: /^(?:운영기간|교육기간|강의기간|수업기간|운영일시|교육일시|강의일시|수업일시|공연일시|체험일시|행사일시|일시)$/, label: '일시', section: 'operation' },
-  { pattern: /^(?:소요시간|수업시간|강의시간)$/, label: '소요시간', section: 'operation' },
-  { pattern: /^(?:운영장소|교육장소|강의장소|수업장소|공연장소|체험장소|행사장소|장소)$/, label: '장소', section: 'operation' },
-  { pattern: /^(?:운영방법|교육방법|진행방법)$/, label: '운영방법', section: 'operation' },
-  { pattern: /^(?:신청|접수|수강신청|신청일시|접수일시|신청기간|접수기간)$/, label: '신청일시', section: 'application' },
-  { pattern: /^(?:신청방법|접수방법|수강신청방법|온라인신청방법)$/, label: '신청방법', section: 'application' },
-  { pattern: /^(?:추첨일시|추첨일자)$/, label: '추첨일시', section: 'application' },
-  { pattern: /^(?:추첨발표|당첨발표|결과발표)$/, label: '결과발표', section: 'application' },
-  { pattern: /^(?:문의|문의사항|문의전화|연락처)$/, label: '문의', section: 'contact' },
-];
-
-const SECTION_META: Record<ProgramTextSection['id'], string> = {
-  content: '프로그램 소개',
-  operation: '운영 정보',
-  application: '신청 안내',
-  notice: '이용 안내',
-  contact: '문의',
-};
-
-const BASIC_DUPLICATE_LABEL = /^(?:대상|운영대상|교육대상|수업대상|공연대상|체험대상|행사대상|강사|진행자|강사명|모집인원|모집정원|정원|수강료|교육비|참가비|재료비|교재비|온라인접수여부)$/;
-
-function normalizeFieldLabel(value: string) {
-  return value.replace(/[\s·ㆍ]/g, '').replace(/[()（）]/g, '');
-}
-
-export function structureProgramText(text: string | null, title: string, duplicateValues: Array<string | null> = []): StructuredProgramText {
-  if (!text) return { sections: [], remainingLines: [], recognizedCount: 0 };
-  const items: Array<{ section: ProgramTextSection['id']; label: string; value: string }> = [];
-  const remainingLines: string[] = [];
-  let currentItem: typeof items[number] | null = null;
-  let skipContinuation = false;
-
-  for (const original of text.split(/\r?\n/)) {
-    const line = original.trim();
-    if (!line) continue;
-    if (skipContinuation && /^[（(]/.test(line)) continue;
-    skipContinuation = false;
-    const labeled = line.replace(/^[^\p{L}\p{N}<]+/u, '').match(/^(.{1,20}?)\s*[:：]\s*(.*)$/);
-    if (labeled) {
-      const normalizedLabel = normalizeFieldLabel(labeled[1]);
-      if (BASIC_DUPLICATE_LABEL.test(normalizedLabel)) {
-        currentItem = null;
-        skipContinuation = true;
-        continue;
-      }
-      const rule = TEXT_FIELD_RULES.find((candidate) => candidate.pattern.test(normalizedLabel));
-      if (rule) {
-        currentItem = { section: rule.section, label: rule.label, value: labeled[2].trim() };
-        items.push(currentItem);
-        continue;
-      }
-    }
-    const cleaned = cleanDescriptionLine(line);
-    if (currentItem && (/^[（(]/.test(cleaned) || /^[-–—→]/.test(cleaned))) {
-      currentItem.value = `${currentItem.value} ${cleaned}`.trim();
-      continue;
-    }
-    currentItem = null;
-    const comparable = cleaned.replace(/\s+/g, '').replace(/^[-–—]|[-–—]$/g, '');
-    const isDuplicate = [title, ...duplicateValues].filter(Boolean).some((value) => {
-      const normalized = String(value).replace(/\s+/g, '');
-      return comparable === normalized;
-    });
-    const isDuplicatedBasicField = /^(?:대상|강사|모집인원|교육시간|교육기간|신청기간|온라인접수여부)\s*[:：]/.test(cleaned);
-    if (cleaned && !isDuplicate && !isDuplicatedBasicField) remainingLines.push(cleaned);
-  }
-
-  // 라벨이 붙지 않은 자유문은 그대로 둔다.
-  // 키워드('신청', '촬영' 등)만 보고 다른 섹션으로 옮기면 원문에 없는 항목명을 만들어내고,
-  // 이어지는 한 문장이 두 섹션으로 쪼개진다. 정제 원칙상 추측해서 만들지 않는다.
-  const retainedLines = remainingLines;
-
-  const sections = (Object.keys(SECTION_META) as ProgramTextSection['id'][]).flatMap((id) => {
-    const sectionItems = items.filter((item) => item.section === id).map(({ label, value }) => ({ label, value }));
-    return sectionItems.length ? [{ id, title: SECTION_META[id], items: sectionItems }] : [];
-  });
-  if (retainedLines.length) {
-    const contentSection = sections.find((section) => section.id === 'content');
-    const introduction = { label: '소개', value: retainedLines.join('\n') };
-    if (contentSection) contentSection.items.push(introduction);
-    else sections.unshift({ id: 'content', title: SECTION_META.content, items: [introduction] });
-  }
-  return { sections, remainingLines: [], recognizedCount: items.length };
-}
-
-const NOTICE_GROUP_RULES: Array<{ id: NoticeGroup['id']; title: string; pattern: RegExp }> = [
-  { id: 'location', title: '장소·교통 안내', pattern: /장소|주소|주차|교통|도보|찾아오|강의실/ },
-  { id: 'cost', title: '비용 안내', pattern: /수강료|재료비|교재비|참가비|입금|계좌|환불|비용/ },
-  { id: 'application', title: '신청 유의사항', pattern: /신청자|신청 시|신청시|본인인증|법정대리인|연령|대상 이외|중복신청|휴대폰/ },
-  { id: 'policy', title: '취소·운영 안내', pattern: /취소|폐강|대기자|정원|변경|불참|결석|운영될|운영되지/ },
-  { id: 'privacy', title: '개인정보·촬영 안내', pattern: /개인정보|사진|촬영|초상권|활용될/ },
-  { id: 'contact', title: '문의', pattern: /문의|연락처|☎|\d{2,4}[)-]\d{3,4}-?\d{4}/ },
-];
-
-export function groupNoticeLines(text: string | null): NoticeGroup[] {
-  if (!text) return [];
-  const grouped = new Map<NoticeGroup['id'], NoticeGroup>();
-  for (const original of text.split(/\r?\n/)) {
-    const line = cleanDescriptionLine(original);
-    if (!line) continue;
-    const rule = NOTICE_GROUP_RULES.find((candidate) => candidate.pattern.test(line));
-    const meta = rule ?? { id: 'other' as const, title: '기타 안내' };
-    const group = grouped.get(meta.id) ?? { id: meta.id, title: meta.title, lines: [] };
-    group.lines.push(line);
-    grouped.set(meta.id, group);
-  }
-  const order: NoticeGroup['id'][] = ['location', 'cost', 'application', 'policy', 'privacy', 'contact', 'other'];
-  return order.flatMap((id) => grouped.has(id) ? [grouped.get(id)!] : []);
-}
-
-const DUPLICATED_BASIC_LABELS = /^(?:운영기간|교육기간|접수기간|대상|수강료|재료비)$/;
-const NOTICE_PATTERN = /(?:유의|참고|주의|취소|폐강|환불|변경|준비물|주차|개인정보|신청자명|입금|촬영|마스크|중복신청|대기자|반드시|꼭|확인하시어)/;
-
-function cleanDescriptionLine(line: string) {
-  return line
-    .replace(/^[\s*※★○●■□▢❏]+/, '')
-    .replace(/^[-–—]\s*/, '')
-    .replace(/\s*[-–—]\s*$/, '')
-    .trim();
-}
-
-export function structureProgramDescription(description: string | null): StructuredDescription {
-  if (!description) return { operationalDetails: [], contentLines: [], notices: [] };
-
-  const operationalDetails: StructuredDescription['operationalDetails'] = [];
-  const contentLines: string[] = [];
-  const notices: string[] = [];
-  let isNoticeSection = false;
-
-  for (const originalLine of description.split(/\r?\n/)) {
-    const line = cleanDescriptionLine(originalLine);
-    if (!line) continue;
-    if (/^<?안내\s*사항>?$/.test(line)) {
-      isNoticeSection = true;
-      continue;
-    }
-
-    const labeled = line.match(/^(.{1,18}?)\s*[:：]\s*(.+)$/);
-    if (labeled) {
-      const rawLabel = labeled[1].replace(/\s+/g, '');
-      const value = labeled[2].trim();
-      const known = DETAIL_LABELS.find((item) => item.pattern.test(rawLabel));
-      if (known) {
-        operationalDetails.push({ label: known.label, value });
-        continue;
-      }
-      if (DUPLICATED_BASIC_LABELS.test(rawLabel)) continue;
-    }
-
-    if (isNoticeSection || NOTICE_PATTERN.test(line)) notices.push(line);
-    else contentLines.push(line);
-  }
-
-  return {
-    operationalDetails: operationalDetails.filter((item, index, values) =>
-      values.findIndex((candidate) => candidate.label === item.label && candidate.value === item.value) === index),
-    contentLines,
-    notices,
-  };
 }

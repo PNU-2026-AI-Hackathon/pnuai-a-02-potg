@@ -16,6 +16,8 @@ export type ProgramContentTable = {
       header: boolean;
       colSpan: number;
       rowSpan: number;
+      /** 셀 안에 들어 있던 이미지. 안 담으면 이미지만 있던 칸이 빈칸으로 보인다. */
+      images: Array<{ url: string; alt: string }>;
     }>;
   }>;
 };
@@ -393,7 +395,7 @@ function parseKeyValueRows($: CheerioAPI, rows: any[]) {
   return basicInfo;
 }
 
-function tableStructure($: CheerioAPI, table: any): ProgramContentTable {
+function tableStructure($: CheerioAPI, table: any, pageUrl: string): ProgramContentTable {
   return {
     rows: $(table).find('tr').toArray().filter((row) => $(row).parents('table').first().get(0) === table).map((row) => ({
       cells: $(row).children('th,td').toArray().map((cell) => ({
@@ -401,8 +403,12 @@ function tableStructure($: CheerioAPI, table: any): ProgramContentTable {
         header: cell.tagName === 'th',
         colSpan: Math.max(1, Number($(cell).attr('colspan')) || 1),
         rowSpan: Math.max(1, Number($(cell).attr('rowspan')) || 1),
+        images: $(cell).find('img[src]').toArray().map((image) => ({
+          url: resolveUrl(pageUrl, normalizeText($(image).attr('src'))),
+          alt: normalizeText($(image).attr('alt')),
+        })),
       })),
-    })).filter((row) => row.cells.some((cell) => cell.text)),
+    })).filter((row) => row.cells.some((cell) => cell.text || cell.images.length)),
   };
 }
 
@@ -419,7 +425,7 @@ function splitProgramContent($: CheerioAPI, rows: any[], pageUrl: string, attach
     const ownerTable = $(cell).parents('table').first().get(0);
     return $(cell).find('table').toArray().filter((table) => $(table).parents('table').first().get(0) === ownerTable);
   })
-    .map((table) => tableStructure($, table))
+    .map((table) => tableStructure($, table, pageUrl))
     .filter((table) => table.rows.length > 0);
   // 본문에 삽입된 이미지만 담는다. 첨부파일 이미지는 attachments가 이미 갖고 있으므로
   // 여기에 합치면 본문이 충실한 레코드까지 전부 이미지형으로 잘못 분류된다.

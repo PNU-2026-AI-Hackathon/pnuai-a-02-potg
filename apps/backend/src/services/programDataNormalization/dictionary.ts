@@ -81,10 +81,11 @@ export function lookupLabel(rawLabel: string): LabelLookup {
 const LEADING_ORNAMENT = /^[^\p{L}]+/u;
 const LABEL_LINE = /^([가-힣A-Za-z][가-힣A-Za-z\s]{0,12}?)\s*[:：]\s*(.*)$/;
 
-export type ParsedLine = { label: string; value: string } | null;
+/** label은 사전 조회용(공백 제거), rawLabel은 화면에 그대로 쓸 원문 표기. */
+export type ParsedLine = { label: string; rawLabel: string; value: string } | null;
 
 export function parseLabelLine(line: string): ParsedLine {
   const match = String(line ?? '').trim().replace(LEADING_ORNAMENT, '').match(LABEL_LINE);
   if (!match) return null;
-  return { label: normalizeLabel(match[1]), value: match[2].trim() };
+  return { label: normalizeLabel(match[1]), rawLabel: match[1].trim(), value: match[2].trim() };
 }

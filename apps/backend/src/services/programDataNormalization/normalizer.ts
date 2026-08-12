@@ -1,4 +1,6 @@
+import { NOTICE_DICTIONARY_VERSION, structureProgramContent } from './contentStructure';
 import { LIBRARY_DICTIONARY_VERSION, lookupLabel, lookupLibrary, parseLabelLine } from './dictionary';
+import { seriesInfoOf } from './series';
 import {
   PROGRAM_NORMALIZATION_VERSION,
   type NormalizedProgram,
@@ -138,9 +140,30 @@ export function normalizeProgram(raw: RawProgram): NormalizedProgram {
   if (fees.ambiguousMaterialFee) warnings.push('MATERIAL_FEE_AMBIGUOUS');
   if (fees.feeText && fees.isFree === null) warnings.push('TUITION_STATUS_UNKNOWN');
 
+  const board = structureProgramContent({
+    bodyText: raw.programContent?.text ?? raw.detailText ?? null,
+    noticeText: raw.noticeText ?? null,
+    title: parsedTitle.title,
+    basicInfoValues: [
+      raw.basicInfo['대상'],
+      target.detail,
+      raw.basicInfo['강사'],
+      raw.basicInfo['교육시간'],
+      capacityText,
+    ],
+    tableTexts: (raw.programContent?.tables ?? [])
+      .flatMap((table) => table.rows.flatMap((row) => row.cells.map((cell) => cell.text))),
+  });
+  const series = seriesInfoOf(raw.title, library.canonical);
+  if (board.unmappedLabels.length) warnings.push('UNMAPPED_LABEL_IN_BODY');
+
   return {
     normalizationVersion: PROGRAM_NORMALIZATION_VERSION,
     libraryDictionaryVersion: LIBRARY_DICTIONARY_VERSION,
+    noticeDictionaryVersion: NOTICE_DICTIONARY_VERSION,
+    board,
+    seriesKey: series.seriesKey,
+    occurrenceLabel: series.occurrenceLabel,
     sourceId: raw.idx,
     sourceUrl: raw.url,
     title: parsedTitle.title,

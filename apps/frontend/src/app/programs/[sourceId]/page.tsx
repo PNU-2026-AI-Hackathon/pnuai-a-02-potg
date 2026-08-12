@@ -3,24 +3,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   formatProgramPeriod,
+  getProgramOccurrences,
   getProgramPrototype,
-  groupNoticeLines,
   programCapacityLabel,
   programFeeLabel,
-  structureProgramDescription,
-  structureProgramText,
 } from '@/lib/program-prototype';
 
 type PageProps = { params: Promise<{ sourceId: string }> };
-
-function compactComparable(value: string | null) {
-  return String(value ?? '').replace(/[\s.,:()（）~-]/g, '').toLowerCase();
-}
-
-function dateParts(value: string | null) {
-  const match = String(value ?? '').match(/(20\d{2})\D+(\d{1,2})\D+(\d{1,2})/);
-  return match ? `${Number(match[1])}-${Number(match[2])}-${Number(match[3])}` : null;
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { sourceId } = await params;
@@ -35,48 +24,17 @@ export default async function ProgramDetailPage({ params }: PageProps) {
   const program = await getProgramPrototype(Number(sourceId));
   if (!program) notFound();
 
+  const occurrences = await getProgramOccurrences(program);
   const hasCapacityConflict = program.warnings.includes('CAPACITY_DETAIL_AMBIGUOUS');
-  const structuredNotice = structureProgramDescription(program.noticeText);
-  const structuredProgramText = structureProgramText(program.programContent.text, program.title, [
-    program.targetDetail,
-    program.targetGroup,
-    program.instructor,
-    program.scheduleText,
-    program.evidence.capacityText,
-  ]);
-  const noticeGroups = groupNoticeLines(program.noticeText).map((group) => ({
-    ...group,
-    lines: group.lines.filter((line) => {
-      const duplicatesOperation = structuredNotice.operationalDetails.some((item) =>
-        line.replace(/\s+/g, '').includes(item.value.replace(/\s+/g, '')));
-      if (duplicatesOperation) return false;
-      if (group.id === 'cost' && program.materialFeeAmount) {
-        return /입금|계좌|환불|납부|별도|포함|준비/.test(line)
-          || !line.replace(/,/g, '').includes(String(program.materialFeeAmount));
-      }
-      return true;
-    }),
-  })).filter((group) => group.lines.length > 0);
-  const structuredTables = program.programContent.tables.filter((table) =>
+  const tables = program.programContent.tables.filter((table) =>
     table.rows.length > 1 || table.rows.some((row) => row.cells.length > 1));
-  const hasStructuredTable = structuredTables.length > 0;
-  const structuredTextSections = structuredProgramText.sections.map((section) => ({
-    ...section,
-    items: section.items.filter((item) => {
-      if (section.id === 'content' || section.id === 'contact') return true;
-      const candidates = section.id === 'application'
-        ? [program.applyStartDate, program.applyEndDate]
-        : [program.programStartDate, program.programEndDate, program.scheduleText, program.libraryName];
-      const itemDate = dateParts(item.value);
-      const hasSpecificTime = /(?:오전|오후)\s*\d{1,2}시|\d{1,2}\s*:\s*\d{2}/.test(item.value);
-      if (itemDate && !hasSpecificTime && candidates.some((candidate) => dateParts(candidate) === itemDate)) return false;
-      const compactItem = compactComparable(item.value);
-      return !candidates.filter(Boolean).some((candidate) => {
-        const compactCandidate = compactComparable(candidate);
-        return compactCandidate.length >= 5 && compactItem === compactCandidate;
-      });
-    }),
-  })).filter((section) => section.items.length > 0);
+
+  // 표 셀에 들어 있던 이미지는 아래 안내 이미지에서 크게 보여준다. 어느 칸의 이미지인지
+  // 알 수 있도록 번호를 매겨 셀과 연결한다.
+  const cellImageNumber = new Map<string, number>();
+  tables.forEach((table) => table.rows.forEach((row) => row.cells.forEach((cell) => cell.images.forEach((image) => {
+    if (!cellImageNumber.has(image.url)) cellImageNumber.set(image.url, cellImageNumber.size + 1);
+  }))));
 
   return (
     <main className="programPage programDetailPage">
@@ -121,36 +79,36 @@ export default async function ProgramDetailPage({ params }: PageProps) {
 
           <section className="programDescription" aria-labelledby="program-description-title">
             <h2 id="program-description-title">프로그램 내용</h2>
-            {hasStructuredTable ? (
+
+            {tables.length ? (
               <div className="programTableScroll">
-                {structuredTables.map((table, tableIndex) => (
+                {tables.map((table, tableIndex) => (
                   <table className="programCurriculumTable" key={tableIndex}>
                     <tbody>{table.rows.map((row, rowIndex) => (
                       <tr key={rowIndex}>{row.cells.map((cell, cellIndex) => {
                         const Cell = cell.header ? 'th' : 'td';
-                        return <Cell colSpan={cell.colSpan} rowSpan={cell.rowSpan} key={cellIndex}>{cell.text}</Cell>;
+                        return (
+                          <Cell colSpan={cell.colSpan} rowSpan={cell.rowSpan} key={cellIndex}>
+                            {cell.text}
+                            {cell.images.map((image) => (
+                              <a className="programCellImageRef" href={`#program-image-${cellImageNumber.get(image.url)}`} key={image.url}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={image.url} alt={image.alt || '표 안 이미지'} />
+                                <span>안내 이미지 {cellImageNumber.get(image.url)}</span>
+                              </a>
+                            ))}
+                          </Cell>
+                        );
                       })}</tr>
                     ))}</tbody>
                   </table>
                 ))}
               </div>
             ) : null}
-            {program.programContent.images.length ? (
-              <section className="programTextSection is-content programMediaSection">
-                <h3>안내 이미지</h3>
-                <div className="programPosterList">
-                  {program.programContent.images.map((image) => (
-                    <a href={image.url} key={image.url} rel="noreferrer" target="_blank">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={image.url} alt={image.alt || `${program.title} 안내 이미지`} />
-                    </a>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-            {program.programContent.text && !hasStructuredTable && structuredProgramText.recognizedCount ? (
+
+            {program.board.sections.length ? (
               <div className="programTextSections">
-                {structuredTextSections.map((section) => (
+                {program.board.sections.map((section) => (
                   <section key={section.id} className={`programTextSection is-${section.id}`}>
                     <h3>{section.title}</h3>
                     <dl>{section.items.map((item, index) => (
@@ -158,53 +116,67 @@ export default async function ProgramDetailPage({ params }: PageProps) {
                     ))}</dl>
                   </section>
                 ))}
-                {structuredProgramText.remainingLines.length ? (
-                  <section className="programTextSection is-other">
-                    <h3>프로그램 소개</h3>
-                    <div className="programStructuredContent">
-                      {structuredProgramText.remainingLines.map((line, index) => <p key={`${index}-${line}`}>{line}</p>)}
-                    </div>
-                  </section>
-                ) : null}
               </div>
-            ) : program.programContent.text && !hasStructuredTable ? (
-              <section className="programTextSection is-content">
+            ) : null}
+
+            {program.board.intro.length ? (
+              <section className="programTextSection is-other">
                 <h3>프로그램 소개</h3>
                 <div className="programStructuredContent">
-                  {program.programContent.text.split(/\r?\n/).map((line, index) => <p key={`${index}-${line}`}>{line}</p>)}
+                  {program.board.intro.map((line, index) => <p key={`${index}-${line}`}>{line}</p>)}
                 </div>
               </section>
             ) : null}
-            {!hasStructuredTable && !program.programContent.images.length && !program.programContent.text && program.programContent.kind === 'attachment_only' ? (
-              <p className="programEmptyText">프로그램 내용이 첨부파일로 제공되었습니다. 아래 첨부파일을 확인해 주세요.</p>
+
+            {program.programContent.images.length ? (
+              <section className="programTextSection is-content programMediaSection">
+                <h3>안내 이미지</h3>
+                <div className="programPosterList">
+                  {program.programContent.images.map((image, index) => (
+                    <a href={image.url} id={`program-image-${cellImageNumber.get(image.url) ?? index + 1}`} key={image.url} rel="noreferrer" target="_blank">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={image.url} alt={image.alt || `${program.title} 안내 이미지`} />
+                    </a>
+                  ))}
+                </div>
+              </section>
             ) : null}
-            {!hasStructuredTable && !program.programContent.images.length && !program.programContent.text && program.programContent.kind === 'empty' ? (
-              <p className="programEmptyText">등록된 프로그램 내용이 없습니다. 원사이트를 확인해 주세요.</p>
+
+            {!tables.length && !program.board.sections.length && !program.board.intro.length && !program.programContent.images.length ? (
+              <p className="programEmptyText">
+                {program.attachments.length
+                  ? '프로그램 내용이 첨부파일로 제공되었습니다. 아래 첨부파일을 확인해 주세요.'
+                  : '등록된 프로그램 내용이 없습니다. 원사이트를 확인해 주세요.'}
+              </p>
             ) : null}
           </section>
 
-          {structuredNotice.operationalDetails.length ? (
-            <section className="programOperationalDetails" aria-labelledby="program-operation-title">
-              <h2 id="program-operation-title">추가 운영 정보</h2>
-              <dl>
-                {structuredNotice.operationalDetails.map((item, index) => (
-                  <div key={`${item.label}-${index}`}><dt>{item.label}</dt><dd>{item.value}</dd></div>
-                ))}
-              </dl>
-            </section>
-          ) : null}
-
-          {noticeGroups.length ? (
+          {program.board.notices.length ? (
             <section className="programNoticeGroups" aria-labelledby="program-notice-title">
               <h2 id="program-notice-title">이용 안내</h2>
               <div className="programNoticeGrid">
-                {noticeGroups.map((group) => (
+                {program.board.notices.map((group) => (
                   <section key={group.id} className={`programNoticeGroup is-${group.id}`}>
                     <h3>{group.title}</h3>
                     <ul>{group.lines.map((notice, index) => <li key={`${index}-${notice}`}>{notice}</li>)}</ul>
                   </section>
                 ))}
               </div>
+            </section>
+          ) : null}
+
+          {occurrences.length ? (
+            <section className="programOperationalDetails" aria-labelledby="program-series-title">
+              <h2 id="program-series-title">같은 프로그램의 다른 회차 {occurrences.length}건</h2>
+              <ul className="programSeriesList">
+                {occurrences.map((item) => (
+                  <li key={item.sourceId}>
+                    <Link href={`/programs/${item.sourceId}`}>
+                      {item.occurrenceLabel ?? formatProgramPeriod(item.programStartDate, item.programEndDate)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </section>
           ) : null}
 
