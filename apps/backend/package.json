@@ -67,7 +67,9 @@
     "postinstall": "prisma generate",
     "program-board:build": "npm run build && node dist/cli/buildProgramBoardData.js",
     "program-board:coverage": "npm run build && node dist/cli/programDictionaryCoverage.js",
-    "test:program-board-data": "node scripts/test-program-board-data.js"
+    "test:program-board-data": "node scripts/test-program-board-data.js",
+    "program-attachment-inventory:build": "node -r ts-node/register src/cli/buildProgramAttachmentInventory.ts",
+    "test:program-attachment-inventory": "node -r ts-node/register scripts/test-program-attachment-inventory.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
