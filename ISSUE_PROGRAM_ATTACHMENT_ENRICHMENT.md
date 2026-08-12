@@ -118,6 +118,15 @@ npm run test:program-attachment-inventory
 
 단위 테스트 통과만으로 완료 처리하지 않고, 금정구 실제 첨부 표본으로 결과를 확인한다.
 
+실제 표본 검증 명령:
+
+```powershell
+cd apps/backend
+npm run program-attachment-samples:validate -- --per-type 2
+```
+
+결과는 `.local/program-attachment-validation/report.json`에 저장한다. 검증 과정은 실제 금정구 첨부를 다운로드하지만 원본 파일은 임시 디렉터리에서 처리한 뒤 삭제한다. 외부 OCR API는 호출하지 않으며, 이미지에 대해서는 형식·크기 검증과 OCR 입력용 전처리까지만 수행한다.
+
 ### 3단계: 비용이 낮고 정확한 형식부터 연결
 
 1. HWP·HWPX 및 텍스트 PDF
