@@ -5,7 +5,7 @@ import type { AuthUser } from '@/lib/auth-config';
 
 type SiteHeaderProps = {
   user: AuthUser | null;
-  activeMenu?: 'home' | 'community' | 'about';
+  activeMenu?: 'home' | 'community' | 'programs' | 'about';
 };
 
 export default function SiteHeader({
@@ -36,6 +36,9 @@ export default function SiteHeader({
               모이라 소개
             </Link>
             <Link href="/#library-finder">우리동네 도서관</Link>
+            <Link className={activeMenu === 'programs' ? 'isActive' : ''} href="/programs">
+              프로그램 게시판
+            </Link>
             <div className="siteNavDropdown">
               <Link
                 className={activeMenu === 'community' ? 'isActive' : ''}

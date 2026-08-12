@@ -1,0 +1,46 @@
+{
+  "version": "2026-08-12",
+  "description": "제목 앞 [태그]에서 운영 도서관을 판별하는 사전. 코드 수정 없이 이 파일만 갱신한다. contains는 정규화된 태그 전체에 대한 부분일치, segmentEquals는 '/'로 나눈 조각과의 완전일치(짧아서 오탐 위험이 있는 이름에 사용).",
+  "matching": {
+    "normalize": ["괄호와 그 안의 내용 제거", "'비대면-' 접두사 제거", "'사립'·'공립' 설립구분 제거", "공백 제거", "소문자화"],
+    "order": "위에서부터 먼저 일치하는 항목을 쓴다. 긴 이름을 먼저 둔다."
+  },
+  "entries": [
+    { "canonical": "아이꿈자람 작은도서관", "contains": ["아이꿈자람"], "segmentEquals": ["아이꿈"] },
+    { "canonical": "금정북파크 작은도서관", "contains": ["북파크"], "segmentEquals": [] },
+    { "canonical": "금정북뱅크 작은도서관", "contains": ["북뱅크"], "segmentEquals": [] },
+    { "canonical": "부곡1동 작은도서관", "contains": ["부곡1동"], "segmentEquals": [] },
+    { "canonical": "구서2동 어린이 작은도서관", "contains": ["구서2동"], "segmentEquals": [] },
+    { "canonical": "섯골북카페 작은도서관", "contains": ["섯골"], "segmentEquals": [] },
+    { "canonical": "책마을보드랑 작은도서관", "contains": ["책마을보드랑", "보드랑"], "segmentEquals": [] },
+    { "canonical": "래미안장전 작은도서관", "contains": ["래미안장전"], "segmentEquals": [] },
+    { "canonical": "희망그루터기 작은도서관", "contains": ["희망그루터기"], "segmentEquals": [] },
+    { "canonical": "위드맘블루밍 작은도서관", "contains": ["위드맘블루밍"], "segmentEquals": [] },
+    { "canonical": "금샘마을 작은도서관", "contains": ["금샘마을"], "segmentEquals": [] },
+    { "canonical": "드림미라클 작은도서관", "contains": ["드림미라클"], "segmentEquals": [] },
+    { "canonical": "게이트웨이 작은도서관", "contains": ["게이트웨이"], "segmentEquals": [] },
+    { "canonical": "로뎀나무 작은도서관", "contains": ["로뎀나무"], "segmentEquals": [] },
+    { "canonical": "지혜의샘 작은도서관", "contains": ["지혜의샘"], "segmentEquals": [] },
+    { "canonical": "은빛사랑채 작은도서관", "contains": ["은빛사랑채"], "segmentEquals": [] },
+    { "canonical": "책읽는세상 작은도서관", "contains": ["책읽는세상"], "segmentEquals": [] },
+    { "canonical": "미리내 작은도서관", "contains": ["미리내"], "segmentEquals": [] },
+    { "canonical": "스타북스 작은도서관", "contains": ["스타북스"], "segmentEquals": [] },
+    { "canonical": "머드레 작은도서관", "contains": ["머드레"], "segmentEquals": [] },
+    { "canonical": "대우 작은도서관", "contains": [], "segmentEquals": ["대우"] },
+    { "canonical": "우지 작은도서관", "contains": ["우지작은도서관"], "segmentEquals": ["우지"] }
+  ],
+  "pendingReview": [
+    {
+      "tag": "구서sk뷰 1단지",
+      "count": 1,
+      "suggestedCanonical": "구서SK뷰1단지 작은도서관",
+      "note": "다른 아파트 단지 도서관(래미안장전·위드맘블루밍)과 같은 형태로 보이나 확인 전이라 미적용."
+    }
+  ],
+  "nonLibraryTags": [
+    { "tag": "스포원-체험부스", "count": 20, "reason": "스포원파크 외부 시설 행사. 작은도서관 아님" },
+    { "tag": "스포원-인형극", "count": 2, "reason": "스포원파크 외부 시설 행사. 작은도서관 아님" },
+    { "tag": "여름나기", "count": 4, "reason": "행사명" },
+    { "tag": "미리 메리 크리스마스", "count": 1, "reason": "행사명" }
+  ]
+}
