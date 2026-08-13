@@ -70,7 +70,9 @@
     "test:program-board-data": "node scripts/test-program-board-data.js",
     "program-attachment-inventory:build": "node -r ts-node/register src/cli/buildProgramAttachmentInventory.ts",
     "test:program-attachment-inventory": "node -r ts-node/register scripts/test-program-attachment-inventory.js",
-    "program-attachment-samples:validate": "node -r ts-node/register src/cli/validateGeumjeongAttachmentSamples.ts"
+    "program-attachment-samples:validate": "node -r ts-node/register src/cli/validateGeumjeongAttachmentSamples.ts",
+    "program-attachment-enrichment:samples": "node -r ts-node/register src/cli/buildProgramAttachmentEnrichmentSamples.ts",
+    "test:program-attachment-section-matcher": "node -r ts-node/register scripts/test-program-attachment-section-matcher.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

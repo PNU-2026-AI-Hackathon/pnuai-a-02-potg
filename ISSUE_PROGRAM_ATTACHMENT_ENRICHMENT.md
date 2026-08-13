@@ -134,6 +134,16 @@ npm run program-attachment-samples:validate -- --per-type 2
 3. 포스터 이미지 및 이미지 첨부 OCR
 4. 스캔 PDF OCR
 
+HWP/PDF 대표 표본의 프로그램 구간 선택·구조화 명령:
+
+```powershell
+cd apps/backend
+npm run test:program-attachment-section-matcher
+npm run program-attachment-enrichment:samples -- --per-type 5
+```
+
+결과는 `.local/program-attachment-enrichment/samples.json`에 저장하며, `PROGRAM_ATTACHMENT_ENRICHMENT_RESULTS.md`에 검증 결과와 알려진 한계를 기록한다.
+
 ### 4단계: 본문·첨부 병합 및 중복 제거
 
 - 기존 라벨 사전을 재사용한다.
