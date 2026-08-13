@@ -1,0 +1,52 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { getProgramAttachmentReview } from '@/lib/program-attachment-review';
+
+type PageProps = { params: Promise<{ sourceId: string }> };
+
+export default async function ProgramAttachmentReviewDetail({ params }: PageProps) {
+  const { sourceId } = await params;
+  const review = await getProgramAttachmentReview(Number(sourceId));
+  if (!review) notFound();
+  const content = review.board.sections.find((section) => section.id === 'content');
+  const others = review.board.sections.filter((section) => section.id !== 'content');
+  return (
+    <main className="programPage attachmentReviewPage">
+      <section className="uiContainer programShell">
+        <nav className="communityBreadcrumb"><Link href="/programs/attachment-review">첨부 정제 검수</Link><span>/</span><span>{review.sourceId}</span></nav>
+        <header className="attachmentReviewDetailHeader">
+          <div><p className="uiEyebrow">Comparison Review</p><h1>{review.title}</h1><p>{review.matchReason}</p></div>
+          <div className="attachmentReviewActions"><a className="uiButton uiButtonSecondary" href={review.sourceUrl} target="_blank" rel="noreferrer">원사이트 열기</a><a className="uiButton uiButtonPrimary" href={review.attachment.url} target="_blank" rel="noreferrer">첨부파일 열기</a></div>
+        </header>
+
+        <section className="attachmentMatchBanner">
+          <strong>{review.attachment.detectedType} · {review.selectedPages.length ? `${review.selectedPages.join(', ')}페이지 선택` : '전체 문서 선택'}</strong>
+          <span>일치 신뢰도 {Math.round(review.confidence * 100)}%</span>
+        </section>
+
+        <section className="attachmentComparisonGrid" aria-label="원문과 첨부 비교">
+          <article><h2>1. 공공예약 본문</h2><p className="attachmentSourceHint">원사이트에서 크롤링한 본문</p><pre>{review.originalBody || '본문 없음'}</pre></article>
+          <article><h2>2. 자동 선택한 첨부 구간</h2><p className="attachmentSourceHint">{review.attachment.name}</p><pre>{review.selectedText || '선택된 텍스트 없음'}</pre></article>
+        </section>
+
+        <section className="attachmentAuditPanel">
+          <h2>3. 병합 판단 내역</h2>
+          <div className="attachmentAuditGrid">
+            <div><h3>새로 추가 <span>{review.audit.added.length}</span></h3><ul>{review.audit.added.map((item, index) => <li key={index}><strong>{item.label}</strong><p>{item.value}</p></li>)}</ul></div>
+            <div><h3>중복 제거 <span>{review.audit.skippedDuplicates.length}</span></h3><ul>{review.audit.skippedDuplicates.map((item, index) => <li key={index}><strong>{item.label}</strong><p>{item.value}</p></li>)}</ul></div>
+            <div><h3>잡음 폐기 <span>{review.audit.discardedNoise.length}</span></h3><ul>{review.audit.discardedNoise.map((item, index) => <li key={index}><strong>{item.label}</strong><p>{item.value}</p><small>{item.reason}</small></li>)}</ul></div>
+            <div><h3>충돌 <span>{review.audit.warnings.length}</span></h3>{review.audit.warnings.length ? <ul>{review.audit.warnings.map((item, index) => <li key={index}><strong>{item.label}</strong><p>{item.basicValue} ↔ {item.attachmentValue}</p></li>)}</ul> : <p className="attachmentEmptyState">발견된 충돌이 없습니다.</p>}</div>
+          </div>
+        </section>
+
+        <section className="attachmentBoardPreview">
+          <div className="attachmentSectionHeading"><div><p className="uiEyebrow">Board Preview</p><h2>4. 최종 게시판 미리보기</h2></div><span>검수 전</span></div>
+          {content || review.board.intro.length ? <section className="programTextSection is-content"><h3>{content?.title ?? '프로그램 소개'}</h3>{content ? <dl>{content.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl> : null}{review.board.intro.map((line, index) => <p key={index}>{line}</p>)}</section> : null}
+          {others.map((section) => <section className={`programTextSection is-${section.id}`} key={section.id}><h3>{section.title}</h3><dl>{section.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl></section>)}
+          <section className="attachmentCurriculum"><h3>회차별 활동 <span>{review.curriculum.length}</span></h3>{review.curriculum.length ? <div className="programTableScroll"><table className="programCurriculumTable"><thead><tr><th>회차</th><th>일자</th><th>활동 내용</th><th>준비물·비고</th></tr></thead><tbody>{review.curriculum.map((session) => <tr key={session.session}><td>{session.session}</td><td>{session.date ?? '-'}</td><td>{session.activity}</td><td>{session.materialsOrNotes ?? '-'}</td></tr>)}</tbody></table></div> : <p className="attachmentEmptyState">페이지는 선택됐지만 표 구조가 복잡해 회차를 아직 복원하지 못했습니다.</p>}</section>
+        </section>
+        <div className="programDetailActions"><Link className="uiButton uiButtonSecondary" href="/programs/attachment-review">대표 10건 목록</Link></div>
+      </section>
+    </main>
+  );
+}

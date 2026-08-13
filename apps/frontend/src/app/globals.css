@@ -11197,3 +11197,50 @@ html:has(.moiraPage) {
     transition: none;
   }
 }
+.attachmentReviewSummary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.attachmentReviewList { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 28px; }
+.attachmentReviewCard { padding: 24px; border: 1px solid #dce8df; border-radius: 18px; background: #fff; box-shadow: 0 8px 28px rgba(31, 67, 45, .06); }
+.attachmentReviewCard h2 { margin: 16px 0 8px; font-size: 22px; }
+.attachmentReviewCard h2 a { color: #173d28; }
+.attachmentReviewCard > p { min-height: 24px; color: #627069; }
+.attachmentReviewCard dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+.attachmentReviewCard dl div { padding: 12px; border-radius: 10px; background: #f5f8f6; }
+.attachmentReviewCard dt { color: #718078; font-size: 12px; }
+.attachmentReviewCard dd { margin: 5px 0 0; color: #243c2d; font-weight: 700; }
+.attachmentReviewDetailHeader { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 30px 0; border-bottom: 1px solid #dfe7e1; }
+.attachmentReviewDetailHeader h1 { margin: 7px 0; font-size: clamp(28px, 4vw, 42px); color: #153d27; }
+.attachmentReviewDetailHeader p { margin: 0; color: #627069; }
+.attachmentReviewActions { display: flex; gap: 10px; flex-shrink: 0; }
+.attachmentMatchBanner { display: flex; justify-content: space-between; gap: 20px; margin: 24px 0; padding: 18px 22px; border: 1px solid #b9ddc5; border-radius: 14px; background: #edf8f0; color: #245635; }
+.attachmentComparisonGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.attachmentComparisonGrid article, .attachmentAuditPanel, .attachmentBoardPreview { border: 1px solid #dfe7e1; border-radius: 18px; background: #fff; padding: 24px; }
+.attachmentComparisonGrid h2, .attachmentAuditPanel > h2 { margin: 0; color: #193f2a; font-size: 21px; }
+.attachmentSourceHint { margin: 6px 0 16px; color: #748078; font-size: 13px; }
+.attachmentComparisonGrid pre { max-height: 520px; overflow: auto; margin: 0; padding: 18px; border-radius: 12px; background: #f5f7f5; color: #36453b; font: 13px/1.75 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; word-break: keep-all; }
+.attachmentAuditPanel, .attachmentBoardPreview { margin-top: 22px; }
+.attachmentAuditGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.attachmentAuditGrid > div { min-height: 140px; padding: 18px; border-radius: 13px; background: #f7f9f7; }
+.attachmentAuditGrid h3 { display: flex; justify-content: space-between; margin: 0 0 12px; color: #2f513b; font-size: 16px; }
+.attachmentAuditGrid h3 span, .attachmentCurriculum h3 span { min-width: 25px; padding: 3px 8px; border-radius: 20px; background: #ddefe2; color: #24603a; text-align: center; font-size: 12px; }
+.attachmentAuditGrid ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.attachmentAuditGrid li { padding-bottom: 9px; border-bottom: 1px solid #e3e9e5; }
+.attachmentAuditGrid li:last-child { border-bottom: 0; }
+.attachmentAuditGrid li p { margin: 4px 0 0; color: #59685e; font-size: 13px; line-height: 1.55; }
+.attachmentAuditGrid li small { color: #8b6650; }
+.attachmentEmptyState { margin: 12px 0 0; padding: 15px; border-radius: 10px; background: #f5f7f5; color: #708077; }
+.attachmentSectionHeading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.attachmentSectionHeading h2 { margin: 4px 0 0; color: #193f2a; }
+.attachmentSectionHeading > span { padding: 7px 12px; border-radius: 18px; background: #fff2db; color: #8a5a12; font-size: 12px; font-weight: 700; }
+.attachmentBoardPreview > .programTextSection { margin-top: 14px; }
+.attachmentCurriculum { margin-top: 20px; }
+.attachmentCurriculum h3 { display: flex; align-items: center; gap: 8px; color: #254b32; }
+.attachmentCurriculum .programCurriculumTable td:first-child { width: 65px; text-align: center; font-weight: 700; }
+.attachmentCurriculum .programCurriculumTable td:nth-child(2) { width: 110px; }
+
+@media (max-width: 860px) {
+  .attachmentReviewSummary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .attachmentReviewList, .attachmentComparisonGrid, .attachmentAuditGrid { grid-template-columns: 1fr; }
+  .attachmentReviewDetailHeader { align-items: flex-start; flex-direction: column; }
+  .attachmentReviewActions { width: 100%; flex-wrap: wrap; }
+  .attachmentMatchBanner { flex-direction: column; }
+}
