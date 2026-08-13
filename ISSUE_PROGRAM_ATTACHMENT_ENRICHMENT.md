@@ -151,6 +151,18 @@ npm run program-attachment-enrichment:samples -- --per-type 5
 - 추출된 자유문은 프로그램 소개나 이용 안내로 분류한다.
 - 첨부 전체 원문을 그대로 반복 표시하지 않는다.
 
+대표 표본 병합 명령:
+
+```powershell
+cd apps/backend
+npm run program-attachment-merge:samples
+$env:PROGRAM_BOARD_CRAWL='.local/geumjeong-small-library-crawl/<crawl-file>.json'
+$env:PROGRAM_ATTACHMENT_ENRICHMENT='.local/program-attachment-enrichment/samples.json'
+npm run test:program-attachment-merge
+```
+
+결과는 `.local/program-attachment-enrichment/merged-samples.json`에 저장하며, `PROGRAM_ATTACHMENT_MERGE_RESULTS.md`에 대표 10건 결과와 한계를 기록한다.
+
 ### 5단계: 검수 UI 제공
 
 각 표본에서 다음 내용을 한 화면에서 비교할 수 있어야 한다.

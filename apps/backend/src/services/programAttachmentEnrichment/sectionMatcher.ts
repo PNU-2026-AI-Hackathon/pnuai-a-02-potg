@@ -123,21 +123,28 @@ export function structureAttachmentText(text: string) {
   const rows = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const labeled: Array<{ label: string; value: string }> = [];
   const curriculum: Array<{ session: number; date: string | null; content: string; note: string | null }> = [];
-  const knownLabels = /^(프로그램명|강좌명|강사명|교육대상|교육기간|교육일시|교육시간|교육장소|운영기간|운영횟수|수강인원|참여인원|교재|재료비|학습자 준비물|프로그램 소개|목표)$/;
+  const knownLabels = /^(프로그램명|강좌명|강사명|담당강사|교육대상|대상|교육기간|교육일시|교육시간|교육장소|운영기간|운영횟수|수강인원|참여인원|교재|교재비|재료비|준비물|학습자 준비물|강의실 준비|프로그램 소개|교육내용|강의목표|목표)$/;
 
   for (const row of rows) {
-    const cells = row.split('|').map((cell) => cell.trim()).filter(Boolean);
-    for (let index = 0; index + 1 < cells.length; index += 1) {
-      if (knownLabels.test(cells[index])) labeled.push({ label: cells[index], value: cells[index + 1] });
+    const rawCells = row.split('|').map((cell) => cell.trim());
+    for (let index = 0; index + 1 < rawCells.length; index += 1) {
+      if (knownLabels.test(rawCells[index]) && rawCells[index + 1]
+        && !knownLabels.test(rawCells[index + 1]) && !/^(?:회차|차시|일자|비고|세부 교육내용|교수방법)$/.test(rawCells[index + 1])) {
+        labeled.push({ label: rawCells[index], value: rawCells[index + 1] });
+      }
     }
+    const cells = rawCells.filter(Boolean);
     if (/^\d{1,2}$/.test(cells[0] ?? '') && cells.length >= 2) {
-      const dateIndex = /^\d{1,2}(?:[./-]\d{1,2})/.test(cells[1] ?? '') ? 1 : -1;
+      const dateIndex = /^(?:\d{1,2}(?:[./-]\d{1,2})|\d{1,2}월\s*\d{1,2}일)/.test(cells[1] ?? '') ? 1 : -1;
       curriculum.push({
         session: Number(cells[0]),
         date: dateIndex === 1 ? cells[1] : null,
         content: cells.slice(dateIndex === 1 ? 2 : 1, Math.max(dateIndex === 1 ? 3 : 2, cells.length - 1)).join(' / '),
         note: cells.length >= (dateIndex === 1 ? 4 : 3) ? cells[cells.length - 1] : null,
       });
+    } else if (cells.length === 1 && curriculum.length > 0 && !knownLabels.test(cells[0]) && !/^(?:회차|차시|참고)/.test(cells[0])) {
+      const last = curriculum[curriculum.length - 1];
+      last.note = [last.note, cells[0]].filter(Boolean).join(' ');
     }
   }
   // PDF.js 결과는 표 구분자 없이 행 사이에서 줄바꿈되는 경우가 많다. 날짜로 시작하는
@@ -157,13 +164,17 @@ export function structureAttachmentText(text: string) {
   }
   if (labeled.length === 0) {
     const compact = text.replace(/\s+/g, ' ').trim();
-    const labels = ['프로그램명', '강좌명', '교육대상', '대상', '강사명', '교육기간', '교육일시', '교육장소', '교재', '재료비'];
+    const labels = ['프로그램명', '강좌명', '교육대상', '대상', '강사 성명', '강사명', '교육기간', '교육일시', '교육장소', '강의목표', '요일/시간', '교재', '준비물', '회기'];
     const boundary = labels.map((label) => label.replace(/./g, (char) => `${char}\\s*`)).join('|');
     for (const label of labels) {
       const spaced = label.replace(/./g, (char) => `${char}\\s*`);
-      const match = compact.match(new RegExp(`${spaced}(.+?)(?=${boundary}|$)`));
+      const match = compact.match(new RegExp(`(?:^|\\s)${spaced}\\s+(.+?)(?=\\s(?:${boundary})\\s|$)`));
       const value = match?.[1]?.trim();
-      if (value && value.length <= 300) labeled.push({ label, value });
+      if (value && value.length <= 160) labeled.push({ label, value });
+    }
+    for (const label of ['교재비', '재료비']) {
+      const amount = compact.match(new RegExp(`${label}\\s*[:：]?\\s*([\\d,]+\\s*원?)`))?.[1]?.replace(/\s+/g, '');
+      if (amount) labeled.push({ label, value: amount });
     }
   }
   return { labeled, curriculum };

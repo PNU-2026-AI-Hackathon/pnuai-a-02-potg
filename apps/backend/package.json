@@ -72,7 +72,9 @@
     "test:program-attachment-inventory": "node -r ts-node/register scripts/test-program-attachment-inventory.js",
     "program-attachment-samples:validate": "node -r ts-node/register src/cli/validateGeumjeongAttachmentSamples.ts",
     "program-attachment-enrichment:samples": "node -r ts-node/register src/cli/buildProgramAttachmentEnrichmentSamples.ts",
-    "test:program-attachment-section-matcher": "node -r ts-node/register scripts/test-program-attachment-section-matcher.js"
+    "test:program-attachment-section-matcher": "node -r ts-node/register scripts/test-program-attachment-section-matcher.js",
+    "program-attachment-merge:samples": "node -r ts-node/register src/cli/buildProgramAttachmentMergedSamples.ts",
+    "test:program-attachment-merge": "node -r ts-node/register scripts/test-program-attachment-merge.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
