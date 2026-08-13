@@ -20,8 +20,10 @@ export type ProgramAttachmentReview = {
   confidence: number;
   matchReason: string;
   reviewStatus: string;
+  basicInfo: Array<{ label: string; value: string }>;
   board: { sections: ProgramSection[]; intro: string[]; notices: ProgramNoticeGroup[]; unmappedLabels: string[] };
   curriculum: ReviewCurriculum[];
+  attachments: Array<{ name: string; url: string }>;
   audit: {
     added: Array<{ section: string; label: string; value: string }>;
     skippedDuplicates: Array<{ label: string; value: string }>;
@@ -78,8 +80,10 @@ export async function getProgramAttachmentReviews(): Promise<ProgramAttachmentRe
       confidence: item.attachmentEvidence.confidence,
       matchReason: item.attachmentEvidence.reason,
       reviewStatus: item.reviewStatus,
+      basicInfo: item.basicInfo ?? [],
       board: item.board,
       curriculum: item.curriculum,
+      attachments: item.attachments ?? [item.attachmentEvidence].filter((attachment) => attachment?.url),
       audit: item.mergeAudit,
     };
   });

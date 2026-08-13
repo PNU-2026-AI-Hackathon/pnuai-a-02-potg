@@ -123,14 +123,17 @@ export function structureAttachmentText(text: string) {
   const rows = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const labeled: Array<{ label: string; value: string }> = [];
   const curriculum: Array<{ session: number; date: string | null; content: string; note: string | null }> = [];
-  const knownLabels = /^(프로그램명|강좌명|강사명|담당강사|교육대상|대상|교육기간|교육일시|교육시간|교육장소|운영기간|운영횟수|수강인원|참여인원|교재|교재비|재료비|준비물|학습자 준비물|강의실 준비|프로그램 소개|교육내용|강의목표|목표)$/;
+  const knownLabels = /^(프로그램명|강좌명|강사명|담당강사|교육대상|대상|교육기간|교육일시|교육시간|교육장소|운영기간|운영횟수|수강인원|참여인원|교재|교재비|재료비|준비물|학습자준비물|강의실준비|프로그램소개|교육내용|강의목표|목표)$/;
+  const displayLabel = (label: string) => ({ 학습자준비물: '학습자 준비물', 강의실준비: '강의실 준비', 프로그램소개: '프로그램 소개' }[label] ?? label);
 
   for (const row of rows) {
     const rawCells = row.split('|').map((cell) => cell.trim());
     for (let index = 0; index + 1 < rawCells.length; index += 1) {
-      if (knownLabels.test(rawCells[index]) && rawCells[index + 1]
-        && !knownLabels.test(rawCells[index + 1]) && !/^(?:회차|차시|일자|비고|세부 교육내용|교수방법)$/.test(rawCells[index + 1])) {
-        labeled.push({ label: rawCells[index], value: rawCells[index + 1] });
+      const label = rawCells[index].replace(/\s+/g, '');
+      const nextLabel = rawCells[index + 1].replace(/\s+/g, '');
+      if (knownLabels.test(label) && rawCells[index + 1]
+        && !knownLabels.test(nextLabel) && !/^(?:회차|차시|일자|비고|세부교육내용|교수방법)$/.test(nextLabel)) {
+        labeled.push({ label: displayLabel(label), value: rawCells[index + 1] });
       }
     }
     const cells = rawCells.filter(Boolean);

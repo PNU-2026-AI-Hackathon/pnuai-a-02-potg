@@ -11232,6 +11232,12 @@ html:has(.moiraPage) {
 .attachmentSectionHeading h2 { margin: 4px 0 0; color: #193f2a; }
 .attachmentSectionHeading > span { padding: 7px 12px; border-radius: 18px; background: #fff2db; color: #8a5a12; font-size: 12px; font-weight: 700; }
 .attachmentBoardPreview > .programTextSection { margin-top: 14px; }
+.attachmentPreviewSection { margin-top: 28px; }
+.attachmentPreviewSection:first-of-type { margin-top: 0; }
+.attachmentBoardPreview .programDescription { padding: 0; border: 0; }
+.attachmentBoardPreview .programDescription > h2,
+.attachmentBoardPreview .programNoticeGroups > h2,
+.attachmentBoardPreview .programAttachments > h2 { margin-bottom: 16px; color: #173d28; }
 .attachmentCurriculum { margin-top: 20px; }
 .attachmentCurriculum h3 { display: flex; align-items: center; gap: 8px; color: #254b32; }
 .attachmentCurriculum .programCurriculumTable td:first-child { width: 65px; text-align: center; font-weight: 700; }

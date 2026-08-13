@@ -23,9 +23,17 @@ const japanese = result.items.find((item) => item.sourceId === 2480);
 assert.equal(japanese.curriculum.length, 8);
 assert.equal(japanese.curriculum[0].date, '9월17일');
 assert.ok(japanese.curriculum[0].activity.includes('형용동사'));
+assert.ok(japanese.basicInfo.some((item) => item.label === '교육일시'));
+assert.ok(!japanese.board.sections.some((section) => section.title === '운영 정보'));
 assert.ok(!japanese.mergeAudit.added.some((item) => item.value === '비고'));
 
 const boardGame = result.items.find((item) => item.sourceId === 2701);
 assert.ok(!boardGame.mergeAudit.added.some((item) => /차시\s*세부 교육내용/.test(item.value)));
+
+const bookPlay = result.items.find((item) => item.sourceId === 2456);
+assert.ok(bookPlay.basicInfo.some((item) => item.label === '상세 운영장소'));
+assert.ok(!bookPlay.board.intro.some((line) => /첨부.*참고/.test(line)));
+assert.ok(!bookPlay.board.intro.some((line) => /재료비\s*5,000원/.test(line)));
+assert.ok(bookPlay.board.sections.some((section) => section.title === '준비 사항'));
 
 console.log('Program attachment merge tests passed.');
