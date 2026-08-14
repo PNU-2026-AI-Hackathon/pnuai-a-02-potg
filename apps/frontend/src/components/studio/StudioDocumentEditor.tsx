@@ -6,6 +6,10 @@ import { buildStudioDraftContent, studioDraftStorageKey, type StudioDraft } from
 
 type SaveState = 'saved' | 'dirty' | 'saving';
 type AiRequestState = 'idle' | 'submitting' | 'ready' | 'failed';
+type TextSelectionRange = {
+  start: number;
+  end: number;
+};
 
 type StudioDocument = {
   id: string;
@@ -141,6 +145,10 @@ const aiQuickRequests = [
   '홍보 문구처럼 참여하고 싶게 바꿔 주세요.',
 ];
 
+const dummyAiRevisionText =
+  '지역 주민의 디지털 활용 역량을 높이기 위해 스마트폰 기본 사용법과 생활 편의 서비스를 함께 익히는 참여형 프로그램입니다.';
+const dummyAiRevisionHighlight = '생활 편의 서비스를 함께 익히는 참여형 프로그램';
+
 type StudioDocumentEditorProps = {
   documentId: string;
 };
@@ -208,9 +216,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
   const [selectedText, setSelectedText] = useState('');
+  const [selectedRange, setSelectedRange] = useState<TextSelectionRange | null>(null);
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
   const [aiRequest, setAiRequest] = useState('');
   const [aiRequestState, setAiRequestState] = useState<AiRequestState>('idle');
+  const [aiReviewMessage, setAiReviewMessage] = useState('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
 
   const hasEmptyTitle = title.trim().length === 0;
   const canSave = saveState === 'dirty' && !hasEmptyTitle;
@@ -269,22 +279,31 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
 
     if (!textarea || textarea.selectionStart === textarea.selectionEnd) {
       setSelectedText('');
+      setSelectedRange(null);
       return;
     }
 
-    setSelectedText(content.slice(textarea.selectionStart, textarea.selectionEnd));
+    const nextRange = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    };
+
+    setSelectedRange(nextRange);
+    setSelectedText(content.slice(nextRange.start, nextRange.end));
   }
 
   function openAiPanel() {
     updateSelectedText();
     setIsAiPanelOpen(true);
     setAiRequestState('idle');
+    setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 
   function closeAiPanel() {
     setIsAiPanelOpen(false);
     setAiRequest('');
     setAiRequestState('idle');
+    setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 
   function handleAiRequest() {
@@ -293,9 +312,25 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     }
 
     setAiRequestState('submitting');
+    setAiReviewMessage('더미 수정안을 준비하고 있습니다.');
     window.setTimeout(() => {
       setAiRequestState('ready');
+      setAiReviewMessage('수정안 준비 완료');
     }, 720);
+  }
+
+  function handleAiRevisionApply() {
+    setAiReviewMessage('적용 이벤트가 준비되었습니다. 실제 문서 본문은 변경되지 않았습니다.');
+  }
+
+  function handleAiRevisionRetry() {
+    setAiRequestState('idle');
+    setAiReviewMessage('요청 입력 상태로 돌아왔습니다.');
+  }
+
+  function handleAiRevisionFailure() {
+    setAiRequestState('failed');
+    setAiReviewMessage('수정안 생성 실패 상태입니다.');
   }
 
   return (
@@ -407,6 +442,9 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                   AI 수정
                 </button>
               </div>
+              {isAiPanelOpen && selectedRange ? (
+                <SelectedTextMarker content={content} selectionRange={selectedRange} />
+              ) : null}
               <textarea
                 aria-label="기획서 본문 편집"
                 ref={bodyTextareaRef}
@@ -436,69 +474,157 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                 </button>
               </div>
 
-              <section className="studioAiSelectedSource" aria-label="선택한 원문">
-                <strong>선택한 원문</strong>
-                {hasSelectedText ? (
-                  <p>{selectedText}</p>
-                ) : (
-                  <p className="studioAiEmptySource">수정할 문장을 먼저 선택해 주세요.</p>
-                )}
-              </section>
+              {aiRequestState === 'ready' ? (
+                <StudioAiRevisionCompare originalText={selectedText} revisedText={dummyAiRevisionText} />
+              ) : (
+                <>
+                  <section className="studioAiSelectedSource" aria-label="선택한 원문">
+                    <strong>선택한 원문</strong>
+                    {hasSelectedText ? (
+                      <p>{selectedText}</p>
+                    ) : (
+                      <p className="studioAiEmptySource">수정할 문장을 먼저 선택해 주세요.</p>
+                    )}
+                  </section>
 
-              <label className="studioAiRequestField">
-                <span>수정 요청</span>
-                <textarea
-                  placeholder="더 공공기관 문서답게 다듬어 주세요."
-                  value={aiRequest}
-                  onChange={(event) => {
-                    setAiRequest(event.target.value);
-                    setAiRequestState('idle');
-                  }}
-                />
-              </label>
+                  <label className="studioAiRequestField">
+                    <span>수정 요청</span>
+                    <textarea
+                      placeholder="더 공공기관 문서답게 다듬어 주세요."
+                      value={aiRequest}
+                      onChange={(event) => {
+                        setAiRequest(event.target.value);
+                        setAiRequestState('idle');
+                        setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+                      }}
+                    />
+                  </label>
 
-              <div className="studioAiQuickRequests" aria-label="빠른 수정 요청">
-                {aiQuickRequests.map((request) => (
-                  <button
-                    className={aiRequest === request ? 'isSelected' : ''}
-                    key={request}
-                    type="button"
-                    onClick={() => {
-                      setAiRequest(request);
-                      setAiRequestState('idle');
-                    }}
-                  >
-                    {request.replace(' 주세요.', '')}
-                  </button>
-                ))}
-              </div>
+                  <div className="studioAiQuickRequests" aria-label="빠른 수정 요청">
+                    {aiQuickRequests.map((request) => (
+                      <button
+                        className={aiRequest === request ? 'isSelected' : ''}
+                        key={request}
+                        type="button"
+                        onClick={() => {
+                          setAiRequest(request);
+                          setAiRequestState('idle');
+                          setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+                        }}
+                      >
+                        {request.replace(' 주세요.', '')}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
 
               <div className={`studioAiRequestState is-${aiRequestState}`} aria-live="polite">
                 <strong>{aiStateLabel[aiRequestState]}</strong>
-                <span>
-                  {aiRequestState === 'ready'
-                    ? '후속 이슈에서 수정안 비교 화면으로 연결됩니다.'
-                    : '이번 단계에서는 실제 문서 내용이 변경되지 않습니다.'}
-                </span>
+                <span>{aiReviewMessage}</span>
               </div>
 
               <div className="studioAiEditActions">
-                <button className="uiButton uiButtonSecondary" type="button" onClick={closeAiPanel}>
-                  취소
-                </button>
-                <button
-                  className="uiButton uiButtonPrimary"
-                  type="button"
-                  disabled={!canRequestAiEdit}
-                  onClick={handleAiRequest}
-                >
-                  {aiRequestState === 'submitting' ? '요청 중' : '수정 요청'}
-                </button>
+                {aiRequestState === 'ready' ? (
+                  <>
+                    <button className="uiButton uiButtonPrimary" type="button" onClick={handleAiRevisionApply}>
+                      적용
+                    </button>
+                    <button className="uiButton uiButtonSecondary" type="button" onClick={handleAiRevisionRetry}>
+                      다시 요청
+                    </button>
+                    <button className="uiButton uiButtonSecondary" type="button" onClick={closeAiPanel}>
+                      취소
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="uiButton uiButtonSecondary" type="button" onClick={closeAiPanel}>
+                      취소
+                    </button>
+                    <button
+                      className="uiButton uiButtonSecondary"
+                      type="button"
+                      disabled={aiRequestState === 'submitting'}
+                      onClick={handleAiRevisionFailure}
+                    >
+                      실패 상태
+                    </button>
+                    <button
+                      className="uiButton uiButtonPrimary"
+                      type="button"
+                      disabled={!canRequestAiEdit}
+                      onClick={handleAiRequest}
+                    >
+                      {aiRequestState === 'submitting' ? '요청 중' : '수정 요청'}
+                    </button>
+                  </>
+                )}
               </div>
             </aside>
           ) : null}
         </div>
       </main>
     </div>
+  );
+}
+
+type SelectedTextMarkerProps = {
+  content: string;
+  selectionRange: TextSelectionRange;
+};
+
+function SelectedTextMarker({ content, selectionRange }: SelectedTextMarkerProps) {
+  const contextSize = 78;
+  const beforeStart = Math.max(0, selectionRange.start - contextSize);
+  const afterEnd = Math.min(content.length, selectionRange.end + contextSize);
+  const beforeText = content.slice(beforeStart, selectionRange.start);
+  const selectedText = content.slice(selectionRange.start, selectionRange.end);
+  const afterText = content.slice(selectionRange.end, afterEnd);
+
+  return (
+    <aside className="studioSelectedTextMarker" aria-label="수정 중인 선택 영역">
+      <strong>수정 중인 선택 영역</strong>
+      <p>
+        {beforeStart > 0 ? '...' : ''}
+        {beforeText}
+        <mark>{selectedText}</mark>
+        {afterText}
+        {afterEnd < content.length ? '...' : ''}
+      </p>
+    </aside>
+  );
+}
+
+type StudioAiRevisionCompareProps = {
+  originalText: string;
+  revisedText: string;
+};
+
+function StudioAiRevisionCompare({ originalText, revisedText }: StudioAiRevisionCompareProps) {
+  const [beforeHighlight, afterHighlight = ''] = revisedText.split(dummyAiRevisionHighlight);
+
+  return (
+    <section className="studioAiRevisionCompare" aria-labelledby="studio-ai-revision-compare-title">
+      <div className="studioAiRevisionCompareHeader">
+        <h3 id="studio-ai-revision-compare-title">수정 결과 비교</h3>
+        <p>수정안을 적용하기 전에 기존 원문과 나란히 검토합니다.</p>
+      </div>
+
+      <div className="studioAiRevisionCompareGrid">
+        <section className="studioAiRevisionPane" aria-labelledby="studio-ai-original-title">
+          <h4 id="studio-ai-original-title">기존 원문</h4>
+          <p>{originalText}</p>
+        </section>
+        <section className="studioAiRevisionPane isRevised" aria-labelledby="studio-ai-revised-title">
+          <h4 id="studio-ai-revised-title">AI 수정안</h4>
+          <p>
+            {beforeHighlight}
+            <mark>{dummyAiRevisionHighlight}</mark>
+            {afterHighlight}
+          </p>
+        </section>
+      </div>
+    </section>
   );
 }
