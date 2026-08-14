@@ -48,17 +48,74 @@ const dummyDocument: StudioDocument = {
 도서관 안내 데스크, 지역 복지관, 주민센터 게시판을 통해 모집한다. 온라인 신청이 어려운 대상을 고려해 전화 및 방문 접수를 함께 운영한다.`,
 };
 
-const historyDocuments = [
+const historyDocuments: StudioDocument[] = [
   dummyDocument,
   {
     id: 'family-reading-weekend',
     title: '가족 독서 주말 프로그램',
     updatedAt: '3일 전',
+    content: `기획 배경
+주말에 도서관을 찾는 가족 단위 이용자는 많지만, 부모와 자녀가 함께 책을 읽고 대화하는 정기 프로그램은 부족하다. 가족 독서 활동은 책을 매개로 세대 간 대화를 만들고, 도서관을 주말 여가와 학습이 만나는 생활 공간으로 인식하게 하는 데 효과적이다.
+
+프로그램 목적
+부모와 자녀가 같은 책을 읽고 서로의 생각을 나누는 경험을 제공한다. 참여 가족은 독서 후 감상 나누기, 짧은 글쓰기, 책 속 장면 만들기 활동을 통해 가정에서도 이어갈 수 있는 독서 습관을 형성한다.
+
+운영 대상
+초등학생 자녀를 둔 가족 10팀을 대상으로 운영한다. 자녀 연령은 초등 1학년부터 4학년까지를 권장하며, 보호자 1인 이상이 함께 참여한다.
+
+운영 기간
+총 3회차 주말 프로그램으로 운영하며, 회차당 100분을 기준으로 한다. 토요일 오전 시간대를 활용해 가족 참여 부담을 줄인다.
+
+세부 운영 내용
+1회차에서는 가족별 관심사를 확인하고 함께 읽을 그림책과 동화책을 고른다.
+2회차에서는 책 속 인물의 선택을 주제로 가족 대화를 진행하고, 인상 깊은 문장을 기록한다.
+3회차에서는 가족별 독서 약속을 만들고, 함께 만든 결과물을 작은 전시 형태로 공유한다.
+
+기대 효과
+가족 간 대화 시간이 늘어나고, 도서관 방문이 단순 대출을 넘어 공동 경험으로 확장된다. 도서관은 지역 가족의 주말 문화 활동 거점으로 자리 잡을 수 있다.
+
+준비물
+선정 도서, 가족 활동지, 필기구, 색지, 스티커, 전시용 보드, 참여 가족 명찰을 준비한다.
+
+예산 계획
+활동지 인쇄비, 만들기 재료비, 전시 소모품비, 간단한 다과비를 포함한다.
+
+홍보 및 모집 방법
+도서관 홈페이지, 학교 알림장, 지역 맘카페, 안내 데스크를 통해 홍보한다. 가족 단위 신청이므로 전화와 온라인 접수를 병행한다.`,
   },
   {
     id: 'local-memory-archive',
     title: '우리 동네 기억 수집 워크숍',
     updatedAt: '지난주',
+    content: `기획 배경
+지역의 오래된 장소, 생활사, 주민의 경험은 시간이 지나면 쉽게 사라진다. 작은도서관은 지역 주민이 가진 기억을 기록하고 공유할 수 있는 가까운 문화 거점이므로, 주민 참여형 아카이브 프로그램을 통해 지역 이야기를 보존한다.
+
+프로그램 목적
+주민이 자신의 동네 경험을 글, 사진, 인터뷰 형태로 정리하고 서로 공유하도록 돕는다. 프로그램 결과물은 도서관 내 작은 전시와 온라인 게시 자료로 활용할 수 있는 기초 아카이브가 된다.
+
+운영 대상
+지역 생활사를 기록하고 싶은 성인 주민 15명을 대상으로 한다. 오래 거주한 주민과 새로 이주한 주민이 함께 참여할 수 있도록 모집한다.
+
+운영 기간
+총 4회차로 운영하며, 회차당 120분을 기준으로 한다. 기록 작성, 인터뷰 실습, 자료 정리, 공유 전시 순서로 구성한다.
+
+세부 운영 내용
+1회차에서는 지역 기억 아카이브의 의미와 기록 주제를 소개한다.
+2회차에서는 사진과 사물에 담긴 개인 기억을 글로 정리한다.
+3회차에서는 짝 인터뷰를 진행하고 질문 기록지를 작성한다.
+4회차에서는 수집한 내용을 함께 편집하고 도서관 전시 구성을 논의한다.
+
+기대 효과
+주민은 자신의 경험이 지역 문화 자산이 될 수 있음을 체감한다. 도서관은 지역 기록을 축적하고 주민 간 관계를 연결하는 플랫폼 역할을 강화할 수 있다.
+
+준비물
+기록 활동지, 인터뷰 질문지, 녹음 가능한 스마트폰, 사진 스캔 안내문, 전시용 파일과 보드를 준비한다.
+
+예산 계획
+강사비, 기록지 인쇄비, 전시 물품비, 사진 출력비를 중심으로 예산을 편성한다.
+
+홍보 및 모집 방법
+주민센터, 아파트 게시판, 지역 커뮤니티, 도서관 안내문을 통해 모집한다. 고령 주민 참여를 위해 방문 접수도 함께 운영한다.`,
   },
 ];
 
@@ -73,8 +130,20 @@ type StudioDocumentEditorProps = {
 };
 
 export default function StudioDocumentEditor({ documentId }: StudioDocumentEditorProps) {
+  const document = useMemo(
+    () => historyDocuments.find((item) => item.id === documentId) ?? dummyDocument,
+    [documentId],
+  );
+
+  return <StudioDocumentEditorView document={document} key={document.id} />;
+}
+
+type StudioDocumentEditorViewProps = {
+  document: StudioDocument;
+};
+
+function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const document = useMemo(() => ({ ...dummyDocument, id: documentId || dummyDocument.id }), [documentId]);
   const [storedDraft] = useState<StudioDraft | null>(() => {
     if (typeof window === 'undefined') {
       return null;
