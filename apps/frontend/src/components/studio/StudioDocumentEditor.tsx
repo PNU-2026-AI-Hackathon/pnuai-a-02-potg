@@ -11,7 +11,7 @@ import {
 } from '@/lib/studio-draft';
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
-type LoadState = 'loading' | 'ready' | 'failed';
+type LoadState = 'loading' | 'ready' | 'failed' | 'auth-required';
 type AiRequestState = 'idle' | 'submitting' | 'ready' | 'failed';
 type TextSelectionRange = {
   start: number;
@@ -257,6 +257,12 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         });
         const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
 
+        if (response.status === 401) {
+          setLoadState('auth-required');
+          setLoadErrorMessage('기획서를 보려면 로그인이 필요합니다.');
+          return;
+        }
+
         if (!response.ok || !data.document) {
           throw new Error(data.error || '기획서를 불러오지 못했습니다.');
         }
@@ -351,7 +357,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
 
       if (!response.ok || !data.document) {
-        throw new Error(data.error || '기획서를 저장하지 못했습니다.');
+        throw new Error(response.status === 401 ? '기획서를 저장하려면 로그인이 필요합니다.' : data.error || '기획서를 저장하지 못했습니다.');
       }
 
       setSaveState('saved');
@@ -502,13 +508,18 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           </div>
         </section>
 
-        {loadState === 'failed' ? (
+        {loadState === 'failed' || loadState === 'auth-required' ? (
           <section className="studioDocumentsEmptyState" aria-labelledby="studio-document-load-failed-title">
             <span aria-hidden="true">□</span>
-            <h2 id="studio-document-load-failed-title">기획서를 불러오지 못했습니다.</h2>
+            <h2 id="studio-document-load-failed-title">
+              {loadState === 'auth-required' ? '로그인이 필요합니다.' : '기획서를 불러오지 못했습니다.'}
+            </h2>
             <p>{loadErrorMessage}</p>
-            <Link className="uiButton uiButtonPrimary" href="/studio/documents">
-              기획서 목록으로 이동
+            <Link
+              className="uiButton uiButtonPrimary"
+              href={loadState === 'auth-required' ? `/login?next=/studio/document/${document.id}` : '/studio/documents'}
+            >
+              {loadState === 'auth-required' ? '로그인하기' : '기획서 목록으로 이동'}
             </Link>
           </section>
         ) : null}

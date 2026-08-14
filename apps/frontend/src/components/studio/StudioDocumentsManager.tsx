@@ -15,7 +15,7 @@ type ManagedStudioDocument = {
   preview: string;
 };
 
-type DocumentListState = 'loading' | 'ready' | 'failed';
+type DocumentListState = 'loading' | 'ready' | 'failed' | 'auth-required';
 
 const stageClassName: Record<StudioDocumentStage, string> = {
   '기획 중': 'isDraft',
@@ -55,6 +55,12 @@ export default function StudioDocumentsManager() {
         cache: 'no-store',
       });
       const data = (await response.json()) as { documents?: StudioSavedDocument[]; error?: string };
+
+      if (response.status === 401) {
+        setListState('auth-required');
+        setNotice('저장된 기획서를 보려면 로그인이 필요합니다.');
+        return;
+      }
 
       if (!response.ok || !data.documents) {
         throw new Error(data.error || '저장된 기획서 목록을 불러오지 못했습니다.');
@@ -110,7 +116,7 @@ export default function StudioDocumentsManager() {
       const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
 
       if (!response.ok || !data.document) {
-        throw new Error(data.error || '기획서 제목을 저장하지 못했습니다.');
+        throw new Error(response.status === 401 ? '제목을 변경하려면 로그인이 필요합니다.' : data.error || '기획서 제목을 저장하지 못했습니다.');
       }
 
       const updatedDocument = normalizeDocument(data.document);
@@ -137,7 +143,7 @@ export default function StudioDocumentsManager() {
       const data = (await response.json()) as { success?: boolean; error?: string };
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || '기획서를 삭제하지 못했습니다.');
+        throw new Error(response.status === 401 ? '기획서를 삭제하려면 로그인이 필요합니다.' : data.error || '기획서를 삭제하지 못했습니다.');
       }
 
       setDocuments((currentDocuments) => currentDocuments.filter((document) => document.id !== deleteTarget.id));
@@ -367,6 +373,17 @@ export default function StudioDocumentsManager() {
             <button className="uiButton uiButtonPrimary" type="button" onClick={() => void loadDocuments()}>
               다시 시도
             </button>
+          </section>
+        ) : null}
+
+        {listState === 'auth-required' ? (
+          <section className="studioDocumentsEmptyState" aria-labelledby="studio-documents-auth-title">
+            <span aria-hidden="true">□</span>
+            <h2 id="studio-documents-auth-title">로그인이 필요합니다.</h2>
+            <p>본인이 저장한 프로그램 기획서를 확인하려면 로그인해 주세요.</p>
+            <Link className="uiButton uiButtonPrimary" href="/login?next=/studio/documents">
+              로그인하기
+            </Link>
           </section>
         ) : null}
       </main>
