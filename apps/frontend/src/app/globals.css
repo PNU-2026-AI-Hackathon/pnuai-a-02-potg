@@ -10763,7 +10763,7 @@ html:has(.moiraPage) {
 }
 
 .studioDocumentWorkspace.hasAiPanel {
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  grid-template-columns: minmax(0, 0.9fr) minmax(520px, 620px);
 }
 
 .studioDocumentTitleField,
@@ -10865,22 +10865,59 @@ html:has(.moiraPage) {
   white-space: pre-wrap;
 }
 
+.studioDocumentBodyField textarea::selection {
+  background: rgba(189, 232, 212, 0.95);
+  color: var(--moira-ink);
+}
+
 .studioDocumentBodyField textarea:focus {
   box-shadow: inset 0 3px 0 rgba(22, 116, 95, 0.12);
+}
+
+.studioSelectedTextMarker {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #c7e8d8;
+  border-radius: 8px;
+  background: #f0faf5;
+  padding: 13px 14px;
+}
+
+.studioSelectedTextMarker strong {
+  color: var(--moira-green-dark);
+  font-size: 13px;
+}
+
+.studioSelectedTextMarker p {
+  max-height: 140px;
+  overflow-y: auto;
+  margin: 0;
+  color: #33483f;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.studioSelectedTextMarker mark {
+  border-radius: 6px;
+  background: #c7efd9;
+  color: var(--moira-green-dark);
+  padding: 2px 4px;
+  font-weight: 850;
 }
 
 .studioAiEditPanel {
   position: sticky;
   top: 94px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
   max-height: calc(100vh - 122px);
   overflow-y: auto;
   border: 1px solid #d8e5df;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 22px 48px rgba(33, 70, 61, 0.12);
-  padding: 20px;
+  padding: 24px;
 }
 
 .studioAiEditPanelHeader {
@@ -10893,7 +10930,7 @@ html:has(.moiraPage) {
 .studioAiEditPanelHeader h2 {
   margin: 4px 0 0;
   color: var(--moira-ink);
-  font-size: 20px;
+  font-size: 23px;
   line-height: 1.25;
 }
 
@@ -10923,7 +10960,7 @@ html:has(.moiraPage) {
 .studioAiSelectedSource strong,
 .studioAiRequestField span {
   color: var(--moira-green-dark);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 850;
 }
 
@@ -10932,7 +10969,7 @@ html:has(.moiraPage) {
   overflow-y: auto;
   margin: 0;
   color: #33483f;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.75;
   white-space: pre-wrap;
 }
@@ -10955,8 +10992,8 @@ html:has(.moiraPage) {
   background: #fff;
   color: var(--moira-ink);
   outline: none;
-  padding: 13px 14px;
-  font-size: 13px;
+  padding: 14px 15px;
+  font-size: 14px;
   line-height: 1.65;
 }
 
@@ -10972,13 +11009,13 @@ html:has(.moiraPage) {
 }
 
 .studioAiQuickRequests button {
-  min-height: 32px;
+  min-height: 34px;
   border: 1px solid #d8e5df;
   border-radius: 999px;
   background: #fff;
   color: #52635e;
   padding: 0 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -11002,12 +11039,12 @@ html:has(.moiraPage) {
 
 .studioAiRequestState strong {
   color: var(--moira-ink);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .studioAiRequestState span {
   color: #71817b;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
 }
 
@@ -11034,14 +11071,14 @@ html:has(.moiraPage) {
 .studioAiRevisionCompareHeader h3 {
   margin: 0;
   color: var(--moira-ink);
-  font-size: 15px;
+  font-size: 17px;
   line-height: 1.35;
 }
 
 .studioAiRevisionCompareHeader p {
   margin: 5px 0 0;
   color: #71817b;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
 }
 
@@ -11071,8 +11108,8 @@ html:has(.moiraPage) {
   border-bottom: 1px solid #edf2ef;
   background: #f8fbf9;
   color: var(--moira-green-dark);
-  padding: 11px 12px;
-  font-size: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
   font-weight: 850;
 }
 
@@ -11081,8 +11118,8 @@ html:has(.moiraPage) {
   overflow-y: auto;
   margin: 0;
   color: #33483f;
-  padding: 13px;
-  font-size: 13px;
+  padding: 15px;
+  font-size: 14px;
   line-height: 1.75;
   white-space: pre-wrap;
 }
@@ -11102,10 +11139,21 @@ html:has(.moiraPage) {
 }
 
 .studioAiEditActions .uiButton {
-  min-height: 40px;
+  min-height: 42px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 850;
+}
+
+@media (max-width: 1180px) {
+  .studioDocumentWorkspace.hasAiPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .studioAiEditPanel {
+    position: static;
+    max-height: none;
+  }
 }
 
 .studioAiEditActions .uiButton:disabled {

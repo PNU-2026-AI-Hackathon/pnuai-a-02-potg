@@ -6,6 +6,10 @@ import { buildStudioDraftContent, studioDraftStorageKey, type StudioDraft } from
 
 type SaveState = 'saved' | 'dirty' | 'saving';
 type AiRequestState = 'idle' | 'submitting' | 'ready' | 'failed';
+type TextSelectionRange = {
+  start: number;
+  end: number;
+};
 
 type StudioDocument = {
   id: string;
@@ -212,6 +216,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
   const [selectedText, setSelectedText] = useState('');
+  const [selectedRange, setSelectedRange] = useState<TextSelectionRange | null>(null);
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
   const [aiRequest, setAiRequest] = useState('');
   const [aiRequestState, setAiRequestState] = useState<AiRequestState>('idle');
@@ -274,10 +279,17 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
 
     if (!textarea || textarea.selectionStart === textarea.selectionEnd) {
       setSelectedText('');
+      setSelectedRange(null);
       return;
     }
 
-    setSelectedText(content.slice(textarea.selectionStart, textarea.selectionEnd));
+    const nextRange = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    };
+
+    setSelectedRange(nextRange);
+    setSelectedText(content.slice(nextRange.start, nextRange.end));
   }
 
   function openAiPanel() {
@@ -430,6 +442,9 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                   AI 수정
                 </button>
               </div>
+              {isAiPanelOpen && selectedRange ? (
+                <SelectedTextMarker content={content} selectionRange={selectedRange} />
+              ) : null}
               <textarea
                 aria-label="기획서 본문 편집"
                 ref={bodyTextareaRef}
@@ -551,6 +566,33 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         </div>
       </main>
     </div>
+  );
+}
+
+type SelectedTextMarkerProps = {
+  content: string;
+  selectionRange: TextSelectionRange;
+};
+
+function SelectedTextMarker({ content, selectionRange }: SelectedTextMarkerProps) {
+  const contextSize = 78;
+  const beforeStart = Math.max(0, selectionRange.start - contextSize);
+  const afterEnd = Math.min(content.length, selectionRange.end + contextSize);
+  const beforeText = content.slice(beforeStart, selectionRange.start);
+  const selectedText = content.slice(selectionRange.start, selectionRange.end);
+  const afterText = content.slice(selectionRange.end, afterEnd);
+
+  return (
+    <aside className="studioSelectedTextMarker" aria-label="수정 중인 선택 영역">
+      <strong>수정 중인 선택 영역</strong>
+      <p>
+        {beforeStart > 0 ? '...' : ''}
+        {beforeText}
+        <mark>{selectedText}</mark>
+        {afterText}
+        {afterEnd < content.length ? '...' : ''}
+      </p>
+    </aside>
   );
 }
 
