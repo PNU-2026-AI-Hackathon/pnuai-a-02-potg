@@ -155,7 +155,7 @@ type StudioDocumentEditorProps = {
 
 export default function StudioDocumentEditor({ documentId }: StudioDocumentEditorProps) {
   const document = useMemo(
-    () => historyDocuments.find((item) => item.id === documentId) ?? dummyDocument,
+    () => historyDocuments.find((item) => item.id === documentId) ?? { ...dummyDocument, id: documentId },
     [documentId],
   );
 
