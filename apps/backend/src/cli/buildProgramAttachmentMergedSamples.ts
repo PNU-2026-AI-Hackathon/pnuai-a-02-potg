@@ -24,12 +24,23 @@ export function buildMergedSamples(records: RawProgram[], samples: Array<any>) {
   const items = samples.map((sample) => {
     const raw = byId.get(sample.sourceId);
     if (!raw) throw new Error(`크롤링 원본에서 sourceId를 찾을 수 없습니다: ${sample.sourceId}`);
-    return mergeProgramAttachment({
+    const unavailableReason = sample.failure?.message
+      ?? (sample.match?.status === 'NOT_FOUND' ? sample.match.reason : null);
+    const structured = sample.structured ?? { labeled: [], curriculum: [], extractionWarnings: [] };
+    if (unavailableReason && !(structured.extractionWarnings ?? []).some((warning: any) => warning.code === (sample.failure?.code ?? 'ATTACHMENT_SECTION_NOT_FOUND'))) {
+      structured.extractionWarnings = [...(structured.extractionWarnings ?? []), {
+        code: sample.failure?.code ?? 'ATTACHMENT_SECTION_NOT_FOUND',
+        message: unavailableReason,
+      }];
+    }
+    const merged = mergeProgramAttachment({
       program: normalizeProgram(raw),
       attachment: sample.attachment,
-      match: sample.match,
-      structured: sample.structured,
+      match: sample.match ?? { status: 'FAILED', selectedPages: [], score: 0, reason: unavailableReason ?? '첨부 추출 실패' },
+      structured,
     });
+    if (unavailableReason) merged.reviewStatus = 'MANUAL_REVIEW_REQUIRED';
+    return merged;
   });
   return {
     schemaVersion: 'program-board-attachment-merge-batch/v1',

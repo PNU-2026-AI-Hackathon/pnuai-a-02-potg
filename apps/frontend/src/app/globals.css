@@ -11218,6 +11218,9 @@ html:has(.moiraPage) {
 .attachmentSourceHint { margin: 6px 0 16px; color: #748078; font-size: 13px; }
 .attachmentComparisonGrid pre { max-height: 520px; overflow: auto; margin: 0; padding: 18px; border-radius: 12px; background: #f5f7f5; color: #36453b; font: 13px/1.75 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; word-break: keep-all; }
 .attachmentAuditPanel, .attachmentBoardPreview { margin-top: 22px; }
+.attachmentExtractionWarnings { margin-top: 16px; padding: 16px 18px; border: 1px solid #efcf9b; border-radius: 12px; background: #fff8e9; color: #704d16; }
+.attachmentExtractionWarnings h3 { margin: 0 0 8px; font-size: 15px; }
+.attachmentExtractionWarnings ul { margin: 0; padding-left: 20px; line-height: 1.65; }
 .attachmentAuditGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
 .attachmentAuditGrid > div { min-height: 140px; padding: 18px; border-radius: 13px; background: #f7f9f7; }
 .attachmentAuditGrid h3 { display: flex; justify-content: space-between; margin: 0 0 12px; color: #2f513b; font-size: 16px; }
@@ -11242,6 +11245,12 @@ html:has(.moiraPage) {
 .attachmentCurriculum h3 { display: flex; align-items: center; gap: 8px; color: #254b32; }
 .attachmentCurriculum .programCurriculumTable td:first-child { width: 65px; text-align: center; font-weight: 700; }
 .attachmentCurriculum .programCurriculumTable td:nth-child(2) { width: 110px; }
+.attachmentCurriculum .programCurriculumTable td { white-space: pre-line; }
+.attachmentCurriculumReferences { display: grid; gap: 10px; min-width: 150px; }
+.attachmentCurriculumReferences strong { display: block; margin-bottom: 5px; color: #355742; font-size: 12px; }
+.attachmentCurriculumReferences ul { margin: 0; padding-left: 18px; }
+.attachmentCurriculumReferences img { width: 92px; max-height: 132px; border: 1px solid #dfe7e1; border-radius: 7px; object-fit: contain; background: #fff; }
+.attachmentCurriculumReferences p { margin: 0; }
 
 @media (max-width: 860px) {
   .attachmentReviewSummary { grid-template-columns: repeat(2, minmax(0, 1fr)); }

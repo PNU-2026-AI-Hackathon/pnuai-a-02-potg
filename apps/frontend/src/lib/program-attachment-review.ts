@@ -7,6 +7,12 @@ export type ReviewCurriculum = {
   date: string | null;
   activity: string;
   materialsOrNotes: string | null;
+  category: string | null;
+  teachingMethod: string | null;
+  materials: string | null;
+  notes: string | null;
+  referenceBooks: string[];
+  referenceImages: Array<{ filename: string; mimeType: string; src: string }>;
 };
 
 export type ProgramAttachmentReview = {
@@ -23,6 +29,7 @@ export type ProgramAttachmentReview = {
   basicInfo: Array<{ label: string; value: string }>;
   board: { sections: ProgramSection[]; intro: string[]; notices: ProgramNoticeGroup[]; unmappedLabels: string[] };
   curriculum: ReviewCurriculum[];
+  extractionWarnings: Array<{ code: string; message: string }>;
   attachments: Array<{ name: string; url: string }>;
   audit: {
     added: Array<{ section: string; label: string; value: string }>;
@@ -66,7 +73,7 @@ export async function getProgramAttachmentReviews(): Promise<ProgramAttachmentRe
   ]);
   const rawById = new Map(crawl.records.map((record) => [record.idx, record]));
   const enrichmentById = new Map(enrichment.results.map((item) => [item.sourceId, item]));
-  return merged.items.map((item) => {
+  return Promise.all(merged.items.map(async (item) => {
     const source = enrichmentById.get(item.sourceId);
     const raw = rawById.get(item.sourceId);
     return {
@@ -82,11 +89,27 @@ export async function getProgramAttachmentReviews(): Promise<ProgramAttachmentRe
       reviewStatus: item.reviewStatus,
       basicInfo: item.basicInfo ?? [],
       board: item.board,
-      curriculum: item.curriculum,
+      curriculum: await Promise.all((item.curriculum ?? []).map(async (session: any) => ({
+        ...session,
+        category: session.category ?? null,
+        teachingMethod: session.teachingMethod ?? null,
+        materials: session.materials ?? session.materialsOrNotes ?? null,
+        notes: session.notes ?? null,
+        referenceBooks: session.referenceBooks ?? [],
+        referenceImages: await Promise.all((session.referenceImages ?? []).map(async (image: { filename: string; mimeType: string }) => {
+          const candidates = backendLocal('program-attachment-enrichment', 'embedded-images', String(item.sourceId), image.filename);
+          let data: Buffer | null = null;
+          for (const candidate of candidates) {
+            try { data = await readFile(candidate); break; } catch { /* 다음 로컬 경로 확인 */ }
+          }
+          return { ...image, src: data ? `data:${image.mimeType};base64,${data.toString('base64')}` : '' };
+        })),
+      }))),
+      extractionWarnings: item.extractionWarnings ?? [],
       attachments: item.attachments ?? [item.attachmentEvidence].filter((attachment) => attachment?.url),
       audit: item.mergeAudit,
     };
-  });
+  }));
 }
 
 export async function getProgramAttachmentReview(sourceId: number) {

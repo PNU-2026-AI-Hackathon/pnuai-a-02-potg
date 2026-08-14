@@ -139,7 +139,7 @@ HWP/PDF 대표 표본의 프로그램 구간 선택·구조화 명령:
 ```powershell
 cd apps/backend
 npm run test:program-attachment-section-matcher
-npm run program-attachment-enrichment:samples -- --per-type 5
+npm run program-attachment-enrichment:samples -- --per-type 10
 ```
 
 결과는 `.local/program-attachment-enrichment/samples.json`에 저장하며, `PROGRAM_ATTACHMENT_ENRICHMENT_RESULTS.md`에 검증 결과와 알려진 한계를 기록한다.
@@ -161,7 +161,7 @@ $env:PROGRAM_ATTACHMENT_ENRICHMENT='.local/program-attachment-enrichment/samples
 npm run test:program-attachment-merge
 ```
 
-결과는 `.local/program-attachment-enrichment/merged-samples.json`에 저장하며, `PROGRAM_ATTACHMENT_MERGE_RESULTS.md`에 대표 10건 결과와 한계를 기록한다.
+결과는 `.local/program-attachment-enrichment/merged-samples.json`에 저장하며, `PROGRAM_ATTACHMENT_MERGE_RESULTS.md`에 대표 20건 결과와 한계를 기록한다.
 
 ### 5단계: 검수 UI 제공
 
@@ -175,7 +175,7 @@ npm run test:program-attachment-merge
 - 신규 정보, 중복 제거, 충돌 및 누락 표시
 - 자동 판정 상태와 검수 필요 사유
 
-대표 10건 검수 경로:
+대표 20건 검수 경로:
 
 ```text
 http://127.0.0.1:3000/programs/attachment-review

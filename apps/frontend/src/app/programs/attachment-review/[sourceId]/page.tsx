@@ -10,6 +10,10 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
   if (!review) notFound();
   const content = review.board.sections.find((section) => section.id === 'content');
   const others = review.board.sections.filter((section) => section.id !== 'content');
+  const showCurriculumDate = review.curriculum.some((session) => Boolean(session.date));
+  const showTeachingMethod = review.curriculum.some((session) => Boolean(session.teachingMethod));
+  const showMaterials = review.curriculum.some((session) => Boolean(session.materials));
+  const showNotes = review.curriculum.some((session) => Boolean(session.notes) || session.referenceBooks.length > 0 || session.referenceImages.some((image) => image.src));
   return (
     <main className="programPage attachmentReviewPage">
       <section className="uiContainer programShell">
@@ -31,6 +35,7 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
 
         <section className="attachmentAuditPanel">
           <h2>3. 병합 판단 내역</h2>
+          {review.extractionWarnings.length ? <div className="attachmentExtractionWarnings"><h3>원본 대조 필요</h3><ul>{review.extractionWarnings.map((warning) => <li key={warning.code}>{warning.message}</li>)}</ul></div> : null}
           <div className="attachmentAuditGrid">
             <div><h3>새로 추가 <span>{review.audit.added.length}</span></h3><ul>{review.audit.added.map((item, index) => <li key={index}><strong>{item.label}</strong><p>{item.value}</p></li>)}</ul></div>
             <div><h3>중복 제거 <span>{review.audit.skippedDuplicates.length}</span></h3><ul>{review.audit.skippedDuplicates.map((item, index) => <li key={index}><strong>{item.label}</strong><p>{item.value}</p></li>)}</ul></div>
@@ -46,14 +51,14 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
           <section className="programDescription attachmentPreviewSection" aria-labelledby="attachment-content"><h2 id="attachment-content">프로그램 내용</h2>
             {content || review.board.intro.length ? <section className="programTextSection is-content"><h3>{content?.title ?? '프로그램 소개'}</h3>{content ? <dl>{content.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl> : null}{review.board.intro.map((line, index) => <p key={index}>{line}</p>)}</section> : null}
             {others.map((section) => <section className={`programTextSection is-${section.id}`} key={section.id}><h3>{section.title}</h3><dl>{section.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl></section>)}
-            <section className="attachmentCurriculum"><h3>회차별 활동 <span>{review.curriculum.length}</span></h3>{review.curriculum.length ? <div className="programTableScroll"><table className="programCurriculumTable"><thead><tr><th>회차</th><th>일자</th><th>활동 내용</th><th>준비물·비고</th></tr></thead><tbody>{review.curriculum.map((session) => <tr key={session.session}><td>{session.session}</td><td>{session.date ?? '-'}</td><td>{session.activity}</td><td>{session.materialsOrNotes ?? '-'}</td></tr>)}</tbody></table></div> : <p className="attachmentEmptyState">표가 없는 프로그램이거나, 복잡한 PDF 표라 회차를 아직 복원하지 못했습니다.</p>}</section>
+            <section className="attachmentCurriculum"><h3>회차별 활동 <span>{review.curriculum.length}</span></h3>{review.curriculum.length ? <div className="programTableScroll"><table className="programCurriculumTable"><thead><tr><th>회차</th>{showCurriculumDate ? <th>일자</th> : null}<th>활동 내용</th>{showTeachingMethod ? <th>교수방법</th> : null}{showMaterials ? <th>준비물</th> : null}{showNotes ? <th>비고</th> : null}</tr></thead><tbody>{review.curriculum.map((session) => <tr key={session.session}><td>{session.session}</td>{showCurriculumDate ? <td>{session.date ?? '-'}</td> : null}<td>{session.category ? <strong className="attachmentCurriculumCategory">{session.category}</strong> : null}{session.activity}</td>{showTeachingMethod ? <td>{session.teachingMethod ?? '-'}</td> : null}{showMaterials ? <td>{session.materials ?? '-'}</td> : null}{showNotes ? <td>{session.referenceBooks.length || session.referenceImages.some((image) => image.src) || session.notes ? <div className="attachmentCurriculumReferences">{session.referenceBooks.length ? <div><strong>참고도서</strong><ul>{session.referenceBooks.map((book) => <li key={book}>{book}</li>)}</ul></div> : null}{session.referenceImages.filter((image) => image.src).map((image, index) => <img key={image.filename} src={image.src} alt={`${session.session}회차 참고 이미지 ${index + 1}`} />)}{session.notes ? <p>{session.notes}</p> : null}</div> : '-'}</td> : null}</tr>)}</tbody></table></div> : <p className="attachmentEmptyState">표가 없는 프로그램이거나, 복잡한 PDF 표라 회차를 아직 복원하지 못했습니다.</p>}</section>
           </section>
 
           <section className="programNoticeGroups attachmentPreviewSection" aria-labelledby="attachment-notices"><h2 id="attachment-notices">이용 안내</h2>{review.board.notices.length ? <div className="programNoticeGrid">{review.board.notices.map((group) => <section className={`programNoticeGroup is-${group.id}`} key={group.id}><h3>{group.title}</h3><ul>{group.lines.map((line, index) => <li key={index}>{line}</li>)}</ul></section>)}</div> : <p className="attachmentEmptyState">별도의 이용 안내가 없습니다.</p>}</section>
 
           <section className="programAttachments attachmentPreviewSection" aria-labelledby="attachment-files"><h2 id="attachment-files">첨부파일</h2>{review.attachments.length ? <ul>{review.attachments.map((attachment) => <li key={attachment.url}><a href={attachment.url} target="_blank" rel="noreferrer">{attachment.name}</a></li>)}</ul> : <p className="attachmentEmptyState">첨부파일이 없습니다.</p>}</section>
         </section>
-        <div className="programDetailActions"><Link className="uiButton uiButtonSecondary" href="/programs/attachment-review">대표 10건 목록</Link></div>
+        <div className="programDetailActions"><Link className="uiButton uiButtonSecondary" href="/programs/attachment-review">대표 표본 목록</Link></div>
       </section>
     </main>
   );
