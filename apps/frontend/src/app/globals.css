@@ -11100,6 +11100,12 @@ html:has(.moiraPage) {
   background: var(--moira-mint);
 }
 
+.studioSaveBadge.is-failed {
+  border-color: #fecaca;
+  background: #fff5f5;
+  color: #b42318;
+}
+
 .studioSavedMeta {
   color: #7a8b85;
   font-size: 12px;
