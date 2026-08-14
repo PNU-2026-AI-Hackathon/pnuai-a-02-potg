@@ -21,7 +21,7 @@ type StudioDocumentRow = {
 type CreateStudioDocumentBody = {
   title?: string;
   content?: string;
-  stage?: StudioDocumentStage;
+  stage?: unknown;
   conditions?: unknown;
   agenda?: unknown;
 };
@@ -29,7 +29,7 @@ type CreateStudioDocumentBody = {
 type UpdateStudioDocumentBody = {
   title?: string;
   content?: string;
-  stage?: StudioDocumentStage;
+  stage?: unknown;
 };
 
 const router = Router();
@@ -85,10 +85,8 @@ function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function readStage(value: unknown): StudioDocumentStage {
-  return typeof value === 'string' && validStages.has(value as StudioDocumentStage)
-    ? (value as StudioDocumentStage)
-    : '기획 중';
+function isStudioDocumentStage(value: unknown): value is StudioDocumentStage {
+  return typeof value === 'string' && validStages.has(value as StudioDocumentStage);
 }
 
 function createPreview(content: string) {
@@ -155,12 +153,16 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Response) => {
   const title = readString(req.body.title);
   const content = readString(req.body.content);
-  const stage = readStage(req.body.stage);
+  const stage = req.body.stage === undefined ? '기획 중' : req.body.stage;
   const conditions = req.body.conditions ?? {};
   const agenda = req.body.agenda ?? null;
 
   if (!title || !content) {
     return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
+  }
+
+  if (!isStudioDocumentStage(stage)) {
+    return res.status(400).json({ code: 'INVALID_STAGE', error: 'stage is invalid.' });
   }
 
   try {
@@ -206,7 +208,7 @@ router.get('/:documentId', async (req: Request<{ documentId: string }>, res: Res
 router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, UpdateStudioDocumentBody>, res: Response) => {
   const title = typeof req.body.title === 'string' ? req.body.title.trim() : undefined;
   const content = typeof req.body.content === 'string' ? req.body.content.trim() : undefined;
-  const stage = req.body.stage ? readStage(req.body.stage) : undefined;
+  const stage = req.body.stage;
 
   if (title !== undefined && title.length === 0) {
     return res.status(400).json({ code: 'INVALID_TITLE', error: 'title cannot be empty.' });
@@ -214,6 +216,10 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
 
   if (content !== undefined && content.length === 0) {
     return res.status(400).json({ code: 'INVALID_CONTENT', error: 'content cannot be empty.' });
+  }
+
+  if (stage !== undefined && !isStudioDocumentStage(stage)) {
+    return res.status(400).json({ code: 'INVALID_STAGE', error: 'stage is invalid.' });
   }
 
   try {

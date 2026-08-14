@@ -11106,6 +11106,64 @@ html:has(.moiraPage) {
   color: #b42318;
 }
 
+.studioDocumentStageControl {
+  display: inline-grid;
+  gap: 5px;
+  min-width: 150px;
+}
+
+.studioDocumentStageControl span {
+  color: #7a8b85;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.studioDocumentStageControl select {
+  min-height: 38px;
+  border: 1px solid #cfe0d8;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--moira-green-dark);
+  outline: none;
+  padding: 0 36px 0 14px;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.studioDocumentStageControl select:focus-visible {
+  border-color: var(--moira-green);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.1);
+}
+
+.studioDocumentStageControl select:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.studioDocumentStageControl select.isDraft {
+  border-color: #f1c895;
+  background: #fff8ef;
+  color: #9a520b;
+}
+
+.studioDocumentStageControl select.isSurvey {
+  background: #f0faf5;
+}
+
+.studioDocumentStageControl select.isSurveyDone {
+  border-color: #cfd8e3;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.studioDocumentStageControl select.isConfirmed {
+  border-color: #c6d6cd;
+  background: #eef7f2;
+  color: var(--moira-green-dark);
+}
+
 .studioSavedMeta {
   color: #7a8b85;
   font-size: 12px;
@@ -11145,6 +11203,12 @@ html:has(.moiraPage) {
   font-size: 14px;
   font-weight: 750;
   line-height: 1.55;
+}
+
+.studioDocumentsNotice.isError {
+  border-color: #fecaca;
+  background: #fff5f5;
+  color: #b42318;
 }
 
 .studioDocumentsList {
