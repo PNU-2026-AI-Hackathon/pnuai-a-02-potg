@@ -67,7 +67,14 @@
     "postinstall": "prisma generate",
     "program-board:build": "npm run build && node dist/cli/buildProgramBoardData.js",
     "program-board:coverage": "npm run build && node dist/cli/programDictionaryCoverage.js",
-    "test:program-board-data": "node scripts/test-program-board-data.js"
+    "test:program-board-data": "node scripts/test-program-board-data.js",
+    "program-attachment-inventory:build": "node -r ts-node/register src/cli/buildProgramAttachmentInventory.ts",
+    "test:program-attachment-inventory": "node -r ts-node/register scripts/test-program-attachment-inventory.js",
+    "program-attachment-samples:validate": "node -r ts-node/register src/cli/validateGeumjeongAttachmentSamples.ts",
+    "program-attachment-enrichment:samples": "node -r ts-node/register src/cli/buildProgramAttachmentEnrichmentSamples.ts",
+    "test:program-attachment-section-matcher": "node -r ts-node/register scripts/test-program-attachment-section-matcher.js",
+    "program-attachment-merge:samples": "node -r ts-node/register src/cli/buildProgramAttachmentMergedSamples.ts",
+    "test:program-attachment-merge": "node -r ts-node/register scripts/test-program-attachment-merge.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -77,6 +84,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
+    "hwp.js": "^0.0.3",
     "jsonwebtoken": "^9.0.2",
     "kordoc": "4.2.7",
     "pdfjs-dist": "^6.1.200",
