@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { FormEvent, useMemo, useState } from 'react';
 
-type StudioDocumentStatus = '작성 중' | '저장됨' | '검토 필요';
+type StudioDocumentStage = '기획 중' | '수요조사 중' | '수요조사 완료' | '기획서 확정';
 
 type ManagedStudioDocument = {
   id: string;
   title: string;
-  status: StudioDocumentStatus;
+  stage: StudioDocumentStage;
   updatedAt: string;
   category: string;
   audience: string;
@@ -20,8 +20,8 @@ const dummyDocuments: ManagedStudioDocument[] = [
   {
     id: 'demo-document-1',
     title: '시니어 디지털 생활 교실',
-    status: '작성 중',
-    updatedAt: '방금 전',
+    stage: '기획 중',
+    updatedAt: '2026. 08. 14. 09:30',
     category: '디지털 역량',
     audience: '시니어',
     period: '4회차',
@@ -30,8 +30,8 @@ const dummyDocuments: ManagedStudioDocument[] = [
   {
     id: 'family-reading-weekend',
     title: '가족 독서 주말 프로그램',
-    status: '저장됨',
-    updatedAt: '어제',
+    stage: '수요조사 중',
+    updatedAt: '2026. 08. 13. 16:20',
     category: '독서 문화',
     audience: '가족',
     period: '3회차',
@@ -40,8 +40,8 @@ const dummyDocuments: ManagedStudioDocument[] = [
   {
     id: 'local-memory-archive',
     title: '우리 동네 기억 수집 워크숍',
-    status: '검토 필요',
-    updatedAt: '지난주',
+    stage: '기획서 확정',
+    updatedAt: '2026. 08. 07. 11:10',
     category: '지역 기록',
     audience: '성인',
     period: '4회차',
@@ -49,10 +49,11 @@ const dummyDocuments: ManagedStudioDocument[] = [
   },
 ];
 
-const statusClassName: Record<StudioDocumentStatus, string> = {
-  '작성 중': 'isDraft',
-  저장됨: 'isSaved',
-  '검토 필요': 'isReview',
+const stageClassName: Record<StudioDocumentStage, string> = {
+  '기획 중': 'isDraft',
+  '수요조사 중': 'isSurvey',
+  '수요조사 완료': 'isSurveyDone',
+  '기획서 확정': 'isConfirmed',
 };
 
 export default function StudioDocumentsManager() {
@@ -62,26 +63,26 @@ export default function StudioDocumentsManager() {
   const [openMenuDocumentId, setOpenMenuDocumentId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ManagedStudioDocument | null>(null);
   const [isShowingEmptyState, setIsShowingEmptyState] = useState(false);
-  const [notice, setNotice] = useState('저장된 기획서를 다시 열거나 관리할 수 있습니다.');
+  const [notice, setNotice] = useState('');
 
   const visibleDocuments = useMemo(
     () => (isShowingEmptyState ? [] : documents),
     [documents, isShowingEmptyState],
   );
   const totalCount = visibleDocuments.length;
-  const recentlyUpdatedTitle = useMemo(() => visibleDocuments[0]?.title ?? '최근 문서 없음', [visibleDocuments]);
+  const firstDocumentId = visibleDocuments[0]?.id ?? 'demo-document-1';
 
   function startTitleEdit(document: ManagedStudioDocument) {
     setOpenMenuDocumentId(null);
     setEditingDocumentId(document.id);
     setEditingTitle(document.title);
-    setNotice('목록에서 제목 변경 UI를 확인하는 중입니다.');
+    setNotice('선택한 기획서 제목을 더미 목록에서 수정할 수 있습니다.');
   }
 
   function cancelTitleEdit() {
     setEditingDocumentId(null);
     setEditingTitle('');
-    setNotice('제목 변경을 취소했습니다.');
+    setNotice('제목 수정을 취소했습니다.');
   }
 
   function submitTitleEdit(event: FormEvent<HTMLFormElement>) {
@@ -98,15 +99,15 @@ export default function StudioDocumentsManager() {
           ? {
               ...document,
               title: nextTitle,
-              updatedAt: '방금 전',
-              status: '작성 중',
+              updatedAt: '2026. 08. 14. 09:30',
+              stage: '기획 중',
             }
           : document,
       ),
     );
     setEditingDocumentId(null);
     setEditingTitle('');
-    setNotice('더미 상태에서 제목이 변경되었습니다. 실제 API는 호출하지 않았습니다.');
+    setNotice('제목이 더미 목록에 반영되었습니다. 실제 저장 API는 호출하지 않았습니다.');
   }
 
   function confirmDeleteDocument() {
@@ -115,7 +116,7 @@ export default function StudioDocumentsManager() {
     }
 
     setDocuments((currentDocuments) => currentDocuments.filter((document) => document.id !== deleteTarget.id));
-    setNotice(`"${deleteTarget.title}" 문서를 더미 목록에서 제거했습니다.`);
+    setNotice(`"${deleteTarget.title}" 기획서를 더미 목록에서 제거했습니다.`);
     setDeleteTarget(null);
   }
 
@@ -147,37 +148,39 @@ export default function StudioDocumentsManager() {
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 최근 문서">
+      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 문서 관리 메뉴">
         <div className="studioHistoryHeader">
           <div>
-            <strong>최근 문서</strong>
+            <strong>문서 관리</strong>
             <small>MOIRA STUDIO</small>
           </div>
         </div>
 
-        <div className="studioHistoryList" aria-live="polite">
-          {visibleDocuments.length > 0 ? (
-            visibleDocuments.slice(0, 4).map((document) => (
-              <Link className="studioHistoryItem" href={`/studio/document/${document.id}`} key={document.id}>
-                <span>{document.status}</span>
-                <strong>{document.title}</strong>
-                <small>{document.updatedAt}</small>
-              </Link>
-            ))
-          ) : (
-            <div className="studioEmptyHistory">
-              <span aria-hidden="true">□</span>
-              <p>저장된 기획서가 없습니다.</p>
-            </div>
-          )}
+        <div className="studioHistoryList">
+          <Link className="studioHistoryItem isCurrent" href="/studio/documents">
+            <span>목록</span>
+            <strong>저장된 프로그램 기획서</strong>
+            <small>{totalCount}건을 최근 수정 순으로 확인합니다.</small>
+          </Link>
+          <Link className="studioHistoryItem" href={`/studio/document/${firstDocumentId}`}>
+            <span>빠른 이동</span>
+            <strong>최근 수정 기획서 열기</strong>
+            <small>가장 최근에 수정한 문서로 이동합니다.</small>
+          </Link>
+          <Link className="studioHistoryItem" href="/studio">
+            <span>새 작업</span>
+            <strong>새 프로그램 기획 시작</strong>
+            <small>조건을 입력하고 새 초안을 준비합니다.</small>
+          </Link>
         </div>
 
         <div className="studioQuickGuide">
-          <strong>문서 관리</strong>
+          <strong>진행 단계</strong>
           <ol>
-            <li>저장된 기획서를 목록에서 확인합니다.</li>
-            <li>다시 열기, 제목 변경, 삭제 흐름을 점검합니다.</li>
-            <li>새 기획으로 다음 초안을 시작합니다.</li>
+            <li>기획 중: 초안을 작성하거나 수정하는 단계입니다.</li>
+            <li>수요조사 중: 참여 수요를 확인하는 단계입니다.</li>
+            <li>수요조사 완료: 조사 결과를 기획서에 반영하는 단계입니다.</li>
+            <li>기획서 확정: 운영 전 최종안으로 확정된 단계입니다.</li>
           </ol>
         </div>
       </aside>
@@ -189,7 +192,7 @@ export default function StudioDocumentsManager() {
               <span className="studioBrandSpark" aria-hidden="true">✦</span>
               AI PROGRAM DOCUMENTS
             </p>
-            <h1 id="studio-documents-title">기획서 관리</h1>
+            <h1 id="studio-documents-title">프로그램 기획서 관리</h1>
             <p>저장된 프로그램 기획서를 확인하고 이어서 편집할 수 있습니다.</p>
           </div>
           <div className="studioDocumentsHeaderActions">
@@ -199,10 +202,10 @@ export default function StudioDocumentsManager() {
               type="button"
               onClick={() => {
                 setIsShowingEmptyState((current) => !current);
-                setNotice(isShowingEmptyState ? '더미 기획서 목록을 다시 표시합니다.' : '빈 목록 상태를 표시합니다.');
+                setNotice(isShowingEmptyState ? '저장된 더미 기획서 목록을 다시 표시합니다.' : '저장된 문서가 없을 때의 화면 예시입니다.');
               }}
             >
-              {isShowingEmptyState ? '목록 보기' : '빈 상태 보기'}
+              {isShowingEmptyState ? '저장 문서 목록 보기' : '빈 목록 예시 보기'}
             </button>
             <Link className="uiButton uiButtonPrimary" href="/studio">
               새 기획서 작성
@@ -210,28 +213,15 @@ export default function StudioDocumentsManager() {
           </div>
         </section>
 
-        <section className="studioDocumentsSummary" aria-label="기획서 관리 요약">
-          <div>
-            <span>최근 수정</span>
-            <strong>{recentlyUpdatedTitle}</strong>
-          </div>
-          <div>
-            <span>검토 필요</span>
-            <strong>{visibleDocuments.filter((document) => document.status === '검토 필요').length}건</strong>
-          </div>
-          <div>
-            <span>관리 상태</span>
-            <strong>{notice}</strong>
-          </div>
-        </section>
+        {notice ? <p className="studioDocumentsNotice" aria-live="polite">{notice}</p> : null}
 
         {visibleDocuments.length > 0 ? (
           <section className="studioDocumentsList" aria-label="저장된 기획서 목록">
             <div className="studioDocumentsListHead" aria-hidden="true">
               <span>기획서</span>
               <span>조건</span>
-              <span>상태</span>
-              <span>작업</span>
+              <span>진행 단계</span>
+              <span>문서 작업</span>
             </div>
 
             {visibleDocuments.map((document) => {
@@ -267,7 +257,7 @@ export default function StudioDocumentsManager() {
                       <>
                         <h2>{document.title}</h2>
                         <p>{document.preview}</p>
-                        <small>최근 수정 {document.updatedAt}</small>
+                        <small>최근 수정 날짜 : {document.updatedAt}</small>
                       </>
                     )}
                   </div>
@@ -288,14 +278,14 @@ export default function StudioDocumentsManager() {
                   </dl>
 
                   <div>
-                    <span className={`studioDocumentStatusBadge ${statusClassName[document.status]}`}>
-                      {document.status}
+                    <span className={`studioDocumentStatusBadge ${stageClassName[document.stage]}`}>
+                      {document.stage}
                     </span>
                   </div>
 
                   <div className="studioDocumentRowActions">
                     <Link className="uiButton uiButtonPrimary" href={`/studio/document/${document.id}`}>
-                      다시 열기
+                      기획서 열기
                     </Link>
                     <div className="studioDocumentMoreMenu">
                       <button
