@@ -2,13 +2,14 @@ import { Router, Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { prisma } from '../lib/prisma';
-import { authenticateJwt } from '../middleware/auth';
+import { authenticateOptionalJwt } from '../middleware/auth';
 
 type StudioDocumentStage = '기획 중' | '수요조사 중' | '수요조사 완료' | '기획서 확정';
 
 type StudioDocumentRow = {
   id: string;
-  ownerId: string;
+  ownerId: string | null;
+  anonymousOwnerId: string | null;
   title: string;
   content: string;
   stage: StudioDocumentStage;
@@ -36,14 +37,15 @@ const router = Router();
 const validStages = new Set<StudioDocumentStage>(['기획 중', '수요조사 중', '수요조사 완료', '기획서 확정']);
 let ensureTablePromise: Promise<void> | null = null;
 
-router.use(authenticateJwt);
+router.use(authenticateOptionalJwt);
 
 function ensureStudioDocumentTable() {
   ensureTablePromise ??= (async () => {
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "StudioDocument" (
         "id" TEXT NOT NULL,
-        "ownerId" TEXT NOT NULL,
+        "ownerId" TEXT,
+        "anonymousOwnerId" TEXT,
         "title" TEXT NOT NULL,
         "content" TEXT NOT NULL,
         "stage" TEXT NOT NULL DEFAULT '기획 중',
@@ -55,26 +57,31 @@ function ensureStudioDocumentTable() {
       )
     `);
     await prisma.$executeRawUnsafe(`
-      DELETE FROM "StudioDocument"
-      WHERE "ownerId" IS NULL
-    `);
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "StudioDocument"
-      ALTER COLUMN "ownerId" SET NOT NULL
-    `);
-    await prisma.$executeRawUnsafe(`
       CREATE INDEX IF NOT EXISTS "StudioDocument_ownerId_updatedAt_idx"
       ON "StudioDocument"("ownerId", "updatedAt")
     `);
     await prisma.$executeRawUnsafe(`
       ALTER TABLE "StudioDocument"
-      DROP CONSTRAINT IF EXISTS "StudioDocument_ownerId_fkey"
+      ADD COLUMN IF NOT EXISTS "anonymousOwnerId" TEXT
     `);
     await prisma.$executeRawUnsafe(`
-      ALTER TABLE "StudioDocument"
-      ADD CONSTRAINT "StudioDocument_ownerId_fkey"
-      FOREIGN KEY ("ownerId") REFERENCES "User"("id")
-      ON DELETE CASCADE ON UPDATE CASCADE
+      CREATE INDEX IF NOT EXISTS "StudioDocument_anonymousOwnerId_updatedAt_idx"
+      ON "StudioDocument"("anonymousOwnerId", "updatedAt")
+    `);
+    await prisma.$executeRawUnsafe(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM pg_constraint
+          WHERE conname = 'StudioDocument_ownerId_fkey'
+        ) THEN
+          ALTER TABLE "StudioDocument"
+          ADD CONSTRAINT "StudioDocument_ownerId_fkey"
+          FOREIGN KEY ("ownerId") REFERENCES "User"("id")
+          ON DELETE SET NULL ON UPDATE CASCADE;
+        END IF;
+      END $$
     `);
   })();
 
@@ -83,6 +90,26 @@ function ensureStudioDocumentTable() {
 
 function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function getOwnerScope(req: Request) {
+  if (req.user?.id) {
+    return {
+      ownerId: req.user.id,
+      anonymousOwnerId: null,
+    };
+  }
+
+  const anonymousOwnerId = readString(req.header('x-studio-anonymous-owner-id'));
+
+  return {
+    ownerId: null,
+    anonymousOwnerId: anonymousOwnerId || null,
+  };
+}
+
+function hasOwnerScope(scope: { ownerId: string | null; anonymousOwnerId: string | null }) {
+  return Boolean(scope.ownerId || scope.anonymousOwnerId);
 }
 
 function isStudioDocumentStage(value: unknown): value is StudioDocumentStage {
@@ -122,11 +149,20 @@ function serializeStudioDocument(document: StudioDocumentRow) {
   };
 }
 
-async function findOwnedDocument(documentId: string, ownerId: string) {
+async function findScopedDocument(documentId: string, scope: { ownerId: string | null; anonymousOwnerId: string | null }) {
   const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-    SELECT id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
     FROM "StudioDocument"
-    WHERE id = ${documentId} AND "ownerId" = ${ownerId}
+    WHERE id = ${documentId}
+      AND (
+        (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+        OR (
+          ${scope.ownerId}::text IS NULL
+          AND ${scope.anonymousOwnerId}::text IS NOT NULL
+          AND "ownerId" IS NULL
+          AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+        )
+      )
     LIMIT 1
   `;
 
@@ -136,10 +172,23 @@ async function findOwnedDocument(documentId: string, ownerId: string) {
 router.get('/', async (req: Request, res: Response) => {
   try {
     await ensureStudioDocumentTable();
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      SELECT id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
       FROM "StudioDocument"
-      WHERE "ownerId" = ${req.user!.id}
+      WHERE
+        (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+        OR (
+          ${scope.ownerId}::text IS NULL
+          AND ${scope.anonymousOwnerId}::text IS NOT NULL
+          AND "ownerId" IS NULL
+          AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+        )
       ORDER BY "updatedAt" DESC
     `;
 
@@ -168,18 +217,25 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
   try {
     await ensureStudioDocumentTable();
     const documentId = randomUUID();
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      INSERT INTO "StudioDocument" (id, "ownerId", title, content, stage, conditions, agenda)
+      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda)
       VALUES (
         ${documentId},
-        ${req.user!.id},
+        ${scope.ownerId},
+        ${scope.ownerId ? null : scope.anonymousOwnerId},
         ${title},
         ${content},
         ${stage},
         ${JSON.stringify(conditions)}::jsonb,
         ${agenda === null ? null : JSON.stringify(agenda)}::jsonb
       )
-      RETURNING id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
     `;
 
     return res.status(201).json({ document: serializeStudioDocument(documents[0]) });
@@ -192,7 +248,13 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
 router.get('/:documentId', async (req: Request<{ documentId: string }>, res: Response) => {
   try {
     await ensureStudioDocumentTable();
-    const document = await findOwnedDocument(req.params.documentId, req.user!.id);
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
+    const document = await findScopedDocument(req.params.documentId, scope);
 
     if (!document) {
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
@@ -224,7 +286,13 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
 
   try {
     await ensureStudioDocumentTable();
-    const currentDocument = await findOwnedDocument(req.params.documentId, req.user!.id);
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
+    const currentDocument = await findScopedDocument(req.params.documentId, scope);
 
     if (!currentDocument) {
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
@@ -253,8 +321,17 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>(Prisma.sql`
       UPDATE "StudioDocument"
       SET ${Prisma.join(updateFields)}
-      WHERE id = ${req.params.documentId} AND "ownerId" = ${req.user!.id}
-      RETURNING id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      WHERE id = ${req.params.documentId}
+        AND (
+          (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+          OR (
+            ${scope.ownerId}::text IS NULL
+            AND ${scope.anonymousOwnerId}::text IS NOT NULL
+            AND "ownerId" IS NULL
+            AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+          )
+        )
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
     `);
 
     return res.status(200).json({ document: serializeStudioDocument(documents[0]) });
@@ -267,9 +344,24 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
 router.delete('/:documentId', async (req: Request<{ documentId: string }>, res: Response) => {
   try {
     await ensureStudioDocumentTable();
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
     const result = await prisma.$executeRaw`
       DELETE FROM "StudioDocument"
-      WHERE id = ${req.params.documentId} AND "ownerId" = ${req.user!.id}
+      WHERE id = ${req.params.documentId}
+        AND (
+          (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+          OR (
+            ${scope.ownerId}::text IS NULL
+            AND ${scope.anonymousOwnerId}::text IS NOT NULL
+            AND "ownerId" IS NULL
+            AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+          )
+        )
     `;
 
     if (result === 0) {

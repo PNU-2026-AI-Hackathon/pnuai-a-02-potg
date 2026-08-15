@@ -290,16 +290,18 @@ model ProgramCaseDocumentChunkEmbedding {
 }
 
 model StudioDocument {
-  id        String   @id @default(uuid())
-  ownerId   String
-  title     String
-  content   String   @db.Text
-  stage     String   @default("기획 중")
-  conditions Json?
-  agenda    Json?
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(uuid())
+  ownerId          String?
+  anonymousOwnerId String?
+  title            String
+  content          String   @db.Text
+  stage            String   @default("기획 중")
+  conditions       Json?
+  agenda           Json?
+  owner            User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([ownerId, updatedAt])
+  @@index([anonymousOwnerId, updatedAt])
 }
