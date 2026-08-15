@@ -216,6 +216,15 @@ export function activityPlanFromOcrBoxes(boxes: OcrTextBox[]): string | null {
     if (/^[(（]\s*(?:ppt|피피티|강의|설명)/i.test(text) || /^설명\s*등\s*[)）]?$/.test(text)) continue;
     if (text) collected.push(text);
   }
+  /**
+   * 오른쪽 칸의 담당강사·교수방법이 활동 계획 뒤에 딸려 온다.
+   * (`… 포장하여 마무리! / (프린터물) 조민화 / Merry / Christmas`)
+   * 활동 계획의 각 단계는 번호나 글머리표로 시작하므로, 끝에서부터
+   * 단계로 보이지 않는 줄을 걷어낸다.
+   */
+  const isStep = (line: string) => /^\s*(?:\d+\s*[.)]|[-•·▪◦※])/.test(line);
+  while (collected.length && !isStep(collected[collected.length - 1])) collected.pop();
+
   const value = collected.join('\n').trim();
   return value.length >= 10 ? value : null;
 }
@@ -251,12 +260,26 @@ const BULLET_LABEL = new RegExp('^[·•◦∙・○●·.,\\-*]?\\s*'
  */
 export function labeledFromBulletText(text: string): Array<{ label: string; value: string }> {
   const result: Array<{ label: string; value: string }> = [];
+  let open: { label: string; value: string } | null = null;
   for (const line of text.split(/\r?\n/)) {
-    const match = line.trim().match(BULLET_LABEL);
-    if (!match) continue;
-    const value = normalizeExtractedKoreanSpacing(match[2]).trim();
-    if (value.length < 2 || result.some((item) => item.label === match[1])) continue;
-    result.push({ label: match[1], value });
+    const trimmed = line.trim();
+    const match = trimmed.match(BULLET_LABEL);
+    if (match) {
+      const value = normalizeExtractedKoreanSpacing(match[2]).trim();
+      open = null;
+      if (value.length < 2 || result.some((item) => item.label === match[1])) continue;
+      open = { label: match[1], value };
+      result.push(open);
+      continue;
+    }
+    /**
+     * 운영 내용은 한 줄로 끝나지 않고 아래에 활동별 설명이 이어진다.
+     * (`스토리텔링 학습 활동 …`, `발표 활동 ▲ …`, `만들기 활동 ▼ …`)
+     * 활동을 설명하는 줄만 이어 붙여 포스터의 다른 글까지 끌어오지 않는다.
+     */
+    if (open && /활동|학습|체험/.test(trimmed) && trimmed.length >= 10) {
+      open.value += `\n${normalizeExtractedKoreanSpacing(trimmed).trim()}`;
+    }
   }
   return result;
 }
@@ -474,7 +497,16 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
   const headerLine = lines[headerIndex];
   const labels = headerLabels(headerLine);
 
-  const sessionIndex = labels.findIndex((label) => SESSION_HEADER.test(label.text));
+  /**
+   * 좁은 칸들이 한 칸으로 묶여 오기도 한다(`차시(요일)시간`).
+   * 괄호를 걷어낸 뒤 회차 이름으로 시작하면 회차 칸으로 본다.
+   */
+  const isSessionHeader = (text: string) => {
+    const bare = text.replace(/\([^)]*\)/g, '');
+    return SESSION_HEADER.test(bare)
+      || /^(?:차시|회차|회기|시수|일시|일자|연번|순번|번호)/.test(bare);
+  };
+  const sessionIndex = labels.findIndex((label) => isSessionHeader(label.text));
   // 내용 칸은 회차 칸 오른쪽에서 가장 먼 것을 고른다. `일시 | 주제 | 교육 내용과 목표`처럼
   // 갈래 칸이 사이에 끼면 그 칸을 내용으로 잡아 정작 설명을 놓친다.
   const contentCandidates = labels.map((label, index) => ({ label, index }))
@@ -528,7 +560,20 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
       .sort((left, right) => left.top - right.top);
   }
   if (!numbers.length) return [];
-  // 날짜만 적힌 표는 번호가 없으므로 위에서부터 차례로 매긴다.
+  /**
+   * 좁은 칸들이 한 칸으로 묶이면 회차 번호와 날짜가 같은 칸에 들어온다(`차시(요일)시간`).
+   * 이때는 번호가 진짜 표시이고 날짜는 곁들이다.
+   *
+   * 반대로 `연번 | 교육일자`처럼 번호와 날짜가 서로 다른 칸에 있으면 둘 다 뜻이 있으므로
+   * 걸러내지 않는다. 가로 위치가 겹치는지로 두 경우를 가른다.
+   */
+  const explicit = numbers.filter((box) => readSessionCell(box.text)!.session != null);
+  const dates = numbers.filter((box) => readSessionCell(box.text)!.session == null);
+  if (explicit.length && dates.length) {
+    const explicitRight = Math.max(...explicit.map((box) => box.right));
+    const datesLeft = Math.min(...dates.map((box) => box.left));
+    if (datesLeft < explicitRight) numbers = explicit;
+  }
   const marks = numbers.map((box) => readSessionCell(box.text)!);
   const numbered = marks.every((mark) => mark.session != null);
 
