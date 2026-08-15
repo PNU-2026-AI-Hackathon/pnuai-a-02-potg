@@ -6,7 +6,8 @@ import {
   type StudioGenerateRequest,
 } from '@/lib/studio-draft';
 
-const geminiModels = [process.env.GEMINI_MODEL, 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
+const allowedGeminiModels = ['gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-2.5-flash'] as const;
+const defaultGeminiModels = [process.env.GEMINI_MODEL, ...allowedGeminiModels]
   .filter((model): model is string => typeof model === 'string' && model.trim().length > 0)
   .map((model) => model.trim());
 
@@ -35,7 +36,7 @@ function isUnsupportedModelError(message: string) {
   return lowerMessage.includes('not found') || lowerMessage.includes('not supported');
 }
 
-async function generateDraftWithModel(model: string, apiKey: string, prompt: string, conditions: Record<string, string[]>, agenda: StudioGenerateRequest['agenda']) {
+async function generateDraftWithModel(model: string, apiKey: string, prompt: string, conditions: Record<string, string[]>, agenda: StudioGenerateRequest['agenda'], referencesMarkdown?: string) {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
     {
@@ -53,6 +54,7 @@ async function generateDraftWithModel(model: string, apiKey: string, prompt: str
                   prompt,
                   conditions,
                   agenda,
+                  referencesMarkdown,
                 }),
               },
             ],
@@ -83,6 +85,11 @@ export async function POST(request: Request) {
     const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
     const conditions = body.conditions && typeof body.conditions === 'object' ? body.conditions : {};
     const agenda = body.agenda && typeof body.agenda === 'object' ? body.agenda : null;
+    const referencesMarkdown = typeof body.referencesMarkdown === 'string' ? body.referencesMarkdown.slice(0, 30000) : undefined;
+    const requestedModel = typeof body.model === 'string' && allowedGeminiModels.includes(body.model as typeof allowedGeminiModels[number])
+      ? body.model
+      : null;
+    const geminiModels = requestedModel ? [requestedModel] : defaultGeminiModels;
 
     if (!prompt) {
       return NextResponse.json({ error: '기획 메모를 입력해 주세요.' }, { status: 400 });
@@ -90,6 +97,7 @@ export async function POST(request: Request) {
 
     let lastErrorMessage = 'Gemini API 호출에 실패했습니다.';
     let generatedText: string | null = null;
+    let usedModel: string | null = null;
 
     for (const model of geminiModels) {
       const { response, responseBody } = await generateDraftWithModel(
@@ -98,6 +106,7 @@ export async function POST(request: Request) {
         prompt,
         conditions as Record<string, string[]>,
         agenda,
+        referencesMarkdown,
       );
 
       if (!response.ok) {
@@ -114,6 +123,7 @@ export async function POST(request: Request) {
       generatedText = readGeminiText(responseBody);
 
       if (generatedText) {
+        usedModel = model;
         break;
       }
 
@@ -137,7 +147,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '기획서 초안 형식이 올바르지 않습니다.' }, { status: 502 });
     }
 
-    return NextResponse.json({ draft: parsedDraft });
+    return NextResponse.json({ draft: parsedDraft, model: usedModel });
   } catch (error) {
     console.error('Studio generate route failed:', error);
 
