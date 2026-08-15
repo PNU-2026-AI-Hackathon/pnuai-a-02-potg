@@ -8,6 +8,7 @@ import {
   studioDocumentStages,
   studioDraftStorageKey,
   type StudioDraft,
+  type StudioReviseRequest,
   type StudioDocumentStage,
   type StudioSavedDocument,
 } from '@/lib/studio-draft';
@@ -167,10 +168,6 @@ const aiQuickRequests = [
   '홍보 문구처럼 참여하고 싶게 바꿔 주세요.',
 ];
 
-const dummyAiRevisionText =
-  '지역 주민의 디지털 활용 역량을 높이기 위해 스마트폰 기본 사용법과 생활 편의 서비스를 함께 익히는 참여형 프로그램입니다.';
-const dummyAiRevisionHighlight = '생활 편의 서비스를 함께 익히는 참여형 프로그램';
-
 type StudioDocumentEditorProps = {
   documentId: string;
 };
@@ -253,6 +250,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
   const [aiRequest, setAiRequest] = useState('');
   const [aiRequestState, setAiRequestState] = useState<AiRequestState>('idle');
+  const [aiRevisedText, setAiRevisedText] = useState('');
   const [aiReviewMessage, setAiReviewMessage] = useState('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
 
   const hasEmptyTitle = title.trim().length === 0;
@@ -452,6 +450,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     updateSelectedText();
     setIsAiPanelOpen(true);
     setAiRequestState('idle');
+    setAiRevisedText('');
     setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 
@@ -459,20 +458,52 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setIsAiPanelOpen(false);
     setAiRequest('');
     setAiRequestState('idle');
+    setAiRevisedText('');
     setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 
-  function handleAiRequest() {
-    if (!canRequestAiEdit) {
+  async function handleAiRequest() {
+    if (!canRequestAiEdit || !selectedRange) {
       return;
     }
 
     setAiRequestState('submitting');
-    setAiReviewMessage('더미 수정안을 준비하고 있습니다.');
-    window.setTimeout(() => {
+    setAiRevisedText('');
+    setAiReviewMessage('AI 수정안을 생성하고 있습니다.');
+
+    const contextSize = 260;
+    const requestBody: StudioReviseRequest = {
+      documentId: document.id,
+      selectedText,
+      instruction: aiRequest.trim(),
+      context: {
+        title,
+        before: content.slice(Math.max(0, selectedRange.start - contextSize), selectedRange.start),
+        after: content.slice(selectedRange.end, Math.min(content.length, selectedRange.end + contextSize)),
+      },
+    };
+
+    try {
+      const response = await fetch('/api/studio/revise', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const data = (await response.json()) as { revisedText?: string; error?: string };
+
+      if (!response.ok || !data.revisedText) {
+        throw new Error(data.error || 'AI 수정안을 생성하지 못했습니다.');
+      }
+
+      setAiRevisedText(data.revisedText);
       setAiRequestState('ready');
       setAiReviewMessage('수정안 준비 완료');
-    }, 720);
+    } catch (error) {
+      setAiRequestState('failed');
+      setAiReviewMessage(error instanceof Error ? error.message : 'AI 수정안을 생성하지 못했습니다.');
+    }
   }
 
   function handleAiRevisionApply() {
@@ -481,12 +512,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
 
   function handleAiRevisionRetry() {
     setAiRequestState('idle');
+    setAiRevisedText('');
     setAiReviewMessage('요청 입력 상태로 돌아왔습니다.');
-  }
-
-  function handleAiRevisionFailure() {
-    setAiRequestState('failed');
-    setAiReviewMessage('수정안 생성 실패 상태입니다.');
   }
 
   return (
@@ -687,8 +714,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                 </button>
               </div>
 
-              {aiRequestState === 'ready' ? (
-                <StudioAiRevisionCompare originalText={selectedText} revisedText={dummyAiRevisionText} />
+              {aiRequestState === 'ready' && aiRevisedText ? (
+                <StudioAiRevisionCompare originalText={selectedText} revisedText={aiRevisedText} />
               ) : (
                 <>
                   <section className="studioAiSelectedSource" aria-label="선택한 원문">
@@ -708,6 +735,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                       onChange={(event) => {
                         setAiRequest(event.target.value);
                         setAiRequestState('idle');
+                        setAiRevisedText('');
                         setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
                       }}
                     />
@@ -722,6 +750,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                         onClick={() => {
                           setAiRequest(request);
                           setAiRequestState('idle');
+                          setAiRevisedText('');
                           setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
                         }}
                       >
@@ -756,20 +785,12 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                       취소
                     </button>
                     <button
-                      className="uiButton uiButtonSecondary"
-                      type="button"
-                      disabled={aiRequestState === 'submitting'}
-                      onClick={handleAiRevisionFailure}
-                    >
-                      실패 상태
-                    </button>
-                    <button
                       className="uiButton uiButtonPrimary"
                       type="button"
                       disabled={!canRequestAiEdit}
                       onClick={handleAiRequest}
                     >
-                      {aiRequestState === 'submitting' ? '요청 중' : '수정 요청'}
+                      {aiRequestState === 'submitting' ? '요청 중' : aiRequestState === 'failed' ? '다시 요청' : '수정 요청'}
                     </button>
                   </>
                 )}
@@ -816,8 +837,6 @@ type StudioAiRevisionCompareProps = {
 };
 
 function StudioAiRevisionCompare({ originalText, revisedText }: StudioAiRevisionCompareProps) {
-  const [beforeHighlight, afterHighlight = ''] = revisedText.split(dummyAiRevisionHighlight);
-
   return (
     <section className="studioAiRevisionCompare" aria-labelledby="studio-ai-revision-compare-title">
       <div className="studioAiRevisionCompareHeader">
@@ -833,9 +852,7 @@ function StudioAiRevisionCompare({ originalText, revisedText }: StudioAiRevision
         <section className="studioAiRevisionPane isRevised" aria-labelledby="studio-ai-revised-title">
           <h4 id="studio-ai-revised-title">AI 수정안</h4>
           <p>
-            {beforeHighlight}
-            <mark>{dummyAiRevisionHighlight}</mark>
-            {afterHighlight}
+            <mark>{revisedText}</mark>
           </p>
         </section>
       </div>

@@ -12,6 +12,17 @@ export type StudioGenerateRequest = {
   model?: string;
 };
 
+export type StudioReviseRequest = {
+  documentId: string;
+  selectedText: string;
+  instruction: string;
+  context?: {
+    title?: string;
+    before?: string;
+    after?: string;
+  };
+};
+
 export const studioDocumentStages = ['기획 중', '수요조사 중', '수요조사 완료', '기획서 확정'] as const;
 
 export type StudioDocumentStage = (typeof studioDocumentStages)[number];
@@ -142,6 +153,23 @@ export function parseStudioDraft(value: unknown): StudioDraft | null {
   };
 }
 
+export function parseStudioRevision(value: unknown) {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const revisedText = getTextValue(record.revisedText);
+
+  if (!revisedText) {
+    return null;
+  }
+
+  return {
+    revisedText,
+  };
+}
+
 function formatConditionList(conditions: Record<string, string[]>) {
   const entries = Object.entries(conditions)
     .map(([key, values]) => {
@@ -199,6 +227,39 @@ export function buildStudioPrompt(input: StudioGenerateRequest) {
     '  "details": [""],',
     '  "expectedEffects": "",',
     '  "notes": [""]',
+    '}',
+  ].join('\n');
+}
+
+export function buildStudioRevisionPrompt(input: StudioReviseRequest) {
+  const title = input.context?.title?.trim() || '제목 없음';
+  const before = input.context?.before?.trim() || '없음';
+  const after = input.context?.after?.trim() || '없음';
+
+  return [
+    '당신은 도서관 프로그램 기획서를 다듬는 한국어 보조 AI입니다.',
+    '사용자가 선택한 일부 문장만 수정하세요.',
+    '기획서 전체를 다시 작성하지 말고, 선택 원문의 의미와 길이를 크게 벗어나지 않는 수정안을 작성하세요.',
+    '사용자의 수정 요청을 반영하되 공공기관 문서에 어울리는 자연스러운 한국어 문장으로 정리하세요.',
+    '반드시 아래 JSON 형식만 반환하고, 설명 문장이나 코드 블록은 포함하지 마세요.',
+    '',
+    '입력값',
+    `- 문서 ID: ${input.documentId}`,
+    `- 기획서 제목: ${title}`,
+    `- 수정 요청: ${input.instruction}`,
+    '',
+    '선택 원문',
+    input.selectedText,
+    '',
+    '선택 원문 앞 문맥',
+    before,
+    '',
+    '선택 원문 뒤 문맥',
+    after,
+    '',
+    '출력 예시 JSON 스키마',
+    '{',
+    '  "revisedText": ""',
     '}',
   ].join('\n');
 }
