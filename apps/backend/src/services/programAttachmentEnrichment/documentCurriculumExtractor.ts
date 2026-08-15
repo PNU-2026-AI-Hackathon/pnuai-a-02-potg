@@ -176,13 +176,13 @@ function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
   return rows;
 }
 
-const PDF_LABELS = /^(?:프로그램명|강좌명|목표|프로그램소개|강의목표)$/;
-
 /**
- * HWP는 기본정보도 같은 표 안에 있으므로 라벨 범위를 넓게 잡는다.
- * 평탄화 텍스트 경로가 라벨 사전으로 뽑던 항목을 표 셀에서 그대로 얻기 위한 것이다.
+ * 기본정보도 계획서 표 안에 함께 있으므로 라벨 범위를 넓게 잡는다.
+ *
+ * 처음에는 제목·목표만 뽑았으나, 그러면 준비물·교재비·강의실 준비처럼
+ * 표에 분명히 적힌 항목이 화면에 실리지 않는다. HWP·PDF 모두 같은 사전을 쓴다.
  */
-const HWP_LABELS = new RegExp('^(?:'
+const DOCUMENT_LABELS = new RegExp('^(?:'
   + '프로그램명|강좌명|강의명|목표|프로그램소개|강의목표'
   + '|교육대상|대상|교육기간|운영기간|교육일시|교육시간|운영횟수'
   + '|교육장소|담당강사|강사명|강사성명'
@@ -190,7 +190,7 @@ const HWP_LABELS = new RegExp('^(?:'
   + '|수강인원|참여인원'
   + ')$');
 
-function labeledFromTables(blocks: IRBlock[], labels: RegExp = PDF_LABELS) {
+function labeledFromTables(blocks: IRBlock[], labels: RegExp = DOCUMENT_LABELS) {
   const result: Array<{ label: string; value: string }> = [];
   for (const block of blocks) for (const row of block.table?.cells ?? []) {
     for (let index = 0; index < row.length; index += 1) {
@@ -324,7 +324,7 @@ export async function extractHwpProgramSections(filePath: string): Promise<HwpPr
     index: index + 1,
     text: blocks.map(blockText).filter(Boolean).join('\n\n'),
     curriculum: blocks.flatMap(curriculumFromTable).sort((left, right) => left.session - right.session),
-    labeled: [...labeledFromTables(blocks, HWP_LABELS), ...freeTextSectionsFrom(blocks)],
+    labeled: [...labeledFromTables(blocks, DOCUMENT_LABELS), ...freeTextSectionsFrom(blocks)],
     notices: [...new Set(noticeLinesFrom(blocks))],
   }));
 }

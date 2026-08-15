@@ -230,6 +230,49 @@ const INFO_LABEL = /^(?:프로그램명|강좌명|강의명|목표|강의목표|
 const BOUNDARY_LABEL = /^(?:차시|회차|회기|시수|세부교육내용|교육내용|교수방법|개요|수강정보|준비사항|비고)$/;
 
 /**
+ * 글자 사이를 벌려 쓴 이름을 하나로 합친다.
+ *
+ * `목  표`, `개  요`처럼 칸을 채우려고 글자를 벌려 쓴 이름은 OCR이 조각으로 준다.
+ * 값이 두 줄이면 이름이 세로 가운데 놓여 조각들이 서로 다른 줄로 갈리기도 한다.
+ * 이름으로 합쳐질 때만 묶으므로 값이 엉뚱하게 붙지 않는다.
+ */
+function mergeSplitLabels(boxes: OcrTextBox[]): OcrTextBox[] {
+  const unit = median(boxes.map((box) => Math.max(1, box.bottom - box.top)));
+  if (!unit) return boxes;
+  const short = boxes.filter((box) => box.text.replace(/\s+/g, '').length <= 2);
+  const merged: OcrTextBox[] = [];
+  const used = new Set<OcrTextBox>();
+
+  for (const box of [...short].sort((left, right) => left.left - right.left)) {
+    if (used.has(box)) continue;
+    let group = [box];
+    let text = box.text.replace(/\s+/g, '');
+    for (const next of [...short].sort((left, right) => left.left - right.left)) {
+      if (used.has(next) || group.includes(next)) continue;
+      const last = group[group.length - 1];
+      const closeEnough = next.left - last.right <= unit * 2
+        && next.left >= last.left
+        && Math.abs((next.top + next.bottom) / 2 - (last.top + last.bottom) / 2) <= unit;
+      if (!closeEnough) continue;
+      group = [...group, next];
+      text += next.text.replace(/\s+/g, '');
+      if (INFO_LABEL.test(text) || BOUNDARY_LABEL.test(text)) break;
+    }
+    if (group.length < 2 || !(INFO_LABEL.test(text) || BOUNDARY_LABEL.test(text))) continue;
+    for (const member of group) used.add(member);
+    merged.push({
+      text,
+      left: Math.min(...group.map((member) => member.left)),
+      right: Math.max(...group.map((member) => member.right)),
+      top: Math.min(...group.map((member) => member.top)),
+      bottom: Math.max(...group.map((member) => member.bottom)),
+      confidence: Math.min(...group.map((member) => member.confidence)),
+    });
+  }
+  return [...boxes.filter((box) => !used.has(box)), ...merged];
+}
+
+/**
  * 기본정보 칸을 위치로 읽는다.
  *
  * 평탄한 추출문은 읽기 순서가 표를 따라가지 않아 값이 엉뚱한 이름 뒤에 붙는다.
@@ -240,7 +283,7 @@ const BOUNDARY_LABEL = /^(?:차시|회차|회기|시수|세부교육내용|교�
  * 이름 없이 이어지는 아랫줄은 같은 가로 자리에 있을 때만 값에 덧붙인다.
  */
 export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string; value: string }> {
-  const lines = groupLines(boxes);
+  const lines = groupLines(mergeSplitLabels(boxes));
   if (!lines.length) return [];
 
   const unit = median(boxes.map((box) => Math.max(1, box.bottom - box.top)));
