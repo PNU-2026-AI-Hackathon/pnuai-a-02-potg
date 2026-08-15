@@ -9,6 +9,7 @@ type StudioDocumentStage = '기획 중' | '수요조사 중' | '수요조사 완
 type StudioDocumentRow = {
   id: string;
   ownerId: string | null;
+  anonymousOwnerId: string | null;
   title: string;
   content: string;
   stage: StudioDocumentStage;
@@ -44,6 +45,7 @@ function ensureStudioDocumentTable() {
       CREATE TABLE IF NOT EXISTS "StudioDocument" (
         "id" TEXT NOT NULL,
         "ownerId" TEXT,
+        "anonymousOwnerId" TEXT,
         "title" TEXT NOT NULL,
         "content" TEXT NOT NULL,
         "stage" TEXT NOT NULL DEFAULT '기획 중',
@@ -57,6 +59,14 @@ function ensureStudioDocumentTable() {
     await prisma.$executeRawUnsafe(`
       CREATE INDEX IF NOT EXISTS "StudioDocument_ownerId_updatedAt_idx"
       ON "StudioDocument"("ownerId", "updatedAt")
+    `);
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "StudioDocument"
+      ADD COLUMN IF NOT EXISTS "anonymousOwnerId" TEXT
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "StudioDocument_anonymousOwnerId_updatedAt_idx"
+      ON "StudioDocument"("anonymousOwnerId", "updatedAt")
     `);
     await prisma.$executeRawUnsafe(`
       DO $$
@@ -80,6 +90,26 @@ function ensureStudioDocumentTable() {
 
 function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function getOwnerScope(req: Request) {
+  if (req.user?.id) {
+    return {
+      ownerId: req.user.id,
+      anonymousOwnerId: null,
+    };
+  }
+
+  const anonymousOwnerId = readString(req.header('x-studio-anonymous-owner-id'));
+
+  return {
+    ownerId: null,
+    anonymousOwnerId: anonymousOwnerId || null,
+  };
+}
+
+function hasOwnerScope(scope: { ownerId: string | null; anonymousOwnerId: string | null }) {
+  return Boolean(scope.ownerId || scope.anonymousOwnerId);
 }
 
 function readStage(value: unknown): StudioDocumentStage {
@@ -121,14 +151,19 @@ function serializeStudioDocument(document: StudioDocumentRow) {
   };
 }
 
-async function findOwnedDocument(documentId: string, ownerId: string | null) {
+async function findScopedDocument(documentId: string, scope: { ownerId: string | null; anonymousOwnerId: string | null }) {
   const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-    SELECT id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
     FROM "StudioDocument"
     WHERE id = ${documentId}
       AND (
-        (${ownerId}::text IS NULL AND "ownerId" IS NULL)
-        OR "ownerId" = ${ownerId}
+        (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+        OR (
+          ${scope.ownerId}::text IS NULL
+          AND ${scope.anonymousOwnerId}::text IS NOT NULL
+          AND "ownerId" IS NULL
+          AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+        )
       )
     LIMIT 1
   `;
@@ -139,13 +174,23 @@ async function findOwnedDocument(documentId: string, ownerId: string | null) {
 router.get('/', async (req: Request, res: Response) => {
   try {
     await ensureStudioDocumentTable();
-    const ownerId = req.user?.id ?? null;
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      SELECT id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
       FROM "StudioDocument"
       WHERE
-        (${ownerId}::text IS NULL AND "ownerId" IS NULL)
-        OR "ownerId" = ${ownerId}
+        (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+        OR (
+          ${scope.ownerId}::text IS NULL
+          AND ${scope.anonymousOwnerId}::text IS NOT NULL
+          AND "ownerId" IS NULL
+          AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+        )
       ORDER BY "updatedAt" DESC
     `;
 
@@ -170,19 +215,25 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
   try {
     await ensureStudioDocumentTable();
     const documentId = randomUUID();
-    const ownerId = req.user?.id ?? null;
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      INSERT INTO "StudioDocument" (id, "ownerId", title, content, stage, conditions, agenda)
+      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda)
       VALUES (
         ${documentId},
-        ${ownerId},
+        ${scope.ownerId},
+        ${scope.ownerId ? null : scope.anonymousOwnerId},
         ${title},
         ${content},
         ${stage},
         ${JSON.stringify(conditions)}::jsonb,
         ${agenda === null ? null : JSON.stringify(agenda)}::jsonb
       )
-      RETURNING id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
     `;
 
     return res.status(201).json({ document: serializeStudioDocument(documents[0]) });
@@ -195,7 +246,13 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
 router.get('/:documentId', async (req: Request<{ documentId: string }>, res: Response) => {
   try {
     await ensureStudioDocumentTable();
-    const document = await findOwnedDocument(req.params.documentId, req.user?.id ?? null);
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
+    const document = await findScopedDocument(req.params.documentId, scope);
 
     if (!document) {
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
@@ -223,8 +280,13 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
 
   try {
     await ensureStudioDocumentTable();
-    const ownerId = req.user?.id ?? null;
-    const currentDocument = await findOwnedDocument(req.params.documentId, ownerId);
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
+    const currentDocument = await findScopedDocument(req.params.documentId, scope);
 
     if (!currentDocument) {
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
@@ -239,10 +301,15 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
         "updatedAt" = CURRENT_TIMESTAMP
       WHERE id = ${req.params.documentId}
         AND (
-          (${ownerId}::text IS NULL AND "ownerId" IS NULL)
-          OR "ownerId" = ${ownerId}
+          (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+          OR (
+            ${scope.ownerId}::text IS NULL
+            AND ${scope.anonymousOwnerId}::text IS NOT NULL
+            AND "ownerId" IS NULL
+            AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+          )
         )
-      RETURNING id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
     `;
 
     return res.status(200).json({ document: serializeStudioDocument(documents[0]) });
@@ -255,13 +322,23 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
 router.delete('/:documentId', async (req: Request<{ documentId: string }>, res: Response) => {
   try {
     await ensureStudioDocumentTable();
-    const ownerId = req.user?.id ?? null;
+    const scope = getOwnerScope(req);
+
+    if (!hasOwnerScope(scope)) {
+      return res.status(401).json({ code: 'STUDIO_DOCUMENT_OWNER_REQUIRED', error: 'Studio document owner is required.' });
+    }
+
     const result = await prisma.$executeRaw`
       DELETE FROM "StudioDocument"
       WHERE id = ${req.params.documentId}
         AND (
-          (${ownerId}::text IS NULL AND "ownerId" IS NULL)
-          OR "ownerId" = ${ownerId}
+          (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
+          OR (
+            ${scope.ownerId}::text IS NULL
+            AND ${scope.anonymousOwnerId}::text IS NOT NULL
+            AND "ownerId" IS NULL
+            AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
+          )
         )
     `;
 

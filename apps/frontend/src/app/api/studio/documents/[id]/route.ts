@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getBackendAuthHeaders } from '@/lib/backend-auth';
+import { getBackendStudioDocumentHeaders } from '@/lib/backend-auth';
 import { getBackendUrl } from '@/lib/backend-url';
 
 type RouteContext = {
@@ -25,7 +25,7 @@ async function getStudioDocumentUrl(context: RouteContext) {
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const response = await fetch(await getStudioDocumentUrl(context), {
-      headers: await getBackendAuthHeaders(),
+      headers: await getBackendStudioDocumentHeaders(),
       cache: 'no-store',
     });
 
@@ -43,7 +43,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        ...(await getBackendAuthHeaders()),
+        ...(await getBackendStudioDocumentHeaders()),
       },
       body: await request.text(),
     });
@@ -60,7 +60,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const response = await fetch(await getStudioDocumentUrl(context), {
       method: 'DELETE',
-      headers: await getBackendAuthHeaders(),
+      headers: await getBackendStudioDocumentHeaders(),
     });
 
     return NextResponse.json(await readBackendResponse(response), { status: response.status });
