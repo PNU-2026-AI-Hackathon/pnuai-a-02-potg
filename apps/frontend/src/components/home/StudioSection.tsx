@@ -25,6 +25,7 @@ export const studioFeatures = [
 
 type ReusableStudioBlockProps = {
   className?: string;
+  features?: typeof studioFeatures;
 };
 
 export function StudioPreview({ className = '' }: ReusableStudioBlockProps) {
@@ -74,10 +75,13 @@ export function StudioPreview({ className = '' }: ReusableStudioBlockProps) {
   );
 }
 
-export function StudioFeatureList({ className = '' }: ReusableStudioBlockProps) {
+export function StudioFeatureList({
+  className = '',
+  features = studioFeatures,
+}: ReusableStudioBlockProps) {
   return (
     <ol className={`studioFeatureList ${className}`.trim()} aria-label="모이라 스튜디오 이용 과정">
-      {studioFeatures.map((feature) => (
+      {features.map((feature) => (
         <li key={feature.number}>
           <span>{feature.number}</span>
           <div>
