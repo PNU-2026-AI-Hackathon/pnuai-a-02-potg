@@ -8,6 +8,8 @@ export type StudioGenerateRequest = {
   prompt: string;
   conditions: Record<string, string[]>;
   agenda?: StudioAgendaInput | null;
+  referencesMarkdown?: string;
+  model?: string;
 };
 
 export type StudioDocumentStage = '기획 중' | '수요조사 중' | '수요조사 완료' | '기획서 확정';
@@ -173,6 +175,18 @@ export function buildStudioPrompt(input: StudioGenerateRequest) {
     '선택 조건',
     formatConditionList(input.conditions),
     agendaBlock,
+    '',
+    '유사 프로그램 참고 자료',
+    input.referencesMarkdown?.trim() || '- 없음',
+    '',
+    '참고 자료 사용 규칙',
+    '- 참고 자료에 있는 프로그램 문장을 그대로 복사하지 마세요.',
+    '- 참고 프로그램의 회차 제목, 활동명, 만들기 결과물을 그대로 재사용하지 말고 사용자 요청에 맞는 새로운 활동으로 재구성하세요.',
+    '- 여러 참고 자료가 있으면 공통 구조만 종합하고 특정 프로그램 하나를 복제하지 마세요.',
+    '- 참고 자료에 없는 회차별 내용은 신규 제안임을 notes에 명시하세요.',
+    '- 상세도가 낮은 자료보다 회차별 원문이 있는 자료를 우선 참고하세요.',
+    '- 사용자가 정하지 않은 모집 인원, 날짜, 예산, 재료비, 운영 지원 여부는 임의로 확정하지 말고 "미정(담당자 확정 필요)"로 작성하세요.',
+    '- 참고 프로그램의 기존 날짜와 모집 인원을 새 기획서의 운영 조건으로 복사하지 마세요.',
     '',
     '출력 예시 JSON 스키마',
     '{',
