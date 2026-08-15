@@ -5335,7 +5335,7 @@ html:has(.moiraPage) {
   overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(20, 110, 86, 0.08), transparent 32%),
-    linear-gradient(180deg, #f8fbf8 0%, #ffffff 100%);
+    linear-gradient(180deg, #f8fbf8 0%, #ffffff 58%, #eef5f0 100%);
   padding-block: clamp(62px, 7vw, 92px);
 }
 
@@ -6270,7 +6270,7 @@ html:has(.moiraPage) {
   --intro-boundary-target: #f9fbf9;
   position: relative;
   overflow: hidden;
-  background: #eef5f0;
+  background: linear-gradient(180deg, #eef5f0 0%, #eef5f0 64%, #f9fbf9 100%);
 }
 
 .introPage .valueSection::after {
