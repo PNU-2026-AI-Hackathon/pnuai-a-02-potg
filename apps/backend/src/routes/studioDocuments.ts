@@ -230,16 +230,32 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
     }
 
-    const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
+    const updateFields: Prisma.Sql[] = [];
+
+    if (title !== undefined) {
+      updateFields.push(Prisma.sql`title = ${title}`);
+    }
+
+    if (content !== undefined) {
+      updateFields.push(Prisma.sql`content = ${content}`);
+    }
+
+    if (stage !== undefined) {
+      updateFields.push(Prisma.sql`stage = ${stage}`);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(200).json({ document: serializeStudioDocument(currentDocument) });
+    }
+
+    updateFields.push(Prisma.sql`"updatedAt" = CURRENT_TIMESTAMP`);
+
+    const documents = await prisma.$queryRaw<StudioDocumentRow[]>(Prisma.sql`
       UPDATE "StudioDocument"
-      SET
-        title = ${title ?? currentDocument.title},
-        content = ${content ?? currentDocument.content},
-        stage = ${stage ?? currentDocument.stage},
-        "updatedAt" = CURRENT_TIMESTAMP
+      SET ${Prisma.join(updateFields)}
       WHERE id = ${req.params.documentId} AND "ownerId" = ${req.user!.id}
       RETURNING id, "ownerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
-    `;
+    `);
 
     return res.status(200).json({ document: serializeStudioDocument(documents[0]) });
   } catch (error) {
