@@ -7,6 +7,15 @@ function integerSetting(name: string, value: string | undefined, fallback: numbe
   return parsed;
 }
 
+function ratioSetting(name: string, value: string | undefined, fallback: number) {
+  if (value === undefined || value.trim() === '') return fallback;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+    throw new Error(`${name} must be a number from 0 to 1.`);
+  }
+  return parsed;
+}
+
 export type AttachmentOcrConfig = {
   imageMaxWidth: number;
   imageMaxHeight: number;
@@ -19,6 +28,10 @@ export type AttachmentOcrConfig = {
   pdfRenderDpi: number;
   pdfOcrMaxPages: number;
   pdfRenderMaxBytes: number;
+  /** 한 번의 배치에서 허용하는 OCR API 호출 총량. 도달하면 남은 대상은 처리하지 않고 중단한다. */
+  ocrMaxCalls: number;
+  /** 이 값보다 평균 신뢰도가 낮으면 자동 반영하지 않고 사람 검수로 보낸다. */
+  ocrMinConfidence: number;
 };
 
 export function getAttachmentOcrConfig(environment: NodeJS.ProcessEnv = process.env): AttachmentOcrConfig {
@@ -34,5 +47,7 @@ export function getAttachmentOcrConfig(environment: NodeJS.ProcessEnv = process.
     pdfRenderDpi: integerSetting('ATTACHMENT_PDF_RENDER_DPI', environment.ATTACHMENT_PDF_RENDER_DPI, 200, 72, 600),
     pdfOcrMaxPages: integerSetting('ATTACHMENT_PDF_OCR_MAX_PAGES', environment.ATTACHMENT_PDF_OCR_MAX_PAGES, 50, 1, 50),
     pdfRenderMaxBytes: integerSetting('ATTACHMENT_PDF_RENDER_MAX_BYTES', environment.ATTACHMENT_PDF_RENDER_MAX_BYTES, 20 * 1024 * 1024, 1, 100 * 1024 * 1024),
+    ocrMaxCalls: integerSetting('ATTACHMENT_OCR_MAX_CALLS', environment.ATTACHMENT_OCR_MAX_CALLS, 300, 1, 2_000),
+    ocrMinConfidence: ratioSetting('ATTACHMENT_OCR_MIN_CONFIDENCE', environment.ATTACHMENT_OCR_MIN_CONFIDENCE, 0.8),
   };
 }

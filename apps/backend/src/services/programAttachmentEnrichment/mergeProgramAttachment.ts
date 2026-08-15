@@ -28,6 +28,9 @@ const LABEL_KIND: Record<string, 'title' | 'target' | 'capacity' | 'instructor' 
   학습자준비물: 'materials', 강의실준비: 'materials', 프로그램소개: 'content', 강사성명: 'instructor',
   '프로그램 소개': 'content', 교육내용: 'content', 강의목표: 'content', 목표: 'content', 참고자료: 'content',
   '온라인 가능 여부': 'online', 온라인가능여부: 'online',
+  // 표가 아니라 번호 붙은 문단으로 적은 계획서에서 나오는 라벨
+  '강의 개요': 'content', 강의개요: 'content', '강의 운영 방법': 'content', 강의운영방법: 'content',
+  '강의 목표': 'content', '프로그램 개요': 'content', 프로그램개요: 'content',
 };
 
 function comparable(value: unknown) {
@@ -88,7 +91,11 @@ function standardBasicInfo(program: NormalizedProgram) {
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
 }
 
-function combinedBasicInfo(program: NormalizedProgram, supplements: Array<{ label: string; value: string }>) {
+/**
+ * 첨부 없이 본문만으로 게시하는 레코드도 같은 기본정보 구조를 써야 하므로 내보낸다.
+ * 첨부 보강이 없으면 `supplements`는 빈 배열이다.
+ */
+export function combinedBasicInfo(program: NormalizedProgram, supplements: Array<{ label: string; value: string }>) {
   const result = standardBasicInfo(program);
   for (const supplement of supplements) {
     const canonicalLabel = /^(?:교육기간|운영기간)$/.test(supplement.label) ? '교육기간' : supplement.label;
@@ -211,7 +218,9 @@ export function mergeProgramAttachment(input: MergeInput) {
       }
       continue;
     }
-    if (kind === 'fee' && /^(?:없음|0원|무료|[-ㅡ—])$/i.test(comparable(item.value))) {
+    // 줄표만 적힌 재료비·교재비는 `없음`을 뜻한다.
+    // `comparable()`은 기호를 지우므로 줄표는 원문 값에서 직접 판정해야 한다.
+    if (kind === 'fee' && (/^[-ㅡ—–]+$/.test(item.value.trim()) || /^(?:없음|0원|무료)$/i.test(comparable(item.value)))) {
       const value = /무료/.test(item.value) ? '무료' : '없음';
       if (!basicInfoSupplement.some((candidate) => candidate.label === item.label)) {
         basicInfoSupplement.push({ label: item.label, value });

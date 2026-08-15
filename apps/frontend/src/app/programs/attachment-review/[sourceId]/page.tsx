@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getProgramAttachmentReview } from '@/lib/program-attachment-review';
+import { getProgramAttachmentReview, REVIEW_STATUS_LABEL } from '@/lib/program-attachment-review';
 
 type PageProps = { params: Promise<{ sourceId: string }> };
 
@@ -19,18 +19,49 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
       <section className="uiContainer programShell">
         <nav className="communityBreadcrumb"><Link href="/programs/attachment-review">첨부 정제 검수</Link><span>/</span><span>{review.sourceId}</span></nav>
         <header className="attachmentReviewDetailHeader">
-          <div><p className="uiEyebrow">Comparison Review</p><h1>{review.title}</h1><p>{review.matchReason}</p></div>
-          <div className="attachmentReviewActions"><a className="uiButton uiButtonSecondary" href={review.sourceUrl} target="_blank" rel="noreferrer">원사이트 열기</a><a className="uiButton uiButtonPrimary" href={review.attachment.url} target="_blank" rel="noreferrer">첨부파일 열기</a></div>
+          <div><p className="uiEyebrow">Comparison Review</p><h1>{review.title}</h1><p>{review.matchReason || REVIEW_STATUS_LABEL[review.reviewStatus]}</p></div>
+          <div className="attachmentReviewActions">
+            <a className="uiButton uiButtonSecondary" href={review.sourceUrl} target="_blank" rel="noreferrer">원사이트 열기</a>
+            {review.attachment?.url ? <a className="uiButton uiButtonPrimary" href={review.attachment.url} target="_blank" rel="noreferrer">첨부파일 열기</a> : null}
+          </div>
         </header>
 
         <section className="attachmentMatchBanner">
-          <strong>{review.attachment.detectedType} · {review.selectedPages.length ? `${review.selectedPages.join(', ')}페이지 선택` : '전체 문서 선택'}</strong>
-          <span>일치 신뢰도 {Math.round(review.confidence * 100)}%</span>
+          <strong>
+            {review.attachment
+              ? `${review.attachment.detectedType} · ${review.selectedPages.length
+                ? `${review.selectedPages.join(', ')}${review.attachment.detectedType === 'HWP' ? '번째 구간' : '페이지'} 선택`
+                : '전체 문서 선택'}`
+              : REVIEW_STATUS_LABEL[review.reviewStatus]}
+          </strong>
+          {review.attachment ? <span>일치 신뢰도 {Math.round(review.confidence * 100)}%</span> : null}
+          <span>{review.bodyPublishable ? '본문 게시 가능' : '본문 없음'}</span>
         </section>
+
+        {review.failure ? (
+          <section className="attachmentExtractionWarnings">
+            <h3>추출 실패</h3>
+            <ul><li>{review.failure.code} — {review.failure.message}{review.failure.retryable ? ' (재시도 가능)' : ''}</li></ul>
+          </section>
+        ) : null}
+
+        {review.reviewStatus === 'OCR_REQUIRED' ? (
+          <section className="attachmentExtractionWarnings">
+            <h3>OCR 대기 {review.ocrTargets.length}건</h3>
+            <p className="attachmentSourceHint">
+              {review.bodyPublishable
+                ? '본문만으로 먼저 게시할 수 있습니다. 회차 등 상세 정보는 OCR 이후 보완됩니다.'
+                : '본문이 없어 OCR 전까지 게시할 내용이 없습니다.'}
+            </p>
+            <ul>{review.ocrTargets.map((target) => (
+              <li key={target.url}><a href={target.url} target="_blank" rel="noreferrer">{target.name}</a></li>
+            ))}</ul>
+          </section>
+        ) : null}
 
         <section className="attachmentComparisonGrid" aria-label="원문과 첨부 비교">
           <article><h2>1. 공공예약 본문</h2><p className="attachmentSourceHint">원사이트에서 크롤링한 본문</p><pre>{review.originalBody || '본문 없음'}</pre></article>
-          <article><h2>2. 자동 선택한 첨부 구간</h2><p className="attachmentSourceHint">{review.attachment.name}</p><pre>{review.selectedText || '선택된 텍스트 없음'}</pre></article>
+          <article><h2>2. 자동 선택한 첨부 구간</h2><p className="attachmentSourceHint">{review.attachment?.name ?? '문서 첨부 없음'}</p><pre>{review.selectedText || '선택된 텍스트 없음'}</pre></article>
         </section>
 
         <section className="attachmentAuditPanel">
@@ -58,7 +89,7 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
 
           <section className="programAttachments attachmentPreviewSection" aria-labelledby="attachment-files"><h2 id="attachment-files">첨부파일</h2>{review.attachments.length ? <ul>{review.attachments.map((attachment) => <li key={attachment.url}><a href={attachment.url} target="_blank" rel="noreferrer">{attachment.name}</a></li>)}</ul> : <p className="attachmentEmptyState">첨부파일이 없습니다.</p>}</section>
         </section>
-        <div className="programDetailActions"><Link className="uiButton uiButtonSecondary" href="/programs/attachment-review">대표 표본 목록</Link></div>
+        <div className="programDetailActions"><Link className="uiButton uiButtonSecondary" href={`/programs/attachment-review?status=${review.reviewStatus}`}>검수 목록으로</Link></div>
       </section>
     </main>
   );

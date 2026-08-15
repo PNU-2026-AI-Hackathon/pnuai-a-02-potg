@@ -99,18 +99,32 @@ function headingCandidates(text: string) {
   if (firstLine && firstLine.length <= 100) candidates.push(firstLine);
   const plan = heading.match(/^(.{0,60}?(?:독서지도|그림책\s*지도)\s*계획안)/);
   if (plan) candidates.push(plan[1]);
-  const named = heading.match(/(?:프로그램\s*명|강\s*좌\s*명)\s+(.+?)(?=프로그램\s*소개|개\s*요|목\s*표|대\s*상|교육|강사|교재|수\s*강|$)/);
+  const named = heading.match(/(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명)\s+(.+?)(?=프로그램\s*소개|개\s*요|목\s*표|대\s*상|교육|강사|교재|수\s*강|요일|일\s*자|장\s*소|$)/);
   if (named) candidates.push(named[1]);
   return candidates;
+}
+
+/**
+ * 첨부 파일명이 게시글 제목과 같은 프로그램을 가리키는지.
+ *
+ * 본문에 프로그램명 표기가 아예 없는 계획서가 있다. 이때 파일명이 제목과 일치하면
+ * 그 문서가 이 프로그램의 것이라는 근거가 된다. 단일 프로그램 문서에서만 쓸 수 있다.
+ */
+export function fileNameMatchesTitle(fileName: string, title: string) {
+  return matchScore(fileName, title) >= 0.55;
 }
 
 function matchScore(text: string, title: string) {
   const target = comparableTitle(title);
   const compactText = comparableTitle(text);
-  const titleTokens = withoutTags(title).normalize('NFKC').toLowerCase()
+  const allTokens = withoutTags(title).normalize('NFKC').toLowerCase()
     .split(/[^\p{L}\p{N}]+/gu)
     .map(comparableTitle)
     .filter((token) => token.length >= 2 && !/^(?:동|작은도서관)$/.test(token));
+  // `2025년`, `2기`는 운영 회차를 가리키는 행정 표기라 첨부 계획서에는 없는 경우가 많다.
+  // 다만 이를 빼고 남는 이름이 너무 짧으면 프로그램을 구분할 수 없으므로 그대로 둔다.
+  const withoutRunLabels = allTokens.filter((token) => !/^\d{4}년?$/.test(token) && !/^\d+기$/.test(token));
+  const titleTokens = withoutRunLabels.length >= 2 ? withoutRunLabels : allTokens;
   const tokenCoverage = titleTokens.length
     ? titleTokens.filter((token) => compactText.includes(token)).length / titleTokens.length
     : 0;
@@ -126,7 +140,29 @@ function matchScore(text: string, title: string) {
 
 function startsProgramSection(text: string) {
   const heading = text.replace(/\s+/g, ' ').trim().slice(0, 260);
-  return /(?:프로그램\s*명|강\s*좌\s*명|독서지도\s*계획안|그림책\s*지도\s*계획안)/.test(heading);
+  return /(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명|독서지도\s*계획안|그림책\s*지도\s*계획안)/.test(heading);
+}
+
+/** 프로그램 구간이 시작되는 머리말. 구간 분할과 경계 판정에 같은 기준을 쓴다. */
+const PROGRAM_HEADING = /(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명)/g;
+
+/**
+ * HWP 텍스트를 프로그램 구간별로 나눈다.
+ *
+ * PDF는 페이지 단위로 구간을 나눌 수 있지만 HWP는 페이지 개념이 없어 문서 전체가 한 덩어리로 온다.
+ * `강의계획서(22. 겨울방학).hwp`처럼 한 파일에 여러 프로그램이 들어 있으면, 나누지 않을 경우
+ * 맨 앞 프로그램만 매칭되고 나머지는 전부 `NOT_FOUND`가 되며, 맨 앞 프로그램은 다른 프로그램의
+ * 회차·대상·강사까지 흡수한다.
+ *
+ * 머리말이 하나뿐이면 단일 프로그램 문서이므로 원문을 그대로 돌려준다.
+ */
+export function splitHwpProgramSections(text: string): Array<{ pageNumber: number; text: string }> {
+  const starts = [...text.matchAll(PROGRAM_HEADING)].map((match) => match.index ?? 0);
+  if (starts.length < 2) return [{ pageNumber: 1, text }];
+  return starts.map((start, index) => ({
+    pageNumber: index + 1,
+    text: text.slice(start, starts[index + 1] ?? text.length),
+  }));
 }
 
 export function matchDocumentSection(input: {
