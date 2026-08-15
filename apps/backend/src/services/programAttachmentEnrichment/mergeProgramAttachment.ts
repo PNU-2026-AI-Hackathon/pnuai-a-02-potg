@@ -228,7 +228,9 @@ export function mergeProgramAttachment(input: MergeInput) {
     }
     // 줄표만 적힌 재료비·교재비는 `없음`을 뜻한다.
     // `comparable()`은 기호를 지우므로 줄표는 원문 값에서 직접 판정해야 한다.
-    if (kind === 'fee' && (/^[-ㅡ—–]+$/.test(item.value.trim()) || /^(?:없음|0원|무료)$/i.test(comparable(item.value)))) {
+    // 줄표나 빗금만 적힌 재료비·교재비는 `없음`을 뜻한다.
+    // `comparable()`은 기호를 지우므로 원문 값에서 직접 판정해야 한다.
+    if (kind === 'fee' && (/^[-ㅡ—–/／]+$/.test(item.value.trim()) || /^(?:없음|0원|무료)$/i.test(comparable(item.value)))) {
       const value = /무료/.test(item.value) ? '무료' : '없음';
       if (!basicInfoSupplement.some((candidate) => candidate.label === item.label)) {
         basicInfoSupplement.push({ label: item.label, value });

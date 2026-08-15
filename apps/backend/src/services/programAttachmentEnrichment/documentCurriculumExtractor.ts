@@ -64,11 +64,21 @@ function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
    * 어휘만 보면 `- Activity: …` 같은 데이터 행이 머리글로 잡히므로 길이도 함께 본다.
    */
   const HEADER_LABEL_MAX = 20;
-  const headerIndex = table.cells.findIndex((row) => row.some((cell) => SESSION_LABEL.test(headerLabel(cell)))
-    && row.some((cell) => {
-      const value = compact(cell.text);
-      return value.length <= HEADER_LABEL_MAX && CONTENT_WORDS.test(value);
-    }));
+  /**
+   * 회차 칸과 교육내용 칸이 한 칸으로 합쳐진 머리글이 있다(`차시 세부 교육내용`).
+   * 이 경우 회차 번호는 칸 안의 줄 앞머리에 남으므로 같은 열을 회차·내용 열로 함께 쓴다.
+   */
+  const mergedHeaderCell = (cell: IRCell) => {
+    const value = compact(cell.text);
+    return value.length <= HEADER_LABEL_MAX * 2
+      && /(?:차시|회차|회기)/.test(value) && CONTENT_WORDS.test(value);
+  };
+  const headerIndex = table.cells.findIndex((row) => row.some(mergedHeaderCell)
+    || (row.some((cell) => SESSION_LABEL.test(headerLabel(cell)))
+      && row.some((cell) => {
+        const value = compact(cell.text);
+        return value.length <= HEADER_LABEL_MAX && CONTENT_WORDS.test(value);
+      })));
   const header = headerIndex >= 0 ? table.cells[headerIndex] : [];
   // `일`은 회차를 세는 열로 쓰이기도 한다(`일 | 일자 | 차시(60분)`).
   // 왼쪽부터 찾으므로 회차를 세는 바깥 열이 안쪽 `차시`보다 먼저 잡힌다.
@@ -80,6 +90,9 @@ function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
   // 끝이 정확히 맞는 열을 먼저 찾고, 없으면 포함하는 열로 물러선다.
   let contentColumn = header.findIndex((cell) => new RegExp(`${contentLabel.source}$`).test(compact(cell.text)));
   if (contentColumn < 0) contentColumn = header.findIndex((cell) => contentLabel.test(compact(cell.text)));
+  // 합쳐진 머리글은 회차와 내용이 같은 열에 있다.
+  const mergedIndex = header.findIndex(mergedHeaderCell);
+  if (mergedIndex >= 0) { sessionColumn = mergedIndex; contentColumn = mergedIndex; }
   let noteColumn = header.findIndex((cell) => /(?:준비물|비고)$/.test(compact(cell.text)));
   let materialsColumn = header.findIndex((cell) => /^준비물$/.test(compact(cell.text)));
   let teachingMethodColumn = header.findIndex((cell) => /^교수방법(?:준비물)?$/.test(compact(cell.text)));
@@ -145,6 +158,18 @@ function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
     if ((!sessionText || !/^\d{1,2}$/.test(sessionText)) && contentColumn >= 0) {
       const embedded = content.match(/^(\d{1,2})\s+([\s\S]+)/);
       if (embedded) { sessionText = embedded[1]; content = embedded[2]; }
+      else {
+        /**
+         * 차시 칸과 교육내용 칸이 한 칸으로 합쳐진 표가 있다.
+         * 이때 회차 번호는 칸 안 어느 줄의 앞머리에 홀로 남는다.
+         * (`도서「김수한무…」` 다음 줄이 `1 ․ 나를 소개하기`)
+         */
+        const inLine = content.match(/(?:^|\n)\s*(\d{1,2})\s+(?=\S)/);
+        if (inLine) {
+          sessionText = inLine[1];
+          content = content.replace(inLine[0], inLine[0].replace(/\d{1,2}\s+/, '')).trim();
+        }
+      }
     }
     if (!/^\d{1,2}$/.test(sessionText)) {
       // 회차 칸이 비고 내용만 있는 행은 앞 회차가 이어지는 줄이다.

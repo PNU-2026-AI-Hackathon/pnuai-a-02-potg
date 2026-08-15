@@ -220,6 +220,22 @@ export function activityPlanFromOcrBoxes(boxes: OcrTextBox[]): string | null {
   return value.length >= 10 ? value : null;
 }
 
+/**
+ * 포스터 아래쪽 안내 문구를 고른다.
+ *
+ * `※`로 적는 계획서와 달리 홍보문은 `*`를 자주 쓴다.
+ * 한 줄에 여러 문구가 이어 붙어 오기도 해 표시 기호마다 끊는다.
+ */
+export function posterNoticeLines(text: string): string[] {
+  return [...new Set(text.split(/\r?\n/)
+    .flatMap((line) => line.split(/(?=[※*])/))
+    .map((part) => part.trim())
+    .filter((part) => /^[※*]\s*\S/.test(part))
+    .map((part) => normalizeExtractedKoreanSpacing(part.replace(/^[※*]\s*/, '')).trim())
+    // 각주 기호만 있거나 너무 짧은 조각은 안내가 아니다.
+    .filter((part) => part.length >= 8))];
+}
+
 /** 홍보문에서 글머리표로 적는 항목 이름. 표가 아니라 목록이라 좌표가 아닌 줄에서 읽는다. */
 const BULLET_LABEL = new RegExp('^[·•◦∙・○●·.,\\-*]?\\s*'
   + '(기간|운영기간|교육기간|시간|운영시간|교육시간|장소|운영장소|교육장소'
@@ -379,7 +395,7 @@ export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string;
 }
 
 // `일시`·`교육일자`처럼 날짜 칸이 회차를 가르는 계획서도 있다.
-const SESSION_HEADER = /^(?:차시|회차|회기|시수|일시|일자|교육일자|날짜)$/;
+const SESSION_HEADER = /^(?:차시|회차|회기|시수|일시|일자|교육일자|날짜|연번|순번|번호)$/;
 // `교육 내용과 목표`처럼 말을 붙여 쓰는 계획서가 있어 포함 여부로 본다.
 const CONTENT_HEADER = /(?:내용|활동|주제|동화명|도서명|프로그램명)/;
 /** 회차의 갈래를 적는 칸. `주제`가 따로 있으면 활동 앞에 붙여 보여 준다. */
@@ -432,13 +448,14 @@ function headerLabels(line: OcrLine): HeaderLabel[] {
 export function readSessionCell(text: string): { session: number | null; date: string | null } | null {
   // 회차 칸의 홑글자는 숫자다. OCR이 `1`을 `l`·`I`로, `0`을 `O`로 읽는 일이 잦다.
   const value = text.replace(/\s+/g, '').replace(/^[lI|]$/, '1').replace(/^[oO]$/, '0');
-  const numbered = value.match(/^(\d{1,2})(?:회차|차시|회기|주차|주)?(?:\(([^)]{2,12})\))?$/);
+  // `2회 차`처럼 칸 안에서 글자가 갈려 `2회`만 오기도 하므로 낱개 단위도 인정한다.
+  const numbered = value.match(/^(\d{1,2})(?:회차|차시|회기|주차|시수|주|회|차)?(?:\(([^)]{2,12})\))?$/);
   if (numbered) {
     const session = Number(numbered[1]);
     if (session >= 1 && session <= 40) return { session, date: numbered[2] ?? null };
   }
-  // `5/7`, `4.8.`, `10.29` 처럼 날짜만 적힌 칸
-  const dated = value.match(/^(\d{1,2})\s*[./-]\s*(\d{1,2})\.?$/);
+  // `5/7`, `4.8.`, `4월8일`, `9.5.(화)` 처럼 날짜만 적힌 칸
+  const dated = value.match(/^(\d{1,2})\s*(?:[./-]|월)\s*(\d{1,2})\s*(?:일)?\.?(?:\([^)]*\))?$/);
   if (dated) {
     const month = Number(dated[1]);
     const day = Number(dated[2]);

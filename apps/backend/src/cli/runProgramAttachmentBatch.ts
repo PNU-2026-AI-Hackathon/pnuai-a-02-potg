@@ -6,7 +6,7 @@ import type { RawProgram } from '../services/programDataNormalization/types';
 import { combinedBasicInfo, mergeProgramAttachment } from '../services/programAttachmentEnrichment/mergeProgramAttachment';
 import { processSample, type InventoryAttachment, type InventoryItem } from './buildProgramAttachmentEnrichmentSamples';
 import { structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
-import { activityPlanFromOcrBoxes, curriculumFromOcrBoxes, labeledFromBulletText, labeledFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
+import { activityPlanFromOcrBoxes, curriculumFromOcrBoxes, labeledFromBulletText, labeledFromOcrBoxes, posterNoticeLines, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
 
 const DEFAULT_CRAWL_DIR = path.resolve(process.cwd(), '.local', 'geumjeong-small-library-crawl');
 const DEFAULT_INVENTORY = path.resolve(process.cwd(), '.local', 'program-attachment-inventory', 'inventory-all.json');
@@ -225,6 +225,15 @@ function processOcrRecord(
    * 평탄한 추출문은 읽기 순서가 표를 따라가지 않아 값이 엉뚱한 이름 뒤에 붙는다.
    * `교재비`의 값 `없음`이 `강의실 준비`의 값 뒤로 밀리는 식이다.
    */
+  /**
+   * 포스터 아래쪽 안내 문구를 이용 안내로 보낸다.
+   * `※`뿐 아니라 `*`로 적는 홍보문이 많다.
+   */
+  structured.notices = [...new Set([
+    ...(structured.notices ?? []),
+    ...posterNoticeLines(usable.map((target) => target.cleanedText ?? '').join('\n')),
+  ])];
+
   // 회차 표 없이 활동 계획을 한 덩어리로 적은 계획서는 그 내용을 프로그램 내용으로 싣는다.
   for (const plan of usable.map((target) => activityPlanFromOcrBoxes(target.boxes ?? [])).filter(Boolean)) {
     structured.labeled.push({ label: '활동 계획', value: plan as string });
