@@ -340,15 +340,56 @@ function processOcrRecord(
  * 규칙을 계속 늘리면 다른 문서가 깨지므로, 남은 건만 손으로 채워 넣는다.
  * 사람이 원본을 보고 넣은 값이므로 자동 추출보다 우선한다.
  */
-export function withManualCurriculum<T extends { sourceId: number; curriculum: unknown[]; extractionWarnings: Array<{ code: string; message: string }> }>(item: T): T {
+type ManualPatchTarget = {
+  sourceId: number;
+  curriculum: unknown[];
+  extractionWarnings: Array<{ code: string; message: string }>;
+  basicInfo?: Array<{ label: string; value: string }>;
+  board?: { sections: Array<{ id: string; title: string; items: Array<{ label: string; value: string }> }> };
+};
+
+/** 사람이 적은 값으로 같은 이름의 항목을 덮고, 없던 항목은 뒤에 붙인다. */
+function patchLabeled(
+  current: Array<{ label: string; value: string }>,
+  patches: Array<{ label: string; value: string }>,
+) {
+  const patched = current.map((entry) => patches.find((patch) => patch.label === entry.label) ?? entry);
+  const added = patches.filter((patch) => !current.some((entry) => entry.label === patch.label));
+  return [...patched, ...added];
+}
+
+/** 프로그램 소개 칸에 사람이 적은 항목을 넣는다. 칸이 없으면 만든다. */
+function patchContentSection(
+  board: NonNullable<ManualPatchTarget['board']>,
+  patches: Array<{ label: string; value: string }>,
+) {
+  const existing = board.sections.find((section) => section.id === 'content');
+  if (!existing) {
+    return { ...board, sections: [...board.sections, { id: 'content', title: '프로그램 소개', items: patches }] };
+  }
+  return {
+    ...board,
+    sections: board.sections.map((section) => (section.id === 'content'
+      ? { ...section, items: patchLabeled(section.items, patches) }
+      : section)),
+  };
+}
+
+export function withManualCurriculum<T extends ManualPatchTarget>(item: T): T {
   const manual = manualCurriculumFor(item.sourceId);
   if (!manual) return item;
   return {
     ...item,
+    ...(manual.basicInfo && item.basicInfo
+      ? { basicInfo: patchLabeled(item.basicInfo, manual.basicInfo) }
+      : {}),
+    ...(manual.content && item.board
+      ? { board: patchContentSection(item.board, manual.content) }
+      : {}),
     curriculum: manual.rows.map((row) => ({
       session: row.session,
       date: row.date ?? null,
-      category: null,
+      category: row.category ?? null,
       activity: row.activity,
       teachingMethod: row.teachingMethod ?? null,
       materials: row.materials ?? null,

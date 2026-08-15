@@ -15,7 +15,7 @@
 | 3685 | 읽으며 만드는 도서관 미술공작소 | 2024-10-08 ~ 2024-11-26 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024081312545523378.png) |
 | 3688 | 동시와 함께 감성자극 놀이터 | 2024년 ( 10 )월 ( 1 ) 일 ~ 2024년 ( 11 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024081313282727820.jpg) |
 | 3693 | 꿈 더하기! 어린이 과학교실 | 2024-10-07 ~ 2024-11-11 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024081313361787748.png) |
-| 3740 | 부산대학교와 함께하는 「제9기 금정시민인문아카데미」: 도서관에서 만나는 인문학 | 2024. 10. 8. ~ 10. 29. (매주 화요일) 19 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024091317143348053.jpg) |
+| ~~3740~~ (완료) | 부산대학교와 함께하는 「제9기 금정시민인문아카데미」: 도서관에서 만나는 인문학 | 2024. 10. 8. ~ 10. 29. (매주 화요일) 19 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024091317143348053.jpg) |
 | 3774 | 유아 브레이닝 수학 | 2025-01-04 ~ 2025-01-25 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024112716353293642.jpg) |
 | 3779 | 향기로운 크리스마스 캔들 만들기 1차(10:00~11:00) | 2024. 12. 14. (토) 10:00~11:00, 11: | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/202412021525111075.jpg) |
 | 3780 | 향기로운 크리스마스 캔들 만들기 2차(11:00~12:00) | 2024. 12. 14. (토) 10:00~11:00, 11: | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024120215360392586.jpg) |
@@ -84,7 +84,7 @@
 | 3682 | 시간 가는 줄 모르는 흥미진진 한국사 | 2024-10-08 ~ 2024-11-26 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/202408121720372190.jpg) |
 | 3683 | 원어민 선생님과 Joyful English | 2024-09-11 ~ 2024-11-13 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/202408121739434637.png) |
 | 3702 | 들락날락 영어랑 놀자 (유아반) 2기 | 2024-09-07 ~ 2024-12-22 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024081415112654453.jpg) |
-| 3703 | 들락날락 영어랑 놀자 (초등반) 2기 | 2024-09-07 ~ 2024-12-22 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024081415213925182.jpg) |
+| ~~3703~~ (완료) | 들락날락 영어랑 놀자 (초등반) 2기 | 2024-09-07 ~ 2024-12-22 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024081415213925182.jpg) |
 | 3772 | 클래식으로 만나는 캐롤 | 2024-12-07 ~ 2024-12-07 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024112611144915781.jpg) |
 | 3775 | 조물조물 손으로 빚어낸 동화세상 | 2025-01-07 ~ 2025-01-17 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024112716465761659.jpg) |
 | 3789 | 들락날락 영어랑 놀자 1일 크리스마스 문화체험(유아반) | 2024-12-21 ~ 2024-12-21 | [포스터](https://www.geumjeong.go.kr/upload_data/libary_data/2024120509544646485.jpg) |

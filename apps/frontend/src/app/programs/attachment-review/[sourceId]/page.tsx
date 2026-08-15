@@ -10,6 +10,8 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
   if (!review) notFound();
   const content = review.board.sections.find((section) => section.id === 'content');
   const others = review.board.sections.filter((section) => section.id !== 'content');
+  // 사람이 직접 넣은 회차는 추출 결과와 다르게 안내한다. 대조할 대상이 원본 이미지가 아니라 입력한 근거다.
+  const enteredManually = review.extractionWarnings.find((warning) => warning.code === 'CURRICULUM_ENTERED_MANUALLY');
   const showCurriculumDate = review.curriculum.some((session) => Boolean(session.date));
   const showTeachingMethod = review.curriculum.some((session) => Boolean(session.teachingMethod));
   const showMaterials = review.curriculum.some((session) => Boolean(session.materials));
@@ -47,12 +49,15 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
         {review.ocrConfidence != null ? (
           <section className="attachmentExtractionWarnings">
             <h3>
-              {review.curriculum.length ? '이미지에서 읽은 회차입니다'
-                : review.curriculumExpected ? '회차 입력이 필요합니다'
-                  : '이미지에서 읽은 결과입니다'}
+              {enteredManually ? '사람이 원본을 보고 넣은 회차입니다'
+                : review.curriculum.length ? '이미지에서 읽은 회차입니다'
+                  : review.curriculumExpected ? '회차 입력이 필요합니다'
+                    : '이미지에서 읽은 결과입니다'}
             </h3>
             <p className="attachmentSourceHint">
-              {review.curriculum.length
+              {enteredManually
+                ? `자동으로 읽지 못해 사람이 원본을 보고 ${review.curriculum.length}개 회차를 넣었습니다. ${enteredManually.message}`
+                : review.curriculum.length
                 ? `표 머리글을 찾아 ${review.curriculum.length}개 회차를 읽었습니다. 문서가 아니라 글자 위치로 복원한 것이니 원본 이미지와 대조해 주세요.`
                 : review.curriculumExpected
                   ? '포스터에 회차표가 있지만 표 머리글을 찾지 못해 복원하지 못했습니다. 아래 첨부 이미지와 추출문을 보고 회차를 입력해 주세요.'
