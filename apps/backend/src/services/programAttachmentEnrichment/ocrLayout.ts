@@ -568,13 +568,16 @@ function gridFromHeaderIndex(lines: OcrLine[], headerIndex: number): OcrCurricul
   };
 
   const contentIsRight = contentIndex > sessionIndex;
-  // 회차 칸을 좁게 잡을 근거가 있으면 넓히지 않는다.
-  const sessionColumnRight = contentIsRight && narrowRight == null
-    ? Math.max(sessionRight, contentLeft)
-    : sessionRight;
-  let numbers = body
-    .filter((box) => inColumn(box, sessionLeft, sessionColumnRight) && readSessionCell(box.text) != null)
-    .sort((left, right) => left.top - right.top);
+  const marksIn = (right: number) => body
+    .filter((box) => inColumn(box, sessionLeft, right) && readSessionCell(box.text) != null)
+    .sort((left, right2) => left.top - right2.top);
+  /**
+   * 회차 칸은 이름 바로 옆까지가 원칙이다.
+   * 넓히면 사이에 낀 `일자`·`시간` 칸의 숫자까지 회차로 잡힌다(`8 | 11/28 | 2 | …`).
+   * 좁은 범위에서 아무것도 못 찾을 때만 내용 칸 앞까지 넓힌다.
+   */
+  let numbers = marksIn(sessionRight);
+  if (!numbers.length && contentIsRight && narrowRight == null) numbers = marksIn(Math.max(sessionRight, contentLeft));
   /**
    * 번호 칸에 머리글을 달지 않는 표가 있다(`동화명 | 교육일시 | 접수기간`).
    * 이름 붙은 칸에서 회차를 못 찾으면 모든 이름 왼쪽에 있는 숫자 칸을 본다.
@@ -616,13 +619,14 @@ function gridFromHeaderIndex(lines: OcrLine[], headerIndex: number): OcrCurricul
    * 회차 칸과 내용 칸 사이에 일자·시간 칸이 끼어 있으면 그 칸들을 내용에서 빼야 한다.
    * 회차 칸을 좁게 잡을 근거가 있을 때는 이름 위치로 내용 칸 왼쪽 끝을 잡는다.
    */
-  const contentStart = narrowRight != null
-    // 묶인 이름의 오른쪽 끝이 곧 일자·시간 칸의 끝이다. 이름은 칸 가운데 놓이므로
-    // 이름 사이 중간점을 쓰면 경계가 오른쪽으로 밀려 내용의 앞부분이 잘린다.
-    ? sessionLabel.right + 2
-    : !contentIsRight || categoryIndex >= 0
-      ? Math.max(labelledStart, numbersRight < contentRight ? numbersRight : labelledStart)
-      : numbersRight;
+  /**
+   * 내용 칸의 왼쪽 끝은 바로 앞 칸 이름의 오른쪽 끝에서 잡는다.
+   * 이름은 칸 가운데 놓이므로 이름 사이 중간점을 쓰면 경계가 밀려 내용 앞부분이 잘리고,
+   * 회차 번호 바로 뒤부터 잡으면 사이에 낀 일자·시간 칸이 내용에 섞인다.
+   */
+  const contentStart = contentIsRight
+    ? Math.max(numbersRight, labels[contentIndex - 1] ? labels[contentIndex - 1].right + 2 : numbersRight)
+    : Math.max(labelledStart, numbersRight < contentRight ? numbersRight : labelledStart);
   const contentBoxes = body.filter((box) => inColumn(box, contentStart, contentRight));
   // 갈래 칸은 회차 칸과 내용 칸 사이에 있다. 활동 앞에 붙여 무엇을 다루는 회차인지 보여 준다.
   const categoryBoxes = categoryIndex >= 0

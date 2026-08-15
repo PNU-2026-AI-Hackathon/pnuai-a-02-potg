@@ -107,14 +107,13 @@ assert.equal(readSessionCell('가나다'), null);
 
 // --- 날짜만 있는 회차 표 -----------------------------------------------------
 
+// 번호 칸 없이 날짜가 회차를 가르는 표
 function datedBoxes() {
-  const boxes = [box('회차', 140, 0, 40), box('교육일자', 300, 0, 80), box('동화명', 600, 0, 60)];
+  const boxes = [box('교육일자', 140, 0, 80), box('동화명', 600, 0, 60)];
   const titles = ['신기한 씨앗가게', '우리는 친구', '북극곰이 녹아요'];
   for (const [index, title] of titles.entries()) {
     const top = 60 + index * 60;
-    // 회차 칸에 표 밖의 숫자가 섞여 번호가 어긋난 상황
-    boxes.push(box(`${index * 2 + 1}`, 140, top, 20));
-    boxes.push(box(`9/${6 + index * 7}`, 300, top, 60));
+    boxes.push(box(`9/${6 + index * 7}`, 140, top, 60));
     boxes.push(box(title, 600, top, 200));
   }
   return boxes;
@@ -122,9 +121,30 @@ function datedBoxes() {
 
 const dated = curriculumFromOcrBoxes(datedBoxes());
 assert.deepEqual(dated.map((row) => row.session), [1, 2, 3],
-  '번호가 어긋나도 날짜가 있으면 위에서부터 차례로 매긴다');
+  '번호가 없으면 날짜 순서대로 회차를 매긴다');
 assert.deepEqual(dated.map((row) => row.date), ['9/6', '9/13', '9/20']);
 assert.match(dated[0].activity, /신기한 씨앗가게/);
+
+// 회차 칸과 내용 칸 사이에 일자·시간 칸이 끼어 있는 표
+function spacedBoxes() {
+  const boxes = [box('차시', 14, 0, 32), box('일자', 59, 0, 32), box('시간', 103, 0, 32),
+    box('세부 교육내용', 235, 0, 110)];
+  const titles = ['클로드 모네의 인상주의', '마르크 샤갈의 사랑의 색채란', '피에트 몬드리안'];
+  for (const [index, title] of titles.entries()) {
+    const top = 60 + index * 60;
+    boxes.push(box(`${index + 1}`, 14, top, 16));
+    boxes.push(box(`10/${10 + index * 7}`, 59, top, 40));
+    boxes.push(box('2', 103, top, 16)); // 시간 칸. 회차로 잡히면 안 된다
+    boxes.push(box(title, 235, top, 220));
+  }
+  return boxes;
+}
+
+const spaced = curriculumFromOcrBoxes(spacedBoxes());
+assert.deepEqual(spaced.map((row) => row.session), [1, 2, 3],
+  '사이에 낀 시간 칸의 숫자를 회차로 잡으면 안 된다');
+assert.match(spaced[0].activity, /^클로드 모네의/,
+  '일자·시간 칸이 활동 내용 앞에 섞이면 안 된다');
 
 // --- 회차 표 없이 활동 계획만 적은 계획서 ------------------------------------
 
