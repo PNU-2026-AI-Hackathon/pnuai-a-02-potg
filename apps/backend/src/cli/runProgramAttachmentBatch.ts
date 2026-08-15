@@ -6,6 +6,7 @@ import type { RawProgram } from '../services/programDataNormalization/types';
 import { combinedBasicInfo, mergeProgramAttachment } from '../services/programAttachmentEnrichment/mergeProgramAttachment';
 import { processSample, type InventoryAttachment, type InventoryItem } from './buildProgramAttachmentEnrichmentSamples';
 import { structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
+import { manualCurriculumFor } from '../services/programAttachmentEnrichment/manualCurriculum';
 import { activityPlanFromOcrBoxes, curriculumFromOcrBoxes, labeledFromBulletText, labeledFromOcrBoxes, posterNoticeLines, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
 
 const DEFAULT_CRAWL_DIR = path.resolve(process.cwd(), '.local', 'geumjeong-small-library-crawl');
@@ -332,6 +333,39 @@ function processOcrRecord(
   };
 }
 
+/**
+ * 사람이 원본을 보고 채운 회차가 있으면 그것으로 바꾼다.
+ *
+ * 계획서 형태가 제각각이라 규칙으로 읽지 못하는 표가 남는다. 그 몇 건 때문에
+ * 규칙을 계속 늘리면 다른 문서가 깨지므로, 남은 건만 손으로 채워 넣는다.
+ * 사람이 원본을 보고 넣은 값이므로 자동 추출보다 우선한다.
+ */
+export function withManualCurriculum<T extends { sourceId: number; curriculum: unknown[]; extractionWarnings: Array<{ code: string; message: string }> }>(item: T): T {
+  const manual = manualCurriculumFor(item.sourceId);
+  if (!manual) return item;
+  return {
+    ...item,
+    curriculum: manual.rows.map((row) => ({
+      session: row.session,
+      date: row.date ?? null,
+      category: null,
+      activity: row.activity,
+      teachingMethod: row.teachingMethod ?? null,
+      materials: row.materials ?? null,
+      notes: row.notes ?? null,
+      materialsOrNotes: null,
+      referenceBooks: [],
+      referenceImages: [],
+    })),
+    // 자동으로 읽지 못했다는 경고는 더 이상 맞지 않으므로 지운다.
+    extractionWarnings: [
+      ...item.extractionWarnings.filter((warning) => !warning.code.startsWith('OCR_CURRICULUM')
+        && warning.code !== 'CURRICULUM_NOT_EXTRACTED'),
+      { code: 'CURRICULUM_ENTERED_MANUALLY', message: `사람이 원본을 보고 채운 회차다. 근거: ${manual.source}` },
+    ],
+  };
+}
+
 async function processDocumentRecord(
   raw: RawProgram,
   item: BatchInventoryItem,
@@ -477,11 +511,11 @@ export async function runBatch(options: {
     if (!raw) throw new Error(`크롤링 원본에서 sourceId를 찾을 수 없습니다: ${item.sourceId}`);
     const lane = laneOf(item);
     if (lane === 'DOC_EXTRACT') {
-      items.push(await processDocumentRecord(raw, item, knownProgramTitles, options.embeddedImageRoot, alternateUrlsOf));
+      items.push(withManualCurriculum(await processDocumentRecord(raw, item, knownProgramTitles, options.embeddedImageRoot, alternateUrlsOf)));
     } else if (lane === 'TEXT_ONLY') {
       items.push(bodyOnlyItem(raw, item, lane, 'AUTO_REVIEW_CANDIDATE'));
     } else if (options.ocrByUrl?.size) {
-      items.push(processOcrRecord(raw, item, lane, options.ocrByUrl));
+      items.push(withManualCurriculum(processOcrRecord(raw, item, lane, options.ocrByUrl)));
     } else {
       items.push(bodyOnlyItem(raw, item, lane, 'OCR_REQUIRED'));
     }
