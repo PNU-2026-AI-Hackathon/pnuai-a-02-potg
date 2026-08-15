@@ -54,7 +54,9 @@ export default async function ProgramAttachmentReviewPage(
   const countOf = (status: ReviewStatus) => reviews.filter((item) => item.reviewStatus === status).length;
   const visible = reviews.filter((item) => item.reviewStatus === active);
   const sessions = reviews.reduce((sum, item) => sum + item.curriculum.length, 0);
-  const publishable = reviews.filter((item) => item.bodyPublishable).length;
+  // 본문이 없어도 포스터에서 읽어낸 내용이 있으면 게시할 거리는 있다.
+  const publishable = reviews.filter((item) => item.bodyPublishable || item.ocrConfidence != null).length;
+  const needsCurriculum = reviews.filter((item) => item.curriculumExpected).length;
 
   return (
     <main className="programPage attachmentReviewPage">
@@ -70,12 +72,12 @@ export default async function ProgramAttachmentReviewPage(
 
         <section className="programSummary attachmentReviewSummary" aria-label="검수 현황">
           <div><strong>{countOf('MANUAL_REVIEW_REQUIRED')}</strong><span>수동 검수 필요</span></div>
+          <div><strong>{needsCurriculum}</strong><span>회차 입력 필요</span></div>
           <div><strong>{sessions}</strong><span>구조화 회차</span></div>
-          <div><strong>{publishable}</strong><span>본문 게시 가능</span></div>
-          <div><strong>{countOf('OCR_REQUIRED')}</strong><span>OCR 대기</span></div>
+          <div><strong>{publishable}</strong><span>게시 내용 있음</span></div>
           <p>
             ‘자동 검토 후보’는 게시 승인 완료가 아니라 사람이 원본과 비교할 준비가 됐다는 뜻입니다.
-            ‘본문 게시 가능’은 본문만으로 화면을 구성할 수 있다는 뜻이며, 첨부 확인이 끝났다는 뜻은 아닙니다.
+            ‘회차 입력 필요’는 포스터에 회차표가 있으나 자동으로 복원하지 못해 사람이 채워야 하는 건입니다.
           </p>
         </section>
 
@@ -103,7 +105,8 @@ export default async function ProgramAttachmentReviewPage(
                   <span>{review.attachment?.detectedType ?? review.contentProfile}</span>
                   <span className={statusClass(review.reviewStatus)}>{REVIEW_STATUS_LABEL[review.reviewStatus]}</span>
                   {review.curriculumExpected ? <span className="is-needs_review">회차 입력 필요</span> : null}
-                  {!review.bodyPublishable ? <span className="is-pending">본문 없음</span> : null}
+                  {!review.bodyPublishable && review.ocrConfidence == null
+                    ? <span className="is-pending">게시 내용 없음</span> : null}
                 </div>
                 <h2><Link href={`/programs/attachment-review/${review.sourceId}`}>{review.title}</Link></h2>
                 <p>{review.attachment?.name ?? `${review.ocrTargets.length}개 이미지 첨부`}</p>

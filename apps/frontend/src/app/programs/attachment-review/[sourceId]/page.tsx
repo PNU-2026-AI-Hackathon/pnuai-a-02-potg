@@ -34,11 +34,14 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
                 : '전체 문서 선택'}`
               : REVIEW_STATUS_LABEL[review.reviewStatus]}
           </strong>
-          {review.attachment ? <span>일치 신뢰도 {Math.round(review.confidence * 100)}%</span> : null}
+          {review.attachment && review.ocrConfidence == null
+            ? <span>일치 신뢰도 {Math.round(review.confidence * 100)}%</span>
+            : null}
           {review.ocrConfidence != null
             ? <span>OCR 인식 신뢰도 {Math.round(review.ocrConfidence * 100)}% · 이미지 {review.ocrImageCount}장</span>
             : null}
-          <span>{review.bodyPublishable ? '본문 게시 가능' : '본문 없음'}</span>
+          {/* 포스터에서 읽어낸 내용이 있으면 본문이 없어도 게시할 거리는 있다. */}
+          <span>{review.bodyPublishable || review.ocrConfidence != null ? '게시 내용 있음' : '게시 내용 없음'}</span>
         </section>
 
         {review.ocrConfidence != null ? (
@@ -103,7 +106,11 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
           <section className="programDescription attachmentPreviewSection" aria-labelledby="attachment-content"><h2 id="attachment-content">프로그램 내용</h2>
             {content || review.board.intro.length ? <section className="programTextSection is-content"><h3>{content?.title ?? '프로그램 소개'}</h3>{content ? <dl>{content.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl> : null}{review.board.intro.map((line, index) => <p key={index}>{line}</p>)}</section> : null}
             {others.map((section) => <section className={`programTextSection is-${section.id}`} key={section.id}><h3>{section.title}</h3><dl>{section.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl></section>)}
-            <section className="attachmentCurriculum"><h3>회차별 활동 <span>{review.curriculum.length}</span></h3>{review.curriculum.length ? <div className="programTableScroll"><table className="programCurriculumTable"><thead><tr><th>회차</th>{showCurriculumDate ? <th>일자</th> : null}<th>활동 내용</th>{showTeachingMethod ? <th>교수방법</th> : null}{showMaterials ? <th>준비물</th> : null}{showNotes ? <th>비고</th> : null}</tr></thead><tbody>{review.curriculum.map((session) => <tr key={session.session}><td>{session.session}</td>{showCurriculumDate ? <td>{session.date ?? '-'}</td> : null}<td>{session.category ? <strong className="attachmentCurriculumCategory">{session.category}</strong> : null}{session.activity}</td>{showTeachingMethod ? <td>{session.teachingMethod ?? '-'}</td> : null}{showMaterials ? <td>{session.materials ?? '-'}</td> : null}{showNotes ? <td>{session.referenceBooks.length || session.referenceImages.some((image) => image.src) || session.notes ? <div className="attachmentCurriculumReferences">{session.referenceBooks.length ? <div><strong>참고도서</strong><ul>{session.referenceBooks.map((book) => <li key={book}>{book}</li>)}</ul></div> : null}{session.referenceImages.filter((image) => image.src).map((image, index) => <img key={image.filename} src={image.src} alt={`${session.session}회차 참고 이미지 ${index + 1}`} />)}{session.notes ? <p>{session.notes}</p> : null}</div> : '-'}</td> : null}</tr>)}</tbody></table></div> : <p className="attachmentEmptyState">표가 없는 프로그램이거나, 복잡한 PDF 표라 회차를 아직 복원하지 못했습니다.</p>}</section>
+            <section className="attachmentCurriculum"><h3>회차별 활동 <span>{review.curriculum.length}</span></h3>{review.curriculum.length ? <div className="programTableScroll"><table className="programCurriculumTable"><thead><tr><th>회차</th>{showCurriculumDate ? <th>일자</th> : null}<th>활동 내용</th>{showTeachingMethod ? <th>교수방법</th> : null}{showMaterials ? <th>준비물</th> : null}{showNotes ? <th>비고</th> : null}</tr></thead><tbody>{review.curriculum.map((session) => <tr key={session.session}><td>{session.session}</td>{showCurriculumDate ? <td>{session.date ?? '-'}</td> : null}<td>{session.category ? <strong className="attachmentCurriculumCategory">{session.category}</strong> : null}{session.activity}</td>{showTeachingMethod ? <td>{session.teachingMethod ?? '-'}</td> : null}{showMaterials ? <td>{session.materials ?? '-'}</td> : null}{showNotes ? <td>{session.referenceBooks.length || session.referenceImages.some((image) => image.src) || session.notes ? <div className="attachmentCurriculumReferences">{session.referenceBooks.length ? <div><strong>참고도서</strong><ul>{session.referenceBooks.map((book) => <li key={book}>{book}</li>)}</ul></div> : null}{session.referenceImages.filter((image) => image.src).map((image, index) => <img key={image.filename} src={image.src} alt={`${session.session}회차 참고 이미지 ${index + 1}`} />)}{session.notes ? <p>{session.notes}</p> : null}</div> : '-'}</td> : null}</tr>)}</tbody></table></div> : <p className="attachmentEmptyState">{review.curriculumExpected
+              ? '포스터에 회차표가 있습니다. 위 추출문과 원본 이미지를 보고 회차를 입력해 주세요.'
+              : review.ocrConfidence != null
+                ? '회차표가 없는 안내문이라 회차가 비어 있는 것이 정상입니다.'
+                : '표가 없는 프로그램이거나, 복잡한 PDF 표라 회차를 아직 복원하지 못했습니다.'}</p>}</section>
           </section>
 
           <section className="programNoticeGroups attachmentPreviewSection" aria-labelledby="attachment-notices"><h2 id="attachment-notices">이용 안내</h2>{review.board.notices.length ? <div className="programNoticeGrid">{review.board.notices.map((group) => <section className={`programNoticeGroup is-${group.id}`} key={group.id}><h3>{group.title}</h3><ul>{group.lines.map((line, index) => <li key={index}>{line}</li>)}</ul></section>)}</div> : <p className="attachmentEmptyState">별도의 이용 안내가 없습니다.</p>}</section>
