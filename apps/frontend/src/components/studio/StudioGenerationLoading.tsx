@@ -21,6 +21,7 @@ type StudioGenerateResponse = {
 
 type StudioDocumentCreateResponse = {
   document?: StudioSavedDocument;
+  code?: string;
   error?: string;
 };
 
@@ -160,6 +161,14 @@ export default function StudioGenerationLoading() {
     setErrorMessage('');
 
     try {
+      const authResponse = await fetch('/api/auth/me', {
+        cache: 'no-store',
+      });
+
+      if (!authResponse.ok) {
+        throw new Error('기획서를 저장하려면 로그인이 필요합니다.');
+      }
+
       const response = await fetch('/api/studio/generate', {
         method: 'POST',
         headers: {
@@ -194,7 +203,11 @@ export default function StudioGenerationLoading() {
       const saveData = (await saveResponse.json()) as StudioDocumentCreateResponse;
 
       if (!saveResponse.ok || !saveData.document) {
-        throw new Error(saveData.error || '생성된 기획서를 저장하지 못했습니다.');
+        throw new Error(
+          saveData.code === 'AUTHENTICATION_REQUIRED'
+            ? '기획서를 저장하려면 로그인이 필요합니다.'
+            : saveData.error || '생성된 기획서를 저장하지 못했습니다.',
+        );
       }
 
       window.sessionStorage.setItem(studioDraftStorageKey, JSON.stringify({
@@ -418,6 +431,11 @@ export default function StudioGenerationLoading() {
                 <strong>조건을 유지한 채 다시 시도할 수 있습니다.</strong>
                 <p>{errorMessage || '기획서 생성 요청을 완료하지 못했습니다.'}</p>
               </div>
+              {errorMessage.includes('로그인') ? (
+                <Link className="uiButton uiButtonPrimary" href="/login?next=/studio">
+                  로그인하기
+                </Link>
+              ) : null}
               <button className="uiButton uiButtonPrimary" type="button" onClick={retryGeneration}>
                 다시 시도
               </button>

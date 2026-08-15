@@ -22,7 +22,7 @@ type StudioDocumentRow = {
 type CreateStudioDocumentBody = {
   title?: string;
   content?: string;
-  stage?: StudioDocumentStage;
+  stage?: unknown;
   conditions?: unknown;
   agenda?: unknown;
 };
@@ -30,7 +30,7 @@ type CreateStudioDocumentBody = {
 type UpdateStudioDocumentBody = {
   title?: string;
   content?: string;
-  stage?: StudioDocumentStage;
+  stage?: unknown;
 };
 
 const router = Router();
@@ -112,10 +112,8 @@ function hasOwnerScope(scope: { ownerId: string | null; anonymousOwnerId: string
   return Boolean(scope.ownerId || scope.anonymousOwnerId);
 }
 
-function readStage(value: unknown): StudioDocumentStage {
-  return typeof value === 'string' && validStages.has(value as StudioDocumentStage)
-    ? (value as StudioDocumentStage)
-    : '기획 중';
+function isStudioDocumentStage(value: unknown): value is StudioDocumentStage {
+  return typeof value === 'string' && validStages.has(value as StudioDocumentStage);
 }
 
 function createPreview(content: string) {
@@ -204,12 +202,16 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Response) => {
   const title = readString(req.body.title);
   const content = readString(req.body.content);
-  const stage = readStage(req.body.stage);
+  const stage = req.body.stage === undefined ? '기획 중' : req.body.stage;
   const conditions = req.body.conditions ?? {};
   const agenda = req.body.agenda ?? null;
 
   if (!title || !content) {
     return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
+  }
+
+  if (!isStudioDocumentStage(stage)) {
+    return res.status(400).json({ code: 'INVALID_STAGE', error: 'stage is invalid.' });
   }
 
   try {
@@ -268,7 +270,7 @@ router.get('/:documentId', async (req: Request<{ documentId: string }>, res: Res
 router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, UpdateStudioDocumentBody>, res: Response) => {
   const title = typeof req.body.title === 'string' ? req.body.title.trim() : undefined;
   const content = typeof req.body.content === 'string' ? req.body.content.trim() : undefined;
-  const stage = req.body.stage ? readStage(req.body.stage) : undefined;
+  const stage = req.body.stage;
 
   if (title !== undefined && title.length === 0) {
     return res.status(400).json({ code: 'INVALID_TITLE', error: 'title cannot be empty.' });
@@ -276,6 +278,10 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
 
   if (content !== undefined && content.length === 0) {
     return res.status(400).json({ code: 'INVALID_CONTENT', error: 'content cannot be empty.' });
+  }
+
+  if (stage !== undefined && !isStudioDocumentStage(stage)) {
+    return res.status(400).json({ code: 'INVALID_STAGE', error: 'stage is invalid.' });
   }
 
   try {
@@ -292,13 +298,29 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
     }
 
-    const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
+    const updateFields: Prisma.Sql[] = [];
+
+    if (title !== undefined) {
+      updateFields.push(Prisma.sql`title = ${title}`);
+    }
+
+    if (content !== undefined) {
+      updateFields.push(Prisma.sql`content = ${content}`);
+    }
+
+    if (stage !== undefined) {
+      updateFields.push(Prisma.sql`stage = ${stage}`);
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(200).json({ document: serializeStudioDocument(currentDocument) });
+    }
+
+    updateFields.push(Prisma.sql`"updatedAt" = CURRENT_TIMESTAMP`);
+
+    const documents = await prisma.$queryRaw<StudioDocumentRow[]>(Prisma.sql`
       UPDATE "StudioDocument"
-      SET
-        title = ${title ?? currentDocument.title},
-        content = ${content ?? currentDocument.content},
-        stage = ${stage ?? currentDocument.stage},
-        "updatedAt" = CURRENT_TIMESTAMP
+      SET ${Prisma.join(updateFields)}
       WHERE id = ${req.params.documentId}
         AND (
           (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
@@ -310,7 +332,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
           )
         )
       RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
-    `;
+    `);
 
     return res.status(200).json({ document: serializeStudioDocument(documents[0]) });
   } catch (error) {

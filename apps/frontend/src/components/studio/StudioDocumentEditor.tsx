@@ -5,13 +5,16 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildStudioDraftContent,
   formatStudioDate,
+  studioDocumentStages,
   studioDraftStorageKey,
   type StudioDraft,
+  type StudioDocumentStage,
   type StudioSavedDocument,
 } from '@/lib/studio-draft';
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
-type LoadState = 'loading' | 'ready' | 'failed';
+type StageSaveState = 'idle' | 'saving' | 'failed';
+type LoadState = 'loading' | 'ready' | 'failed' | 'auth-required';
 type AiRequestState = 'idle' | 'submitting' | 'ready' | 'failed';
 type TextSelectionRange = {
   start: number;
@@ -21,6 +24,7 @@ type TextSelectionRange = {
 type StudioDocument = {
   id: string;
   title: string;
+  stage: StudioDocumentStage;
   updatedAt: string;
   content: string;
 };
@@ -28,6 +32,7 @@ type StudioDocument = {
 const dummyDocument: StudioDocument = {
   id: 'demo-document-1',
   title: '시니어 디지털 생활 교실',
+  stage: '기획 중',
   updatedAt: '방금 전',
   content: `기획 배경
 지역 작은도서관을 이용하는 중장년 및 시니어 주민 가운데 스마트폰, 키오스크, 온라인 행정 서비스 이용에 어려움을 겪는 사례가 꾸준히 확인되고 있다. 일상생활에 필요한 디지털 도구 활용 역량은 정보 접근성과 사회 참여를 높이는 기본 조건이므로, 도서관이 안전하고 익숙한 학습 거점이 되어 단계적인 생활 디지털 교육을 제공한다.
@@ -65,6 +70,7 @@ const historyDocuments: StudioDocument[] = [
   {
     id: 'family-reading-weekend',
     title: '가족 독서 주말 프로그램',
+    stage: '수요조사 중',
     updatedAt: '3일 전',
     content: `기획 배경
 주말에 도서관을 찾는 가족 단위 이용자는 많지만, 부모와 자녀가 함께 책을 읽고 대화하는 정기 프로그램은 부족하다. 가족 독서 활동은 책을 매개로 세대 간 대화를 만들고, 도서관을 주말 여가와 학습이 만나는 생활 공간으로 인식하게 하는 데 효과적이다.
@@ -98,6 +104,7 @@ const historyDocuments: StudioDocument[] = [
   {
     id: 'local-memory-archive',
     title: '우리 동네 기억 수집 워크숍',
+    stage: '수요조사 완료',
     updatedAt: '지난주',
     content: `기획 배경
 지역의 오래된 장소, 생활사, 주민의 경험은 시간이 지나면 쉽게 사라진다. 작은도서관은 지역 주민이 가진 기억을 기록하고 공유할 수 있는 가까운 문화 거점이므로, 주민 참여형 아카이브 프로그램을 통해 지역 이야기를 보존한다.
@@ -136,6 +143,13 @@ const saveStateLabel: Record<SaveState, string> = {
   dirty: '저장 필요',
   saving: '저장 중',
   failed: '저장 실패',
+};
+
+const stageClassName: Record<StudioDocumentStage, string> = {
+  '기획 중': 'isDraft',
+  '수요조사 중': 'isSurvey',
+  '수요조사 완료': 'isSurveyDone',
+  '기획서 확정': 'isConfirmed',
 };
 
 const aiStateLabel: Record<AiRequestState, string> = {
@@ -225,6 +239,9 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     }
   });
   const [title, setTitle] = useState(storedDraft?.title || document.title);
+  const [stage, setStage] = useState<StudioDocumentStage>(document.stage);
+  const [stageSaveState, setStageSaveState] = useState<StageSaveState>('idle');
+  const [stageMessage, setStageMessage] = useState('');
   const [content, setContent] = useState(storedDraft?.content || document.content);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
@@ -262,6 +279,12 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         });
         const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
 
+        if (response.status === 401) {
+          setLoadState('auth-required');
+          setLoadErrorMessage('기획서를 보려면 로그인이 필요합니다.');
+          return;
+        }
+
         if (!response.ok || !data.document) {
           throw new Error(data.error || '기획서를 불러오지 못했습니다.');
         }
@@ -271,6 +294,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         }
 
         setTitle(data.document.title);
+        setStage(data.document.stage);
+        setStageMessage('');
         setContent(data.document.content);
         setLastSavedAt(formatStudioDate(data.document.updatedAt));
         setSaveState('saved');
@@ -356,7 +381,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
 
       if (!response.ok || !data.document) {
-        throw new Error(data.error || '기획서를 저장하지 못했습니다.');
+        throw new Error(response.status === 401 ? '기획서를 저장하려면 로그인이 필요합니다.' : data.error || '기획서를 저장하지 못했습니다.');
       }
 
       setSaveState('saved');
@@ -364,6 +389,44 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     } catch (error) {
       setSaveState('failed');
       setSaveErrorMessage(error instanceof Error ? error.message : '기획서를 저장하지 못했습니다.');
+    }
+  }
+
+  async function handleStageChange(nextStage: StudioDocumentStage) {
+    if (nextStage === stage || stageSaveState === 'saving') {
+      return;
+    }
+
+    const previousStage = stage;
+    setStage(nextStage);
+    setStageSaveState('saving');
+    setStageMessage(`${nextStage} 단계로 변경하는 중입니다.`);
+    setSaveErrorMessage('');
+
+    try {
+      const response = await fetch(`/api/studio/documents/${document.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stage: nextStage,
+        }),
+      });
+      const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
+
+      if (!response.ok || !data.document) {
+        throw new Error(response.status === 401 ? '진행 단계를 변경하려면 로그인이 필요합니다.' : data.error || '진행 단계를 저장하지 못했습니다.');
+      }
+
+      setStage(data.document.stage);
+      setLastSavedAt(formatStudioDate(data.document.updatedAt));
+      setStageSaveState('idle');
+      setStageMessage(`진행 단계가 ${data.document.stage} 단계로 저장되었습니다.`);
+    } catch (error) {
+      setStage(previousStage);
+      setStageSaveState('failed');
+      setStageMessage(error instanceof Error ? error.message : '진행 단계를 저장하지 못했습니다.');
     }
   }
 
@@ -491,6 +554,28 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             <h1>프로그램 기획서 편집</h1>
           </div>
           <div className="studioDocumentActions">
+            <label className="studioDocumentStageControl">
+              <span>진행 단계</span>
+              <select
+                aria-label="기획서 진행 단계"
+                className={stageClassName[stage]}
+                disabled={loadState !== 'ready' || stageSaveState === 'saving'}
+                value={stage}
+                onChange={(event) => {
+                  const nextStage = event.target.value as StudioDocumentStage;
+
+                  if (studioDocumentStages.includes(nextStage)) {
+                    void handleStageChange(nextStage);
+                  }
+                }}
+              >
+                {studioDocumentStages.map((stageOption) => (
+                  <option key={stageOption} value={stageOption}>
+                    {stageOption}
+                  </option>
+                ))}
+              </select>
+            </label>
             <span className={`studioSaveBadge is-${saveState}`} aria-live="polite">
               {saveStateLabel[saveState]}
             </span>
@@ -507,13 +592,18 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           </div>
         </section>
 
-        {loadState === 'failed' ? (
+        {loadState === 'failed' || loadState === 'auth-required' ? (
           <section className="studioDocumentsEmptyState" aria-labelledby="studio-document-load-failed-title">
             <span aria-hidden="true">□</span>
-            <h2 id="studio-document-load-failed-title">기획서를 불러오지 못했습니다.</h2>
+            <h2 id="studio-document-load-failed-title">
+              {loadState === 'auth-required' ? '로그인이 필요합니다.' : '기획서를 불러오지 못했습니다.'}
+            </h2>
             <p>{loadErrorMessage}</p>
-            <Link className="uiButton uiButtonPrimary" href="/studio/documents">
-              기획서 목록으로 이동
+            <Link
+              className="uiButton uiButtonPrimary"
+              href={loadState === 'auth-required' ? `/login?next=/studio/document/${document.id}` : '/studio/documents'}
+            >
+              {loadState === 'auth-required' ? '로그인하기' : '기획서 목록으로 이동'}
             </Link>
           </section>
         ) : null}
@@ -527,6 +617,12 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         {loadState === 'ready' && (loadErrorMessage || saveErrorMessage) ? (
           <p className="studioDocumentsNotice" aria-live="polite">
             {saveErrorMessage || loadErrorMessage}
+          </p>
+        ) : null}
+
+        {loadState === 'ready' && stageMessage ? (
+          <p className={`studioDocumentsNotice ${stageSaveState === 'failed' ? 'isError' : ''}`} aria-live="polite">
+            {stageMessage}
           </p>
         ) : null}
 

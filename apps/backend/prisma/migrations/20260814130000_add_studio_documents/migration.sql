@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "StudioDocument" (
   "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
-  "ownerId" TEXT,
+  "ownerId" TEXT NOT NULL,
   "title" TEXT NOT NULL,
   "content" TEXT NOT NULL,
   "stage" TEXT NOT NULL DEFAULT '기획 중',
@@ -24,6 +24,6 @@ BEGIN
     ALTER TABLE "StudioDocument"
     ADD CONSTRAINT "StudioDocument_ownerId_fkey"
     FOREIGN KEY ("ownerId") REFERENCES "User"("id")
-    ON DELETE SET NULL ON UPDATE CASCADE;
+ON DELETE CASCADE ON UPDATE CASCADE;
   END IF;
 END $$;
