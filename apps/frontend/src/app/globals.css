@@ -5211,12 +5211,165 @@ html:has(.moiraPage) {
   background: #f7f8f5;
 }
 
+.introPage section[id] {
+  scroll-margin-top: 82px;
+}
+
+.introSectionNav {
+  position: fixed;
+  z-index: 30;
+  top: 50%;
+  left: clamp(14px, 2.2vw, 34px);
+  display: grid;
+  gap: 5px;
+  width: 126px;
+  transform: translateY(-50%);
+}
+
+.introSectionNavTrack {
+  position: absolute;
+  z-index: -1;
+  top: 17px;
+  bottom: 17px;
+  left: 31px;
+  width: 1px;
+  background: rgba(15, 65, 55, 0.16);
+}
+
+.introSectionNav button {
+  display: grid;
+  grid-template-columns: 22px 19px minmax(0, 1fr);
+  gap: 0;
+  align-items: center;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(15, 65, 55, 0.46);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.22s ease;
+}
+
+.introSectionNavIndex {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.introSectionNavDot {
+  width: 7px;
+  height: 7px;
+  margin-inline: 5px 7px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: #f7f8f5;
+  transition: transform 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+}
+
+.introSectionNavLabel {
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.2;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.introSectionNav button:hover,
+.introSectionNav button.isActive {
+  color: var(--moira-green-dark);
+}
+
+.introSectionNav button:hover .introSectionNavLabel,
+.introSectionNav button.isActive .introSectionNavLabel {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.introSectionNav button.isActive .introSectionNavDot {
+  background: var(--moira-green-dark);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+  transform: scale(1.15);
+}
+
+.introSectionNav.isOnDark .introSectionNavTrack {
+  background: rgba(226, 242, 235, 0.28);
+}
+
+.introSectionNav.isOnDark button {
+  color: rgba(232, 246, 240, 0.66);
+}
+
+.introSectionNav.isOnDark button:hover,
+.introSectionNav.isOnDark button.isActive {
+  color: #ffffff;
+}
+
+.introSectionNav.isOnDark .introSectionNavDot {
+  background: rgba(9, 59, 50, 0.82);
+}
+
+.introSectionNav.isOnDark button.isActive .introSectionNavDot {
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(216, 238, 229, 0.2);
+}
+
 .introHero {
   position: relative;
+  overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(20, 110, 86, 0.08), transparent 32%),
     linear-gradient(180deg, #f8fbf8 0%, #ffffff 100%);
   padding-block: clamp(62px, 7vw, 92px);
+}
+
+.introScrollCue {
+  position: absolute;
+  z-index: 3;
+  bottom: 18px;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(15, 65, 55, 0.46);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.introScrollCue span {
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+  writing-mode: vertical-rl;
+}
+
+.introScrollCue i {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 30px;
+  overflow: hidden;
+  background: rgba(15, 65, 55, 0.14);
+}
+
+.introScrollCue i::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 14px;
+  background: var(--moira-green-dark);
+  animation: introCueLine 1.9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes introCueLine {
+  0% { transform: translateY(-16px); }
+  55%, 100% { transform: translateY(32px); }
 }
 
 .introHeroGrid {
@@ -5289,9 +5442,44 @@ html:has(.moiraPage) {
 }
 
 .introHeroVisual {
+  position: relative;
   display: grid;
   justify-items: stretch;
   width: 100%;
+}
+
+.introLibraryMark {
+  position: absolute;
+  z-index: 2;
+  top: -43px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: rgba(15, 65, 55, 0.56);
+  pointer-events: none;
+  animation: introLibraryFloat 5.4s ease-in-out infinite;
+}
+
+@keyframes introLibraryFloat {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -4px; }
+}
+
+.introLibraryMark svg {
+  width: 48px;
+  height: 31px;
+  fill: rgba(255, 255, 255, 0.72);
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.introLibraryMark span {
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.16em;
 }
 
 .studioMockupShell {
@@ -5347,6 +5535,9 @@ html:has(.moiraPage) {
 }
 
 .studioMockupCard {
+  --hero-progress: 0;
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 18px;
   padding: 18px 18px 16px;
@@ -5354,6 +5545,19 @@ html:has(.moiraPage) {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.9);
   min-width: 0;
+}
+
+.studioMockupCard::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: calc(100% * var(--hero-progress));
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--moira-green-dark), #55a086 72%, #d7803c);
+  transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .studioModeTabs {
@@ -5364,6 +5568,12 @@ html:has(.moiraPage) {
   border-radius: 14px;
   background: rgba(22, 116, 95, 0.08);
   width: fit-content;
+  transition: box-shadow 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.studioModeTabs.isHeroStepReached {
+  box-shadow: 0 0 0 3px rgba(22, 116, 95, 0.08);
+  transform: translateX(3px);
 }
 
 .studioModeTabs button {
@@ -5406,6 +5616,13 @@ html:has(.moiraPage) {
   line-height: 1.6;
   word-break: keep-all;
   overflow-wrap: anywhere;
+  transition: border-color 0.32s ease, background 0.32s ease, box-shadow 0.32s ease;
+}
+
+.studioFieldGroup.isHeroStepReached .studioTextBlock {
+  border-color: rgba(22, 116, 95, 0.32);
+  background: #ffffff;
+  box-shadow: inset 3px 0 0 rgba(22, 116, 95, 0.5);
 }
 
 .studioSelectRow {
@@ -5423,6 +5640,24 @@ html:has(.moiraPage) {
   border-radius: 14px;
   background: #f9faf9;
   min-width: 0;
+  transition:
+    border-color 0.32s ease,
+    background 0.32s ease,
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.studioSelectRow.isHeroStepReached .studioSelectBox {
+  border-color: rgba(22, 116, 95, 0.26);
+  background: #ffffff;
+  transform: translateY(-2px);
+}
+
+.studioSelectRow.isHeroStepReached .studioSelectBox:nth-child(2) {
+  transition-delay: 0.06s;
+}
+
+.studioSelectRow.isHeroStepReached .studioSelectBox:nth-child(3) {
+  transition-delay: 0.12s;
 }
 
 .studioSelectBox span {
@@ -5449,6 +5684,12 @@ html:has(.moiraPage) {
   border-radius: 16px;
   background: linear-gradient(135deg, #0f4137 0%, #1d5d50 100%);
   color: rgba(255, 255, 255, 0.9);
+  transition: box-shadow 0.36s ease, transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.studioActionBar.isHeroStepReached {
+  box-shadow: 0 10px 26px rgba(15, 65, 55, 0.2);
+  transform: translateY(-2px);
 }
 
 .studioActionBar span {
@@ -5466,6 +5707,12 @@ html:has(.moiraPage) {
   font-size: 15px;
   font-weight: 800;
   cursor: default;
+  transition: background 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.studioActionBar.isHeroStepReached button {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateX(-2px);
 }
 
 .studioMockupFootnote {
@@ -5544,12 +5791,57 @@ html:has(.moiraPage) {
 }
 
 .featureCard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
   grid-template-rows: auto auto 1fr;
   align-content: start;
   gap: 14px;
   height: 100%;
   min-height: 236px;
+}
+
+.featureCard::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -38px;
+  right: -38px;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(22, 116, 95, 0.1), transparent 68%);
+  transform: scale(0.72);
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.featureCard:nth-child(2)::before,
+.featureCard:nth-child(5)::before {
+  background: radial-gradient(circle, rgba(207, 113, 43, 0.11), transparent 68%);
+}
+
+.featureCard .introCardIcon {
+  transition:
+    transform 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .featureCard:hover {
+    border-color: rgba(22, 116, 95, 0.25);
+  }
+
+  .featureCard:hover::before {
+    transform: scale(1.35);
+  }
+
+  .featureCard:hover .introCardIcon {
+    background: #e2f0e8;
+    box-shadow: 0 10px 22px rgba(22, 116, 95, 0.12);
+    transform: translateY(-3px) rotate(-4deg) scale(1.04);
+  }
 }
 
 .introCardIcon {
@@ -5564,23 +5856,53 @@ html:has(.moiraPage) {
 }
 
 .pipeline {
+  --flow-progress: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 24px;
+  gap: 20px;
   position: relative;
   align-items: start;
-  padding-top: 14px;
+  padding-top: 24px;
   margin-top: 24px;
 }
 
 .pipeline::before {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 22px;
+  left: 29px;
+  right: 29px;
+  top: 53px;
   height: 2px;
-  background: rgba(22, 116, 95, 0.24);
+  background: rgba(22, 116, 95, 0.14);
+}
+
+.pipelineProgress {
+  position: absolute;
+  z-index: 1;
+  top: 52px;
+  left: 29px;
+  display: block;
+  width: calc((100% - 58px) * var(--flow-progress));
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--moira-green-dark), #4a9d82 72%, #d7803c);
+  box-shadow: 0 0 16px rgba(22, 116, 95, 0.2);
+  pointer-events: none;
+  transition: width 0.08s linear;
+}
+
+.pipelineProgress::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #d7803c;
+  box-shadow: 0 0 0 5px rgba(215, 128, 60, 0.12), 0 3px 10px rgba(83, 48, 22, 0.2);
+  transform: translateY(-50%);
 }
 
 .pipelineItem {
@@ -5594,43 +5916,129 @@ html:has(.moiraPage) {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 42px;
+  min-height: 58px;
 }
 
 .pipelineNumber {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(22, 116, 95, 0.2);
   border-radius: 50%;
-  background: var(--moira-green-dark);
-  color: #fff;
-  font-size: 12px;
+  background: #ffffff;
+  color: var(--moira-green-dark);
+  font-size: 10px;
   font-weight: 800;
-  box-shadow: 0 8px 18px rgba(17, 55, 45, 0.14);
-  position: relative;
-  z-index: 1;
+  box-shadow: 0 8px 18px rgba(17, 55, 45, 0.08);
+  transition:
+    color 0.35s ease,
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pipelineConnector {
-  display: block;
-  flex: 1;
-  height: 2px;
-  background: rgba(22, 116, 95, 0.24);
+  display: none;
+}
+
+.flowStepIcon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.flowStepIcon path,
+.flowStepIcon rect,
+.flowStepIcon circle {
+  stroke-dasharray: 68;
+  stroke-dashoffset: 68;
+  transition: stroke-dashoffset 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pipelineItem.isFlowReached .flowStepIcon path,
+.pipelineItem.isFlowReached .flowStepIcon rect,
+.pipelineItem.isFlowReached .flowStepIcon circle {
+  stroke-dashoffset: 0;
+}
+
+.flowStepNumber {
+  position: absolute;
+  right: -3px;
+  bottom: -5px;
+  display: grid;
+  min-width: 24px;
+  height: 18px;
+  place-items: center;
+  padding-inline: 4px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #dcece5;
+  color: var(--moira-green-dark);
+  font-size: 9px;
+  line-height: 1;
+  transition: color 0.35s ease, background 0.35s ease;
+}
+
+.pipelineItem.isFlowReached .pipelineNumber {
+  border-color: var(--moira-green-dark);
+  background: var(--moira-green-dark);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(17, 55, 45, 0.2);
+  transform: translateY(-3px);
+}
+
+.pipelineItem.isFlowReached .flowStepNumber {
+  background: #d9eee5;
+}
+
+.pipelineItem.isFlowReached .pipelineMeta {
+  transform: translateY(0);
 }
 
 .pipelineMeta {
   display: grid;
   gap: 10px;
   padding-inline: 4px;
+  transform: translateY(5px);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pipelineMeta h3 {
+  position: relative;
+  width: fit-content;
   margin: 0;
   color: var(--moira-ink);
   font-size: clamp(20px, 2vw, 26px);
   letter-spacing: -0.04em;
+}
+
+.pipelineMeta h3::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -5px;
+  left: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.22;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pipelineItem.isFlowReached .pipelineMeta h3::after {
+  transform: scaleX(1);
 }
 
 .pipelineMeta p {
@@ -5641,11 +6049,19 @@ html:has(.moiraPage) {
 }
 
 .pipelineNumber.isStudioNumber {
+  border-color: rgba(207, 113, 43, 0.3);
+  color: #c76725;
+}
+
+.pipelineItem.isFlowReached .pipelineNumber.isStudioNumber {
   background: linear-gradient(135deg, #e9964a 0%, #cf712b 100%);
-  color: #fff;
-  box-shadow: 0 10px 22px rgba(207, 113, 43, 0.2);
-  font-size: 15px;
-  font-weight: 900;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(207, 113, 43, 0.22);
+}
+
+.pipelineNumber.isStudioNumber .flowStepNumber {
+  background: #f7e5d5;
+  color: #b75d21;
 }
 
 .studioHighlightTitle {
@@ -5838,8 +6254,27 @@ html:has(.moiraPage) {
 }
 
 .introPage .valueSection {
+  position: relative;
+  overflow: hidden;
   background: #eef5f0;
   border-top: 1px solid rgba(22, 116, 95, 0.08);
+}
+
+.introPage .valueSection::after {
+  content: '';
+  position: absolute;
+  top: 40px;
+  right: max(24px, calc((100vw - 1120px) / 2));
+  width: 112px;
+  height: 64px;
+  opacity: 0.18;
+  background:
+    linear-gradient(var(--moira-green-dark), var(--moira-green-dark)) 0 8px / 82px 8px no-repeat,
+    linear-gradient(#c76725, #c76725) 16px 26px / 96px 8px no-repeat,
+    linear-gradient(var(--moira-green), var(--moira-green)) 4px 44px / 86px 8px no-repeat;
+  border-radius: 2px;
+  transform: rotate(-3deg);
+  pointer-events: none;
 }
 
 .valueSection .homeSectionHeading {
@@ -5858,6 +6293,35 @@ html:has(.moiraPage) {
 
 .flowSection .homeSectionHeading {
   max-width: none;
+}
+
+.flowSection {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 18%, rgba(22, 116, 95, 0.055), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgba(207, 113, 43, 0.05), transparent 25%),
+    #f9fbf9;
+}
+
+.flowSection::after {
+  content: '';
+  position: absolute;
+  right: -70px;
+  bottom: -80px;
+  width: 230px;
+  height: 230px;
+  border: 1px solid rgba(22, 116, 95, 0.08);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 28px rgba(22, 116, 95, 0.025),
+    0 0 0 58px rgba(22, 116, 95, 0.018);
+  pointer-events: none;
+}
+
+.flowSection .uiContainer {
+  position: relative;
+  z-index: 1;
 }
 
 .featureSection {
@@ -6082,9 +6546,120 @@ html:has(.moiraPage) {
   text-shadow: 0 0 24px rgba(185, 221, 207, 0.32);
 }
 
+/* 15-inch laptop layouts: retain the desktop composition without crowding. */
+@media (max-width: 1440px) {
+  .introHeroGrid {
+    grid-template-columns: minmax(0, 0.96fr) minmax(430px, 1.04fr);
+    gap: clamp(44px, 5vw, 72px);
+    width: min(1220px, calc(100% - 112px));
+    min-height: min(720px, calc(100vh - 72px));
+  }
+
+  .introHeroCopy h1 {
+    font-size: clamp(38px, 3.65vw, 54px);
+  }
+
+  .introHeroLead {
+    font-size: 16px;
+    line-height: 1.72;
+  }
+
+  .studioMockupInner {
+    gap: 14px;
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .studioMockupCard {
+    gap: 14px;
+    padding: 15px;
+  }
+
+  .studioTextBlock {
+    min-height: 68px;
+    padding: 14px 16px;
+  }
+
+  .audienceCard {
+    padding: 28px;
+  }
+
+  .audienceCardHeader {
+    grid-template-columns: 116px minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .audienceCardIcon {
+    width: 116px;
+    height: 116px;
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .introSectionNav {
+    left: 10px;
+    width: 46px;
+  }
+
+  .introSectionNavLabel {
+    position: absolute;
+    left: 45px;
+    padding: 7px 9px;
+    border: 1px solid rgba(22, 116, 95, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 6px 18px rgba(17, 55, 45, 0.08);
+  }
+
+  .introSectionNav.isOnDark .introSectionNavLabel {
+    border-color: rgba(216, 238, 229, 0.22);
+    background: rgba(9, 59, 50, 0.94);
+    box-shadow: 0 6px 18px rgba(3, 34, 29, 0.2);
+  }
+
+  .introHeroGrid {
+    width: min(1080px, calc(100% - 88px));
+  }
+
+  .introPage .homeSection > .uiContainer,
+  .visionInner {
+    width: min(1040px, calc(100% - 96px));
+  }
+
+  .audienceGrid {
+    gap: 56px;
+  }
+}
+
 @media (max-width: 980px) {
+  .introSectionNav {
+    display: none;
+  }
+
+  .introScrollCue {
+    display: none;
+  }
+
   .introHeroGrid {
     grid-template-columns: 1fr;
+    width: min(720px, calc(100% - 48px));
+    min-height: 0;
+    gap: 56px;
+  }
+
+  .introHeroCopy,
+  .introHeroCopy h1 {
+    max-width: 680px;
+  }
+
+  .introHeroVisual {
+    max-width: 680px;
+    margin-inline: auto;
+  }
+
+  .studioMockupShell {
+    justify-self: center;
   }
 
   .valueGrid,
@@ -6108,18 +6683,38 @@ html:has(.moiraPage) {
 
   .pipeline {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 26px;
     padding-top: 0;
   }
 
-  .pipeline::before,
-  .pipelineConnector {
-    display: none;
+  .pipeline::before {
+    display: block;
+    top: 29px;
+    bottom: 29px;
+    left: 28px;
+    right: auto;
+    width: 2px;
+    height: auto;
+  }
+
+  .pipelineProgress {
+    top: 29px;
+    left: 27px;
+    width: 3px;
+    height: calc((100% - 58px) * var(--flow-progress));
+    transition: height 0.08s linear;
+  }
+
+  .pipelineProgress::after {
+    top: auto;
+    right: 50%;
+    bottom: -5px;
+    transform: translate(50%, 50%);
   }
 
   .pipelineItem {
-    grid-template-columns: 48px 1fr;
-    gap: 14px;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 16px;
   }
 
   .pipelineStep {
@@ -6135,6 +6730,35 @@ html:has(.moiraPage) {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .pipelineProgress,
+  .pipelineNumber,
+  .pipelineMeta,
+  .featureCard,
+  .featureCard::before,
+  .featureCard .introCardIcon,
+  .studioMockupCard::before,
+  .studioModeTabs,
+  .studioTextBlock,
+  .studioSelectBox,
+  .studioActionBar,
+  .studioActionBar button {
+    transition: none !important;
+  }
+
+  .introLibraryMark,
+  .introScrollCue i::after {
+    animation: none !important;
+  }
+
+  .flowStepIcon path,
+  .flowStepIcon rect,
+  .flowStepIcon circle {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+}
+
 @media (max-width: 720px) {
   .introPage {
     --intro-section-padding: 60px;
@@ -6142,6 +6766,53 @@ html:has(.moiraPage) {
 
   .introHeroGrid {
     gap: 28px;
+    width: min(100% - 32px, 560px);
+  }
+
+  .introHero {
+    padding-block: 48px 58px;
+  }
+
+  .introHeroCopy h1 {
+    font-size: clamp(34px, 10vw, 44px);
+    letter-spacing: -0.065em;
+  }
+
+  .introLibraryMark {
+    position: static;
+    justify-self: end;
+    margin: 0 8px 8px 0;
+  }
+
+  .studioMockupShell {
+    padding: 8px;
+    border-radius: 22px;
+  }
+
+  .studioMockupInner {
+    padding: 15px;
+    border-radius: 17px;
+  }
+
+  .studioSelectRow {
+    grid-template-columns: 1fr;
+  }
+
+  .studioActionBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .introPage .homeSection > .uiContainer,
+  .visionInner {
+    width: min(100% - 32px, 560px);
+  }
+
+  .introPage .valueSection::after {
+    top: 24px;
+    right: 16px;
+    transform: scale(0.72) rotate(-3deg);
+    transform-origin: top right;
   }
 
   .visionInner h2 {
