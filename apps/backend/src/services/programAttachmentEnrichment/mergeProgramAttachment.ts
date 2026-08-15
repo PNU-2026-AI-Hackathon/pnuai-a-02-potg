@@ -31,6 +31,8 @@ const LABEL_KIND: Record<string, 'title' | 'target' | 'capacity' | 'instructor' 
   // 표가 아니라 번호 붙은 문단으로 적은 계획서에서 나오는 라벨
   '강의 개요': 'content', 강의개요: 'content', '강의 운영 방법': 'content', 강의운영방법: 'content',
   '강의 목표': 'content', '프로그램 개요': 'content', 프로그램개요: 'content',
+  // 회차 표 없이 도입·전개·마무리를 한 덩어리로 적은 계획서
+  '활동 계획': 'content', 활동계획: 'content',
 };
 
 function comparable(value: unknown) {

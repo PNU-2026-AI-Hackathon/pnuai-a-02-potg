@@ -143,7 +143,7 @@ function splitColumnsByGap(lines: OcrLine[], minGapRatio: number): OcrColumn[] {
   return columns.length ? columns : [{ left: pageLeft, right: pageRight, lines }];
 }
 
-export type OcrCurriculumRow = { session: number; activity: string };
+export type OcrCurriculumRow = { session: number; activity: string; date?: string | null };
 
 /** 줄 맨 앞에 있는 회차 번호. `1`, `1회차`, `1차시` 모두 인정한다. */
 function leadingSession(text: string) {
@@ -195,6 +195,27 @@ const NEXT_LABEL = new RegExp('\\s*(?:'
 export function trimAtNextLabel(value: string) {
   const trimmed = value.replace(NEXT_LABEL, '').trim();
   return trimmed || value.trim();
+}
+
+/**
+ * 회차 표 대신 활동 계획을 한 덩어리로 적은 계획서에서 그 내용을 가져온다.
+ *
+ * 하루짜리 체험처럼 회차를 나눌 것이 없는 프로그램은 `<활동 계획>` 아래에
+ * 도입·전개·마무리를 이어서 적는다. 회차가 아니라 프로그램 내용으로 실어야 한다.
+ */
+export function activityPlanFromOcrBoxes(boxes: OcrTextBox[]): string | null {
+  const lines = groupLines(boxes);
+  const start = lines.findIndex((line) => /^[<〈［[(]?\s*활동\s*계획/.test(line.text.trim()));
+  if (start < 0) return null;
+  const collected: string[] = [];
+  for (const line of lines.slice(start + 1)) {
+    const text = line.text.trim();
+    // 예시 사진·담당강사 같은 꼬리말을 만나면 멈춘다.
+    if (/^[<〈［[(]?\s*(?:예시작|예시|사진|참고)/.test(text)) break;
+    if (text) collected.push(text);
+  }
+  const value = collected.join('\n').trim();
+  return value.length >= 10 ? value : null;
 }
 
 /** 계획서 이미지에서 기본정보 칸에 쓰이는 이름. 값은 이 이름 오른쪽 칸에 있다. */
@@ -319,12 +340,28 @@ function headerLabels(line: OcrLine): HeaderLabel[] {
   }));
 }
 
-/** `1`, `1회차`, `2차시` 어느 형태든 회차 번호를 읽는다. */
-function sessionNumber(text: string) {
-  const match = text.replace(/\s+/g, '').match(/^(\d{1,2})(?:회차|차시|회기|주차|주)?$/);
-  if (!match) return null;
-  const value = Number(match[1]);
-  return value >= 1 && value <= 40 ? value : null;
+/**
+ * 회차 칸을 읽는다.
+ *
+ * 계획서마다 표기가 다르다. `1`, `1회차`, `1차시(4.8.)`처럼 번호를 쓰기도 하고
+ * `5/7`, `10/29`처럼 날짜만 적어 회차를 가르기도 한다.
+ */
+export function readSessionCell(text: string): { session: number | null; date: string | null } | null {
+  // 회차 칸의 홑글자는 숫자다. OCR이 `1`을 `l`·`I`로, `0`을 `O`로 읽는 일이 잦다.
+  const value = text.replace(/\s+/g, '').replace(/^[lI|]$/, '1').replace(/^[oO]$/, '0');
+  const numbered = value.match(/^(\d{1,2})(?:회차|차시|회기|주차|주)?(?:\(([^)]{2,12})\))?$/);
+  if (numbered) {
+    const session = Number(numbered[1]);
+    if (session >= 1 && session <= 40) return { session, date: numbered[2] ?? null };
+  }
+  // `5/7`, `4.8.`, `10.29` 처럼 날짜만 적힌 칸
+  const dated = value.match(/^(\d{1,2})\s*[./-]\s*(\d{1,2})\.?$/);
+  if (dated) {
+    const month = Number(dated[1]);
+    const day = Number(dated[2]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) return { session: null, date: `${month}/${day}` };
+  }
+  return null;
 }
 
 export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
@@ -358,9 +395,12 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
   };
 
   const numbers = body
-    .filter((box) => inColumn(box, sessionLeft, Math.max(sessionRight, contentLeft)) && sessionNumber(box.text) != null)
+    .filter((box) => inColumn(box, sessionLeft, Math.max(sessionRight, contentLeft)) && readSessionCell(box.text) != null)
     .sort((left, right) => left.top - right.top);
   if (numbers.length < 2) return [];
+  // 날짜만 적힌 표는 번호가 없으므로 위에서부터 차례로 매긴다.
+  const marks = numbers.map((box) => readSessionCell(box.text)!);
+  const numbered = marks.every((mark) => mark.session != null);
 
   /**
    * 내용 칸의 왼쪽 끝은 라벨 위치가 아니라 회차 번호의 오른쪽 끝에서 잡는다.
@@ -381,7 +421,8 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
       return center >= bandTop && center < bandBottom;
     });
     const text = groupLines(cell).map((line) => line.text).filter(Boolean).join('\n').trim();
-    if (text) rows.push({ session: sessionNumber(number.text)!, activity: text });
+    const mark = marks[index];
+    if (text) rows.push({ session: numbered ? mark.session! : index + 1, activity: text, date: mark.date });
   }
   return rows;
 }
@@ -398,8 +439,16 @@ export function curriculumFromOcrBoxes(boxes: OcrTextBox[]): OcrCurriculumRow[] 
   const rows = curriculumFromHeaderGrid(groupLines(boxes));
   if (rows.length < 2) return [];
   const sessions = rows.map((row) => row.session);
-  if (new Set(sessions).size !== sessions.length) return [];
+  const unique = new Set(sessions).size === sessions.length;
   const sorted = [...rows].sort((left, right) => left.session - right.session);
-  const contiguous = sorted.every((row, index) => row.session === index + 1);
-  return contiguous ? sorted : [];
+  if (unique && sorted.every((row, index) => row.session === index + 1)) return sorted;
+
+  /**
+   * 회차 칸에 표 밖의 숫자가 섞여 번호가 어긋나는 표가 있다.
+   * 날짜가 함께 적혀 있으면 그 행들만 위에서부터 차례로 매긴다.
+   * 날짜는 회차를 가르는 확실한 근거이고, 날짜 없는 행은 표 아래 안내문일 때가 많다.
+   */
+  const dated = rows.filter((row) => row.date);
+  if (dated.length >= 2) return dated.map((row, index) => ({ ...row, session: index + 1 }));
+  return [];
 }

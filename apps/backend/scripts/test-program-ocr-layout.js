@@ -4,6 +4,8 @@ const {
   splitColumns,
   curriculumFromColumn,
   curriculumFromOcrBoxes,
+  readSessionCell,
+  activityPlanFromOcrBoxes,
 } = require('../src/services/programAttachmentEnrichment/ocrLayout');
 
 /** 글자 상자 하나. 실제 OCR 응답과 같은 모양으로 만든다. */
@@ -90,6 +92,53 @@ assert.deepEqual(
 
 const skipped = planBoxes().filter((item) => !/^2회차$/.test(item.text));
 assert.deepEqual(curriculumFromOcrBoxes(skipped), [],
-  '회차가 1부터 이어지지 않으면 표로 보지 않는다');
+  '회차가 1부터 이어지지 않고 날짜도 없으면 표로 보지 않는다');
+
+// --- 회차 칸 표기 ------------------------------------------------------------
+
+assert.deepEqual(readSessionCell('1회차'), { session: 1, date: null });
+assert.deepEqual(readSessionCell('1차시(4.8.)'), { session: 1, date: '4.8.' },
+  '괄호에 든 날짜까지 읽어야 한다');
+assert.deepEqual(readSessionCell('5/7'), { session: null, date: '5/7' },
+  '날짜만 적어 회차를 가르는 계획서가 있다');
+assert.deepEqual(readSessionCell('l'), { session: 1, date: null },
+  'OCR이 숫자 1을 알파벳 l로 읽는 일이 잦다');
+assert.equal(readSessionCell('가나다'), null);
+
+// --- 날짜만 있는 회차 표 -----------------------------------------------------
+
+function datedBoxes() {
+  const boxes = [box('회차', 140, 0, 40), box('교육일자', 300, 0, 80), box('동화명', 600, 0, 60)];
+  const titles = ['신기한 씨앗가게', '우리는 친구', '북극곰이 녹아요'];
+  for (const [index, title] of titles.entries()) {
+    const top = 60 + index * 60;
+    // 회차 칸에 표 밖의 숫자가 섞여 번호가 어긋난 상황
+    boxes.push(box(`${index * 2 + 1}`, 140, top, 20));
+    boxes.push(box(`9/${6 + index * 7}`, 300, top, 60));
+    boxes.push(box(title, 600, top, 200));
+  }
+  return boxes;
+}
+
+const dated = curriculumFromOcrBoxes(datedBoxes());
+assert.deepEqual(dated.map((row) => row.session), [1, 2, 3],
+  '번호가 어긋나도 날짜가 있으면 위에서부터 차례로 매긴다');
+assert.deepEqual(dated.map((row) => row.date), ['9/6', '9/13', '9/20']);
+assert.match(dated[0].activity, /신기한 씨앗가게/);
+
+// --- 회차 표 없이 활동 계획만 적은 계획서 ------------------------------------
+
+const planOnly = [
+  box('<활동 계획>', 100, 0, 120),
+  box('1.도입', 100, 40, 60),
+  box('-글라스아트란 무엇인지 알아본다.', 100, 80, 300),
+  box('<예시작 사진>', 100, 140, 120),
+  box('여기는 담아선 안 되는 꼬리말', 100, 180, 300),
+];
+const plan2 = activityPlanFromOcrBoxes(planOnly);
+assert.match(plan2, /1\.도입/);
+assert.match(plan2, /글라스아트란/);
+assert.equal(/꼬리말/.test(plan2), false, '예시작 사진 뒤는 활동 계획이 아니다');
+assert.equal(activityPlanFromOcrBoxes([box('그냥 안내문', 0, 0)]), null);
 
 console.log('Program OCR layout tests passed.');

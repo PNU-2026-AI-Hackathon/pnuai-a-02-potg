@@ -6,7 +6,7 @@ import type { RawProgram } from '../services/programDataNormalization/types';
 import { combinedBasicInfo, mergeProgramAttachment } from '../services/programAttachmentEnrichment/mergeProgramAttachment';
 import { processSample, type InventoryAttachment, type InventoryItem } from './buildProgramAttachmentEnrichmentSamples';
 import { structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
-import { curriculumFromOcrBoxes, labeledFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
+import { activityPlanFromOcrBoxes, curriculumFromOcrBoxes, labeledFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
 
 const DEFAULT_CRAWL_DIR = path.resolve(process.cwd(), '.local', 'geumjeong-small-library-crawl');
 const DEFAULT_INVENTORY = path.resolve(process.cwd(), '.local', 'program-attachment-inventory', 'inventory-all.json');
@@ -225,6 +225,11 @@ function processOcrRecord(
    * 평탄한 추출문은 읽기 순서가 표를 따라가지 않아 값이 엉뚱한 이름 뒤에 붙는다.
    * `교재비`의 값 `없음`이 `강의실 준비`의 값 뒤로 밀리는 식이다.
    */
+  // 회차 표 없이 활동 계획을 한 덩어리로 적은 계획서는 그 내용을 프로그램 내용으로 싣는다.
+  for (const plan of usable.map((target) => activityPlanFromOcrBoxes(target.boxes ?? [])).filter(Boolean)) {
+    structured.labeled.push({ label: '활동 계획', value: plan as string });
+    break;
+  }
   const sameLabel = (left: string, right: string) => left.replace(/\s+/g, '') === right.replace(/\s+/g, '');
   for (const located of usable.flatMap((target) => labeledFromOcrBoxes(target.boxes ?? []))) {
     const existing = structured.labeled.findIndex((item) => sameLabel(item.label, located.label));
@@ -243,7 +248,7 @@ function processOcrRecord(
   const recovered = curriculumFromOcrBoxes(primary.boxes ?? []);
   structured.curriculum = recovered.map((session) => ({
     session: session.session,
-    date: null,
+    date: session.date ?? null,
     content: session.activity,
     note: null,
   }));
