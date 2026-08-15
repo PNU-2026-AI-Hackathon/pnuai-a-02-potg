@@ -6354,7 +6354,6 @@ html:has(.moiraPage) {
   align-items: center;
   margin: clamp(48px, 5vw, 64px) 0 0;
   padding: 24px 32px;
-  border-left: 4px solid var(--moira-green);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.76);
   box-shadow: 0 12px 30px rgba(30, 57, 44, 0.06);
