@@ -285,7 +285,7 @@ export function labeledFromBulletText(text: string): Array<{ label: string; valu
 }
 
 /** 계획서 이미지에서 기본정보 칸에 쓰이는 이름. 값은 이 이름 오른쪽 칸에 있다. */
-const INFO_LABEL = /^(?:프로그램명|강좌명|강의명|목표|강의목표|프로그램소개|교육대상|대상|교육기간|운영기간|교육일시|교육시간|교육장소|장소|담당강사|강사|강사명|재료비|교재비|교재|학습자준비물|준비물|강의실준비|수강인원|모집인원|운영횟수)$/;
+const INFO_LABEL = /^(?:프로그램명|강좌명|강의명|목표|강의목표|프로그램소개|교육대상|대상|교육기간|운영기간|교육일시|교육시간|교육장소|장소|담당강사|강사|강사명|재료비|교재비|교재|학습자준비물|준비물|강의실준비|수강인원|모집인원|운영횟수|신청기간|모집기간|접수기간|신청대상|운영장소|수강료|신청방법|접수방법)$/;
 
 /**
  * 값을 끊기만 하고 기본정보로는 내보내지 않는 이름.
@@ -302,6 +302,18 @@ const BOUNDARY_LABEL = /^(?:차시|회차|회기|시수|세부교육내용|교�
  * 값이 두 줄이면 이름이 세로 가운데 놓여 조각들이 서로 다른 줄로 갈리기도 한다.
  * 이름으로 합쳐질 때만 묶으므로 값이 엉뚱하게 붙지 않는다.
  */
+/**
+ * 글자를 벌려 쓴 이름을 되붙일 대상.
+ *
+ * 기본정보 이름뿐 아니라 회차표 머리글도 `주  제`, `강  사`처럼 벌려 적는다.
+ * 되붙였을 때 아는 이름이 되는 경우에만 묶으므로 값이 엉뚱하게 붙지 않는다.
+ */
+function isKnownLabel(text: string) {
+  return INFO_LABEL.test(text) || BOUNDARY_LABEL.test(text)
+    || SESSION_HEADER.test(text) || CATEGORY_HEADER.test(text)
+    || /^(?:주제|강사|담당강사|비고|교육내용|세부교육내용|강의내용)$/.test(text);
+}
+
 function mergeSplitLabels(boxes: OcrTextBox[]): OcrTextBox[] {
   const unit = median(boxes.map((box) => Math.max(1, box.bottom - box.top)));
   if (!unit) return boxes;
@@ -322,9 +334,9 @@ function mergeSplitLabels(boxes: OcrTextBox[]): OcrTextBox[] {
       if (!closeEnough) continue;
       group = [...group, next];
       text += next.text.replace(/\s+/g, '');
-      if (INFO_LABEL.test(text) || BOUNDARY_LABEL.test(text)) break;
+      if (isKnownLabel(text)) break;
     }
-    if (group.length < 2 || !(INFO_LABEL.test(text) || BOUNDARY_LABEL.test(text))) continue;
+    if (group.length < 2 || !isKnownLabel(text)) continue;
     for (const member of group) used.add(member);
     merged.push({
       text,
@@ -514,7 +526,9 @@ function isSessionHeader(text: string) {
  * 기본정보 줄에도 `일시`·`내용` 같은 말이 섞여 앞줄이 먼저 걸린다.
  * 실제로 회차를 읽어낸 줄을 머리글로 본다.
  */
-export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
+export function curriculumFromHeaderGrid(rawLines: OcrLine[]): OcrCurriculumRow[] {
+  // 회차표 머리글도 `주  제`처럼 벌려 적으므로 되붙인 뒤 본다.
+  const lines = groupLines(mergeSplitLabels(rawLines.flatMap((line) => line.boxes)));
   /**
    * 머리글이 두 줄에 걸친 표가 있다.
    * (`차시 | 강의내용 | 비고` 아래에 `교육내용 | 세부교육내용`)
