@@ -13,6 +13,7 @@ export type StudioGenerateRequest = {
 };
 
 export type StudioDraft = {
+  id?: string;
   title: string;
   summary: string;
   target: string;
@@ -24,6 +25,7 @@ export type StudioDraft = {
 };
 
 export const studioDraftStorageKey = 'moira-studio-generated-draft';
+export const studioGenerateRequestStorageKey = 'moira-studio-generate-request';
 
 function normalizeStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {

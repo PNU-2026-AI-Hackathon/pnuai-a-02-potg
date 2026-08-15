@@ -11,6 +11,10 @@ const defaultGeminiModels = [process.env.GEMINI_MODEL, ...allowedGeminiModels]
   .filter((model): model is string => typeof model === 'string' && model.trim().length > 0)
   .map((model) => model.trim());
 
+function createDocumentId() {
+  return `generated-${Date.now()}`;
+}
+
 function readGeminiText(responseBody: unknown) {
   if (!responseBody || typeof responseBody !== 'object') {
     return null;
@@ -147,7 +151,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '기획서 초안 형식이 올바르지 않습니다.' }, { status: 502 });
     }
 
-    return NextResponse.json({ draft: parsedDraft, model: usedModel });
+    const documentId = createDocumentId();
+
+    return NextResponse.json({
+      documentId,
+      draft: {
+        ...parsedDraft,
+        id: documentId,
+      },
+      model: usedModel,
+    });
   } catch (error) {
     console.error('Studio generate route failed:', error);
 

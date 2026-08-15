@@ -1,22 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  studioDraftStorageKey,
+  studioGenerateRequestStorageKey,
+  type StudioDraft,
+  type StudioGenerateRequest,
+} from '@/lib/studio-draft';
 
-type GenerationState = 'generating' | 'complete' | 'failed';
+type GenerationState = 'generating' | 'complete' | 'failed' | 'missing-request';
 
-const dummyDocumentId = 'demo-document-1';
-
-const dummyGenerationSummary = {
-  category: '디지털 역량',
-  audience: '시니어',
-  age: '60대 이상',
-  operation: '강의 + 실습',
-  period: '4회차',
-  budget: '50만 원 이하',
-  location: '작은도서관 프로그램실',
-  agenda: '시니어 대상 스마트폰 반복 교육이 필요합니다',
-  memo: '스마트폰 사용이 익숙하지 않은 어르신을 위한 생활 밀착형 프로그램',
+type StudioGenerateResponse = {
+  documentId?: string;
+  draft?: StudioDraft;
+  error?: string;
 };
 
 const generationSteps = [
@@ -30,7 +29,7 @@ const generationSteps = [
   },
   {
     label: '세부 운영 내용 작성',
-    description: '회차별 활동과 준비물을 더미 초안에 배치합니다.',
+    description: '회차별 활동과 준비물을 기획서 초안에 배치합니다.',
   },
   {
     label: '기획서 초안 정리',
@@ -38,24 +37,107 @@ const generationSteps = [
   },
 ];
 
-const summaryItems = [
-  ['프로그램 분야', dummyGenerationSummary.category],
-  ['프로그램 대상', dummyGenerationSummary.audience],
-  ['대상 연령', dummyGenerationSummary.age],
-  ['운영 방식', dummyGenerationSummary.operation],
-  ['운영 기간', dummyGenerationSummary.period],
-  ['예산 범위', dummyGenerationSummary.budget],
-  ['운영 장소', dummyGenerationSummary.location],
-  ['참고한 지역 의제', dummyGenerationSummary.agenda],
-  ['기획 메모', dummyGenerationSummary.memo],
-];
+const conditionLabels: Record<string, string> = {
+  category: '프로그램 분야',
+  topic: '주제',
+  audience: '프로그램 대상',
+  age: '대상 연령',
+  operation: '운영 방식',
+  period: '운영 기간',
+  sessions: '운영 회차',
+  capacity: '모집 인원',
+  budget: '예산 범위',
+  location: '운영 장소',
+  agenda: '참고한 지역 의제',
+  example: '참고 사례',
+};
+
+function createDocumentId() {
+  return `generated-${Date.now()}`;
+}
+
+function readStoredRequest() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const storedRequest = window.sessionStorage.getItem(studioGenerateRequestStorageKey);
+
+  if (!storedRequest) {
+    return null;
+  }
+
+  try {
+    const parsedRequest = JSON.parse(storedRequest) as Partial<StudioGenerateRequest>;
+
+    if (typeof parsedRequest.prompt !== 'string' || parsedRequest.prompt.trim().length === 0) {
+      return null;
+    }
+
+    return {
+      prompt: parsedRequest.prompt.trim(),
+      conditions:
+        parsedRequest.conditions && typeof parsedRequest.conditions === 'object'
+          ? parsedRequest.conditions
+          : {},
+      agenda:
+        parsedRequest.agenda && typeof parsedRequest.agenda === 'object'
+          ? parsedRequest.agenda
+          : null,
+    } satisfies StudioGenerateRequest;
+  } catch (error) {
+    console.error('Failed to read studio generate request:', error);
+    return null;
+  }
+}
+
+function summarizeConditions(request: StudioGenerateRequest | null) {
+  if (!request) {
+    return [];
+  }
+
+  const conditionEntries = Object.entries(request.conditions)
+    .map(([key, values]) => {
+      const cleanedValues = values.map((value) => value.trim()).filter((value) => value.length > 0);
+
+      return cleanedValues.length > 0
+        ? {
+            label: conditionLabels[key] ?? key,
+            value: cleanedValues.join(', '),
+          }
+        : null;
+    })
+    .filter((entry): entry is { label: string; value: string } => entry !== null);
+
+  return [
+    ...conditionEntries,
+    request.agenda
+      ? {
+          label: '참고한 지역 의제',
+          value: request.agenda.title,
+        }
+      : null,
+    {
+      label: '기획 메모',
+      value: request.prompt,
+    },
+  ].filter((entry): entry is { label: string; value: string } => entry !== null);
+}
 
 export default function StudioGenerationLoading() {
-  const [generationState, setGenerationState] = useState<GenerationState>('generating');
+  const router = useRouter();
+  const hasStartedRef = useRef(false);
+  const [request] = useState<StudioGenerateRequest | null>(() => readStoredRequest());
+  const [generationState, setGenerationState] = useState<GenerationState>(() =>
+    readStoredRequest() ? 'generating' : 'missing-request',
+  );
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [createdDocumentId, setCreatedDocumentId] = useState('demo-document-1');
 
+  const summaryItems = useMemo(() => summarizeConditions(request), [request]);
   const progressValue = useMemo(() => {
-    if (generationState === 'failed') {
+    if (generationState === 'failed' || generationState === 'missing-request') {
       return 42;
     }
 
@@ -66,6 +148,52 @@ export default function StudioGenerationLoading() {
     return Math.round(((activeStepIndex + 1) / generationSteps.length) * 100);
   }, [activeStepIndex, generationState]);
 
+  const generateDraft = useCallback(async (nextRequest: StudioGenerateRequest) => {
+    setGenerationState('generating');
+    setActiveStepIndex(0);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/studio/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nextRequest),
+      });
+      const data = (await response.json()) as StudioGenerateResponse;
+
+      if (!response.ok || !data.draft) {
+        throw new Error(data.error || '기획서 초안 생성에 실패했습니다.');
+      }
+
+      const documentId = data.documentId || data.draft.id || createDocumentId();
+      const draftWithId: StudioDraft = {
+        ...data.draft,
+        id: documentId,
+      };
+
+      window.sessionStorage.setItem(studioDraftStorageKey, JSON.stringify(draftWithId));
+      setCreatedDocumentId(documentId);
+      setGenerationState('complete');
+      setActiveStepIndex(generationSteps.length - 1);
+
+      window.setTimeout(() => {
+        router.push(`/studio/document/${documentId}`);
+      }, 900);
+    } catch (error) {
+      setGenerationState('failed');
+      setErrorMessage(error instanceof Error ? error.message : '기획서 초안 생성 중 문제가 발생했습니다.');
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (request && !hasStartedRef.current) {
+      hasStartedRef.current = true;
+      void generateDraft(request);
+    }
+  }, [generateDraft, request]);
+
   useEffect(() => {
     if (generationState !== 'generating') {
       return;
@@ -75,24 +203,17 @@ export default function StudioGenerationLoading() {
       setActiveStepIndex((currentIndex) => Math.min(currentIndex + 1, generationSteps.length - 1));
     }, 900);
 
-    const completeTimer = window.setTimeout(() => {
-      setGenerationState('complete');
-      setActiveStepIndex(generationSteps.length - 1);
-    }, 3800);
-
     return () => {
       window.clearInterval(stepTimer);
-      window.clearTimeout(completeTimer);
     };
   }, [generationState]);
 
   function retryGeneration() {
-    setGenerationState('generating');
-    setActiveStepIndex(0);
-  }
+    if (!request || generationState === 'generating') {
+      return;
+    }
 
-  function showFailedState() {
-    setGenerationState('failed');
+    void generateDraft(request);
   }
 
   const statusTitle =
@@ -100,14 +221,18 @@ export default function StudioGenerationLoading() {
       ? '기획서 초안이 준비되었습니다.'
       : generationState === 'failed'
         ? '기획서 생성에 실패했습니다.'
-        : '프로그램 기획서를 준비하고 있습니다.';
+        : generationState === 'missing-request'
+          ? '생성할 기획 조건이 없습니다.'
+          : '프로그램 기획서를 준비하고 있습니다.';
 
   const statusDescription =
     generationState === 'complete'
-      ? '더미 생성이 완료되었습니다. 편집 화면에서 초안을 확인하고 이어서 수정할 수 있습니다.'
+      ? '생성이 완료되었습니다. 편집 화면에서 초안을 확인하고 이어서 수정할 수 있습니다.'
       : generationState === 'failed'
-        ? '잠시 후 다시 시도하거나 조건 선택 화면에서 입력값을 수정해 주세요.'
-        : '선택한 조건을 바탕으로 기획 배경, 운영 내용, 기대 효과를 정리하는 중입니다.';
+        ? errorMessage || '잠시 후 다시 시도하거나 조건 선택 화면에서 입력값을 수정해 주세요.'
+        : generationState === 'missing-request'
+          ? '조건 입력 화면에서 기획 메모를 작성한 뒤 다시 생성해 주세요.'
+          : '선택한 조건을 바탕으로 기획 배경, 운영 내용, 기대 효과를 정리하는 중입니다.';
 
   return (
     <div className="studioPage studioGeneratingLayout">
@@ -135,28 +260,31 @@ export default function StudioGenerationLoading() {
       <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
         <div className="studioHistoryHeader">
           <div>
-            <strong>작업 내역</strong>
+            <strong>생성 작업</strong>
             <small>MOIRA STUDIO</small>
           </div>
         </div>
         <div className="studioHistoryList" aria-live="polite">
-          <button className="studioHistoryItem isCurrent" type="button">
-            <span>{generationState === 'complete' ? '생성 완료' : generationState === 'failed' ? '생성 실패' : '생성 중'}</span>
-            <strong>시니어 디지털 생활 교실</strong>
-            <small>지금</small>
-          </button>
-          <Link className="studioHistoryItem" href="/studio/document/demo-document-1">
-            <span>최근 기획</span>
-            <strong>시니어 디지털 생활 교실</strong>
-            <small>어제</small>
-          </Link>
+          <div className="studioHistoryItem isCurrent">
+            <span>
+              {generationState === 'complete'
+                ? '생성 완료'
+                : generationState === 'failed'
+                  ? '생성 실패'
+                  : generationState === 'missing-request'
+                    ? '조건 없음'
+                    : '생성 중'}
+            </span>
+            <strong>{request?.prompt || '새 프로그램 기획안'}</strong>
+            <small>{generationState === 'complete' ? '편집 화면으로 이동합니다.' : '생성 조건을 확인하고 있습니다.'}</small>
+          </div>
         </div>
         <div className="studioQuickGuide">
           <strong>생성 흐름</strong>
           <ol>
             <li>입력 조건을 확인합니다.</li>
-            <li>더미 단계 진행 후 완료 상태를 표시합니다.</li>
-            <li>편집 화면에서 초안을 이어서 확인합니다.</li>
+            <li>AI 생성 API로 초안을 요청합니다.</li>
+            <li>완료되면 편집 화면에서 초안을 확인합니다.</li>
           </ol>
         </div>
       </aside>
@@ -172,7 +300,7 @@ export default function StudioGenerationLoading() {
             <div>
               <p className="uiEyebrow">
                 <span className="studioBrandSpark" aria-hidden="true">✦</span>
-                AI PROGRAM DOCUMENT
+                MOIRA STUDIO
               </p>
               <h1 id="studio-generating-title">{statusTitle}</h1>
               <p>{statusDescription}</p>
@@ -182,33 +310,47 @@ export default function StudioGenerationLoading() {
             </div>
             <strong>
               {generationState === 'complete'
-                ? '더미 생성 완료'
+                ? '생성 완료'
                 : generationState === 'failed'
-                  ? '더미 생성 실패'
-                  : `${generationSteps[activeStepIndex].label} 중`}
+                  ? '생성 실패'
+                  : generationState === 'missing-request'
+                    ? '조건 입력 필요'
+                    : `${generationSteps[activeStepIndex].label} 중`}
             </strong>
           </div>
 
           <section className="studioGenerationSummary" aria-label="선택 조건 요약">
             <div className="studioGenerationSectionHeader">
               <h2>선택 조건 요약</h2>
-              <span>더미 데이터</span>
+              <span>{summaryItems.length > 0 ? '입력 조건' : '조건 없음'}</span>
             </div>
-            <dl>
-              {summaryItems.map(([label, value]) => (
-                <div key={label}>
-                  <dt>{label}</dt>
-                  <dd>{value}</dd>
-                </div>
-              ))}
-            </dl>
+            {summaryItems.length > 0 ? (
+              <dl>
+                {summaryItems.map(({ label, value }) => (
+                  <div key={`${label}-${value}`}>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="studioGenerationEmptySummary">아직 전달된 생성 조건이 없습니다.</p>
+            )}
           </section>
         </section>
 
         <section className="studioGenerationSteps" aria-label="단계형 진행 안내">
           <div className="studioGenerationSectionHeader">
             <h2>생성 단계</h2>
-            <span>{generationState === 'complete' ? '완료' : generationState === 'failed' ? '중단됨' : '진행 중'}</span>
+            <span>
+              {generationState === 'complete'
+                ? '완료'
+                : generationState === 'failed'
+                  ? '중단됨'
+                  : generationState === 'missing-request'
+                    ? '대기'
+                    : '진행 중'}
+            </span>
           </div>
           <ol>
             {generationSteps.map((step, index) => {
@@ -237,9 +379,9 @@ export default function StudioGenerationLoading() {
             <>
               <div>
                 <strong>편집 화면에서 초안을 확인할 수 있습니다.</strong>
-                <p>생성된 더미 문서 ID는 {dummyDocumentId}입니다.</p>
+                <p>생성된 문서 ID는 {createdDocumentId}입니다.</p>
               </div>
-              <Link className="uiButton uiButtonPrimary" href={`/studio/document/${dummyDocumentId}`}>
+              <Link className="uiButton uiButtonPrimary" href={`/studio/document/${createdDocumentId}`}>
                 편집 화면으로 이동
               </Link>
             </>
@@ -247,7 +389,7 @@ export default function StudioGenerationLoading() {
             <>
               <div>
                 <strong>조건을 유지한 채 다시 시도할 수 있습니다.</strong>
-                <p>이번 화면에서는 실제 오류 응답 없이 더미 실패 상태만 표시합니다.</p>
+                <p>{errorMessage || '기획서 생성 요청을 완료하지 못했습니다.'}</p>
               </div>
               <button className="uiButton uiButtonPrimary" type="button" onClick={retryGeneration}>
                 다시 시도
@@ -259,12 +401,13 @@ export default function StudioGenerationLoading() {
           ) : (
             <>
               <div>
-                <strong>중복 요청 없이 잠시 기다려 주세요.</strong>
-                <p>실제 API 호출 없이 더미 진행 상태를 표시하고 있습니다.</p>
+                <strong>{generationState === 'missing-request' ? '조건 입력 화면으로 돌아가 주세요.' : '중복 요청 없이 잠시 기다려 주세요.'}</strong>
+                <p>
+                  {generationState === 'missing-request'
+                    ? '저장된 생성 요청이 없어 API를 호출하지 않았습니다.'
+                    : '실제 AI 생성 API 응답을 기다리고 있습니다.'}
+                </p>
               </div>
-              <button className="uiButton uiButtonSecondary" type="button" onClick={showFailedState}>
-                실패 상태 확인
-              </button>
               <Link className="uiButton uiButtonSecondary" href="/studio">
                 조건 선택으로 돌아가기
               </Link>

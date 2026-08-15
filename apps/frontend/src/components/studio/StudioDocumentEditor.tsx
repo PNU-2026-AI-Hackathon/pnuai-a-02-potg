@@ -155,7 +155,7 @@ type StudioDocumentEditorProps = {
 
 export default function StudioDocumentEditor({ documentId }: StudioDocumentEditorProps) {
   const document = useMemo(
-    () => historyDocuments.find((item) => item.id === documentId) ?? dummyDocument,
+    () => historyDocuments.find((item) => item.id === documentId) ?? { ...dummyDocument, id: documentId },
     [documentId],
   );
 
@@ -182,11 +182,16 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     try {
       const parsedDraft = JSON.parse(storedDraftText) as Partial<StudioDraft>;
 
+      if (parsedDraft.id !== document.id) {
+        return null;
+      }
+
       if (!parsedDraft.title || !parsedDraft.summary || !parsedDraft.target || !parsedDraft.duration || !parsedDraft.expectedEffects) {
         return null;
       }
 
       return {
+        id: parsedDraft.id,
         title: parsedDraft.title,
         summary: parsedDraft.summary,
         target: parsedDraft.target,
