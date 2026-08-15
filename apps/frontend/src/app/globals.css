@@ -1704,37 +1704,6 @@ button {
   text-decoration: none;
 }
 
-/* Intro page section boundary gradient
-   Adds a subtle fade at the bottom edge of each intro section so the
-   transition between pages feels softer. The 5th -> 6th boundary is left plain. */
-.introPage section[id] {
-  position: relative;
-  z-index: 0;
-}
-
-.introPage section[id]::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 88px;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--bg));
-  z-index: 2;
-}
-
-/* No gradient between the 5th and 6th intro page sections. */
-.introPage section#audience::after {
-  display: none;
-}
-
-@media (max-width: 640px) {
-  .introPage section[id]::after {
-    height: 48px;
-  }
-}
-
 .quickGrid a:hover,
 .quickGrid a:focus-visible {
   color: #0b5cab;
@@ -5243,7 +5212,19 @@ html:has(.moiraPage) {
 }
 
 .introPage section[id] {
+  position: relative;
   scroll-margin-top: 82px;
+}
+
+.introBoundaryFade {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: clamp(84px, 10vw, 140px);
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--intro-boundary-target, #ffffff));
 }
 
 .introSectionNav {
@@ -5349,6 +5330,7 @@ html:has(.moiraPage) {
 }
 
 .introHero {
+  --intro-boundary-target: #eef5f0;
   position: relative;
   overflow: hidden;
   background:
@@ -6285,6 +6267,7 @@ html:has(.moiraPage) {
 }
 
 .introPage .valueSection {
+  --intro-boundary-target: #f9fbf9;
   position: relative;
   overflow: hidden;
   background: #eef5f0;
@@ -6327,6 +6310,7 @@ html:has(.moiraPage) {
 }
 
 .flowSection {
+  --intro-boundary-target: #fffaf4;
   position: relative;
   overflow: hidden;
   background:
@@ -6356,6 +6340,7 @@ html:has(.moiraPage) {
 }
 
 .featureSection {
+  --intro-boundary-target: #ffffff;
   background: #fffaf4;
 }
 
@@ -6837,6 +6822,10 @@ html:has(.moiraPage) {
   .introPage .homeSection > .uiContainer,
   .visionInner {
     width: min(100% - 32px, 560px);
+  }
+
+  .introBoundaryFade {
+    height: 64px;
   }
 
   .introPage .valueSection::after {

@@ -283,6 +283,7 @@ export default async function AboutPage() {
           <span>SCROLL</span>
           <i />
         </div>
+        <span className="introBoundaryFade" aria-hidden="true" />
       </section>
 
       <section className="homeSection valueSection" id="value">
@@ -311,6 +312,7 @@ export default async function AboutPage() {
             </div>
           </aside>
         </div>
+        <span className="introBoundaryFade" aria-hidden="true" />
       </section>
 
       <section className="homeSection flowSection" id="flow">
@@ -354,6 +356,7 @@ export default async function AboutPage() {
             })}
           </div>
         </div>
+        <span className="introBoundaryFade" aria-hidden="true" />
       </section>
 
       <section className="homeSection featureSection" id="features">
@@ -375,6 +378,7 @@ export default async function AboutPage() {
             ))}
           </div>
         </div>
+        <span className="introBoundaryFade" aria-hidden="true" />
       </section>
 
       <section className="homeSection audienceSection" id="audience">
