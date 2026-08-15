@@ -1698,13 +1698,15 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-size: 14px;
+  width: 100%;
+  color: #444;
+  text-decoration: none;
+}
 
 /* Intro page section boundary gradient
    Adds a subtle fade at the bottom edge of each intro section so the
-   transition between pages feels softer. The gradient is disabled
-   for the audience -> vision transition (between page 5 and 6) and
-   for the final section. */
-
+   transition between pages feels softer. The 5th -> 6th boundary is left plain. */
 .introPage section[id] {
   position: relative;
   z-index: 0;
@@ -1718,14 +1720,12 @@ button {
   bottom: 0;
   height: 88px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,0), var(--bg));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--bg));
   z-index: 2;
 }
 
-/* Disable gradient for the 5th section (audience) to avoid gradient between
-   page 5 and 6, and remove for the final section as well. */
-.introPage section#audience::after,
-.introPage section[id]:last-of-type::after {
+/* No gradient between the 5th and 6th intro page sections. */
+.introPage section#audience::after {
   display: none;
 }
 
@@ -1733,11 +1733,6 @@ button {
   .introPage section[id]::after {
     height: 48px;
   }
-}
-  font-size: 14px;
-  width: 100%;
-  color: #444;
-  text-decoration: none;
 }
 
 .quickGrid a:hover,
