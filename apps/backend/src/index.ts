@@ -17,6 +17,7 @@ import programCaseSearchInspectorRouter from './routes/programCaseSearchInspecto
 import programCaseSearchRouter from './routes/programCaseSearch';
 import meRouter from './routes/me';
 import studioDocumentsRouter from './routes/studioDocuments';
+import programBoardSemanticSearchRouter from './routes/programBoardSemanticSearch';
 import { announcements, libraries, programs, volunteers, agendaItems } from './data/mockData';
 
 const app = express();
@@ -53,6 +54,7 @@ app.use('/api/program-case', programCaseSemanticSearchRouter);
 app.use('/api/internal/program-case-search-inspector', programCaseSearchInspectorRouter);
 app.use('/api/internal/program-case-search', programCaseSearchRouter);
 app.use('/api/studio/documents', studioDocumentsRouter);
+app.use('/api/program-board', programBoardSemanticSearchRouter);
 
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'API route not found' });
