@@ -353,16 +353,16 @@ export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string;
   if (!lines.length) return [];
 
   const unit = median(boxes.map((box) => Math.max(1, box.bottom - box.top)));
-  type Pair = { label: string; parts: string[]; valueLeft: number };
+  type Pair = { label: string; parts: string[]; valueLeft: number; lineIndex: number };
   const pairs: Pair[] = [];
   let open: Pair | null = null;
 
-  for (const line of lines) {
+  for (const [lineIndex, line] of lines.entries()) {
     const cells = headerLabels(line);
     let current: Pair | null = null;
     for (const cell of cells) {
       if (INFO_LABEL.test(cell.text)) {
-        current = { label: cell.text, parts: [], valueLeft: Number.MAX_SAFE_INTEGER };
+        current = { label: cell.text, parts: [], valueLeft: Number.MAX_SAFE_INTEGER, lineIndex };
         pairs.push(current);
         open = current;
         continue;
@@ -393,7 +393,7 @@ export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string;
       if (!INFO_LABEL.test(cell.text)) continue;
       const pair = pairs.find((candidate) => candidate.label === cell.text && !candidate.parts.length);
       if (!pair) continue;
-      for (const neighbour of [lineCells[lineIndex - 1], lineCells[lineIndex + 1]]) {
+      for (const neighbour of [lineCells[lineIndex - 1], lineCells[lineIndex + 1]] as const) {
         if (!neighbour || neighbour.some((other) => INFO_LABEL.test(other.text))) continue;
         for (const other of neighbour.filter((candidate) => candidate.left >= cell.right)) pair.parts.push(other.raw);
       }
@@ -407,6 +407,18 @@ export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string;
    * `교재비 = 세부 교육내용 교수방법 담당강사`처럼 회차표 머리글이 통째로 값이 된다.
    */
   const CUT_AT = /\s*(?:세부\s*교육\s*내용|교육\s*내용|교수\s*방법|담당\s*강사|차시|회차)[\s\S]*$/;
+  /**
+   * 값이 여러 줄이면 이름이 세로 가운데 놓여 값의 첫 줄이 이름보다 위에 온다.
+   * 아래로 이어 붙이는 것만으로는 첫 줄을 놓치므로 윗줄도 같은 가로 자리에서 가져온다.
+   */
+  for (const pair of pairs) {
+    if (!pair.parts.length || pair.valueLeft === Number.MAX_SAFE_INTEGER) continue;
+    const above = lineCells[pair.lineIndex - 1];
+    if (!above || above.some((cell) => INFO_LABEL.test(cell.text) || BOUNDARY_LABEL.test(cell.text))) continue;
+    const carried = above.filter((cell) => Math.abs(cell.left - pair.valueLeft) <= unit * 2);
+    if (carried.length) pair.parts.unshift(...carried.map((cell) => cell.raw));
+  }
+
   const result: Array<{ label: string; value: string }> = [];
   for (const pair of pairs) {
     const joined = pair.parts.join(' ').replace(/\s{2,}/g, ' ');
@@ -503,15 +515,31 @@ function isSessionHeader(text: string) {
  * 실제로 회차를 읽어낸 줄을 머리글로 본다.
  */
 export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
-  const candidates = lines
+  /**
+   * 머리글이 두 줄에 걸친 표가 있다.
+   * (`차시 | 강의내용 | 비고` 아래에 `교육내용 | 세부교육내용`)
+   * 회차 이름만 있는 줄과 내용 이름만 있는 줄이 붙어 있으면 한 줄로 합쳐 본다.
+   */
+  const merged = lines.map((line, index) => {
+    const labels = headerLabels(line);
+    const next = lines[index + 1];
+    if (!next || labels.some((label) => CONTENT_HEADER.test(label.text))) return line;
+    if (!labels.some((label) => isSessionHeader(label.text))) return line;
+    const nextLabels = headerLabels(next);
+    if (!nextLabels.some((label) => CONTENT_HEADER.test(label.text))) return line;
+    if (nextLabels.some((label) => isSessionHeader(label.text))) return line;
+    return { ...line, bottom: next.bottom, boxes: [...line.boxes, ...next.boxes] };
+  });
+
+  const candidates = merged
     .map((line, index) => ({ line, index, labels: headerLabels(line) }))
     .filter((entry) => entry.labels.some((label) => isSessionHeader(label.text))
       && entry.labels.some((label) => CONTENT_HEADER.test(label.text)));
   for (const candidate of candidates) {
-    const rows = gridFromHeaderIndex(lines, candidate.index);
+    const rows = gridFromHeaderIndex(merged, candidate.index);
     if (rows.length >= 2) return rows;
   }
-  return candidates.length ? gridFromHeaderIndex(lines, candidates[0].index) : [];
+  return candidates.length ? gridFromHeaderIndex(merged, candidates[0].index) : [];
 }
 
 function gridFromHeaderIndex(lines: OcrLine[], headerIndex: number): OcrCurriculumRow[] {
