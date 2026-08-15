@@ -22,6 +22,11 @@ type TextSelectionRange = {
   end: number;
 };
 
+type AiRevisionSource = {
+  text: string;
+  range: TextSelectionRange;
+};
+
 type StudioDocument = {
   id: string;
   title: string;
@@ -251,12 +256,14 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [aiRequest, setAiRequest] = useState('');
   const [aiRequestState, setAiRequestState] = useState<AiRequestState>('idle');
   const [aiRevisedText, setAiRevisedText] = useState('');
+  const [aiRevisionSource, setAiRevisionSource] = useState<AiRevisionSource | null>(null);
   const [aiReviewMessage, setAiReviewMessage] = useState('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
 
   const hasEmptyTitle = title.trim().length === 0;
   const canSave = saveState === 'dirty' && !hasEmptyTitle;
   const hasSelectedText = selectedText.trim().length > 0;
   const canRequestAiEdit = hasSelectedText && aiRequest.trim().length > 0 && aiRequestState !== 'submitting';
+  const activeSelectionRange = aiRevisionSource?.range ?? selectedRange;
 
   useEffect(() => {
     let isCancelled = false;
@@ -451,6 +458,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setIsAiPanelOpen(true);
     setAiRequestState('idle');
     setAiRevisedText('');
+    setAiRevisionSource(null);
     setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 
@@ -459,6 +467,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setAiRequest('');
     setAiRequestState('idle');
     setAiRevisedText('');
+    setAiRevisionSource(null);
     setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 
@@ -467,19 +476,25 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       return;
     }
 
+    const revisionSource = {
+      text: selectedText,
+      range: selectedRange,
+    };
+
     setAiRequestState('submitting');
     setAiRevisedText('');
+    setAiRevisionSource(revisionSource);
     setAiReviewMessage('AI 수정안을 생성하고 있습니다.');
 
     const contextSize = 260;
     const requestBody: StudioReviseRequest = {
       documentId: document.id,
-      selectedText,
+      selectedText: revisionSource.text,
       instruction: aiRequest.trim(),
       context: {
         title,
-        before: content.slice(Math.max(0, selectedRange.start - contextSize), selectedRange.start),
-        after: content.slice(selectedRange.end, Math.min(content.length, selectedRange.end + contextSize)),
+        before: content.slice(Math.max(0, revisionSource.range.start - contextSize), revisionSource.range.start),
+        after: content.slice(revisionSource.range.end, Math.min(content.length, revisionSource.range.end + contextSize)),
       },
     };
 
@@ -507,12 +522,53 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   }
 
   function handleAiRevisionApply() {
-    setAiReviewMessage('적용 이벤트가 준비되었습니다. 실제 문서 본문은 변경되지 않았습니다.');
+    if (!aiRevisedText || !aiRevisionSource) {
+      setAiReviewMessage('적용할 AI 수정안을 찾지 못했습니다.');
+      return;
+    }
+
+    const { range, text } = aiRevisionSource;
+
+    if (range.start < 0 || range.end > content.length || range.start >= range.end) {
+      setAiReviewMessage('선택 영역이 현재 문서 범위와 맞지 않아 적용할 수 없습니다.');
+      return;
+    }
+
+    const currentSourceText = content.slice(range.start, range.end);
+
+    if (currentSourceText !== text) {
+      setAiReviewMessage('AI 수정 요청 이후 원문이 변경되어 적용할 수 없습니다. 다시 요청해 주세요.');
+      return;
+    }
+
+    const nextContent = `${content.slice(0, range.start)}${aiRevisedText}${content.slice(range.end)}`;
+    const nextRange = {
+      start: range.start,
+      end: range.start + aiRevisedText.length,
+    };
+
+    setContent(nextContent);
+    setSaveState('dirty');
+    setSaveErrorMessage('');
+    setSelectedText(aiRevisedText);
+    setSelectedRange(nextRange);
+    setIsAiPanelOpen(false);
+    setAiRequest('');
+    setAiRequestState('idle');
+    setAiRevisedText('');
+    setAiRevisionSource(null);
+    setAiReviewMessage('AI 수정안이 적용되었습니다. 저장 버튼으로 변경 사항을 저장해 주세요.');
+
+    window.requestAnimationFrame(() => {
+      bodyTextareaRef.current?.focus();
+      bodyTextareaRef.current?.setSelectionRange(nextRange.start, nextRange.end);
+    });
   }
 
   function handleAiRevisionRetry() {
     setAiRequestState('idle');
     setAiRevisedText('');
+    setAiRevisionSource(null);
     setAiReviewMessage('요청 입력 상태로 돌아왔습니다.');
   }
 
@@ -682,8 +738,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                   AI 수정
                 </button>
               </div>
-              {isAiPanelOpen && selectedRange ? (
-                <SelectedTextMarker content={content} selectionRange={selectedRange} />
+              {isAiPanelOpen && activeSelectionRange ? (
+                <SelectedTextMarker content={content} selectionRange={activeSelectionRange} />
               ) : null}
               <textarea
                 aria-label="기획서 본문 편집"
@@ -715,7 +771,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
               </div>
 
               {aiRequestState === 'ready' && aiRevisedText ? (
-                <StudioAiRevisionCompare originalText={selectedText} revisedText={aiRevisedText} />
+                <StudioAiRevisionCompare originalText={aiRevisionSource?.text || selectedText} revisedText={aiRevisedText} />
               ) : (
                 <>
                   <section className="studioAiSelectedSource" aria-label="선택한 원문">
@@ -736,6 +792,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                         setAiRequest(event.target.value);
                         setAiRequestState('idle');
                         setAiRevisedText('');
+                        setAiRevisionSource(null);
                         setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
                       }}
                     />
@@ -751,6 +808,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                           setAiRequest(request);
                           setAiRequestState('idle');
                           setAiRevisedText('');
+                          setAiRevisionSource(null);
                           setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
                         }}
                       >
