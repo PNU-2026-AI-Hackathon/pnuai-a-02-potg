@@ -12484,3 +12484,49 @@ html:has(.moiraPage) {
   .attachmentReviewActions { width: 100%; flex-wrap: wrap; }
   .attachmentMatchBanner { flex-direction: column; }
 }
+
+.programSearchPilotPage { min-height: 100vh; padding: 44px 20px 80px; background: #f4f7f4; color: #183b27; }
+.programSearchPilotShell { width: min(1040px, 100%); margin: 0 auto; }
+.programSearchBreadcrumb { display: flex; gap: 9px; color: #637369; font-size: 14px; }
+.programSearchBreadcrumb a { color: #24603a; font-weight: 700; }
+.programSearchHeader { margin: 26px 0; }
+.programSearchHeader p { margin: 0 0 8px; color: #16745f; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+.programSearchHeader h1 { margin: 0 0 10px; font-size: clamp(30px, 5vw, 48px); }
+.programSearchHeader span { color: #627069; }
+.programSearchForm { padding: 24px; border: 1px solid #d7e4da; border-radius: 18px; background: #fff; box-shadow: 0 14px 40px rgba(31, 67, 45, .07); }
+.programSearchForm label > span { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 800; }
+.programSearchForm textarea { width: 100%; min-height: 104px; resize: vertical; border: 1px solid #bfcfc3; border-radius: 12px; padding: 14px; font: inherit; line-height: 1.6; }
+.programSearchOptions { display: flex; align-items: end; gap: 12px; margin-top: 14px; }
+.programSearchOptions label { min-width: 150px; }
+.programSearchOptions select { width: 100%; min-height: 44px; border: 1px solid #bfcfc3; border-radius: 9px; padding: 0 10px; background: #fff; }
+.programSearchOptions button { min-height: 44px; margin-left: auto; border: 0; border-radius: 10px; padding: 0 20px; background: #16745f; color: #fff; font-weight: 800; }
+.programSearchOptions button:disabled { opacity: .55; }
+.programSearchExamples { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 28px; }
+.programSearchExamples button { border: 1px solid #cad8cd; border-radius: 999px; padding: 8px 13px; background: #fff; color: #40574a; }
+.programSearchError { padding: 14px 16px; border-radius: 10px; background: #fff0f0; color: #8c2e2e; }
+.programSearchResultHeading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 14px; }
+.programSearchResultHeading h2 { margin: 0 0 5px; }
+.programSearchResultHeading p, .programSearchResultHeading > span { margin: 0; color: #69786e; font-size: 13px; }
+.programSearchResultCard { display: grid; grid-template-columns: 52px 1fr; gap: 16px; margin-bottom: 12px; padding: 20px; border: 1px solid #dce7de; border-radius: 15px; background: #fff; }
+.programSearchRank { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #e4f3e8; color: #24603a; font-size: 18px; }
+.programSearchResultTitle { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
+.programSearchResultTitle h3 { margin: 0; font-size: 20px; }
+.programSearchResultTitle h3 a { color: #173d28; }
+.programSearchResultTitle b { flex-shrink: 0; color: #16745f; }
+.programSearchResultTitle small { font-weight: 500; }
+.programSearchResultBody > p { margin: 10px 0 0; line-height: 1.65; }
+.programSearchMeta { color: #738078; font-size: 13px; }
+.programSearchAudienceMatch { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #e8f5eb; color: #24603a; font-size: 12px; font-weight: 700; }
+.programSearchAudienceMatch.isMismatch { background: #fff0e8; color: #965020; }
+.programSearchConceptMatch { color: #415b4a; font-size: 13px; }
+.programSearchDetail { display: inline-block; margin-left: 8px !important; padding: 5px 9px; border-radius: 999px; background: #eef1ef; color: #5d6c62; font-size: 12px; font-weight: 700; }
+.programSearchDetail.is-detailed { background: #e2f1ff; color: #255f8a; }
+.programSearchDetail.is-partial { background: #fff4d8; color: #835f18; }
+.programSearchPipelineActions { display: flex; gap: 10px; margin: 24px 0; }
+.programSearchPipelineActions label { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 13px; font-weight: 700; }
+.programSearchPipelineActions select { min-height: 42px; border: 1px solid #bfcfc3; border-radius: 9px; padding: 0 10px; background: #fff; }
+.programSearchPipelineActions button { border: 0; border-radius: 10px; padding: 12px 17px; background: #16745f; color: #fff; font-weight: 800; }
+.programSearchPipelineActions button + button { background: #a85e22; }
+.programSearchContext, .programSearchDraft { margin-top: 20px; padding: 22px; border: 1px solid #dce7de; border-radius: 15px; background: #fff; }
+.programSearchContext pre, .programSearchDraft pre { max-height: 620px; overflow: auto; white-space: pre-wrap; word-break: keep-all; font: 13px/1.7 ui-monospace, monospace; }
+@media (max-width: 700px) { .programSearchOptions, .programSearchResultHeading, .programSearchResultTitle { align-items: stretch; flex-direction: column; } .programSearchOptions button { margin-left: 0; } .programSearchResultCard { grid-template-columns: 1fr; } }
