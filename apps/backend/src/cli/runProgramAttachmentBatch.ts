@@ -6,7 +6,7 @@ import type { RawProgram } from '../services/programDataNormalization/types';
 import { combinedBasicInfo, mergeProgramAttachment } from '../services/programAttachmentEnrichment/mergeProgramAttachment';
 import { processSample, type InventoryAttachment, type InventoryItem } from './buildProgramAttachmentEnrichmentSamples';
 import { structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
-import { activityPlanFromOcrBoxes, curriculumFromOcrBoxes, labeledFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
+import { activityPlanFromOcrBoxes, curriculumFromOcrBoxes, labeledFromBulletText, labeledFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
 
 const DEFAULT_CRAWL_DIR = path.resolve(process.cwd(), '.local', 'geumjeong-small-library-crawl');
 const DEFAULT_INVENTORY = path.resolve(process.cwd(), '.local', 'program-attachment-inventory', 'inventory-all.json');
@@ -231,10 +231,15 @@ function processOcrRecord(
     break;
   }
   const sameLabel = (left: string, right: string) => left.replace(/\s+/g, '') === right.replace(/\s+/g, '');
-  for (const located of usable.flatMap((target) => labeledFromOcrBoxes(target.boxes ?? []))) {
-    const existing = structured.labeled.findIndex((item) => sameLabel(item.label, located.label));
-    if (existing >= 0) structured.labeled[existing] = { label: structured.labeled[existing].label, value: located.value };
-    else structured.labeled.push(located);
+  // 홍보문은 표가 아니라 글머리표 목록으로 적어 좌표로는 읽히지 않는다.
+  const located = [
+    ...usable.flatMap((target) => labeledFromBulletText(target.cleanedText ?? '')),
+    ...usable.flatMap((target) => labeledFromOcrBoxes(target.boxes ?? [])),
+  ];
+  for (const item of located) {
+    const existing = structured.labeled.findIndex((entry) => sameLabel(entry.label, item.label));
+    if (existing >= 0) structured.labeled[existing] = { label: structured.labeled[existing].label, value: item.value };
+    else structured.labeled.push(item);
   }
 
   /**

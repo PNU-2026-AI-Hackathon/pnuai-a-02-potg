@@ -212,10 +212,37 @@ export function activityPlanFromOcrBoxes(boxes: OcrTextBox[]): string | null {
     const text = line.text.trim();
     // 예시 사진·담당강사 같은 꼬리말을 만나면 멈춘다.
     if (/^[<〈［[(]?\s*(?:예시작|예시|사진|참고)/.test(text)) break;
+    // 표 오른쪽 칸의 교수방법이 같은 줄로 딸려 오기도 한다. `(ppt,` 같은 조각은 활동이 아니다.
+    if (/^[(（]\s*(?:ppt|피피티|강의|설명)/i.test(text) || /^설명\s*등\s*[)）]?$/.test(text)) continue;
     if (text) collected.push(text);
   }
   const value = collected.join('\n').trim();
   return value.length >= 10 ? value : null;
+}
+
+/** 홍보문에서 글머리표로 적는 항목 이름. 표가 아니라 목록이라 좌표가 아닌 줄에서 읽는다. */
+const BULLET_LABEL = new RegExp('^[·•◦∙・○●·.,\\-*]?\\s*'
+  + '(기간|운영기간|교육기간|시간|운영시간|교육시간|장소|운영장소|교육장소'
+  + '|모집대상|신청대상|교육대상|대상|모집인원|운영내용|교육내용|프로그램내용'
+  + '|접수일자|모집기간|신청기간|접수방법|신청방법|준비물|재료비|교재비|문의)'
+  + '\\s*[:：]\\s*(.+)$');
+
+/**
+ * 홍보문의 글머리표 목록에서 항목을 읽는다.
+ *
+ * 강의계획서는 표를 쓰지만 수강생 모집 홍보문은 `· 시간: 유아반 12:00 ~ 12:50`처럼
+ * 목록으로 적는다. 표가 없어 좌표로는 읽을 수 없고 줄 단위로 봐야 한다.
+ */
+export function labeledFromBulletText(text: string): Array<{ label: string; value: string }> {
+  const result: Array<{ label: string; value: string }> = [];
+  for (const line of text.split(/\r?\n/)) {
+    const match = line.trim().match(BULLET_LABEL);
+    if (!match) continue;
+    const value = normalizeExtractedKoreanSpacing(match[2]).trim();
+    if (value.length < 2 || result.some((item) => item.label === match[1])) continue;
+    result.push({ label: match[1], value });
+  }
+  return result;
 }
 
 /** 계획서 이미지에서 기본정보 칸에 쓰이는 이름. 값은 이 이름 오른쪽 칸에 있다. */
@@ -334,16 +361,29 @@ export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string;
     }
   }
 
+  /**
+   * 값 뒤에 표 머리글이 붙어 오는 경우를 잘라낸다.
+   *
+   * 조각들이 한 칸으로 묶여 오면 머리글인지 값인지 칸 단위로는 가릴 수 없다.
+   * `교재비 = 세부 교육내용 교수방법 담당강사`처럼 회차표 머리글이 통째로 값이 된다.
+   */
+  const CUT_AT = /\s*(?:세부\s*교육\s*내용|교육\s*내용|교수\s*방법|담당\s*강사|차시|회차)[\s\S]*$/;
   const result: Array<{ label: string; value: string }> = [];
   for (const pair of pairs) {
-    const value = normalizeExtractedKoreanSpacing(pair.parts.join(' ').replace(/\s{2,}/g, ' ')).trim();
+    const joined = pair.parts.join(' ').replace(/\s{2,}/g, ' ');
+    // 잘라낸 뒤 남는 것이 없으면 값이 아니라 머리글만 딸려온 것이다. 그대로 버린다.
+    const value = normalizeExtractedKoreanSpacing(joined.replace(CUT_AT, '')).trim();
     if (value && !result.some((item) => item.label === pair.label)) result.push({ label: pair.label, value });
   }
   return result;
 }
 
-const SESSION_HEADER = /^(?:차시|회차|회기|시수)$/;
-const CONTENT_HEADER = /^(?:내용|교육내용|세부교육내용|강의내용|활동|주제|동화명|도서명|프로그램명)$/;
+// `일시`·`교육일자`처럼 날짜 칸이 회차를 가르는 계획서도 있다.
+const SESSION_HEADER = /^(?:차시|회차|회기|시수|일시|일자|교육일자|날짜)$/;
+// `교육 내용과 목표`처럼 말을 붙여 쓰는 계획서가 있어 포함 여부로 본다.
+const CONTENT_HEADER = /(?:내용|활동|주제|동화명|도서명|프로그램명)/;
+/** 회차의 갈래를 적는 칸. `주제`가 따로 있으면 활동 앞에 붙여 보여 준다. */
+const CATEGORY_HEADER = /^(?:주제|분류|구분)$/;
 
 /**
  * 머리글로 격자를 만들어 셀 단위로 회차를 읽는다.
@@ -418,7 +458,15 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
   const labels = headerLabels(headerLine);
 
   const sessionIndex = labels.findIndex((label) => SESSION_HEADER.test(label.text));
-  const contentIndex = labels.findIndex((label, index) => index > sessionIndex && CONTENT_HEADER.test(label.text));
+  // 내용 칸은 회차 칸 오른쪽에서 가장 먼 것을 고른다. `일시 | 주제 | 교육 내용과 목표`처럼
+  // 갈래 칸이 사이에 끼면 그 칸을 내용으로 잡아 정작 설명을 놓친다.
+  const contentIndex = labels.map((label, index) => ({ label, index }))
+    .filter((entry) => entry.index > sessionIndex && CONTENT_HEADER.test(entry.label.text)
+      && !CATEGORY_HEADER.test(entry.label.text))
+    .map((entry) => entry.index)
+    .pop() ?? -1;
+  const categoryIndex = labels.findIndex((label, index) => index > sessionIndex && index < contentIndex
+    && CATEGORY_HEADER.test(label.text));
   if (sessionIndex < 0 || contentIndex < 0) return [];
 
   // 열 경계는 라벨 사이 중간점으로 잡는다. 라벨은 칸 가운데 놓이므로
@@ -440,7 +488,7 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
   const numbers = body
     .filter((box) => inColumn(box, sessionLeft, Math.max(sessionRight, contentLeft)) && readSessionCell(box.text) != null)
     .sort((left, right) => left.top - right.top);
-  if (numbers.length < 2) return [];
+  if (!numbers.length) return [];
   // 날짜만 적힌 표는 번호가 없으므로 위에서부터 차례로 매긴다.
   const marks = numbers.map((box) => readSessionCell(box.text)!);
   const numbered = marks.every((mark) => mark.session != null);
@@ -450,8 +498,14 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
    * 라벨은 칸 가운데 놓이는데 회차 칸은 좁고 내용 칸은 넓어, 라벨 사이 중간점을
    * 쓰면 경계가 오른쪽으로 밀려 각 줄의 첫 낱말이 잘려 나간다.
    */
-  const contentStart = Math.max(...numbers.map((box) => box.right)) + 2;
+  const contentStart = categoryIndex >= 0
+    ? boundary(contentIndex)
+    : Math.max(...numbers.map((box) => box.right)) + 2;
   const contentBoxes = body.filter((box) => box.left >= contentStart && inColumn(box, contentStart, contentRight));
+  // 갈래 칸은 회차 칸과 내용 칸 사이에 있다. 활동 앞에 붙여 무엇을 다루는 회차인지 보여 준다.
+  const categoryBoxes = categoryIndex >= 0
+    ? body.filter((box) => inColumn(box, boundary(categoryIndex), boundary(categoryIndex + 1)))
+    : [];
   const rows: OcrCurriculumRow[] = [];
   for (const [index, number] of numbers.entries()) {
     // 회차 번호는 칸 가운데 놓이므로 번호 사이 중간을 행 경계로 삼는다.
@@ -463,9 +517,28 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
       const center = (box.top + box.bottom) / 2;
       return center >= bandTop && center < bandBottom;
     });
-    const text = groupLines(cell).map((line) => line.text).filter(Boolean).join('\n').trim();
+    /**
+     * 마지막 회차의 구간은 아래로 열려 있어 문서 꼬리말까지 빨아들인다.
+     * 작성일·작성자처럼 회차 내용이 아닌 줄은 걸러 낸다.
+     */
+    const isFooter = (value: string) => /^\s*(?:작성자|작성일|문의|연락처)/.test(value)
+      || /^\s*\d{4}\s*[년.]\s*\d{1,2}\s*[월.]/.test(value)
+      || /(?:귀하|드림|올림)\s*$/.test(value.trim())
+      || /작은도서관\s*귀하|평생교육과/.test(value);
+    const text = groupLines(cell).map((line) => line.text).filter((line) => line && !isFooter(line))
+      .join('\n').trim();
+    const category = groupLines(categoryBoxes.filter((box) => {
+      const center = (box.top + box.bottom) / 2;
+      return center >= bandTop && center < bandBottom;
+    })).map((line) => line.text).filter(Boolean).join(' ').trim();
     const mark = marks[index];
-    if (text) rows.push({ session: numbered ? mark.session! : index + 1, activity: text, date: mark.date });
+    if (text) {
+      rows.push({
+        session: numbered ? mark.session! : index + 1,
+        activity: category ? `${category}\n${text}` : text,
+        date: mark.date,
+      });
+    }
   }
   return rows;
 }
@@ -479,8 +552,23 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
  */
 export function curriculumFromOcrBoxes(boxes: OcrTextBox[]): OcrCurriculumRow[] {
   if (!boxes.length) return [];
-  const rows = curriculumFromHeaderGrid(groupLines(boxes));
-  if (rows.length < 2) return [];
+  // 머리글 격자로 한 행이라도 읽었으면 그것을 믿는다. 회차가 하나뿐인 프로그램도 있다.
+  const raw = curriculumFromHeaderGrid(groupLines(boxes));
+  if (!raw.length) return [];
+
+  /**
+   * 날짜가 회차를 가르는 표에서 내용이 여러 줄이면, 줄마다 회차 번호가 있는 것처럼 잡히기도 한다.
+   * 날짜가 있는 행이 진짜 회차이고 날짜 없는 행은 그 회차가 이어지는 줄이다.
+   */
+  const rows = raw.some((row) => row.date) && raw.some((row) => !row.date)
+    ? raw.reduce<OcrCurriculumRow[]>((merged, row) => {
+      if (row.date || !merged.length) return [...merged, row];
+      const last = merged[merged.length - 1];
+      last.activity = `${last.activity}\n${row.activity}`.trim();
+      return merged;
+    }, [])
+    : raw;
+
   const sessions = rows.map((row) => row.session);
   const unique = new Set(sessions).size === sessions.length;
   const sorted = [...rows].sort((left, right) => left.session - right.session);
@@ -492,6 +580,6 @@ export function curriculumFromOcrBoxes(boxes: OcrTextBox[]): OcrCurriculumRow[] 
    * 날짜는 회차를 가르는 확실한 근거이고, 날짜 없는 행은 표 아래 안내문일 때가 많다.
    */
   const dated = rows.filter((row) => row.date);
-  if (dated.length >= 2) return dated.map((row, index) => ({ ...row, session: index + 1 }));
+  if (dated.length) return dated.map((row, index) => ({ ...row, session: index + 1 }));
   return [];
 }

@@ -33,6 +33,12 @@ const LABEL_KIND: Record<string, 'title' | 'target' | 'capacity' | 'instructor' 
   '강의 목표': 'content', '프로그램 개요': 'content', 프로그램개요: 'content',
   // 회차 표 없이 도입·전개·마무리를 한 덩어리로 적은 계획서
   '활동 계획': 'content', 활동계획: 'content',
+  // 수강생 모집 홍보문이 글머리표 목록으로 적는 항목
+  운영내용: 'content', 프로그램내용: 'content',
+  기간: 'schedule', 시간: 'schedule', 운영시간: 'schedule',
+  장소: 'location', 운영장소: 'location',
+  모집대상: 'target', 신청대상: 'target',
+  모집인원: 'capacity',
 };
 
 function comparable(value: unknown) {
