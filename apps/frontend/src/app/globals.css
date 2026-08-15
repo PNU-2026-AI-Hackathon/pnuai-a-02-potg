@@ -5239,13 +5239,7 @@ html:has(.moiraPage) {
 }
 
 .introSectionNavTrack {
-  position: absolute;
-  z-index: -1;
-  top: 17px;
-  bottom: 17px;
-  left: 31px;
-  width: 1px;
-  background: rgba(15, 65, 55, 0.16);
+  display: none;
 }
 
 .introSectionNav button {
