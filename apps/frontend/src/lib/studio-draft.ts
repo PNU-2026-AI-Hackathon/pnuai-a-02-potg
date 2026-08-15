@@ -23,7 +23,9 @@ export type StudioReviseRequest = {
   };
 };
 
-export type StudioDocumentStage = '기획 중' | '수요조사 중' | '수요조사 완료' | '기획서 확정';
+export const studioDocumentStages = ['기획 중', '수요조사 중', '수요조사 완료', '기획서 확정'] as const;
+
+export type StudioDocumentStage = (typeof studioDocumentStages)[number];
 
 export type StudioSavedDocument = {
   id: string;

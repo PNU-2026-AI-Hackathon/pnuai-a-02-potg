@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getBackendAuthHeaders } from '@/lib/backend-auth';
+import { getBackendStudioDocumentHeaders } from '@/lib/backend-auth';
 import { getBackendUrl } from '@/lib/backend-url';
 
 async function readBackendResponse(response: Response) {
@@ -13,7 +13,7 @@ async function readBackendResponse(response: Response) {
 export async function GET() {
   try {
     const response = await fetch(getBackendUrl('/api/studio/documents'), {
-      headers: await getBackendAuthHeaders(),
+      headers: await getBackendStudioDocumentHeaders(),
       cache: 'no-store',
     });
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(await getBackendAuthHeaders()),
+        ...(await getBackendStudioDocumentHeaders()),
       },
       body: await request.text(),
     });
