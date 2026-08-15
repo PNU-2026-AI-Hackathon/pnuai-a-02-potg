@@ -16,6 +16,7 @@ import programCaseSemanticSearchRouter from './routes/programCaseSemanticSearch'
 import programCaseSearchInspectorRouter from './routes/programCaseSearchInspector';
 import programCaseSearchRouter from './routes/programCaseSearch';
 import meRouter from './routes/me';
+import studioDocumentsRouter from './routes/studioDocuments';
 import programBoardSemanticSearchRouter from './routes/programBoardSemanticSearch';
 import { announcements, libraries, programs, volunteers, agendaItems } from './data/mockData';
 
@@ -52,6 +53,7 @@ app.use('/api/internal/program-cases', internalProgramCasesRouter);
 app.use('/api/program-case', programCaseSemanticSearchRouter);
 app.use('/api/internal/program-case-search-inspector', programCaseSearchInspectorRouter);
 app.use('/api/internal/program-case-search', programCaseSearchRouter);
+app.use('/api/studio/documents', studioDocumentsRouter);
 app.use('/api/program-board', programBoardSemanticSearchRouter);
 
 app.use((_req: Request, res: Response) => {

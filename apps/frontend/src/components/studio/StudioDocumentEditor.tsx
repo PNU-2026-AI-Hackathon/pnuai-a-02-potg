@@ -2,9 +2,16 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { buildStudioDraftContent, studioDraftStorageKey, type StudioDraft } from '@/lib/studio-draft';
+import {
+  buildStudioDraftContent,
+  formatStudioDate,
+  studioDraftStorageKey,
+  type StudioDraft,
+  type StudioSavedDocument,
+} from '@/lib/studio-draft';
 
-type SaveState = 'saved' | 'dirty' | 'saving';
+type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
+type LoadState = 'loading' | 'ready' | 'failed';
 type AiRequestState = 'idle' | 'submitting' | 'ready' | 'failed';
 type TextSelectionRange = {
   start: number;
@@ -128,6 +135,7 @@ const saveStateLabel: Record<SaveState, string> = {
   saved: '저장됨',
   dirty: '저장 필요',
   saving: '저장 중',
+  failed: '저장 실패',
 };
 
 const aiStateLabel: Record<AiRequestState, string> = {
@@ -218,8 +226,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   });
   const [title, setTitle] = useState(storedDraft?.title || document.title);
   const [content, setContent] = useState(storedDraft?.content || document.content);
+  const [loadState, setLoadState] = useState<LoadState>('loading');
+  const [loadErrorMessage, setLoadErrorMessage] = useState('');
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
+  const [saveErrorMessage, setSaveErrorMessage] = useState('');
   const [selectedText, setSelectedText] = useState('');
   const [selectedRange, setSelectedRange] = useState<TextSelectionRange | null>(null);
   const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
@@ -231,6 +242,61 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const canSave = saveState === 'dirty' && !hasEmptyTitle;
   const hasSelectedText = selectedText.trim().length > 0;
   const canRequestAiEdit = hasSelectedText && aiRequest.trim().length > 0 && aiRequestState !== 'submitting';
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadDocument() {
+      await Promise.resolve();
+
+      if (isCancelled) {
+        return;
+      }
+
+      setLoadState('loading');
+      setLoadErrorMessage('');
+
+      try {
+        const response = await fetch(`/api/studio/documents/${document.id}`, {
+          cache: 'no-store',
+        });
+        const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
+
+        if (!response.ok || !data.document) {
+          throw new Error(data.error || '기획서를 불러오지 못했습니다.');
+        }
+
+        if (isCancelled) {
+          return;
+        }
+
+        setTitle(data.document.title);
+        setContent(data.document.content);
+        setLastSavedAt(formatStudioDate(data.document.updatedAt));
+        setSaveState('saved');
+        setLoadState('ready');
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (storedDraft) {
+          setLoadState('ready');
+          setLoadErrorMessage('저장된 문서 조회에 실패해 생성 직후 임시 초안을 표시합니다.');
+          return;
+        }
+
+        setLoadState('failed');
+        setLoadErrorMessage(error instanceof Error ? error.message : '기획서를 불러오지 못했습니다.');
+      }
+    }
+
+    void loadDocument();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [document.id, storedDraft]);
 
   useEffect(() => {
     if (!isAiPanelOpen) {
@@ -265,18 +331,40 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     if (saveState !== 'dirty') {
       setSaveState('dirty');
     }
+    setSaveErrorMessage('');
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!canSave) {
       return;
     }
 
     setSaveState('saving');
-    window.setTimeout(() => {
+    setSaveErrorMessage('');
+
+    try {
+      const response = await fetch(`/api/studio/documents/${document.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          content,
+        }),
+      });
+      const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
+
+      if (!response.ok || !data.document) {
+        throw new Error(data.error || '기획서를 저장하지 못했습니다.');
+      }
+
       setSaveState('saved');
-      setLastSavedAt('방금 전');
-    }, 450);
+      setLastSavedAt(formatStudioDate(data.document.updatedAt));
+    } catch (error) {
+      setSaveState('failed');
+      setSaveErrorMessage(error instanceof Error ? error.message : '기획서를 저장하지 못했습니다.');
+    }
   }
 
   function updateSelectedText() {
@@ -419,6 +507,30 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           </div>
         </section>
 
+        {loadState === 'failed' ? (
+          <section className="studioDocumentsEmptyState" aria-labelledby="studio-document-load-failed-title">
+            <span aria-hidden="true">□</span>
+            <h2 id="studio-document-load-failed-title">기획서를 불러오지 못했습니다.</h2>
+            <p>{loadErrorMessage}</p>
+            <Link className="uiButton uiButtonPrimary" href="/studio/documents">
+              기획서 목록으로 이동
+            </Link>
+          </section>
+        ) : null}
+
+        {loadState === 'loading' ? (
+          <section className="studioDocumentsNotice" aria-live="polite">
+            기획서를 불러오는 중입니다.
+          </section>
+        ) : null}
+
+        {loadState === 'ready' && (loadErrorMessage || saveErrorMessage) ? (
+          <p className="studioDocumentsNotice" aria-live="polite">
+            {saveErrorMessage || loadErrorMessage}
+          </p>
+        ) : null}
+
+        {loadState === 'ready' ? (
         <div className={isAiPanelOpen ? 'studioDocumentWorkspace hasAiPanel' : 'studioDocumentWorkspace'}>
           <section className="studioDocumentEditor" aria-labelledby="studio-document-title-label">
             <label className="studioDocumentTitleField">
@@ -569,6 +681,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             </aside>
           ) : null}
         </div>
+        ) : null}
       </main>
     </div>
   );

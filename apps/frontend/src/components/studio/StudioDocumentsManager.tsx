@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useMemo, useState } from 'react';
-
-type StudioDocumentStage = '기획 중' | '수요조사 중' | '수요조사 완료' | '기획서 확정';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { formatStudioDate, type StudioDocumentStage, type StudioSavedDocument } from '@/lib/studio-draft';
 
 type ManagedStudioDocument = {
   id: string;
@@ -16,38 +15,7 @@ type ManagedStudioDocument = {
   preview: string;
 };
 
-const dummyDocuments: ManagedStudioDocument[] = [
-  {
-    id: 'demo-document-1',
-    title: '시니어 디지털 생활 교실',
-    stage: '기획 중',
-    updatedAt: '2026. 08. 14. 09:30',
-    category: '디지털 역량',
-    audience: '시니어',
-    period: '4회차',
-    preview: '지역 어르신이 스마트폰 기본 기능과 생활 편의 서비스를 익히는 프로그램입니다.',
-  },
-  {
-    id: 'family-reading-weekend',
-    title: '가족 독서 주말 프로그램',
-    stage: '수요조사 중',
-    updatedAt: '2026. 08. 13. 16:20',
-    category: '독서 문화',
-    audience: '가족',
-    period: '3회차',
-    preview: '보호자와 어린이가 함께 책을 읽고 지역 이야기를 나누는 주말 프로그램입니다.',
-  },
-  {
-    id: 'local-memory-archive',
-    title: '우리 동네 기억 수집 워크숍',
-    stage: '기획서 확정',
-    updatedAt: '2026. 08. 07. 11:10',
-    category: '지역 기록',
-    audience: '성인',
-    period: '4회차',
-    preview: '주민의 사진과 인터뷰를 모아 동네 생활사를 기록하는 참여형 아카이브 프로그램입니다.',
-  },
-];
+type DocumentListState = 'loading' | 'ready' | 'failed';
 
 const stageClassName: Record<StudioDocumentStage, string> = {
   '기획 중': 'isDraft',
@@ -56,27 +24,65 @@ const stageClassName: Record<StudioDocumentStage, string> = {
   '기획서 확정': 'isConfirmed',
 };
 
+function normalizeDocument(document: StudioSavedDocument): ManagedStudioDocument {
+  return {
+    id: document.id,
+    title: document.title,
+    stage: document.stage,
+    updatedAt: formatStudioDate(document.updatedAt),
+    category: document.category || '-',
+    audience: document.audience || '-',
+    period: document.period || '-',
+    preview: document.preview || document.content.replace(/\s+/g, ' ').slice(0, 96),
+  };
+}
+
 export default function StudioDocumentsManager() {
-  const [documents, setDocuments] = useState(dummyDocuments);
+  const [documents, setDocuments] = useState<ManagedStudioDocument[]>([]);
+  const [listState, setListState] = useState<DocumentListState>('loading');
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [openMenuDocumentId, setOpenMenuDocumentId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ManagedStudioDocument | null>(null);
-  const [isShowingEmptyState, setIsShowingEmptyState] = useState(false);
   const [notice, setNotice] = useState('');
 
-  const visibleDocuments = useMemo(
-    () => (isShowingEmptyState ? [] : documents),
-    [documents, isShowingEmptyState],
-  );
+  const loadDocuments = useCallback(async () => {
+    setListState('loading');
+    setNotice('');
+
+    try {
+      const response = await fetch('/api/studio/documents', {
+        cache: 'no-store',
+      });
+      const data = (await response.json()) as { documents?: StudioSavedDocument[]; error?: string };
+
+      if (!response.ok || !data.documents) {
+        throw new Error(data.error || '저장된 기획서 목록을 불러오지 못했습니다.');
+      }
+
+      setDocuments(data.documents.map(normalizeDocument));
+      setListState('ready');
+    } catch (error) {
+      setListState('failed');
+      setNotice(error instanceof Error ? error.message : '저장된 기획서 목록을 불러오지 못했습니다.');
+    }
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void loadDocuments();
+    });
+  }, [loadDocuments]);
+
+  const visibleDocuments = documents;
   const totalCount = visibleDocuments.length;
-  const firstDocumentId = visibleDocuments[0]?.id ?? 'demo-document-1';
+  const firstDocumentId = visibleDocuments[0]?.id ?? null;
 
   function startTitleEdit(document: ManagedStudioDocument) {
     setOpenMenuDocumentId(null);
     setEditingDocumentId(document.id);
     setEditingTitle(document.title);
-    setNotice('선택한 기획서 제목을 더미 목록에서 수정할 수 있습니다.');
+    setNotice('선택한 기획서 제목을 수정할 수 있습니다.');
   }
 
   function cancelTitleEdit() {
@@ -85,7 +91,7 @@ export default function StudioDocumentsManager() {
     setNotice('제목 수정을 취소했습니다.');
   }
 
-  function submitTitleEdit(event: FormEvent<HTMLFormElement>) {
+  async function submitTitleEdit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const nextTitle = editingTitle.trim();
@@ -93,31 +99,53 @@ export default function StudioDocumentsManager() {
       return;
     }
 
-    setDocuments((currentDocuments) =>
-      currentDocuments.map((document) =>
-        document.id === editingDocumentId
-          ? {
-              ...document,
-              title: nextTitle,
-              updatedAt: '2026. 08. 14. 09:30',
-              stage: '기획 중',
-            }
-          : document,
-      ),
-    );
-    setEditingDocumentId(null);
-    setEditingTitle('');
-    setNotice('제목이 더미 목록에 반영되었습니다. 실제 저장 API는 호출하지 않았습니다.');
+    try {
+      const response = await fetch(`/api/studio/documents/${editingDocumentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: nextTitle }),
+      });
+      const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
+
+      if (!response.ok || !data.document) {
+        throw new Error(data.error || '기획서 제목을 저장하지 못했습니다.');
+      }
+
+      const updatedDocument = normalizeDocument(data.document);
+      setDocuments((currentDocuments) =>
+        currentDocuments.map((document) => (document.id === updatedDocument.id ? updatedDocument : document)),
+      );
+      setEditingDocumentId(null);
+      setEditingTitle('');
+      setNotice('제목이 저장되었습니다.');
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '기획서 제목을 저장하지 못했습니다.');
+    }
   }
 
-  function confirmDeleteDocument() {
+  async function confirmDeleteDocument() {
     if (!deleteTarget) {
       return;
     }
 
-    setDocuments((currentDocuments) => currentDocuments.filter((document) => document.id !== deleteTarget.id));
-    setNotice(`"${deleteTarget.title}" 기획서를 더미 목록에서 제거했습니다.`);
-    setDeleteTarget(null);
+    try {
+      const response = await fetch(`/api/studio/documents/${deleteTarget.id}`, {
+        method: 'DELETE',
+      });
+      const data = (await response.json()) as { success?: boolean; error?: string };
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || '기획서를 삭제하지 못했습니다.');
+      }
+
+      setDocuments((currentDocuments) => currentDocuments.filter((document) => document.id !== deleteTarget.id));
+      setNotice(`"${deleteTarget.title}" 기획서를 삭제했습니다.`);
+      setDeleteTarget(null);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '기획서를 삭제하지 못했습니다.');
+    }
   }
 
   function openDeleteConfirm(document: ManagedStudioDocument) {
@@ -162,10 +190,10 @@ export default function StudioDocumentsManager() {
             <strong>저장된 프로그램 기획서</strong>
             <small>{totalCount}건을 최근 수정 순으로 확인합니다.</small>
           </Link>
-          <Link className="studioHistoryItem" href={`/studio/document/${firstDocumentId}`}>
+          <Link className="studioHistoryItem" href={firstDocumentId ? `/studio/document/${firstDocumentId}` : '/studio'}>
             <span>빠른 이동</span>
-            <strong>최근 수정 기획서 열기</strong>
-            <small>가장 최근에 수정한 문서로 이동합니다.</small>
+            <strong>{firstDocumentId ? '최근 수정 기획서 열기' : '새 프로그램 기획 시작'}</strong>
+            <small>{firstDocumentId ? '가장 최근에 수정한 문서로 이동합니다.' : '아직 저장된 문서가 없습니다.'}</small>
           </Link>
           <Link className="studioHistoryItem" href="/studio">
             <span>새 작업</span>
@@ -200,12 +228,9 @@ export default function StudioDocumentsManager() {
             <button
               className="uiButton uiButtonSecondary"
               type="button"
-              onClick={() => {
-                setIsShowingEmptyState((current) => !current);
-                setNotice(isShowingEmptyState ? '저장된 더미 기획서 목록을 다시 표시합니다.' : '저장된 문서가 없을 때의 화면 예시입니다.');
-              }}
+              onClick={() => void loadDocuments()}
             >
-              {isShowingEmptyState ? '저장 문서 목록 보기' : '빈 목록 예시 보기'}
+              새로고침
             </button>
             <Link className="uiButton uiButtonPrimary" href="/studio">
               새 기획서 작성
@@ -215,7 +240,13 @@ export default function StudioDocumentsManager() {
 
         {notice ? <p className="studioDocumentsNotice" aria-live="polite">{notice}</p> : null}
 
-        {visibleDocuments.length > 0 ? (
+        {listState === 'loading' ? (
+          <section className="studioDocumentsNotice" aria-live="polite">
+            저장된 기획서 목록을 불러오는 중입니다.
+          </section>
+        ) : null}
+
+        {listState === 'ready' && visibleDocuments.length > 0 ? (
           <section className="studioDocumentsList" aria-label="저장된 기획서 목록">
             <div className="studioDocumentsListHead" aria-hidden="true">
               <span>기획서</span>
@@ -315,7 +346,9 @@ export default function StudioDocumentsManager() {
               );
             })}
           </section>
-        ) : (
+        ) : null}
+
+        {listState === 'ready' && visibleDocuments.length === 0 ? (
           <section className="studioDocumentsEmptyState" aria-labelledby="studio-documents-empty-title">
             <span aria-hidden="true">□</span>
             <h2 id="studio-documents-empty-title">아직 저장된 기획서가 없습니다.</h2>
@@ -324,7 +357,18 @@ export default function StudioDocumentsManager() {
               새 기획서 작성
             </Link>
           </section>
-        )}
+        ) : null}
+
+        {listState === 'failed' ? (
+          <section className="studioDocumentsEmptyState" aria-labelledby="studio-documents-failed-title">
+            <span aria-hidden="true">□</span>
+            <h2 id="studio-documents-failed-title">기획서 목록을 불러오지 못했습니다.</h2>
+            <p>{notice}</p>
+            <button className="uiButton uiButtonPrimary" type="button" onClick={() => void loadDocuments()}>
+              다시 시도
+            </button>
+          </section>
+        ) : null}
       </main>
 
       {deleteTarget ? (
@@ -339,7 +383,7 @@ export default function StudioDocumentsManager() {
             <p className="uiEyebrow">DELETE DOCUMENT</p>
             <h2 id="studio-document-delete-title">이 기획서를 삭제할까요?</h2>
             <p id="studio-document-delete-description">
-              <strong>{deleteTarget.title}</strong> 문서를 목록에서 제거합니다. 이번 단계에서는 실제 삭제 API를 호출하지 않습니다.
+              <strong>{deleteTarget.title}</strong> 문서를 삭제합니다. 삭제 후에는 목록에서 더 이상 표시되지 않습니다.
             </p>
             <div className="studioDocumentDeleteActions">
               <button className="uiButton uiButtonSecondary" type="button" onClick={() => setDeleteTarget(null)}>

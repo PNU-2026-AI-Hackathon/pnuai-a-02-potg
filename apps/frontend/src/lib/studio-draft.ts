@@ -12,6 +12,23 @@ export type StudioGenerateRequest = {
   model?: string;
 };
 
+export type StudioDocumentStage = '기획 중' | '수요조사 중' | '수요조사 완료' | '기획서 확정';
+
+export type StudioSavedDocument = {
+  id: string;
+  title: string;
+  content: string;
+  preview: string;
+  stage: StudioDocumentStage;
+  category?: string;
+  audience?: string;
+  period?: string;
+  conditions?: Record<string, string[]>;
+  agenda?: StudioAgendaInput | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type StudioDraft = {
   id?: string;
   title: string;
@@ -26,6 +43,25 @@ export type StudioDraft = {
 
 export const studioDraftStorageKey = 'moira-studio-generated-draft';
 export const studioGenerateRequestStorageKey = 'moira-studio-generate-request';
+
+export function formatStudioDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  return formatter.format(date).replace(/\.$/, '');
+}
 
 function normalizeStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {

@@ -7,6 +7,7 @@ import {
   studioDraftStorageKey,
   studioGenerateRequestStorageKey,
   type StudioDraft,
+  type StudioSavedDocument,
   type StudioGenerateRequest,
 } from '@/lib/studio-draft';
 
@@ -15,6 +16,11 @@ type GenerationState = 'generating' | 'complete' | 'failed' | 'missing-request';
 type StudioGenerateResponse = {
   documentId?: string;
   draft?: StudioDraft;
+  error?: string;
+};
+
+type StudioDocumentCreateResponse = {
+  document?: StudioSavedDocument;
   error?: string;
 };
 
@@ -172,14 +178,35 @@ export default function StudioGenerationLoading() {
         ...data.draft,
         id: documentId,
       };
+      const saveResponse = await fetch('/api/studio/documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: draftWithId.title,
+          content: draftWithId.content,
+          stage: '기획 중',
+          conditions: nextRequest.conditions,
+          agenda: nextRequest.agenda ?? null,
+        }),
+      });
+      const saveData = (await saveResponse.json()) as StudioDocumentCreateResponse;
 
-      window.sessionStorage.setItem(studioDraftStorageKey, JSON.stringify(draftWithId));
-      setCreatedDocumentId(documentId);
+      if (!saveResponse.ok || !saveData.document) {
+        throw new Error(saveData.error || '생성된 기획서를 저장하지 못했습니다.');
+      }
+
+      window.sessionStorage.setItem(studioDraftStorageKey, JSON.stringify({
+        ...draftWithId,
+        id: saveData.document.id,
+      }));
+      setCreatedDocumentId(saveData.document.id);
       setGenerationState('complete');
       setActiveStepIndex(generationSteps.length - 1);
 
       window.setTimeout(() => {
-        router.push(`/studio/document/${documentId}`);
+        router.push(`/studio/document/${saveData.document!.id}`);
       }, 900);
     } catch (error) {
       setGenerationState('failed');
