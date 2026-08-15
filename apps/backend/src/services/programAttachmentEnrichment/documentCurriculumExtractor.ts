@@ -23,7 +23,20 @@ function cleanMultiline(value: string) {
     .filter(Boolean).join('\n');
 }
 
-function cellAt(row: IRCell[], index: number) { return index >= 0 ? clean(row[index]?.text ?? '') : ''; }
+/**
+ * `※`로 시작하는 안내 문구를 떼어낸다.
+ *
+ * 표 아래에 별도 행으로 붙기도 하고, 마지막 회차의 비고 칸 안에 이어 적히기도 한다.
+ * 어느 쪽이든 회차 내용이 아니라 프로그램 전체 안내이므로 이용 안내로 보낸다.
+ */
+export function splitNoticeMarks(text: string) {
+  const notices = [...text.matchAll(/※\s*([^※\n]+)/g)].map((match) => match[1].trim()).filter(Boolean);
+  return { text: text.replace(/※[^※\n]*/g, '').trim(), notices };
+}
+
+function cellAt(row: IRCell[], index: number) {
+  return index >= 0 ? splitNoticeMarks(clean(row[index]?.text ?? '')).text : '';
+}
 function multilineCellAt(row: IRCell[], index: number) { return index >= 0 ? cleanMultiline(row[index]?.text ?? '') : ''; }
 
 /**
@@ -34,26 +47,51 @@ function multilineCellAt(row: IRCell[], index: number) { return index >= 0 ? cle
  * 뒤따르는 날짜 결합(`1 8/9`) 처리를 그대로 태우기 위해 숫자 자리만 바꾼다.
  */
 function stripSessionUnit(text: string) {
-  return text.replace(/(\d{1,2})\s*(?:회차|차시|회기|주차)/, '$1');
+  return text.replace(/(\d{1,2})\s*(?:회차|차시|회기|주차|시수|주)/, '$1');
 }
 
 function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
   const table = block.table;
   if (!table) return [];
-  const headerIndex = table.cells.findIndex((row) => {
-    const joined = row.map((cell) => compact(cell.text)).join('|');
-    return /(?:차시|회차|회기|^주\|)/.test(joined) && /(?:교육내용|강의내용|수업계획|수업내용|세부교육내용|주제)/.test(joined);
-  });
+  // 계획서마다 쓰는 말이 달라 머리글 어휘는 데이터처럼 넓게 연다.
+  // `시수`·`Period`는 영어 계획서 계열에서, `활동`·`Activity`는 교육내용 자리에서 쓴다.
+  const SESSION_LABEL = /^(?:차시|회차|회기|주|주차|일|시수|period|week)(?:날짜)?$/i;
+  const CONTENT_WORDS = /(?:교육내용|강의내용|수업계획|수업내용|세부교육내용|주제|활동|activity)/i;
+  // 머리글에 붙은 부연 괄호는 떼고 본다. `차시(60분)`도 회차 열이다.
+  const headerLabel = (cell: IRCell) => compact(cell.text).replace(/\((?:[^)]*)\)$/, '');
+  /**
+   * 머리글 행은 짧은 라벨로 이뤄진다.
+   * 어휘만 보면 `- Activity: …` 같은 데이터 행이 머리글로 잡히므로 길이도 함께 본다.
+   */
+  const HEADER_LABEL_MAX = 20;
+  const headerIndex = table.cells.findIndex((row) => row.some((cell) => SESSION_LABEL.test(headerLabel(cell)))
+    && row.some((cell) => {
+      const value = compact(cell.text);
+      return value.length <= HEADER_LABEL_MAX && CONTENT_WORDS.test(value);
+    }));
   const header = headerIndex >= 0 ? table.cells[headerIndex] : [];
-  let sessionColumn = header.findIndex((cell) => /^(?:차시|회차|회기|주)(?:\(날짜\)|날짜)?$/.test(compact(cell.text)));
+  // `일`은 회차를 세는 열로 쓰이기도 한다(`일 | 일자 | 차시(60분)`).
+  // 왼쪽부터 찾으므로 회차를 세는 바깥 열이 안쪽 `차시`보다 먼저 잡힌다.
+  let sessionColumn = header.findIndex((cell) => SESSION_LABEL.test(headerLabel(cell)));
   let dateColumn = header.findIndex((cell) => /^(?:일자.*|날짜)$/.test(compact(cell.text)));
   const topicColumn = header.findIndex((cell) => /^주제$/.test(compact(cell.text)));
-  let contentColumn = header.findIndex((cell) => /(?:교육내용|강의내용|수업계획|수업내용|세부교육내용|내용)$/.test(compact(cell.text)));
+  const contentLabel = /(?:교육내용|강의내용|수업계획|수업내용|세부교육내용|내용|활동|activity)/i;
+  // 머리글이 `교육내용 , 준비물`처럼 두 항목을 한 칸에 적은 표가 있다.
+  // 끝이 정확히 맞는 열을 먼저 찾고, 없으면 포함하는 열로 물러선다.
+  let contentColumn = header.findIndex((cell) => new RegExp(`${contentLabel.source}$`).test(compact(cell.text)));
+  if (contentColumn < 0) contentColumn = header.findIndex((cell) => contentLabel.test(compact(cell.text)));
   let noteColumn = header.findIndex((cell) => /(?:준비물|비고)$/.test(compact(cell.text)));
   let materialsColumn = header.findIndex((cell) => /^준비물$/.test(compact(cell.text)));
   let teachingMethodColumn = header.findIndex((cell) => /^교수방법(?:준비물)?$/.test(compact(cell.text)));
   let categoryColumn = dateColumn >= 0 && contentColumn - dateColumn > 1 ? dateColumn + 1 : -1;
   let dataRows = headerIndex >= 0 ? table.cells.slice(headerIndex + 1) : table.cells;
+  // `Period | (빈 머리글) | Book | …` 처럼 회차 머리글 옆 칸에 실제 번호가 있는 표가 있다.
+  // 지목한 열에 숫자가 하나도 없고 옆 칸에 있으면 옆 칸을 회차 열로 본다.
+  if (sessionColumn >= 0) {
+    const hasNumber = (index: number) => dataRows
+      .some((row) => /^\d{1,2}$/.test(stripSessionUnit(cellAt(row, index))));
+    if (!hasNumber(sessionColumn) && hasNumber(sessionColumn + 1)) sessionColumn += 1;
+  }
   const firstNumberedRow = dataRows.find((row) => /^\d{1,2}(?:\s+\d{1,2}[./-]\d{1,2})?$/.test(stripSessionUnit(cellAt(row, sessionColumn))));
   if (headerIndex >= 0 && contentColumn >= 0 && firstNumberedRow?.[contentColumn]?.rowSpan && firstNumberedRow[contentColumn].rowSpan > 1) {
     const nextContent = firstNumberedRow.findIndex((cell, index) => index > contentColumn && Boolean(clean(cell.text)));
@@ -64,22 +102,45 @@ function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
   }
   if (headerIndex < 0) {
     const first = dataRows.find((row) => /^\d{1,2}$/.test(cellAt(row, 0)) && /^\d{1,2}[./-]\d{1,2}$/.test(cellAt(row, 1)));
-    if (!first) return [];
-    sessionColumn = 0;
-    dateColumn = 1;
-    contentColumn = 2;
-    noteColumn = first.length >= 4 ? 3 : -1;
-    materialsColumn = noteColumn;
-    teachingMethodColumn = -1;
-    categoryColumn = -1;
+    if (first) {
+      sessionColumn = 0;
+      dateColumn = 1;
+      contentColumn = 2;
+      noteColumn = first.length >= 4 ? 3 : -1;
+      materialsColumn = noteColumn;
+      teachingMethodColumn = -1;
+      categoryColumn = -1;
+    } else {
+      // 회차 표가 다음 장으로 이어질 때 이어지는 표에는 머리글이 없다.
+      // 열 개수도 앞 표와 다를 수 있어 열 번호를 물려받을 수 없으므로 구조로 추론한다.
+      // 회차 번호가 있는 행을 찾고, 그 행에서 가장 긴 칸을 교육내용으로 본다.
+      const numbered = dataRows.find((row) => row
+        .some((cell, index) => index <= 1 && /^\d{1,2}$/.test(stripSessionUnit(clean(cell.text)))));
+      if (!numbered) return [];
+      sessionColumn = numbered.findIndex((cell, index) => index <= 1 && /^\d{1,2}$/.test(stripSessionUnit(clean(cell.text))));
+      const texts = numbered.map((cell) => clean(cell.text));
+      const longest = texts.reduce((best, text, index) => (index > sessionColumn && text.length > texts[best].length ? index : best), sessionColumn);
+      if (longest === sessionColumn) return [];
+      contentColumn = longest;
+      dateColumn = texts.findIndex((text, index) => index > sessionColumn && index < contentColumn
+        && /\d{1,2}\s*[월./-]\s*\d{1,2}/.test(text));
+      noteColumn = texts.findIndex((text, index) => index > contentColumn && Boolean(text));
+      materialsColumn = -1;
+      teachingMethodColumn = -1;
+      categoryColumn = -1;
+    }
   }
   const rows: DocumentCurriculumRow[] = [];
   let inheritedCategory: string | null = null;
   for (const row of dataRows) {
     let sessionText = stripSessionUnit(cellAt(row, sessionColumn));
     let combinedDate: string | null = null;
+    // `1 8/9` 처럼 회차와 날짜가 한 칸에 있는 경우
     const combined = sessionText.match(/^(\d{1,2})\s+(\d{1,2}[./-]\d{1,2})$/);
     if (combined) { sessionText = combined[1]; combinedDate = combined[2]; }
+    // `1회차(9/20)` 처럼 날짜가 괄호로 붙은 경우. 단위를 벗기면 `1(9/20)`이 남는다.
+    const parenthesized = sessionText.match(/^(\d{1,2})\s*\(\s*(\d{1,2}\s*[./-]\s*\d{1,2})\s*\)$/);
+    if (parenthesized) { sessionText = parenthesized[1]; combinedDate = parenthesized[2].replace(/\s+/g, ''); }
     let content = multilineCellAt(row, contentColumn);
     if ((!sessionText || !/^\d{1,2}$/.test(sessionText)) && contentColumn >= 0) {
       const embedded = content.match(/^(\d{1,2})\s+([\s\S]+)/);
@@ -157,10 +218,13 @@ export async function extractDocumentStructure(filePath: string, pages: number[]
       curriculum[index].referenceImages = [{ filename, mimeType: images[index].mimeType }];
     }
   }
-  const notices = parsed.blocks.flatMap((block) => block.table?.cells ?? [])
-    .flatMap((row) => row.map((cell) => clean(cell.text)))
-    .filter((value) => /비대면.*(?:주제|내용).*(?:바뀔|변경)/.test(value));
-  return { curriculum, labeled: labeledFromTables(parsed.blocks), notices };
+  const notices = [
+    ...parsed.blocks.flatMap((block) => block.table?.cells ?? [])
+      .flatMap((row) => row.map((cell) => clean(cell.text)))
+      .filter((value) => /비대면.*(?:주제|내용).*(?:바뀔|변경)/.test(value)),
+    ...noticeLinesFrom(parsed.blocks),
+  ];
+  return { curriculum, labeled: labeledFromTables(parsed.blocks), notices: [...new Set(notices)] };
 }
 
 export async function extractDocumentCurriculum(filePath: string, pages: number[]) {
@@ -192,13 +256,14 @@ function blockText(block: IRBlock) {
  * 한 셀 안에 여러 줄로 적혀 있으면 줄 단위로 나눈다.
  */
 function noticeLinesFrom(blocks: IRBlock[]) {
-  return blocks.flatMap((block) => block.table?.cells ?? [])
-    .filter((row) => !/^\d{1,2}$/.test(stripSessionUnit(cellAt(row, 0))))
-    .flatMap((row) => row.map((cell) => cell.text ?? ''))
-    .flatMap((text) => text.split(/\n/))
-    .map((line) => normalizeExtractedKoreanSpacing(line.trim()))
-    .filter((line) => /^※/.test(line))
-    .map((line) => line.replace(/^※\s*/, ''));
+  // 안내 문구는 표 아래 별도 행, 마지막 회차의 비고 칸, 표 바깥 문단 어디에나 올 수 있다.
+  const texts = blocks.flatMap((block) => (block.table
+    ? block.table.cells.flatMap((row) => row.map((cell) => cell.text ?? ''))
+    : [(block as { text?: string }).text ?? '']));
+  return [...new Set(texts
+    .flatMap((text) => splitNoticeMarks(text.replace(/\s*\n\s*/g, ' ')).notices)
+    .map((line) => normalizeExtractedKoreanSpacing(line).trim())
+    .filter(Boolean))];
 }
 
 /**
@@ -219,7 +284,8 @@ function freeTextSectionsFrom(blocks: IRBlock[]) {
       current = { label: heading[2].trim(), lines: [] };
       continue;
     }
-    if (current && !isDocumentHeader(text)) current.lines.push(text);
+    // `※` 안내 문구는 프로그램 소개가 아니라 이용 안내로 가므로 자유문에 넣지 않는다.
+    if (current && !isDocumentHeader(text) && !/^※/.test(text.trim())) current.lines.push(text);
   }
   if (current?.lines.length) result.push({ label: current.label, value: current.lines.join('\n') });
   return result;

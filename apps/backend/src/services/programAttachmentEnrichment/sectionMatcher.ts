@@ -143,6 +143,17 @@ function startsProgramSection(text: string) {
   return /(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명|독서지도\s*계획안|그림책\s*지도\s*계획안)/.test(heading);
 }
 
+/**
+ * 프로그램 구간이 끝나고 부록이 시작되는 자리.
+ *
+ * `[붙임] 만들기 리스트`처럼 같은 프로그램의 참고 자료가 뒤에 붙는 계획서가 있다.
+ * 부록에도 주차·시수 표가 있어 회차표로 오인되므로 구간에서 제외한다.
+ */
+function startsAppendix(text: string) {
+  const heading = text.replace(/\s+/g, ' ').trim().slice(0, 60);
+  return /^[[［(]\s*(?:붙임|별첨|부록)\s*\d*\s*[\]］)]/.test(heading);
+}
+
 /** 프로그램 구간이 시작되는 머리말. 구간 분할과 경계 판정에 같은 기준을 쓴다. */
 const PROGRAM_HEADING = /(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명)/g;
 
@@ -174,6 +185,15 @@ export function matchDocumentSection(input: {
   const scoredPages = input.pages.map((page) => ({ page, score: matchScore(page.text.slice(0, 600), input.targetTitle) }));
   const bestScore = Math.max(0, ...scoredPages.map((entry) => entry.score));
   const matchingPages = scoredPages.filter((entry) => entry.score === bestScore && entry.score >= 0.55).map((entry) => entry.page);
+  /**
+   * 계획서 본문과 뒤쪽 부록이 함께 걸리면 부록이 더 높은 점수를 받기도 한다.
+   * (`[붙임] 만들기 리스트`가 본문 첫 장보다 높게 나온 사례)
+   * 프로그램 구간은 앞에서 시작하므로, 최고점과 비슷한 점수면 더 앞선 장을 시작점으로 본다.
+   */
+  const NEAR_BEST = 0.1;
+  const nearBestStart = scoredPages
+    .filter((entry) => entry.score >= 0.55 && entry.score >= bestScore - NEAR_BEST)
+    .map((entry) => entry.page)[0];
   if (input.singleProgramDocument && matchingPages.length > 0) {
     return {
       status: 'WHOLE_DOCUMENT',
@@ -187,14 +207,34 @@ export function matchDocumentSection(input: {
     return { status: 'NOT_FOUND', selectedText: '', selectedPages: [], score: 0, reason: '제목이 포함된 페이지를 찾지 못함' };
   }
   if (matchingPages.length > 1) {
+    /**
+     * 한 프로그램짜리 계획서는 여러 장에 걸쳐 같은 제목이 반복된다.
+     * 다른 프로그램의 제목이 문서 어디에도 없으면 이는 모호함이 아니라 같은 프로그램의 연속이다.
+     */
+    const otherProgramTitles = input.knownProgramTitles
+      .filter((title) => comparableTitle(title) !== comparableTitle(input.targetTitle));
+    const hasOtherProgram = input.pages
+      .some((page) => otherProgramTitles.some((title) => titleMatches(page.text, title)));
+    if (!hasOtherProgram) {
+      return {
+        status: 'WHOLE_DOCUMENT',
+        selectedText: input.pages.map((page) => page.text).join('\n\n'),
+        selectedPages: input.pages.map((page) => page.pageNumber),
+        score: bestScore,
+        reason: '한 프로그램만 담긴 문서에서 제목이 여러 장에 반복됨',
+      };
+    }
     return { status: 'AMBIGUOUS', selectedText: '', selectedPages: matchingPages.map((page) => page.pageNumber), score: 0.4, reason: '제목이 여러 페이지에서 발견됨' };
   }
 
-  const startIndex = input.pages.findIndex((page) => page.pageNumber === matchingPages[0].pageNumber);
+  const sectionStart = nearBestStart ?? matchingPages[0];
+  const startIndex = input.pages.findIndex((page) => page.pageNumber === sectionStart.pageNumber);
   const otherTitles = input.knownProgramTitles.filter((title) => comparableTitle(title) !== comparableTitle(input.targetTitle));
   let endIndex = input.pages.length;
   for (let index = startIndex + 1; index < input.pages.length; index += 1) {
-    if (startsProgramSection(input.pages[index].text) || otherTitles.some((title) => titleMatches(input.pages[index].text, title))) {
+    if (startsProgramSection(input.pages[index].text)
+      || startsAppendix(input.pages[index].text)
+      || otherTitles.some((title) => titleMatches(input.pages[index].text, title))) {
       endIndex = index;
       break;
     }

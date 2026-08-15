@@ -165,18 +165,26 @@ async function processDocumentRecord(
   const sectionFound = ['WHOLE_DOCUMENT', 'SECTION_MATCHED'].includes(match.status);
   const singleSession = isSingleSessionEvent(normalized, JSON.stringify(merged.board));
   const curriculumMissing = !failure && merged.curriculum.length === 0 && !singleSession;
-  const extractionWarnings = curriculumMissing
-    ? [...merged.extractionWarnings, {
+  // 장마다 회차 번호를 1부터 다시 매긴 계획서가 있다. 번호가 겹치면 순서를 믿을 수 없다.
+  const duplicatedSessions = merged.curriculum.length > 0
+    && new Set(merged.curriculum.map((session: { session: number }) => session.session)).size !== merged.curriculum.length;
+  const extractionWarnings = [
+    ...merged.extractionWarnings,
+    ...(curriculumMissing ? [{
       code: 'CURRICULUM_NOT_EXTRACTED',
       message: sectionFound
         ? `첨부 구간은 찾았으나(${match.status}) 회차를 한 행도 추출하지 못했다. 원본 표를 확인해야 한다.`
         : '첨부에서 프로그램 구간을 찾지 못해 회차를 추출하지 못했다. 원본을 확인해야 한다.',
-    }]
-    : merged.extractionWarnings;
+    }] : []),
+    ...(duplicatedSessions ? [{
+      code: 'CURRICULUM_SESSION_DUPLICATED',
+      message: '회차 번호가 중복된다. 장마다 번호를 다시 매긴 문서일 수 있어 순서를 확인해야 한다.',
+    }] : []),
+  ];
 
   const status: BatchStatus = failure ? statusOfFailure(failure.code)
     : singleSession && merged.curriculum.length === 0 ? 'SINGLE_SESSION_EVENT'
-      : curriculumMissing || merged.reviewStatus === 'MANUAL_REVIEW_REQUIRED' ? 'MANUAL_REVIEW_REQUIRED'
+      : curriculumMissing || duplicatedSessions || merged.reviewStatus === 'MANUAL_REVIEW_REQUIRED' ? 'MANUAL_REVIEW_REQUIRED'
         : 'AUTO_REVIEW_CANDIDATE';
 
   return {
