@@ -395,9 +395,9 @@ export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string;
 }
 
 // `일시`·`교육일자`처럼 날짜 칸이 회차를 가르는 계획서도 있다.
-const SESSION_HEADER = /^(?:차시|회차|회기|시수|일시|일자|교육일자|날짜|연번|순번|번호)$/;
+const SESSION_HEADER = /^(?:차시|회차|회기|시수|일시|일자|교육일시|교육일자|강의일시|날짜|연번|순번|번호)$/;
 // `교육 내용과 목표`처럼 말을 붙여 쓰는 계획서가 있어 포함 여부로 본다.
-const CONTENT_HEADER = /(?:내용|활동|주제|동화명|도서명|프로그램명)/;
+const CONTENT_HEADER = /(?:내용|활동|주제|동화명|도서명|프로그램명|세부사항|강의명|수업명)/;
 /** 회차의 갈래를 적는 칸. `주제`가 따로 있으면 활동 앞에 붙여 보여 준다. */
 const CATEGORY_HEADER = /^(?:주제|분류|구분)$/;
 
@@ -477,11 +477,21 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
   const sessionIndex = labels.findIndex((label) => SESSION_HEADER.test(label.text));
   // 내용 칸은 회차 칸 오른쪽에서 가장 먼 것을 고른다. `일시 | 주제 | 교육 내용과 목표`처럼
   // 갈래 칸이 사이에 끼면 그 칸을 내용으로 잡아 정작 설명을 놓친다.
-  const contentIndex = labels.map((label, index) => ({ label, index }))
-    .filter((entry) => entry.index > sessionIndex && CONTENT_HEADER.test(entry.label.text)
-      && !CATEGORY_HEADER.test(entry.label.text))
-    .map((entry) => entry.index)
-    .pop() ?? -1;
+  const contentCandidates = labels.map((label, index) => ({ label, index }))
+    .filter((entry) => entry.index !== sessionIndex && CONTENT_HEADER.test(entry.label.text));
+  /**
+   * 내용 칸은 보통 회차 칸 오른쪽에 있지만 `동화명 | 교육일시 | 접수기간`처럼
+   * 왼쪽에 오는 표도 있다. 오른쪽을 먼저 찾고 없으면 왼쪽에서 찾는다.
+   * `주제` 같은 갈래 칸은 다른 내용 칸이 있을 때만 갈래로 쓰고, 없으면 그것을 내용으로 본다.
+   */
+  const pickContent = (side: 'right' | 'left') => contentCandidates
+    .filter((entry) => (side === 'right' ? entry.index > sessionIndex : entry.index < sessionIndex))
+    .filter((entry) => !CATEGORY_HEADER.test(entry.label.text))
+    .map((entry) => entry.index);
+  const contentIndex = pickContent('right').pop()
+    ?? pickContent('left').pop()
+    ?? contentCandidates.map((entry) => entry.index).pop()
+    ?? -1;
   const categoryIndex = labels.findIndex((label, index) => index > sessionIndex && index < contentIndex
     && CATEGORY_HEADER.test(label.text));
   if (sessionIndex < 0 || contentIndex < 0) return [];
@@ -502,9 +512,21 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
     return center >= left && center < right;
   };
 
-  const numbers = body
-    .filter((box) => inColumn(box, sessionLeft, Math.max(sessionRight, contentLeft)) && readSessionCell(box.text) != null)
+  const contentIsRight = contentIndex > sessionIndex;
+  const sessionColumnRight = contentIsRight ? Math.max(sessionRight, contentLeft) : sessionRight;
+  let numbers = body
+    .filter((box) => inColumn(box, sessionLeft, sessionColumnRight) && readSessionCell(box.text) != null)
     .sort((left, right) => left.top - right.top);
+  /**
+   * 번호 칸에 머리글을 달지 않는 표가 있다(`동화명 | 교육일시 | 접수기간`).
+   * 이름 붙은 칸에서 회차를 못 찾으면 모든 이름 왼쪽에 있는 숫자 칸을 본다.
+   */
+  if (!numbers.length) {
+    const firstLabelLeft = Math.min(...labels.map((label) => label.left));
+    numbers = body
+      .filter((box) => box.right <= firstLabelLeft && /^\d{1,2}$/.test(box.text.trim()))
+      .sort((left, right) => left.top - right.top);
+  }
   if (!numbers.length) return [];
   // 날짜만 적힌 표는 번호가 없으므로 위에서부터 차례로 매긴다.
   const marks = numbers.map((box) => readSessionCell(box.text)!);
@@ -515,10 +537,14 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
    * 라벨은 칸 가운데 놓이는데 회차 칸은 좁고 내용 칸은 넓어, 라벨 사이 중간점을
    * 쓰면 경계가 오른쪽으로 밀려 각 줄의 첫 낱말이 잘려 나간다.
    */
-  const contentStart = categoryIndex >= 0
-    ? boundary(contentIndex)
-    : Math.max(...numbers.map((box) => box.right)) + 2;
-  const contentBoxes = body.filter((box) => box.left >= contentStart && inColumn(box, contentStart, contentRight));
+  const numbersRight = Math.max(...numbers.map((box) => box.right)) + 2;
+  const labelledStart = boundary(contentIndex);
+  // 번호 칸이 내용 칸 왼쪽에 있으면 그 오른쪽부터가 내용이다.
+  // 그러지 않으면 회차 번호가 활동 내용 앞에 딸려 들어간다.
+  const contentStart = !contentIsRight || categoryIndex >= 0
+    ? Math.max(labelledStart, numbersRight < contentRight ? numbersRight : labelledStart)
+    : numbersRight;
+  const contentBoxes = body.filter((box) => inColumn(box, contentStart, contentRight));
   // 갈래 칸은 회차 칸과 내용 칸 사이에 있다. 활동 앞에 붙여 무엇을 다루는 회차인지 보여 준다.
   const categoryBoxes = categoryIndex >= 0
     ? body.filter((box) => inColumn(box, boundary(categoryIndex), boundary(categoryIndex + 1)))
