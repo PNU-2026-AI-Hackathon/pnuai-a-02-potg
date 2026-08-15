@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { normalizeProgram } from '../services/programDataNormalization/normalizer';
@@ -134,19 +135,60 @@ function bodyOnlyItem(raw: RawProgram, item: BatchInventoryItem, lane: BatchLane
 
 const DEFAULT_OCR_RESULTS = path.resolve(process.cwd(), '.local', 'program-attachment-ocr', 'results.json');
 
-/** OCR을 아직 돌리지 않았으면 비어 있는 지도를 돌려준다. 이미지 경로는 대기 상태로 남는다. */
+/**
+ * OCR을 아직 돌리지 않았으면 비어 있는 지도를 돌려준다. 이미지 경로는 대기 상태로 남는다.
+ *
+ * 같은 내용의 파일은 호출을 아끼려고 `OCR_REUSED`로만 기록되어 추출문이 없다.
+ * 체크섬이 같은 처리 결과를 찾아 이어 붙이지 않으면, 내용이 있는데도 대기 상태로 남는다.
+ */
 export function loadOcrResults(file = DEFAULT_OCR_RESULTS) {
   if (!fs.existsSync(file)) return new Map<string, OcrFileResult>();
   const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as { results?: OcrFileResult[] };
-  return new Map((parsed.results ?? []).map((result) => [result.url, result]));
+  const results = parsed.results ?? [];
+  const byChecksum = new Map<string, OcrFileResult>();
+  for (const result of results) {
+    if (result.status === 'OCR_COMPLETED' && result.checksum) byChecksum.set(result.checksum, result);
+  }
+  const resolved = new Map<string, OcrFileResult>();
+  for (const result of results) {
+    const donor = result.status === 'OCR_COMPLETED'
+      ? result
+      : result.checksum ? byChecksum.get(result.checksum) : undefined;
+    const value = donor && donor !== result
+      ? {
+        ...result,
+        status: 'OCR_COMPLETED',
+        cleanedText: donor.cleanedText,
+        averageConfidence: donor.averageConfidence,
+        boxes: donor.boxes,
+        reusedFromUrl: donor.url,
+      } as OcrFileResult
+      : result;
+    resolved.set(result.url, value);
+    // 본문에 박힌 이미지는 결과 파일에 주소를 그대로 남기지 않아 주소로는 이을 수 없다.
+    // 내용 체크섬을 열쇠로 함께 넣어 두면 배치에서 같은 값을 계산해 찾을 수 있다.
+    if (result.checksum) resolved.set(`sha256:${result.checksum}`, value);
+  }
+  return resolved;
+}
+
+/** 본문에 박힌 이미지를 결과와 잇기 위한 열쇠. 내려받지 않고 문자열만으로 계산한다. */
+function inlineImageKey(url: string) {
+  const match = url.match(/^data:[^;,]*(;base64)?,(.*)$/s);
+  if (!match) return null;
+  const buffer = match[1] ? Buffer.from(match[2], 'base64') : Buffer.from(decodeURIComponent(match[2]), 'binary');
+  return `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
 }
 
 export type OcrFileResult = {
   url: string;
   status: string;
+  checksum?: string;
   cleanedText?: string;
   averageConfidence?: number | null;
   boxes?: Array<{ text: string; top: number; left: number; right: number; bottom: number; confidence: number }>;
+  /** 내용이 같은 다른 파일의 결과를 이어 붙인 경우 그 출처. */
+  reusedFromUrl?: string;
 };
 
 /**
@@ -163,7 +205,10 @@ function processOcrRecord(
   ocrByUrl: Map<string, OcrFileResult>,
 ) {
   const normalized = normalizeProgram(raw);
-  const targets = item.attachments.map((attachment) => ocrByUrl.get(attachment.url)).filter(Boolean) as OcrFileResult[];
+  const targets = item.attachments
+    .map((attachment) => ocrByUrl.get(attachment.url)
+      ?? (inlineImageKey(attachment.url) ? ocrByUrl.get(inlineImageKey(attachment.url)!) : undefined))
+    .filter(Boolean) as OcrFileResult[];
   const usable = targets.filter((target) => target.status === 'OCR_COMPLETED' && (target.cleanedText ?? '').trim());
   if (!usable.length) return bodyOnlyItem(raw, item, lane, 'OCR_REQUIRED');
 
