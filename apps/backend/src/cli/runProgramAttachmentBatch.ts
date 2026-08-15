@@ -244,12 +244,24 @@ function processOcrRecord(
     structured,
   });
 
-  const warnings = [...merged.extractionWarnings, {
-    code: 'OCR_CURRICULUM_NOT_PUBLISHED',
-    message: recoverable.length
-      ? `좌표로 ${recoverable.length}개 회차 후보를 찾았으나 셀 경계 추정이 불확실해 싣지 않았다. 원본 이미지와 추출문을 대조해 입력해야 한다.`
-      : '포스터에서 회차 표를 복원하지 못했다. 원본 이미지와 추출문을 대조해 입력해야 한다.',
-  }];
+  /**
+   * 포스터에 회차표가 있는지.
+   *
+   * 회차표가 없는 안내문은 회차를 비워 두는 것이 정상이라 사람이 회차를 채울 일이 없다.
+   * 회차표가 있는데 싣지 못한 것과 구분해야 검수할 대상을 좁힐 수 있다.
+   */
+  const posterText = usable.map((target) => target.cleanedText ?? '').join('\n');
+  const curriculumExpected = /차시|회차|회기|\d+\s*주차/.test(posterText);
+
+  const warnings = [...merged.extractionWarnings];
+  if (curriculumExpected) {
+    warnings.push({
+      code: 'OCR_CURRICULUM_NOT_PUBLISHED',
+      message: recoverable.length
+        ? `좌표로 ${recoverable.length}개 회차 후보를 찾았으나 셀 경계 추정이 불확실해 싣지 않았다. 원본 이미지와 추출문을 대조해 입력해야 한다.`
+        : '포스터에 회차표가 있으나 복원하지 못했다. 원본 이미지와 추출문을 대조해 입력해야 한다.',
+    });
+  }
 
   return {
     ...merged,
@@ -259,9 +271,16 @@ function processOcrRecord(
     extractionRoute: 'IMAGE_OCR',
     textReadiness: item.textReadiness,
     attachmentReviewStatus: 'ATTACHMENT_ENRICHED',
-    // OCR 결과는 문서 구조가 아니라 픽셀 추정이라 근거의 성격이 다르다.
-    // 확정된 정책대로 신뢰도와 무관하게 사람이 확인한다.
-    reviewStatus: 'MANUAL_REVIEW_REQUIRED' as BatchStatus,
+    /**
+     * 회차표가 있는데 싣지 못한 건은 사람이 원본을 보고 채워야 한다.
+     * 회차가 원래 없는 안내문은 채울 것이 없으므로 대조만 하면 된다.
+     * 처음에는 OCR 결과를 전량 수동 검수로 두었으나, 그러면 250건이 한 덩어리가 되어
+     * 실제로 손봐야 할 건이 묻힌다. 회차 유무로 갈라 검수할 대상을 좁힌다.
+     */
+    reviewStatus: (curriculumExpected || merged.reviewStatus === 'MANUAL_REVIEW_REQUIRED'
+      ? 'MANUAL_REVIEW_REQUIRED'
+      : 'AUTO_REVIEW_CANDIDATE') as BatchStatus,
+    curriculumExpected,
     bodyPublishable: lane !== 'NO_TEXT_IMAGE_ONLY',
     singleSessionEvent: false,
     ocrTargets: [],

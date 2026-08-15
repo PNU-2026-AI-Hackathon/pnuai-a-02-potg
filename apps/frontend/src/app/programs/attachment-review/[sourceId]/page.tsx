@@ -43,11 +43,19 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
 
         {review.ocrConfidence != null ? (
           <section className="attachmentExtractionWarnings">
-            <h3>이미지에서 읽은 결과입니다</h3>
+            <h3>{review.curriculumExpected ? '회차 입력이 필요합니다' : '이미지에서 읽은 결과입니다'}</h3>
             <p className="attachmentSourceHint">
-              문서가 아니라 포스터 이미지를 글자로 읽은 내용이라 근거가 약합니다.
-              신뢰도와 무관하게 사람이 원본 이미지와 대조해 주세요.
+              {review.curriculumExpected
+                ? '포스터에 회차표가 있지만 글자 위치로는 칸 경계를 확정할 수 없어 싣지 않았습니다. 아래 첨부 이미지와 추출문을 보고 회차를 입력해 주세요.'
+                : '회차표가 없는 안내문이라 회차는 비어 있는 것이 정상입니다. 기본정보만 원본과 대조해 주세요.'}
             </p>
+            {review.attachments.length ? (
+              <p className="attachmentSourceHint">
+                {review.attachments.map((attachment) => (
+                  <a key={attachment.url} href={attachment.url} target="_blank" rel="noreferrer">원본 이미지 열기</a>
+                ))}
+              </p>
+            ) : null}
           </section>
         ) : null}
 

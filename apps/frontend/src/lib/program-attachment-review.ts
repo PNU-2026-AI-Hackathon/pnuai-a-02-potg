@@ -52,6 +52,8 @@ export type ProgramAttachmentReview = {
   /** 이미지에서 읽어온 경우의 평균 신뢰도. 문서에서 읽었으면 null이다. */
   ocrConfidence: number | null;
   ocrImageCount: number;
+  /** 포스터에 회차표가 있는지. 있으면 사람이 회차를 입력해야 한다. */
+  curriculumExpected: boolean;
   failure: { code: string; message: string; retryable: boolean } | null;
   basicInfo: Array<{ label: string; value: string }>;
   board: { sections: ProgramSection[]; intro: string[]; notices: ProgramNoticeGroup[]; unmappedLabels: string[] };
@@ -146,6 +148,7 @@ export async function getProgramAttachmentReviews(): Promise<ProgramAttachmentRe
       ocrTargets: item.ocrTargets ?? [],
       ocrConfidence: typeof item.ocrConfidence === 'number' ? item.ocrConfidence : null,
       ocrImageCount: item.ocrImageCount ?? 0,
+      curriculumExpected: item.curriculumExpected ?? false,
       failure: item.failure ?? null,
       basicInfo: item.basicInfo ?? [],
       board: item.board,

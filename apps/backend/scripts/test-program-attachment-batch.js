@@ -147,23 +147,22 @@ runBatch(common).then((items) => {
     boxes.push({ text: `${index + 1} 왼쪽 활동 ${index + 1}`, left: 0, right: 200, top: index * 40, bottom: index * 40 + 20, confidence: 0.95 });
     boxes.push({ text: `${index + 5} 오른쪽 활동 ${index + 1}`, left: 600, right: 800, top: index * 40, bottom: index * 40 + 20, confidence: 0.95 });
   }
-  const ocrByUrl = new Map([[targetUrl, {
-    url: targetUrl,
-    status: 'OCR_COMPLETED',
-    cleanedText: '대상 유아 6-7세\n모집인원 12명\n1 왼쪽 활동 1',
-    averageConfidence: 0.94,
-    boxes,
+  const ocrResult = (cleanedText) => new Map([[targetUrl, {
+    url: targetUrl, status: 'OCR_COMPLETED', cleanedText, averageConfidence: 0.94, boxes,
   }]]);
 
-  return runBatch({ ...common, sourceIds: [imageRecord.sourceId], ocrByUrl }).then((enriched) => {
+  // 회차표가 있는 포스터: 사람이 회차를 채워야 하므로 수동 검수로 간다.
+  const withTable = ocrResult('대상 유아 6-7세\n모집인원 12명\n차시 내용\n1 왼쪽 활동 1');
+  return runBatch({ ...common, sourceIds: [imageRecord.sourceId], ocrByUrl: withTable }).then((enriched) => {
     const item = enriched[0];
     assert.equal(item.extractionRoute, 'IMAGE_OCR');
-    assert.equal(item.reviewStatus, 'MANUAL_REVIEW_REQUIRED',
-      'OCR 결과는 신뢰도와 무관하게 전량 사람 검수를 거친다');
     assert.equal(item.attachmentReviewStatus, 'ATTACHMENT_ENRICHED',
       '첨부를 읽었으므로 더 이상 미확인 상태가 아니다');
     assert.equal(item.ocrConfidence, 0.94);
     assert.equal(item.ocrTargets.length, 0, '읽어낸 뒤에는 OCR 대기 목록에 남기지 않는다');
+    assert.equal(item.curriculumExpected, true);
+    assert.equal(item.reviewStatus, 'MANUAL_REVIEW_REQUIRED',
+      '회차표가 있는데 싣지 못했으면 사람이 채워야 한다');
 
     // 회차는 좌표 추정이라 근거가 약해 게시 데이터에 싣지 않는다.
     // 실제 포스터에서 셀 경계가 겹치면 내용이 잘리거나 옆 단과 섞이는 것을 확인했다.
@@ -174,6 +173,17 @@ runBatch(common).then((items) => {
     // 기본정보는 OCR 추출문에서 가져오되 뒤따라온 다음 항목은 잘라낸다.
     const location = item.basicInfo.find((info) => info.label === '교육장소' || info.label === '상세 운영장소');
     if (location) assert.equal(/재료비|학습자/.test(location.value), false, '값에 다음 항목 이름이 섞이면 안 된다');
+
+    // 회차표가 없는 안내문: 채울 회차가 없으므로 대조만 하면 된다.
+    // 기본정보와 충돌하는 값을 넣으면 그 사유로 수동 검수가 되므로 중립적인 문구만 쓴다.
+    const noTable = ocrResult('신청방법 선착순 접수\n문의 금정구 평생교육과');
+    return runBatch({ ...common, sourceIds: [imageRecord.sourceId], ocrByUrl: noTable }).then((plain) => {
+      assert.equal(plain[0].curriculumExpected, false);
+      assert.equal(plain[0].reviewStatus, 'AUTO_REVIEW_CANDIDATE',
+        '회차가 원래 없는 안내문까지 수동 검수로 보내면 실제로 손봐야 할 건이 묻힌다');
+      assert.equal(plain[0].extractionWarnings.some((warning) => warning.code === 'OCR_CURRICULUM_NOT_PUBLISHED'), false,
+        '채울 회차가 없으면 회차 경고를 남기지 않는다');
+    });
   }).then(() => {
 
   // --- 재개 동일성 -----------------------------------------------------------

@@ -102,6 +102,7 @@ export default async function ProgramAttachmentReviewPage(
                 <div className="programCardFlags">
                   <span>{review.attachment?.detectedType ?? review.contentProfile}</span>
                   <span className={statusClass(review.reviewStatus)}>{REVIEW_STATUS_LABEL[review.reviewStatus]}</span>
+                  {review.curriculumExpected ? <span className="is-needs_review">회차 입력 필요</span> : null}
                   {!review.bodyPublishable ? <span className="is-pending">본문 없음</span> : null}
                 </div>
                 <h2><Link href={`/programs/attachment-review/${review.sourceId}`}>{review.title}</Link></h2>
