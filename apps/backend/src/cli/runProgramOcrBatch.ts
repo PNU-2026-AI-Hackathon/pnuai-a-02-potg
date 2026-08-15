@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import crypto from 'crypto';
 import fs from 'fs';
 import os from 'os';
@@ -282,6 +283,27 @@ export async function main(args = process.argv.slice(2)) {
 
   fs.mkdirSync(outDir, { recursive: true });
   const output = path.join(outDir, dryRun ? 'dry-run.json' : 'results.json');
+  // 대상을 나눠 실행하는 것이 기본 운영 방식이므로 이전 회차 결과를 이어받는다.
+  // 이어받지 않으면 2단계 실행이 1단계 결과를 지운다.
+  if (!dryRun && fs.existsSync(output)) {
+    const previous = JSON.parse(fs.readFileSync(output, 'utf8')).results ?? [];
+    const merged = new Map<string, any>(previous.map((item: any) => [item.url, item]));
+    for (const item of report.results) merged.set(item.url, item);
+    report.results = [...merged.values()];
+    const countAll = (key: OcrFileStatus) => report.results.filter((item: any) => item.status === key).length;
+    report.summary = {
+      ...report.summary,
+      targetFiles: report.results.length,
+      completed: countAll('OCR_COMPLETED'),
+      lowConfidence: countAll('OCR_LOW_CONFIDENCE'),
+      noText: countAll('OCR_NO_TEXT'),
+      notImage: countAll('OCR_NOT_IMAGE'),
+      failed: countAll('OCR_FAILED'),
+      reusedByChecksum: countAll('OCR_REUSED'),
+      budgetExceeded: countAll('OCR_BUDGET_EXCEEDED'),
+      apiCallsThisRun: apiCalls,
+    } as typeof report.summary & { apiCallsThisRun: number };
+  }
   fs.writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   console.log(JSON.stringify({ output, mode: report.mode, summary: report.summary }, null, 2));
   if (budgetExceeded) console.error('호출 상한에 도달해 남은 대상을 처리하지 않았습니다.');
