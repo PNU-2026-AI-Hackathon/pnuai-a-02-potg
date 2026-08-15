@@ -56,7 +56,7 @@ export default async function ProgramAttachmentReviewPage(
   const sessions = reviews.reduce((sum, item) => sum + item.curriculum.length, 0);
   // 본문이 없어도 포스터에서 읽어낸 내용이 있으면 게시할 거리는 있다.
   const publishable = reviews.filter((item) => item.bodyPublishable || item.ocrConfidence != null).length;
-  const needsCurriculum = reviews.filter((item) => item.curriculumExpected).length;
+  const needsCurriculum = reviews.filter((item) => item.curriculumExpected && !item.curriculum.length).length;
 
   return (
     <main className="programPage attachmentReviewPage">
@@ -104,7 +104,10 @@ export default async function ProgramAttachmentReviewPage(
                 <div className="programCardFlags">
                   <span>{review.attachment?.detectedType ?? review.contentProfile}</span>
                   <span className={statusClass(review.reviewStatus)}>{REVIEW_STATUS_LABEL[review.reviewStatus]}</span>
-                  {review.curriculumExpected ? <span className="is-needs_review">회차 입력 필요</span> : null}
+                  {review.curriculumExpected && !review.curriculum.length
+                    ? <span className="is-needs_review">회차 입력 필요</span> : null}
+                  {review.ocrConfidence != null && review.curriculum.length
+                    ? <span className="is-pending">회차 이미지 복원</span> : null}
                   {!review.bodyPublishable && review.ocrConfidence == null
                     ? <span className="is-pending">게시 내용 없음</span> : null}
                 </div>

@@ -222,15 +222,20 @@ function processOcrRecord(
   structured.labeled = structured.labeled.map((item) => ({ ...item, value: trimAtNextLabel(item.value) }));
 
   /**
-   * 회차는 좌표로 복원해 봤으나 이 포스터들에서는 신뢰할 수 없었다.
-   * 셀 경계를 글자 위치로 추정하는 방식이라 여러 줄 칸의 세로 구간이 겹치면
-   * 내용이 잘리거나 옆 단과 섞인다. 잘못된 회차를 싣는 것보다 비우는 편이 낫다.
-   * 검수 화면에서 원본 이미지와 추출문을 나란히 보고 사람이 판단한다.
+   * 회차는 머리글로 격자를 세울 수 있을 때만 좌표에서 복원한다.
+   * 이미지 안에 강의계획서가 그대로 들어 있는 경우가 많아, 표 머리글만 잡히면
+   * 문서와 같은 수준으로 읽힌다. 머리글이 없으면 복원하지 않는다.
+   *
+   * 평탄한 추출문에서 뽑은 회차는 쓰지 않는다. 표 칸 경계가 없어 여러 회차의
+   * 내용이 한 줄로 이어지거나 일부만 잘려 나온다.
    */
-  const recoverable = curriculumFromOcrBoxes(primary.boxes ?? []);
-  // 평탄한 추출문에서 뽑은 회차도 같은 이유로 믿을 수 없다. 표 칸 경계가 없어
-  // 여러 회차의 내용이 한 줄로 이어지거나 일부만 잘려 나온다.
-  structured.curriculum = [];
+  const recovered = curriculumFromOcrBoxes(primary.boxes ?? []);
+  structured.curriculum = recovered.map((session) => ({
+    session: session.session,
+    date: null,
+    content: session.activity,
+    note: null,
+  }));
 
   const merged = mergeProgramAttachment({
     program: normalized,
@@ -254,12 +259,15 @@ function processOcrRecord(
   const curriculumExpected = /차시|회차|회기|\d+\s*주차/.test(posterText);
 
   const warnings = [...merged.extractionWarnings];
-  if (curriculumExpected) {
+  if (recovered.length) {
+    warnings.push({
+      code: 'OCR_CURRICULUM_FROM_IMAGE',
+      message: `이미지에서 ${recovered.length}개 회차를 읽었다. 문서가 아니라 글자 위치로 복원한 것이므로 원본 이미지와 대조해야 한다.`,
+    });
+  } else if (curriculumExpected) {
     warnings.push({
       code: 'OCR_CURRICULUM_NOT_PUBLISHED',
-      message: recoverable.length
-        ? `좌표로 ${recoverable.length}개 회차 후보를 찾았으나 셀 경계 추정이 불확실해 싣지 않았다. 원본 이미지와 추출문을 대조해 입력해야 한다.`
-        : '포스터에 회차표가 있으나 복원하지 못했다. 원본 이미지와 추출문을 대조해 입력해야 한다.',
+      message: '포스터에 회차표가 있으나 표 머리글을 찾지 못해 복원하지 못했다. 원본 이미지와 추출문을 대조해 입력해야 한다.',
     });
   }
 

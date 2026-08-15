@@ -206,42 +206,94 @@ const CONTENT_HEADER = /^(?:내용|교육내용|세부교육내용|강의내용|
  * 제목 줄과 설명 줄 사이에 홀로 놓이기도 한다. 줄 단위로 읽으면 번호와 내용이
  * 어긋나므로, 머리글의 가로 위치로 칸 경계를 정한 뒤 세로 구간으로 행을 나눈다.
  */
-export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
-  const headerLine = lines.find((line) => line.boxes.some((box) => SESSION_HEADER.test(box.text.replace(/\s+/g, '')))
-    && line.boxes.some((box) => CONTENT_HEADER.test(box.text.replace(/\s+/g, ''))));
-  if (!headerLine) return [];
+type HeaderLabel = { text: string; left: number; right: number };
 
-  const sessionLabels = headerLine.boxes.filter((box) => SESSION_HEADER.test(box.text.replace(/\s+/g, '')));
-  const contentLabels = headerLine.boxes.filter((box) => CONTENT_HEADER.test(box.text.replace(/\s+/g, '')));
-  if (!sessionLabels.length || !contentLabels.length) return [];
-
-  const body = lines.filter((line) => line.top > headerLine.bottom).flatMap((line) => line.boxes);
-  if (!body.length) return [];
-
-  const rows: OcrCurriculumRow[] = [];
-  for (const [groupIndex, sessionLabel] of sessionLabels.entries()) {
-    const contentLabel = contentLabels[groupIndex] ?? contentLabels[contentLabels.length - 1];
-    if (contentLabel.left < sessionLabel.left) continue;
-    const groupRight = sessionLabels[groupIndex + 1]?.left ?? Number.MAX_SAFE_INTEGER;
-
-    // 차시 칸: 머리글 아래, 내용 칸 왼쪽에 있는 숫자만 회차 번호로 본다.
-    const numbers = body
-      .filter((box) => /^\d{1,2}$/.test(box.text.trim()))
-      .filter((box) => box.left >= sessionLabel.left - (contentLabel.left - sessionLabel.left)
-        && box.right <= contentLabel.left)
-      .sort((left, right) => left.top - right.top);
-    if (numbers.length < 2) continue;
-
-    // 내용 칸: 같은 단 안에서 회차 번호의 세로 구간에 걸치는 글자를 모은다.
-    const contentBoxes = body.filter((box) => box.left >= contentLabel.left - 10 && box.left < groupRight);
-    for (const [index, number] of numbers.entries()) {
-      const nextTop = numbers[index + 1]?.top ?? Number.MAX_SAFE_INTEGER;
-      const bandTop = index === 0 ? headerLine.bottom : (numbers[index - 1].bottom + number.top) / 2;
-      const bandBottom = index === numbers.length - 1 ? Number.MAX_SAFE_INTEGER : (number.bottom + nextTop) / 2;
-      const cell = contentBoxes.filter((box) => (box.top + box.bottom) / 2 >= bandTop && (box.top + box.bottom) / 2 < bandBottom);
-      const text = groupLines(cell).map((line) => line.text).filter(Boolean).join('\n').trim();
-      if (text) rows.push({ session: Number(number.text.trim()), activity: text });
+/**
+ * 머리글 줄의 글자 조각을 라벨 단위로 묶는다.
+ *
+ * OCR은 `세부 교육내용`을 `세부`·`교육내용` 두 조각으로 끊어 주기도 한다.
+ * 조각 하나의 위치를 열 경계로 쓰면 칸 안의 실제 글자가 범위 밖으로 밀린다.
+ * 글자 크기에 견줘 가까운 조각끼리 묶어야 한 칸의 머리글을 온전히 얻는다.
+ */
+function headerLabels(line: OcrLine): HeaderLabel[] {
+  const heights = line.boxes.map((box) => Math.max(1, box.bottom - box.top));
+  const gap = Math.max(8, median(heights) * 1.2);
+  const groups: HeaderLabel[] = [];
+  for (const box of [...line.boxes].sort((left, right) => left.left - right.left)) {
+    const last = groups[groups.length - 1];
+    if (last && box.left - last.right <= gap) {
+      last.text += box.text;
+      last.right = Math.max(last.right, box.right);
+    } else {
+      groups.push({ text: box.text, left: box.left, right: box.right });
     }
+  }
+  return groups.map((group) => ({ ...group, text: group.text.replace(/\s+/g, '') }));
+}
+
+/** `1`, `1회차`, `2차시` 어느 형태든 회차 번호를 읽는다. */
+function sessionNumber(text: string) {
+  const match = text.replace(/\s+/g, '').match(/^(\d{1,2})(?:회차|차시|회기|주차|주)?$/);
+  if (!match) return null;
+  const value = Number(match[1]);
+  return value >= 1 && value <= 40 ? value : null;
+}
+
+export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
+  const headerIndex = lines.findIndex((line) => {
+    const labels = headerLabels(line);
+    return labels.some((label) => SESSION_HEADER.test(label.text))
+      && labels.some((label) => CONTENT_HEADER.test(label.text));
+  });
+  if (headerIndex < 0) return [];
+  const headerLine = lines[headerIndex];
+  const labels = headerLabels(headerLine);
+
+  const sessionIndex = labels.findIndex((label) => SESSION_HEADER.test(label.text));
+  const contentIndex = labels.findIndex((label, index) => index > sessionIndex && CONTENT_HEADER.test(label.text));
+  if (sessionIndex < 0 || contentIndex < 0) return [];
+
+  // 열 경계는 라벨 사이 중간점으로 잡는다. 라벨은 칸 가운데 놓이므로
+  // 라벨의 좌우 끝을 그대로 쓰면 칸 안의 글자를 놓친다.
+  const boundary = (index: number) => (index <= 0
+    ? -Number.MAX_SAFE_INTEGER
+    : (labels[index - 1].right + labels[index].left) / 2);
+  const sessionLeft = boundary(sessionIndex);
+  const sessionRight = boundary(sessionIndex + 1);
+  const contentLeft = boundary(contentIndex);
+  const contentRight = labels[contentIndex + 1] ? boundary(contentIndex + 1) : Number.MAX_SAFE_INTEGER;
+
+  const body = lines.slice(headerIndex + 1).flatMap((line) => line.boxes);
+  const inColumn = (box: OcrTextBox, left: number, right: number) => {
+    const center = (box.left + box.right) / 2;
+    return center >= left && center < right;
+  };
+
+  const numbers = body
+    .filter((box) => inColumn(box, sessionLeft, Math.max(sessionRight, contentLeft)) && sessionNumber(box.text) != null)
+    .sort((left, right) => left.top - right.top);
+  if (numbers.length < 2) return [];
+
+  /**
+   * 내용 칸의 왼쪽 끝은 라벨 위치가 아니라 회차 번호의 오른쪽 끝에서 잡는다.
+   * 라벨은 칸 가운데 놓이는데 회차 칸은 좁고 내용 칸은 넓어, 라벨 사이 중간점을
+   * 쓰면 경계가 오른쪽으로 밀려 각 줄의 첫 낱말이 잘려 나간다.
+   */
+  const contentStart = Math.max(...numbers.map((box) => box.right)) + 2;
+  const contentBoxes = body.filter((box) => box.left >= contentStart && inColumn(box, contentStart, contentRight));
+  const rows: OcrCurriculumRow[] = [];
+  for (const [index, number] of numbers.entries()) {
+    // 회차 번호는 칸 가운데 놓이므로 번호 사이 중간을 행 경계로 삼는다.
+    const bandTop = index === 0 ? headerLine.bottom : (numbers[index - 1].bottom + number.top) / 2;
+    const bandBottom = index === numbers.length - 1
+      ? Number.MAX_SAFE_INTEGER
+      : (number.bottom + numbers[index + 1].top) / 2;
+    const cell = contentBoxes.filter((box) => {
+      const center = (box.top + box.bottom) / 2;
+      return center >= bandTop && center < bandBottom;
+    });
+    const text = groupLines(cell).map((line) => line.text).filter(Boolean).join('\n').trim();
+    if (text) rows.push({ session: sessionNumber(number.text)!, activity: text });
   }
   return rows;
 }
@@ -249,15 +301,13 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
 /**
  * OCR 글자 위치에서 회차 목록을 복원한다.
  *
- * 머리글로 격자를 만들 수 있으면 그 방법을 쓰고, 안 되면 단을 나눠 줄 단위로 읽는다.
- * 어느 쪽이든 회차가 1부터 끊김 없이 이어질 때만 인정한다.
- * 근거가 약하면 자동 배치하지 않는다는 기존 원칙을 따른다.
+ * 머리글로 격자를 세울 수 있을 때만 복원한다. 머리글 없이 줄만 보고 읽으면
+ * 여러 회차의 내용이 한 줄로 이어지거나 옆 단과 섞이는 것을 실제 포스터에서 확인했다.
+ * 회차가 1부터 끊김 없이 이어질 때만 인정하며, 근거가 약하면 배치하지 않는다.
  */
 export function curriculumFromOcrBoxes(boxes: OcrTextBox[]): OcrCurriculumRow[] {
   if (!boxes.length) return [];
-  const lines = groupLines(boxes);
-  const grid = curriculumFromHeaderGrid(lines);
-  const rows = grid.length >= 2 ? grid : splitColumns(lines).flatMap((column) => curriculumFromColumn(column.lines));
+  const rows = curriculumFromHeaderGrid(groupLines(boxes));
   if (rows.length < 2) return [];
   const sessions = rows.map((row) => row.session);
   if (new Set(sessions).size !== sessions.length) return [];
