@@ -6271,7 +6271,6 @@ html:has(.moiraPage) {
   position: relative;
   overflow: hidden;
   background: #eef5f0;
-  border-top: 1px solid rgba(22, 116, 95, 0.08);
 }
 
 .introPage .valueSection::after {
