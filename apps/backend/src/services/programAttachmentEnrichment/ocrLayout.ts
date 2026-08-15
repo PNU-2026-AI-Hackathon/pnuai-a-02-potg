@@ -431,7 +431,7 @@ const CATEGORY_HEADER = /^(?:주제|분류|구분)$/;
  * 제목 줄과 설명 줄 사이에 홀로 놓이기도 한다. 줄 단위로 읽으면 번호와 내용이
  * 어긋나므로, 머리글의 가로 위치로 칸 경계를 정한 뒤 세로 구간으로 행을 나눈다.
  */
-type HeaderLabel = { text: string; raw: string; left: number; right: number };
+type HeaderLabel = { text: string; raw: string; left: number; right: number; parts: OcrTextBox[] };
 
 /**
  * 머리글 줄의 글자 조각을 라벨 단위로 묶는다.
@@ -451,8 +451,9 @@ function headerLabels(line: OcrLine): HeaderLabel[] {
       last.text += box.text;
       last.raw += ` ${box.text}`;
       last.right = Math.max(last.right, box.right);
+      last.parts.push(box);
     } else {
-      groups.push({ text: box.text, raw: box.text, left: box.left, right: box.right });
+      groups.push({ text: box.text, raw: box.text, left: box.left, right: box.right, parts: [box] });
     }
   }
   return groups.map((group) => ({
@@ -487,25 +488,36 @@ export function readSessionCell(text: string): { session: number | null; date: s
   return null;
 }
 
+/**
+ * 좁은 칸들이 한 칸으로 묶여 오기도 한다(`차시(요일)시간`).
+ * 괄호를 걷어낸 뒤 회차 이름으로 시작하면 회차 칸으로 본다.
+ */
+function isSessionHeader(text: string) {
+  const bare = text.replace(/\([^)]*\)/g, '');
+  return SESSION_HEADER.test(bare) || /^(?:차시|회차|회기|시수|일시|일자|연번|순번|번호)/.test(bare);
+}
+
+/**
+ * 회차표 머리글로 보이는 줄이 여럿일 수 있다.
+ * 기본정보 줄에도 `일시`·`내용` 같은 말이 섞여 앞줄이 먼저 걸린다.
+ * 실제로 회차를 읽어낸 줄을 머리글로 본다.
+ */
 export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
-  const headerIndex = lines.findIndex((line) => {
-    const labels = headerLabels(line);
-    return labels.some((label) => SESSION_HEADER.test(label.text))
-      && labels.some((label) => CONTENT_HEADER.test(label.text));
-  });
-  if (headerIndex < 0) return [];
+  const candidates = lines
+    .map((line, index) => ({ line, index, labels: headerLabels(line) }))
+    .filter((entry) => entry.labels.some((label) => isSessionHeader(label.text))
+      && entry.labels.some((label) => CONTENT_HEADER.test(label.text)));
+  for (const candidate of candidates) {
+    const rows = gridFromHeaderIndex(lines, candidate.index);
+    if (rows.length >= 2) return rows;
+  }
+  return candidates.length ? gridFromHeaderIndex(lines, candidates[0].index) : [];
+}
+
+function gridFromHeaderIndex(lines: OcrLine[], headerIndex: number): OcrCurriculumRow[] {
   const headerLine = lines[headerIndex];
   const labels = headerLabels(headerLine);
 
-  /**
-   * 좁은 칸들이 한 칸으로 묶여 오기도 한다(`차시(요일)시간`).
-   * 괄호를 걷어낸 뒤 회차 이름으로 시작하면 회차 칸으로 본다.
-   */
-  const isSessionHeader = (text: string) => {
-    const bare = text.replace(/\([^)]*\)/g, '');
-    return SESSION_HEADER.test(bare)
-      || /^(?:차시|회차|회기|시수|일시|일자|연번|순번|번호)/.test(bare);
-  };
   const sessionIndex = labels.findIndex((label) => isSessionHeader(label.text));
   // 내용 칸은 회차 칸 오른쪽에서 가장 먼 것을 고른다. `일시 | 주제 | 교육 내용과 목표`처럼
   // 갈래 칸이 사이에 끼면 그 칸을 내용으로 잡아 정작 설명을 놓친다.
@@ -534,7 +546,18 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
     ? -Number.MAX_SAFE_INTEGER
     : (labels[index - 1].right + labels[index].left) / 2);
   const sessionLeft = boundary(sessionIndex);
-  const sessionRight = boundary(sessionIndex + 1);
+  /**
+   * 좁은 칸들이 한 칸으로 묶이면(`차시 일자(요일) 시간`) 회차 칸이 세 칸 너비가 된다.
+   * 그러면 `시간` 칸의 `2`나 `일자` 칸의 날짜까지 회차 번호로 잡힌다.
+   * 묶인 이름의 첫 조각이 회차 이름이면 그 조각 바로 뒤까지만 회차 칸으로 본다.
+   */
+  const sessionLabel = labels[sessionIndex];
+  const firstPart = sessionLabel.parts[0];
+  const narrowRight = sessionLabel.parts.length > 1
+    && SESSION_HEADER.test(firstPart.text.replace(/\s+/g, ''))
+    ? (firstPart.right + sessionLabel.parts[1].left) / 2
+    : null;
+  const sessionRight = narrowRight ?? boundary(sessionIndex + 1);
   const contentLeft = boundary(contentIndex);
   const contentRight = labels[contentIndex + 1] ? boundary(contentIndex + 1) : Number.MAX_SAFE_INTEGER;
 
@@ -545,7 +568,10 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
   };
 
   const contentIsRight = contentIndex > sessionIndex;
-  const sessionColumnRight = contentIsRight ? Math.max(sessionRight, contentLeft) : sessionRight;
+  // 회차 칸을 좁게 잡을 근거가 있으면 넓히지 않는다.
+  const sessionColumnRight = contentIsRight && narrowRight == null
+    ? Math.max(sessionRight, contentLeft)
+    : sessionRight;
   let numbers = body
     .filter((box) => inColumn(box, sessionLeft, sessionColumnRight) && readSessionCell(box.text) != null)
     .sort((left, right) => left.top - right.top);
@@ -586,9 +612,17 @@ export function curriculumFromHeaderGrid(lines: OcrLine[]): OcrCurriculumRow[] {
   const labelledStart = boundary(contentIndex);
   // 번호 칸이 내용 칸 왼쪽에 있으면 그 오른쪽부터가 내용이다.
   // 그러지 않으면 회차 번호가 활동 내용 앞에 딸려 들어간다.
-  const contentStart = !contentIsRight || categoryIndex >= 0
-    ? Math.max(labelledStart, numbersRight < contentRight ? numbersRight : labelledStart)
-    : numbersRight;
+  /**
+   * 회차 칸과 내용 칸 사이에 일자·시간 칸이 끼어 있으면 그 칸들을 내용에서 빼야 한다.
+   * 회차 칸을 좁게 잡을 근거가 있을 때는 이름 위치로 내용 칸 왼쪽 끝을 잡는다.
+   */
+  const contentStart = narrowRight != null
+    // 묶인 이름의 오른쪽 끝이 곧 일자·시간 칸의 끝이다. 이름은 칸 가운데 놓이므로
+    // 이름 사이 중간점을 쓰면 경계가 오른쪽으로 밀려 내용의 앞부분이 잘린다.
+    ? sessionLabel.right + 2
+    : !contentIsRight || categoryIndex >= 0
+      ? Math.max(labelledStart, numbersRight < contentRight ? numbersRight : labelledStart)
+      : numbersRight;
   const contentBoxes = body.filter((box) => inColumn(box, contentStart, contentRight));
   // 갈래 칸은 회차 칸과 내용 칸 사이에 있다. 활동 앞에 붙여 무엇을 다루는 회차인지 보여 준다.
   const categoryBoxes = categoryIndex >= 0
@@ -669,5 +703,14 @@ export function curriculumFromOcrBoxes(boxes: OcrTextBox[]): OcrCurriculumRow[] 
    */
   const dated = rows.filter((row) => row.date);
   if (dated.length) return dated.map((row, index) => ({ ...row, session: index + 1 }));
-  return [];
+
+  /**
+   * 표 아래 안내문이 회차처럼 잡혀 번호가 어긋나기도 한다.
+   * 1부터 끊김 없이 이어지는 앞부분만 회차로 인정하고 나머지는 버린다.
+   */
+  const bySession = new Map<number, OcrCurriculumRow>();
+  for (const row of rows) if (!bySession.has(row.session)) bySession.set(row.session, row);
+  const prefix: OcrCurriculumRow[] = [];
+  for (let session = 1; bySession.has(session); session += 1) prefix.push(bySession.get(session)!);
+  return prefix.length >= 2 ? prefix : [];
 }
