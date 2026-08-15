@@ -154,8 +154,16 @@ export async function main(args = process.argv.slice(2)) {
   const workRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program-ocr-'));
   const byChecksum = new Map<string, { status: OcrFileStatus; url: string }>();
   const results: any[] = [];
+  // 상한은 누적 기준이다. 이전 실행까지의 호출 수를 이어받아 함께 센다.
+  const outputPath = path.join(outDir, dryRun ? 'dry-run.json' : 'results.json');
+  const previousCumulative: number = !dryRun && fs.existsSync(outputPath)
+    ? JSON.parse(fs.readFileSync(outputPath, 'utf8')).summary?.cumulativeApiCalls ?? 0
+    : 0;
   let apiCalls = 0;
   let budgetExceeded = false;
+  if (!dryRun && previousCumulative > 0) {
+    console.error(`이전까지 누적 ${previousCumulative}회 사용. 남은 한도 ${ocrConfig.ocrMaxCalls - previousCumulative}회`);
+  }
 
   try {
     for (const [index, file] of files.entries()) {
@@ -214,7 +222,7 @@ export async function main(args = process.argv.slice(2)) {
           continue;
         }
 
-        if (apiCalls >= ocrConfig.ocrMaxCalls) {
+        if (previousCumulative + apiCalls >= ocrConfig.ocrMaxCalls) {
           budgetExceeded = true;
           results.push({ ...base, checksum, status: 'OCR_BUDGET_EXCEEDED' as OcrFileStatus });
           continue;
@@ -240,6 +248,8 @@ export async function main(args = process.argv.slice(2)) {
           isEmpty: processed.isEmpty,
           apiCallCount: processed.apiCallCount,
           cleanedText: processed.cleanedText,
+          // 표 복원에 쓰는 글자 위치. 좌표가 없으면 2단 표의 열이 뒤섞여 회차를 복원할 수 없다.
+          boxes: processed.boxes ?? [],
         });
       } catch (error) {
         const safe = safeAttachmentError(error);
@@ -275,6 +285,9 @@ export async function main(args = process.argv.slice(2)) {
       noText: countBy('OCR_NO_TEXT'),
       budgetExceeded: countBy('OCR_BUDGET_EXCEEDED'),
       apiCalls,
+      // 상한 판정에 쓰는 누적 호출 수. 다음 실행이 이 값을 이어받는다.
+      cumulativeApiCalls: previousCumulative + apiCalls,
+      maxCalls: ocrConfig.ocrMaxCalls,
       // 드라이런에서는 실제 호출 없이 "돌리면 몇 번 부를지"를 알려준다.
       estimatedCalls: dryRun ? byChecksum.size : apiCalls,
     },
@@ -282,7 +295,7 @@ export async function main(args = process.argv.slice(2)) {
   };
 
   fs.mkdirSync(outDir, { recursive: true });
-  const output = path.join(outDir, dryRun ? 'dry-run.json' : 'results.json');
+  const output = outputPath;
   // 대상을 나눠 실행하는 것이 기본 운영 방식이므로 이전 회차 결과를 이어받는다.
   // 이어받지 않으면 2단계 실행이 1단계 결과를 지운다.
   if (!dryRun && fs.existsSync(output)) {

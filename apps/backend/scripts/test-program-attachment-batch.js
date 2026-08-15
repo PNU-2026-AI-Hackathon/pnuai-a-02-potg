@@ -137,6 +137,45 @@ runBatch(common).then((items) => {
     assert.equal('imageData' in file, false, 'OCR 큐에 이미지 자체를 저장하면 안 된다');
   }
 
+  // --- OCR 결과가 있으면 이미지 경로도 게시판 데이터가 된다 -------------------
+
+  const imageRecord = items.find((item) => item.lane === 'TEXT_WITH_IMAGE' && item.ocrTargets.length);
+  const targetUrl = imageRecord.ocrTargets[0].url;
+  // 좌우 두 단으로 나뉜 회차표를 흉내 낸다.
+  const boxes = [];
+  for (let index = 0; index < 4; index += 1) {
+    boxes.push({ text: `${index + 1} 왼쪽 활동 ${index + 1}`, left: 0, right: 200, top: index * 40, bottom: index * 40 + 20, confidence: 0.95 });
+    boxes.push({ text: `${index + 5} 오른쪽 활동 ${index + 1}`, left: 600, right: 800, top: index * 40, bottom: index * 40 + 20, confidence: 0.95 });
+  }
+  const ocrByUrl = new Map([[targetUrl, {
+    url: targetUrl,
+    status: 'OCR_COMPLETED',
+    cleanedText: '대상 유아 6-7세\n모집인원 12명\n1 왼쪽 활동 1',
+    averageConfidence: 0.94,
+    boxes,
+  }]]);
+
+  return runBatch({ ...common, sourceIds: [imageRecord.sourceId], ocrByUrl }).then((enriched) => {
+    const item = enriched[0];
+    assert.equal(item.extractionRoute, 'IMAGE_OCR');
+    assert.equal(item.reviewStatus, 'MANUAL_REVIEW_REQUIRED',
+      'OCR 결과는 신뢰도와 무관하게 전량 사람 검수를 거친다');
+    assert.equal(item.attachmentReviewStatus, 'ATTACHMENT_ENRICHED',
+      '첨부를 읽었으므로 더 이상 미확인 상태가 아니다');
+    assert.equal(item.ocrConfidence, 0.94);
+    assert.equal(item.ocrTargets.length, 0, '읽어낸 뒤에는 OCR 대기 목록에 남기지 않는다');
+
+    // 회차는 좌표 추정이라 근거가 약해 게시 데이터에 싣지 않는다.
+    // 실제 포스터에서 셀 경계가 겹치면 내용이 잘리거나 옆 단과 섞이는 것을 확인했다.
+    assert.equal(item.curriculum.length, 0, 'OCR에서 복원한 회차는 게시하지 않는다');
+    assert.ok(item.extractionWarnings.some((warning) => warning.code === 'OCR_CURRICULUM_NOT_PUBLISHED'),
+      '회차를 싣지 않았다는 사실을 검수자가 알 수 있게 남겨야 한다');
+
+    // 기본정보는 OCR 추출문에서 가져오되 뒤따라온 다음 항목은 잘라낸다.
+    const location = item.basicInfo.find((info) => info.label === '교육장소' || info.label === '상세 운영장소');
+    if (location) assert.equal(/재료비|학습자/.test(location.value), false, '값에 다음 항목 이름이 섞이면 안 된다');
+  }).then(() => {
+
   // --- 재개 동일성 -----------------------------------------------------------
 
   return runBatch({ ...common, limit: 5 }).then((partial) => {
@@ -148,6 +187,7 @@ runBatch(common).then((items) => {
       }
       console.log('Program attachment batch tests passed.');
     });
+  });
   });
 }).catch((error) => {
   console.error(error);

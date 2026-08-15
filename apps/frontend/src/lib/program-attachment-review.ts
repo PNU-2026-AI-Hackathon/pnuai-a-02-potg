@@ -49,6 +49,9 @@ export type ProgramAttachmentReview = {
   bodyPublishable: boolean;
   singleSessionEvent: boolean;
   ocrTargets: Array<{ name: string; url: string; reason: string }>;
+  /** 이미지에서 읽어온 경우의 평균 신뢰도. 문서에서 읽었으면 null이다. */
+  ocrConfidence: number | null;
+  ocrImageCount: number;
   failure: { code: string; message: string; retryable: boolean } | null;
   basicInfo: Array<{ label: string; value: string }>;
   board: { sections: ProgramSection[]; intro: string[]; notices: ProgramNoticeGroup[]; unmappedLabels: string[] };
@@ -141,6 +144,8 @@ export async function getProgramAttachmentReviews(): Promise<ProgramAttachmentRe
       bodyPublishable: item.bodyPublishable ?? true,
       singleSessionEvent: item.singleSessionEvent ?? false,
       ocrTargets: item.ocrTargets ?? [],
+      ocrConfidence: typeof item.ocrConfidence === 'number' ? item.ocrConfidence : null,
+      ocrImageCount: item.ocrImageCount ?? 0,
       failure: item.failure ?? null,
       basicInfo: item.basicInfo ?? [],
       board: item.board,

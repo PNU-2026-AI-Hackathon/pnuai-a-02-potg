@@ -80,7 +80,8 @@
     "test:program-attachment-batch": "node -r ts-node/register scripts/test-program-attachment-batch.js",
     "program-ocr-batch:dry-run": "node -r ts-node/register src/cli/runProgramOcrBatch.ts --dry-run",
     "program-ocr-batch:run": "node -r ts-node/register src/cli/runProgramOcrBatch.ts",
-    "test:program-ocr-batch": "node -r ts-node/register scripts/test-program-ocr-batch.js"
+    "test:program-ocr-batch": "node -r ts-node/register scripts/test-program-ocr-batch.js",
+    "test:program-ocr-layout": "node -r ts-node/register scripts/test-program-ocr-layout.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

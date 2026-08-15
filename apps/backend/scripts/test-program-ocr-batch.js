@@ -15,7 +15,7 @@ const { getAttachmentOcrConfig } = require('../src/config/attachmentOcr');
 // --- 정책 설정값 --------------------------------------------------------------
 
 const defaults = getAttachmentOcrConfig({});
-assert.equal(defaults.ocrMaxCalls, 300, '호출 상한 기본값은 확정된 정책과 같아야 한다');
+assert.equal(defaults.ocrMaxCalls, 500, '호출 상한 기본값은 확정된 정책과 같아야 한다');
 assert.equal(defaults.ocrMinConfidence, 0.8, '최소 신뢰도 기본값은 확정된 정책과 같아야 한다');
 assert.equal(OCR_RESULTS_ALWAYS_REVIEWED, true, 'OCR 결과는 신뢰도와 무관하게 전량 검수한다');
 

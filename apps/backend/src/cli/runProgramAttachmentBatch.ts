@@ -4,6 +4,8 @@ import { normalizeProgram } from '../services/programDataNormalization/normalize
 import type { RawProgram } from '../services/programDataNormalization/types';
 import { combinedBasicInfo, mergeProgramAttachment } from '../services/programAttachmentEnrichment/mergeProgramAttachment';
 import { processSample, type InventoryAttachment, type InventoryItem } from './buildProgramAttachmentEnrichmentSamples';
+import { structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
+import { curriculumFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
 
 const DEFAULT_CRAWL_DIR = path.resolve(process.cwd(), '.local', 'geumjeong-small-library-crawl');
 const DEFAULT_INVENTORY = path.resolve(process.cwd(), '.local', 'program-attachment-inventory', 'inventory-all.json');
@@ -130,6 +132,104 @@ function bodyOnlyItem(raw: RawProgram, item: BatchInventoryItem, lane: BatchLane
   };
 }
 
+const DEFAULT_OCR_RESULTS = path.resolve(process.cwd(), '.local', 'program-attachment-ocr', 'results.json');
+
+/** OCR을 아직 돌리지 않았으면 비어 있는 지도를 돌려준다. 이미지 경로는 대기 상태로 남는다. */
+export function loadOcrResults(file = DEFAULT_OCR_RESULTS) {
+  if (!fs.existsSync(file)) return new Map<string, OcrFileResult>();
+  const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as { results?: OcrFileResult[] };
+  return new Map((parsed.results ?? []).map((result) => [result.url, result]));
+}
+
+export type OcrFileResult = {
+  url: string;
+  status: string;
+  cleanedText?: string;
+  averageConfidence?: number | null;
+  boxes?: Array<{ text: string; top: number; left: number; right: number; bottom: number; confidence: number }>;
+};
+
+/**
+ * OCR 추출문을 게시판 데이터로 만든다.
+ *
+ * 문서 경로와 같은 병합 규칙(중복 제거·충돌 판정·구획 배치)을 그대로 쓴다.
+ * 다만 회차는 표 셀이 아니라 글자 위치로 복원하므로 근거가 문서보다 약하다.
+ * 정책에 따라 OCR 결과는 신뢰도와 무관하게 전량 사람 검수를 거친다.
+ */
+function processOcrRecord(
+  raw: RawProgram,
+  item: BatchInventoryItem,
+  lane: BatchLane,
+  ocrByUrl: Map<string, OcrFileResult>,
+) {
+  const normalized = normalizeProgram(raw);
+  const targets = item.attachments.map((attachment) => ocrByUrl.get(attachment.url)).filter(Boolean) as OcrFileResult[];
+  const usable = targets.filter((target) => target.status === 'OCR_COMPLETED' && (target.cleanedText ?? '').trim());
+  if (!usable.length) return bodyOnlyItem(raw, item, lane, 'OCR_REQUIRED');
+
+  // 여러 이미지가 붙은 게시글은 글자가 가장 많은 것을 본문 포스터로 본다.
+  const primary = [...usable].sort((left, right) => (right.cleanedText ?? '').length - (left.cleanedText ?? '').length)[0];
+  const confidences = usable.map((target) => target.averageConfidence).filter((value): value is number => typeof value === 'number');
+  const averageConfidence = confidences.length ? confidences.reduce((sum, value) => sum + value, 0) / confidences.length : null;
+
+  const structured = structureAttachmentText(usable.map((target) => target.cleanedText ?? '').join('\n'));
+  // 포스터를 읽은 글은 칸 구분이 없어 값 뒤에 다음 항목이 붙어 온다.
+  structured.labeled = structured.labeled.map((item) => ({ ...item, value: trimAtNextLabel(item.value) }));
+
+  /**
+   * 회차는 좌표로 복원해 봤으나 이 포스터들에서는 신뢰할 수 없었다.
+   * 셀 경계를 글자 위치로 추정하는 방식이라 여러 줄 칸의 세로 구간이 겹치면
+   * 내용이 잘리거나 옆 단과 섞인다. 잘못된 회차를 싣는 것보다 비우는 편이 낫다.
+   * 검수 화면에서 원본 이미지와 추출문을 나란히 보고 사람이 판단한다.
+   */
+  const recoverable = curriculumFromOcrBoxes(primary.boxes ?? []);
+  // 평탄한 추출문에서 뽑은 회차도 같은 이유로 믿을 수 없다. 표 칸 경계가 없어
+  // 여러 회차의 내용이 한 줄로 이어지거나 일부만 잘려 나온다.
+  structured.curriculum = [];
+
+  const merged = mergeProgramAttachment({
+    program: normalized,
+    attachment: { name: item.attachments[0]?.name ?? '포스터 이미지', url: primary.url },
+    match: {
+      status: 'WHOLE_DOCUMENT',
+      selectedPages: [],
+      score: averageConfidence ?? 0,
+      reason: `이미지 OCR로 추출 (평균 신뢰도 ${(averageConfidence ?? 0).toFixed(3)})`,
+    },
+    structured,
+  });
+
+  const warnings = [...merged.extractionWarnings, {
+    code: 'OCR_CURRICULUM_NOT_PUBLISHED',
+    message: recoverable.length
+      ? `좌표로 ${recoverable.length}개 회차 후보를 찾았으나 셀 경계 추정이 불확실해 싣지 않았다. 원본 이미지와 추출문을 대조해 입력해야 한다.`
+      : '포스터에서 회차 표를 복원하지 못했다. 원본 이미지와 추출문을 대조해 입력해야 한다.',
+  }];
+
+  return {
+    ...merged,
+    sourceUrl: normalized.sourceUrl,
+    contentProfile: item.contentProfile,
+    lane,
+    extractionRoute: 'IMAGE_OCR',
+    textReadiness: item.textReadiness,
+    attachmentReviewStatus: 'ATTACHMENT_ENRICHED',
+    // OCR 결과는 문서 구조가 아니라 픽셀 추정이라 근거의 성격이 다르다.
+    // 확정된 정책대로 신뢰도와 무관하게 사람이 확인한다.
+    reviewStatus: 'MANUAL_REVIEW_REQUIRED' as BatchStatus,
+    bodyPublishable: lane !== 'NO_TEXT_IMAGE_ONLY',
+    singleSessionEvent: false,
+    ocrTargets: [],
+    ocrConfidence: averageConfidence,
+    ocrImageCount: usable.length,
+    extractionWarnings: warnings,
+    detectedType: 'IMAGE',
+    checksumSha256: null,
+    failure: null,
+    selectedText: usable.map((target) => target.cleanedText ?? '').join('\n\n'),
+  };
+}
+
 async function processDocumentRecord(
   raw: RawProgram,
   item: BatchInventoryItem,
@@ -242,6 +342,8 @@ export async function runBatch(options: {
   embeddedImageRoot: string;
   previous: Map<number, any>;
   retryFailedOnly: boolean;
+  /** OCR 결과. 있으면 이미지 경로를 대기 상태로 두지 않고 게시판 데이터로 만든다. */
+  ocrByUrl?: Map<string, OcrFileResult>;
   onProgress?: (done: number, total: number, sourceId: number) => void;
 }) {
   const recordById = new Map(options.records.map((record) => [record.idx, record]));
@@ -276,6 +378,8 @@ export async function runBatch(options: {
       items.push(await processDocumentRecord(raw, item, knownProgramTitles, options.embeddedImageRoot, alternateUrlsOf));
     } else if (lane === 'TEXT_ONLY') {
       items.push(bodyOnlyItem(raw, item, lane, 'AUTO_REVIEW_CANDIDATE'));
+    } else if (options.ocrByUrl?.size) {
+      items.push(processOcrRecord(raw, item, lane, options.ocrByUrl));
     } else {
       items.push(bodyOnlyItem(raw, item, lane, 'OCR_REQUIRED'));
     }
@@ -385,6 +489,7 @@ export async function main(args = process.argv.slice(2)) {
     embeddedImageRoot: path.join(outDir, 'embedded-images'),
     previous,
     retryFailedOnly,
+    ocrByUrl: loadOcrResults(),
     onProgress: (done, total, sourceId) => {
       if (done % 10 === 0 || done === total) console.error(`  진행 ${done}/${total} (최근 ${sourceId})`);
     },

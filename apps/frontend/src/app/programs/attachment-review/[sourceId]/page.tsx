@@ -35,8 +35,21 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
               : REVIEW_STATUS_LABEL[review.reviewStatus]}
           </strong>
           {review.attachment ? <span>일치 신뢰도 {Math.round(review.confidence * 100)}%</span> : null}
+          {review.ocrConfidence != null
+            ? <span>OCR 인식 신뢰도 {Math.round(review.ocrConfidence * 100)}% · 이미지 {review.ocrImageCount}장</span>
+            : null}
           <span>{review.bodyPublishable ? '본문 게시 가능' : '본문 없음'}</span>
         </section>
+
+        {review.ocrConfidence != null ? (
+          <section className="attachmentExtractionWarnings">
+            <h3>이미지에서 읽은 결과입니다</h3>
+            <p className="attachmentSourceHint">
+              문서가 아니라 포스터 이미지를 글자로 읽은 내용이라 근거가 약합니다.
+              신뢰도와 무관하게 사람이 원본 이미지와 대조해 주세요.
+            </p>
+          </section>
+        ) : null}
 
         {review.failure ? (
           <section className="attachmentExtractionWarnings">
