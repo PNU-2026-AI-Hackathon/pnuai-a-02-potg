@@ -6,7 +6,7 @@ import type { RawProgram } from '../services/programDataNormalization/types';
 import { combinedBasicInfo, mergeProgramAttachment } from '../services/programAttachmentEnrichment/mergeProgramAttachment';
 import { processSample, type InventoryAttachment, type InventoryItem } from './buildProgramAttachmentEnrichmentSamples';
 import { structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
-import { curriculumFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
+import { curriculumFromOcrBoxes, labeledFromOcrBoxes, trimAtNextLabel } from '../services/programAttachmentEnrichment/ocrLayout';
 
 const DEFAULT_CRAWL_DIR = path.resolve(process.cwd(), '.local', 'geumjeong-small-library-crawl');
 const DEFAULT_INVENTORY = path.resolve(process.cwd(), '.local', 'program-attachment-inventory', 'inventory-all.json');
@@ -220,6 +220,17 @@ function processOcrRecord(
   const structured = structureAttachmentText(usable.map((target) => target.cleanedText ?? '').join('\n'));
   // 포스터를 읽은 글은 칸 구분이 없어 값 뒤에 다음 항목이 붙어 온다.
   structured.labeled = structured.labeled.map((item) => ({ ...item, value: trimAtNextLabel(item.value) }));
+  /**
+   * 기본정보도 표이므로 좌표로 읽은 결과를 우선한다.
+   * 평탄한 추출문은 읽기 순서가 표를 따라가지 않아 값이 엉뚱한 이름 뒤에 붙는다.
+   * `교재비`의 값 `없음`이 `강의실 준비`의 값 뒤로 밀리는 식이다.
+   */
+  const sameLabel = (left: string, right: string) => left.replace(/\s+/g, '') === right.replace(/\s+/g, '');
+  for (const located of usable.flatMap((target) => labeledFromOcrBoxes(target.boxes ?? []))) {
+    const existing = structured.labeled.findIndex((item) => sameLabel(item.label, located.label));
+    if (existing >= 0) structured.labeled[existing] = { label: structured.labeled[existing].label, value: located.value };
+    else structured.labeled.push(located);
+  }
 
   /**
    * 회차는 머리글로 격자를 세울 수 있을 때만 좌표에서 복원한다.

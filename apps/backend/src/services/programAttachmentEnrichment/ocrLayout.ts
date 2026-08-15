@@ -1,3 +1,4 @@
+import { normalizeExtractedKoreanSpacing } from './sectionMatcher';
 import type { OcrTextBox } from '../attachment/clovaOcrResponseParser';
 
 /**
@@ -196,6 +197,87 @@ export function trimAtNextLabel(value: string) {
   return trimmed || value.trim();
 }
 
+/** 계획서 이미지에서 기본정보 칸에 쓰이는 이름. 값은 이 이름 오른쪽 칸에 있다. */
+const INFO_LABEL = /^(?:프로그램명|강좌명|강의명|목표|강의목표|프로그램소개|교육대상|대상|교육기간|운영기간|교육일시|교육시간|교육장소|장소|담당강사|강사|강사명|재료비|교재비|교재|학습자준비물|준비물|강의실준비|수강인원|모집인원|운영횟수)$/;
+
+/**
+ * 값을 끊기만 하고 기본정보로는 내보내지 않는 이름.
+ *
+ * 회차표 머리글과 구획 이름은 뒤에 오는 글자가 다른 칸의 값임을 알려 주지만,
+ * 그 자체는 기본정보 항목이 아니다. 내보내면 회차 내용이 기본정보로 샌다.
+ */
+const BOUNDARY_LABEL = /^(?:차시|회차|회기|시수|세부교육내용|교육내용|교수방법|개요|수강정보|준비사항|비고)$/;
+
+/**
+ * 기본정보 칸을 위치로 읽는다.
+ *
+ * 평탄한 추출문은 읽기 순서가 표를 따라가지 않아 값이 엉뚱한 이름 뒤에 붙는다.
+ * `교재비 / 강의실 준비 / 빔프로젝트, 스피커 / 없음`처럼 값이 두 칸 밀리기도 한다.
+ * 좌표를 쓰면 `교재비`와 `없음`이 같은 행에 있다는 것을 알 수 있다.
+ *
+ * 한 행 안에서 이름을 만나면 그 오른쪽부터 다음 이름 직전까지가 값이고,
+ * 이름 없이 이어지는 아랫줄은 같은 가로 자리에 있을 때만 값에 덧붙인다.
+ */
+export function labeledFromOcrBoxes(boxes: OcrTextBox[]): Array<{ label: string; value: string }> {
+  const lines = groupLines(boxes);
+  if (!lines.length) return [];
+
+  const unit = median(boxes.map((box) => Math.max(1, box.bottom - box.top)));
+  type Pair = { label: string; parts: string[]; valueLeft: number };
+  const pairs: Pair[] = [];
+  let open: Pair | null = null;
+
+  for (const line of lines) {
+    const cells = headerLabels(line);
+    let current: Pair | null = null;
+    for (const cell of cells) {
+      if (INFO_LABEL.test(cell.text)) {
+        current = { label: cell.text, parts: [], valueLeft: Number.MAX_SAFE_INTEGER };
+        pairs.push(current);
+        open = current;
+        continue;
+      }
+      if (current) {
+        current.parts.push(cell.raw);
+        current.valueLeft = Math.min(current.valueLeft, cell.left);
+        continue;
+      }
+      /**
+       * 이름 없이 이어지는 줄은 앞 항목의 값이 여러 줄인 경우다.
+       * 다만 가로 자리가 다르면 다른 칸의 값이므로 붙이지 않는다.
+       * `교육장소` 값 아래에 `학습자 준비물` 값이 놓인 배치에서 잘못 붙는 것을 막는다.
+       */
+      if (open && Math.abs(cell.left - open.valueLeft) <= unit * 2) open.parts.push(cell.raw);
+    }
+  }
+
+  /**
+   * 값이 여러 줄인 칸은 이름이 세로 가운데 놓여, 값의 첫 줄이 이름보다 위에 오기도 한다.
+   * 자기 줄에서 값을 못 찾은 이름은 바로 위·아래 줄에서 오른쪽 글자를 찾는다.
+   */
+  const lineCells = lines.map((line) => headerLabels(line));
+  for (const [lineIndex, cells] of lineCells.entries()) {
+    // 표 머리글 줄은 기본정보 행이 아니다. 아랫줄은 회차 내용이므로 값으로 끌어오지 않는다.
+    if (cells.some((cell) => BOUNDARY_LABEL.test(cell.text))) continue;
+    for (const cell of cells) {
+      if (!INFO_LABEL.test(cell.text)) continue;
+      const pair = pairs.find((candidate) => candidate.label === cell.text && !candidate.parts.length);
+      if (!pair) continue;
+      for (const neighbour of [lineCells[lineIndex - 1], lineCells[lineIndex + 1]]) {
+        if (!neighbour || neighbour.some((other) => INFO_LABEL.test(other.text))) continue;
+        for (const other of neighbour.filter((candidate) => candidate.left >= cell.right)) pair.parts.push(other.raw);
+      }
+    }
+  }
+
+  const result: Array<{ label: string; value: string }> = [];
+  for (const pair of pairs) {
+    const value = normalizeExtractedKoreanSpacing(pair.parts.join(' ').replace(/\s{2,}/g, ' ')).trim();
+    if (value && !result.some((item) => item.label === pair.label)) result.push({ label: pair.label, value });
+  }
+  return result;
+}
+
 const SESSION_HEADER = /^(?:차시|회차|회기|시수)$/;
 const CONTENT_HEADER = /^(?:내용|교육내용|세부교육내용|강의내용|활동|주제|동화명|도서명|프로그램명)$/;
 
@@ -206,7 +288,7 @@ const CONTENT_HEADER = /^(?:내용|교육내용|세부교육내용|강의내용|
  * 제목 줄과 설명 줄 사이에 홀로 놓이기도 한다. 줄 단위로 읽으면 번호와 내용이
  * 어긋나므로, 머리글의 가로 위치로 칸 경계를 정한 뒤 세로 구간으로 행을 나눈다.
  */
-type HeaderLabel = { text: string; left: number; right: number };
+type HeaderLabel = { text: string; raw: string; left: number; right: number };
 
 /**
  * 머리글 줄의 글자 조각을 라벨 단위로 묶는다.
@@ -222,13 +304,19 @@ function headerLabels(line: OcrLine): HeaderLabel[] {
   for (const box of [...line.boxes].sort((left, right) => left.left - right.left)) {
     const last = groups[groups.length - 1];
     if (last && box.left - last.right <= gap) {
+      // 이름 판정에는 공백을 지운 형태를, 값에는 띄어쓰기를 살린 원문을 쓴다.
       last.text += box.text;
+      last.raw += ` ${box.text}`;
       last.right = Math.max(last.right, box.right);
     } else {
-      groups.push({ text: box.text, left: box.left, right: box.right });
+      groups.push({ text: box.text, raw: box.text, left: box.left, right: box.right });
     }
   }
-  return groups.map((group) => ({ ...group, text: group.text.replace(/\s+/g, '') }));
+  return groups.map((group) => ({
+    ...group,
+    text: group.text.replace(/\s+/g, ''),
+    raw: group.raw.replace(/\s{2,}/g, ' ').trim(),
+  }));
 }
 
 /** `1`, `1회차`, `2차시` 어느 형태든 회차 번호를 읽는다. */
