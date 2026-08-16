@@ -65,7 +65,9 @@ export default function ProgramBoardSearchClient() {
     if (!data || contextLoading) return;
     setContextLoading(true); setError(''); setDraft(null);
     try {
-      const params = new URLSearchParams({ q: data.query, limit: String(Math.min(data.results.length, 3)) });
+      // 화면에 보인 만큼 그대로 넘긴다. 사서가 본 것과 LLM이 받은 것이 다르면
+      // 왜 그런 기획안이 나왔는지 설명할 수 없다.
+      const params = new URLSearchParams({ q: data.query, limit: String(data.results.length) });
       const audience = audienceFilter(conditions);
       if (audience) params.set('audience', audience);
       const response = await fetch(`http://localhost:4000/api/program-board/context?${params}`);

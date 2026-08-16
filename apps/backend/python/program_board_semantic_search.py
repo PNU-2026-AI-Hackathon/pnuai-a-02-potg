@@ -26,47 +26,53 @@ MAX_RESULT_LIMIT = 50
 # 사서가 스튜디오에서 고를 수 있는 대상. 1차 필터로 후보를 좁히는 데 쓴다.
 AUDIENCE_FILTERS = ("preschool", "elementary-lower", "elementary-upper", "adult", "everyone")
 
-# 평가에서 살펴보는 순위 깊이. Hit@5보다 넉넉하게 두어 MRR이 잘리지 않게 한다.
-EVALUATION_LIMIT = 20
+# 사서가 기획안에 참고할 사례 수. 개발계획서가 정한 「상위 3~5개」의 위쪽을 쓴다.
+EVALUATION_TOP_N = 5
 
-# 파일럿(37건)에서 쓰던 열두 개에, 전체(351건)에서만 드러나는 것을 더했다.
-# 닮은 프로그램이 떼로 있는 구간에서 대상과 기수를 가려내는지 보는 질의가 핵심이다.
-EVALUATION_QUERIES = (
-    # --- 파일럿에서 이어받은 질의 ---
-    ("초등 저학년이 환경과 기후를 배우면서 만들기도 하는 수업", {4354}),
-    ("아이와 함께 그림책을 읽고 클레이 활동을 하는 프로그램", {4351}),
-    ("여름에 초등학생이 영어를 재미있게 배우는 강좌", {4353}),
-    ("성인이 한 권의 책을 읽고 이야기를 나누는 독서 모임", {3052, 3105, 3130, 3276, 3355, 3390, 3408}),
-    ("어린이가 관람할 수 있는 토끼 인형극", {4194}),
-    ("크리스마스 장식을 직접 만드는 체험", {2990}),
-    ("성인을 위한 지역 경제 인문학 강연", {2634}),
-    ("초등 저학년이 직접 만들며 배우는 과학 실험 수업", {2488}),
-    ("성인이 영상과 일상 표현으로 배우는 생활 영어", {2697}),
-    ("초등 고학년이 친구들과 하는 보드게임 수업", {2701}),
-    ("성인이 그림책으로 감정을 이해하는 테라피", {2484}),
-    ("초등 저학년을 위한 파닉스 영어 읽기", {2703}),
-    # --- 닮은 프로그램을 가려내는 질의 ---
-    # 영어랑 놀자는 유아반과 초등반이 기수마다 있어 대상을 못 가리면 뒤섞인다.
-    ("유아가 원어민 선생님과 영어로 놀며 배우는 수업", {3595, 3702, 3849, 3939, 4224, 4382}),
-    ("초등 1~2학년이 원어민 선생님과 영어로 놀며 배우는 수업", {3596, 3703, 3850, 3938, 4225, 4383}),
-    ("2026년 하반기에 하는 초등학생 과학 실험 교실", {4325}),
-    # --- 대상이 갈리는 질의 ---
-    ("성인이 유럽 미술관과 명화를 감상하는 인문학 강좌", {2887}),
-    ("어르신이 삼국지로 한자를 배우는 수업", {2708}),
-    ("초등 고학년이 유물과 유적으로 한국사를 배우는 수업", {2882}),
-    ("초등 중학년이 교과서에 실린 명화를 다시 그려보는 수업", {2607}),
-    ("유아가 글쓰기를 미리 연습해보는 수업", {2489}),
-    # --- 주제가 갈리는 질의 ---
-    ("초등학생이 칼림바를 배우는 음악 수업", {2812, 3000}),
-    ("초등 고학년이 전기회로와 사물인터넷을 배우는 코딩 수업", {3093, 3393}),
-    ("3D펜으로 생활 소품을 만드는 수업", {3392}),
-    ("유아가 영어 그림책을 읽고 요리하는 수업", {3679}),
-    ("초등 저학년이 책을 읽고 요리 활동을 하는 수업", {3096}),
-    ("유아가 동화를 읽고 미술로 표현하는 수업", {2604}),
-    ("초등 고학년이 메타버스와 메이커 활동을 하는 수업", {2808}),
-    ("초등 중학년이 천천히 읽으며 메타인지를 기르는 독서 수업", {2490}),
-    ("유아가 동시를 낭송하고 창작하는 수업", {3210}),
-    ("유아가 클래식 음악과 작곡가 이야기를 동화로 배우는 수업", {3001}),
+# 1위 유사도의 몇 배까지를 같은 자리에서 볼 결과로 삼을지.
+# 평가 질의 서른 개의 결과 224건으로 재 보니 이 값에서 결과의 63%가 남고
+# 결과가 0건이 되는 질의는 없었다. 더 올리면 참고 사례가 모자라기 시작한다.
+RELATIVE_SIMILARITY_FLOOR = 0.85
+
+# 사서가 기획안을 쓰며 던질 법한 요청과, 스튜디오에서 함께 고를 대상.
+# 대상은 1차 필터로도 쓰이므로 평가에서도 같은 값을 넘겨 실제 화면과 맞춘다.
+EVALUATION_QUERIES: tuple[tuple[str, str | None], ...] = (
+    # --- 유아 ---
+    ("그림책을 읽고 만들기 활동을 하는 프로그램", "preschool"),
+    ("동화를 듣고 몸으로 표현하는 놀이 프로그램", "preschool"),
+    ("영어 그림책으로 영어를 처음 접하는 프로그램", "preschool"),
+    ("동시를 낭송하고 창작하는 프로그램", "preschool"),
+    ("클래식 음악과 악기를 만나는 프로그램", "preschool"),
+    ("글쓰기를 미리 연습해 보는 프로그램", "preschool"),
+    # --- 초등 저학년 ---
+    ("환경과 기후를 배우며 만들기도 하는 프로그램", "elementary-lower"),
+    ("책을 읽고 요리 활동을 하는 프로그램", "elementary-lower"),
+    ("직접 만들며 배우는 과학 실험 프로그램", "elementary-lower"),
+    ("파닉스로 영어 읽기를 배우는 프로그램", "elementary-lower"),
+    ("미술 기법으로 그림책을 표현하는 프로그램", "elementary-lower"),
+    ("칼림바 같은 악기를 배우는 음악 프로그램", "elementary-lower"),
+    # --- 초등 고학년 ---
+    ("친구들과 함께 하는 보드게임 프로그램", "elementary-upper"),
+    ("유물과 유적으로 한국사를 배우는 프로그램", "elementary-upper"),
+    ("코딩과 메이커 활동을 하는 프로그램", "elementary-upper"),
+    ("독서하고 생각을 글로 쓰는 논술 프로그램", "elementary-upper"),
+    ("교과서 속 명화를 다시 그려 보는 미술 프로그램", "elementary-upper"),
+    ("천천히 읽으며 생각하는 힘을 기르는 독서 프로그램", "elementary-upper"),
+    # --- 성인·어르신 ---
+    ("한 권의 책을 읽고 이야기를 나누는 독서 모임", "adult"),
+    ("지역 경제를 다루는 인문학 강연", "adult"),
+    ("영상과 일상 표현으로 배우는 생활 영어", "adult"),
+    ("그림책으로 감정을 이해하는 테라피", "adult"),
+    ("유럽 미술관과 명화를 감상하는 인문학 강좌", "adult"),
+    ("일본어를 처음부터 배우는 강좌", "adult"),
+    # --- 누구나 ---
+    ("어린이가 관람할 수 있는 인형극", "everyone"),
+    ("크리스마스 장식을 직접 만드는 체험", "everyone"),
+    ("가족이 함께 즐기는 공연", "everyone"),
+    # --- 대상을 고르지 않은 경우 ---
+    ("클레이로 무언가를 만드는 프로그램", None),
+    ("샌드아트 공연", None),
+    ("보드게임으로 생각하는 힘을 기르는 수업", None),
 )
 
 AUDIENCE_LABELS = {
@@ -349,6 +355,18 @@ def rank(
         and item["audienceAdjustment"] > -0.25
         and (not has_requested_concepts or item["conceptCoverage"] >= required_concept_coverage)
     ]
+    # 유사도가 1위에 한참 못 미치는 결과를 뗀다.
+    #
+    # 대상·개념 가점이 더해지면서 유사도가 낮은 사례가 통과하는 일이 있었다.
+    # 「글쓰기」 한 낱말이 겹친다는 이유로 블로그 운영 강좌가 독후감 프로그램 사이에
+    # 끼어드는 식이다. 임베딩은 그것을 0.513으로 이미 낮게 봤는데 가점이 뒤집었다.
+    #
+    # 절대 하한을 두지 않는 이유는 질의마다 유사도 크기가 다르기 때문이다.
+    # 1위 유사도가 0.494인 질의도 있고 0.790인 질의도 있어, 절대값으로 자르면
+    # 낮게 나오는 질의는 결과가 통째로 비어 버린다. 1위를 기준으로 삼으면 그런 일이 없다.
+    if eligible:
+        floor = max(item["similarity"] for item in eligible) * RELATIVE_SIMILARITY_FLOOR
+        eligible = [item for item in eligible if item["similarity"] >= floor]
     # 같은 시리즈는 가장 잘 맞는 한 건만 남기고 몇 회차가 더 있는지만 알려 준다.
     best_of_series: dict[str, dict[str, Any]] = {}
     for item in eligible:
@@ -369,7 +387,11 @@ def rank(
         "reranking": "audience-compatibility-v1",
         "conceptReranking": "topic-activity-compatibility-v1",
         "requestedConcepts": {group: sorted(values) for group, values in requested_concepts.items()},
-        "minimumCriteria": {"rankingScore": 0.45, "conceptCoverage": required_concept_coverage if has_requested_concepts else None},
+        "minimumCriteria": {
+            "rankingScore": 0.45,
+            "conceptCoverage": required_concept_coverage if has_requested_concepts else None,
+            "relativeSimilarityFloor": RELATIVE_SIMILARITY_FLOOR,
+        },
         "requestedAudienceFilter": audience,
         "filteredOutByAudience": filtered_out,
         "candidateCount": len(scored),
@@ -382,33 +404,89 @@ def search(query: str, profile: str, limit: int, audience: str | None = None) ->
     return rank(query, profile, limit, provider(), audience)
 
 
+def audience_matches(requested: str, target: str | None) -> bool:
+    """사례의 대상이 요청한 대상에 맞는지. 연령 제한이 없는 사례는 어디에나 맞는 것으로 본다."""
+    return bool(document_audiences(target) & (audience_candidates(requested) | {"general"}))
+
+
 def evaluate() -> dict[str, Any]:
+    """
+    상위 결과가 요청한 조건에 맞는지를 잰다.
+
+    사서는 「이 프로그램 하나」를 찾는 것이 아니라 기획안을 쓸 때 참고할 사례를
+    서너 건 받는다. 그래서 정답을 미리 정해 두고 몇 등에 나왔는지 보는 대신,
+    상위 결과가 요청한 대상·주제에 실제로 맞는지를 센다. 개발계획서가 검증 방법으로
+    적어 둔 「대상 연령 일치도, 태그 일치도」가 이것이다.
+
+    무엇을 재는지 두 가지에 주의한다.
+
+    대상은 **필터를 끄고** 잰다. 필터를 켜면 맞지 않는 사례가 애초에 후보에서
+    빠지므로 늘 100%가 나와 아무것도 알려 주지 않는다. 필터 없이 재야 검색만으로
+    대상을 얼마나 맞히는지, 그래서 필터가 무엇을 보태는지 보인다.
+
+    주제는 **몇 개나 맞았는지**를 센다. 하나라도 맞으면 통과로 보면 후보를 고를 때
+    이미 같은 기준을 썼기 때문에 역시 늘 100%가 된다.
+    """
     encoder = provider()
     profiles = []
     for profile in PROFILES:
         rows = []
-        reciprocal_rank = 0.0
-        hits = {1: 0, 3: 0, 5: 0}
-        for query, expected in EVALUATION_QUERIES:
-            response = rank(query, profile, EVALUATION_LIMIT, encoder)
-            first_rank = next((item["rank"] for item in response["results"] if item["sourceId"] in expected), None)
-            if first_rank:
-                reciprocal_rank += 1.0 / first_rank
-                for k in hits:
-                    hits[k] += int(first_rank <= k)
+        coverage_total = filtered_audience_hits = unfiltered_audience_hits = 0.0
+        graded = unfiltered_graded = empty_queries = 0
+        for query, audience in EVALUATION_QUERIES:
+            response = rank(query, profile, EVALUATION_TOP_N, encoder, audience)
+            results = response["results"]
+            if not results:
+                empty_queries += 1
+            requested = text_concepts(query)
+            wanted = {(group, value) for group, values in requested.items() for value in values}
+            per_result = []
+            for item in results:
+                found = text_concepts(f'{item["title"]} {item["summary"]}')
+                matched = {(group, value) for group, value in wanted if value in found[group]}
+                coverage = len(matched) / len(wanted) if wanted else 1.0
+                audience_ok = audience_matches(audience, item["target"]) if audience else True
+                graded += 1
+                coverage_total += coverage
+                filtered_audience_hits += int(audience_ok)
+                per_result.append({
+                    "sourceId": item["sourceId"], "title": item["title"], "target": item["target"],
+                    "similarity": item["similarity"], "audienceMatched": audience_ok,
+                    "conceptCoverage": round(coverage, 4),
+                    "matchedConcepts": sorted(value for _, value in matched),
+                })
+            # 필터를 끄고 같은 질의를 다시 던져 검색만으로 대상을 얼마나 맞히는지 본다.
+            bare_matched = None
+            if audience:
+                bare = rank(query, profile, EVALUATION_TOP_N, encoder, None)["results"]
+                bare_matched = sum(int(audience_matches(audience, item["target"])) for item in bare)
+                unfiltered_audience_hits += bare_matched
+                unfiltered_graded += len(bare)
             rows.append({
-                "query": query,
-                "expectedSourceIds": sorted(expected),
-                "firstRelevantRank": first_rank,
-                "top5": [{"sourceId": item["sourceId"], "title": item["title"], "similarity": item["similarity"]} for item in response["results"][:5]],
+                "query": query, "audience": audience, "resultCount": len(results),
+                "requestedConcepts": sorted(value for _, value in wanted),
+                "audienceHitsWithoutFilter": bare_matched,
+                "results": per_result,
             })
-        total = len(EVALUATION_QUERIES)
         profiles.append({
-            "profile": profile, "hitAt1": hits[1] / total,
-            "hitAt3": hits[3] / total, "hitAt5": hits[5] / total,
-            "mrr": reciprocal_rank / total, "queries": rows,
+            "profile": profile,
+            # 필터를 켠 결과. 필터가 제 일을 하는지 확인하는 값이라 100%가 정상이다.
+            "audiencePrecision": round(filtered_audience_hits / graded, 4) if graded else 0.0,
+            # 필터를 끈 결과. 검색만으로 대상을 얼마나 맞히는지 보여 준다.
+            "audiencePrecisionWithoutFilter": round(unfiltered_audience_hits / unfiltered_graded, 4) if unfiltered_graded else 0.0,
+            # 요청한 주제 가운데 몇 개가 맞았는지의 평균.
+            "conceptCoverage": round(coverage_total / graded, 4) if graded else 0.0,
+            "averageResultCount": round(graded / len(EVALUATION_QUERIES), 2),
+            "emptyQueries": empty_queries,
+            "queries": rows,
         })
-    result = {"schemaVersion": "program-board-search-evaluation/v1", "queryCount": len(EVALUATION_QUERIES), "profiles": profiles}
+    result = {
+        "schemaVersion": "program-board-search-evaluation/v2",
+        "metric": "상위 결과의 대상·주제 일치도",
+        "topN": EVALUATION_TOP_N,
+        "queryCount": len(EVALUATION_QUERIES),
+        "profiles": profiles,
+    }
     write_json(artifact_directory() / "evaluation.json", result)
     return result
 

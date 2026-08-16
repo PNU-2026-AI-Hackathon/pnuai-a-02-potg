@@ -12,6 +12,8 @@ const profiles = new Set<SearchProfileKind>([
  * 코퍼스 크기에 매이지 않는 값으로 둔다. 파이썬 쪽 `MAX_RESULT_LIMIT`과 같아야 한다.
  */
 const MAX_RESULT_LIMIT = 50;
+/** 참고 컨텍스트에 담을 사례 수의 상한. 개발계획서가 정한 「상위 3~5개」를 따른다. */
+const MAX_CONTEXT_RESULTS = 5;
 /** 사서가 스튜디오에서 고를 수 있는 대상. 파이썬 쪽 `AUDIENCE_FILTERS`와 같아야 한다. */
 const AUDIENCE_FILTERS = new Set(['preschool', 'elementary-lower', 'elementary-upper', 'adult', 'everyone']);
 
@@ -44,8 +46,8 @@ router.get('/context', async (req, res) => {
   const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : 3;
   const audience = typeof req.query.audience === 'string' ? req.query.audience : undefined;
-  if (!query || query.length > 1000 || !Number.isInteger(limit) || limit < 1 || limit > 5) {
-    return res.status(400).json({ error: 'q and an integer limit between 1 and 5 are required' });
+  if (!query || query.length > 1000 || !Number.isInteger(limit) || limit < 1 || limit > MAX_CONTEXT_RESULTS) {
+    return res.status(400).json({ error: `q and an integer limit between 1 and ${MAX_CONTEXT_RESULTS} are required` });
   }
   if (audience && !AUDIENCE_FILTERS.has(audience)) {
     return res.status(400).json({ error: 'unsupported audience filter' });
