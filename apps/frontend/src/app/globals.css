@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   color-scheme: light;
   --blue: #2b5f9e;
   --deep: #1f3f69;
@@ -10372,9 +10372,12 @@ html:has(.moiraPage) {
   border-radius: 12px;
   background: transparent;
   color: #55645f;
-  padding: 8px 4px;
+  /* 좌우 여백을 좁혀 「작업내역」 네 글자가 72px 레일 안에서 한 줄로 들어가게 한다. */
+  padding: 8px 2px;
   font-size: 11px;
   font-weight: 750;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -11572,7 +11575,8 @@ html:has(.moiraPage) {
 }
 
 .studioDocumentWorkspace.hasAiPanel {
-  grid-template-columns: minmax(0, 0.9fr) minmax(520px, 620px);
+  /* 본문 칸이 먼저 줄어들 수 있어야 패널이 본문을 덮지 않는다. */
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 440px);
 }
 
 .studioDocumentTitleField,
@@ -11631,8 +11635,9 @@ html:has(.moiraPage) {
   background: transparent;
   color: var(--moira-ink);
   outline: none;
-  padding: 0 0 16px;
-  font-size: clamp(28px, 4vw, 44px);
+  padding: 0 0 12px;
+  /* 본문 옆에 수정 패널이 서면 제목 칸이 좁아진다. 44px까지 키우면 긴 제목이 잘린다. */
+  font-size: clamp(20px, 2vw, 28px);
   font-weight: 850;
   line-height: 1.18;
 }
@@ -11652,7 +11657,7 @@ html:has(.moiraPage) {
   font-weight: 700;
 }
 
-.studioDocumentBodyField textarea {
+.studioDocumentBodyTextarea {
   width: 100%;
   min-height: 960px;
   resize: none;
@@ -11674,12 +11679,12 @@ html:has(.moiraPage) {
   white-space: pre-wrap;
 }
 
-.studioDocumentBodyField textarea::selection {
+.studioDocumentBodyTextarea::selection {
   background: rgba(189, 232, 212, 0.95);
   color: var(--moira-ink);
 }
 
-.studioDocumentBodyField textarea:focus {
+.studioDocumentBodyTextarea:focus {
   box-shadow: inset 0 3px 0 rgba(22, 116, 95, 0.12);
 }
 
@@ -11954,7 +11959,9 @@ html:has(.moiraPage) {
   font-weight: 850;
 }
 
-@media (max-width: 1180px) {
+/* 본문과 패널을 나란히 두기에 좁아지면 아래로 내린다.
+   기획서를 항목으로 보여주면서 본문이 넓어져 기준을 올렸다. */
+@media (max-width: 1360px) {
   .studioDocumentWorkspace.hasAiPanel {
     grid-template-columns: 1fr;
   }
@@ -12134,7 +12141,7 @@ html:has(.moiraPage) {
     font-size: 28px;
   }
 
-  .studioDocumentBodyField textarea {
+  .studioDocumentBodyTextarea {
     min-height: 740px;
     font-size: 14px;
     line-height: 2;
@@ -12545,3 +12552,291 @@ html:has(.moiraPage) {
 .programSearchContext, .programSearchDraft { margin-top: 20px; padding: 22px; border: 1px solid #dce7de; border-radius: 15px; background: #fff; }
 .programSearchContext pre, .programSearchDraft pre { max-height: 620px; overflow: auto; white-space: pre-wrap; word-break: keep-all; font: 13px/1.7 ui-monospace, monospace; }
 @media (max-width: 700px) { .programSearchOptions, .programSearchResultHeading, .programSearchResultTitle { align-items: stretch; flex-direction: column; } .programSearchOptions button { margin-left: 0; } .programSearchResultCard { grid-template-columns: 1fr; } }
+
+/* --- 기획서 틀 검증 화면 -------------------------------------------------- */
+
+.studioPlanPage { min-height: 100vh; padding: 44px 20px 80px; background: #f4f7f4; color: #183b27; }
+.studioPlanShell { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+.studioPlanReferences { background: #fff; border: 1px solid #d7e4da; border-radius: 14px; padding: 14px 18px; }
+.studioPlanReferences summary { cursor: pointer; font-weight: 600; }
+.studioPlanReferences ol { margin: 12px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.studioPlanReferences li small { display: block; color: #5c7a67; font-size: 12px; }
+.studioPlanReferences h4 { margin: 18px 0 8px; font-size: 13px; color: #375c47; }
+.studioPlanReferences pre { max-height: 320px; overflow: auto; background: #f7faf8; border-radius: 10px; padding: 12px; font-size: 12px; white-space: pre-wrap; }
+
+.studioPlanSheet { background: #fff; border: 1px solid #d7e4da; border-radius: 14px; padding: 4px 18px 18px; }
+.studioPlanGroup { border-top: 1px solid #e8f0ea; padding-top: 12px; margin-top: 12px; }
+.studioPlanGroup:first-child { border-top: 0; }
+.studioPlanGroup > h2 { font-size: 15px; color: #2f7a52; margin: 0 0 14px; letter-spacing: 0.02em; }
+
+.studioPlanField { padding: 8px 0; border-bottom: 1px dashed #eef4f0; }
+.studioPlanField:last-child { border-bottom: 0; }
+.studioPlanFieldHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.studioPlanFieldHead h3 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.studioPlanFieldHead em { font-style: normal; font-size: 11px; color: #8a6d3b; background: #fdf3dc; border-radius: 999px; padding: 2px 8px; }
+.studioPlanFieldHead button { border: 1px solid #cfe0d5; background: #fff; color: #2f7a52; border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
+.studioPlanFieldHead button:hover { background: #f1f8f3; }
+
+.studioPlanValue { margin: 8px 0 0; white-space: pre-wrap; line-height: 1.65; }
+.studioPlanManualInput { margin-top: 8px; width: 100%; border: 1px solid #cfe0d5; border-radius: 10px; padding: 9px 12px; font: inherit; }
+
+.studioPlanRevise { margin-top: 10px; display: flex; gap: 8px; }
+.studioPlanRevise input { flex: 1; border: 1px solid #cfe0d5; border-radius: 10px; padding: 9px 12px; font: inherit; }
+.studioPlanRevise button { border: 0; background: #2f7a52; color: #fff; border-radius: 10px; padding: 9px 16px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.studioPlanRevise button:disabled { background: #b6ccbe; cursor: default; }
+
+/* --- 기획서 항목 시트 (문서 편집 화면 안) ---------------------------------- */
+
+.studioPlanField.isChosen { background: #f1f8f3; border-radius: 10px; padding-left: 10px; padding-right: 10px; }
+.studioPlanValue { cursor: text; }
+.studioPlanHint { margin: 6px 0 0; font-size: 12px; color: #6b8878; }
+.programCurriculumTable tbody tr { cursor: pointer; }
+.programCurriculumTable tbody tr.isChosen { background: #eaf5ee; }
+
+
+
+/* --- 항목 시트: 폭·글자 크기와 수정 표시 ----------------------------------- */
+
+/* 그리드 자식은 기본이 min-width:auto라 표가 칸을 밀어낸다.
+   0으로 두어야 좁은 칸에서도 표가 제 안에서 가로로 스크롤한다. */
+.studioDocumentBodyField { min-width: 0; }
+.studioPlanSheet { min-width: 0; overflow-x: hidden; }
+.studioPlanField { min-width: 0; }
+.studioPlanSheet .programTableScroll { max-width: 100%; }
+
+.studioPlanGroup > h3 { font-size: 16px; color: #2f7a52; margin: 0 0 14px; }
+.studioPlanFieldHead h4 { font-size: 15px; }
+.studioPlanValue { font-size: 15px; line-height: 1.7; overflow-wrap: anywhere; }
+.studioPlanManualInput { font-size: 15px; }
+.studioPlanSheet .programCurriculumTable { font-size: 14px; }
+.studioPlanSheet .programCurriculumTable td { word-break: keep-all; overflow-wrap: anywhere; }
+.studioPlanHint { font-size: 12.5px; }
+
+/* 고친 곳을 눈에 보이게 남긴다. 표시가 없으면 여러 번 고쳤을 때
+   어디를 손봤는지 되짚을 방법이 없다. */
+.studioPlanField.isRevised { background: #fdf8ec; border-left: 3px solid #d9a441; border-radius: 0 10px 10px 0; padding-left: 12px; }
+.studioPlanField.isRevised .studioPlanValue { background: #fbf1d9; border-radius: 6px; padding: 6px 8px; }
+.studioPlanRevisedBadge { font-size: 11px; font-weight: 600; color: #8a6d3b; background: #fbf1d9; border: 1px solid #eadcb8; border-radius: 999px; padding: 2px 9px; }
+.programCurriculumTable tbody tr.isRevised { background: #fbf1d9; }
+.programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
+
+.studioAiSelectedTarget { font-weight: 600; color: #2f7a52; margin: 0 0 6px; }
+
+/* --- 항목 시트: 폭·글자 크기와 수정 표시 ----------------------------------- */
+
+/* 그리드 자식은 기본이 min-width:auto라 회차 표가 칸을 밀어낸다.
+   0으로 두어야 좁은 칸에서도 표가 제 안에서 가로로 스크롤한다. */
+.studioDocumentBodyField { min-width: 0; }
+.studioPlanSheet { min-width: 0; overflow-x: hidden; }
+.studioPlanField { min-width: 0; }
+.studioPlanSheet .programTableScroll { max-width: 100%; }
+
+.studioPlanGroup > h3 { font-size: 13px; color: #2f7a52; margin: 0 0 8px; letter-spacing: 0.02em; }
+.studioPlanFieldHead { min-height: 26px; }
+.studioPlanFieldHead h4 { font-size: 13.5px; color: #4a6b57; font-weight: 700; }
+.studioPlanFieldHead button { padding: 3px 10px; font-size: 11.5px; }
+.studioPlanValue { margin: 4px 0 0; font-size: 14.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.studioPlanManualInput { margin-top: 4px; padding: 7px 10px; font-size: 14.5px; }
+.studioPlanSheet .programCurriculumTable { font-size: 13.5px; }
+.studioPlanSheet .programCurriculumTable td { overflow-wrap: anywhere; }
+.studioPlanHint { margin: 5px 0 0; font-size: 12px; }
+
+/* 고친 곳을 눈에 보이게 남긴다. 표시가 없으면 여러 번 고쳤을 때
+   어디를 손봤는지 되짚을 방법이 없다. */
+.studioPlanField.isRevised { background: #fdf8ec; border-left: 3px solid #d9a441; border-radius: 0 8px 8px 0; padding-left: 10px; }
+.studioPlanField.isRevised .studioPlanValue { background: #fbf1d9; border-radius: 5px; padding: 5px 7px; }
+.studioPlanRevisedBadge { font-size: 10.5px; font-weight: 600; color: #8a6d3b; background: #fbf1d9; border: 1px solid #eadcb8; border-radius: 999px; padding: 1px 8px; }
+.programCurriculumTable tbody tr.isRevised { background: #fbf1d9; }
+.programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
+
+.studioAiSelectedTarget { font-weight: 600; color: #2f7a52; margin: 0 0 6px; }
+
+/* --- 항목 시트: 직접 고치기 ------------------------------------------------ */
+
+/* 평소에는 테두리를 지워 문서처럼 읽히게 두고, 손을 대는 순간에만 입력칸으로 보인다.
+   모든 항목에 테두리를 두르면 기획서가 아니라 서식 입력 화면이 된다. */
+.studioPlanValueInput {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  /* 적은 만큼만 자리를 차지한다. 높이는 글이 늘어날 때마다 스크립트가 다시 잡는다.
+     예전 「한 덩어리 본문」 칸과 달리 최소 높이를 두지 않는다. */
+  height: auto;
+  min-height: 0;
+  margin: 4px 0 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: inherit;
+  overflow-y: hidden;
+  overflow-wrap: anywhere;
+  resize: none;
+}
+
+.studioPlanValueInput:hover { border-color: #e2ece6; }
+
+.studioPlanValueInput:focus {
+  border-color: var(--moira-green, #2f7a52);
+  background: #fff;
+  outline: none;
+}
+
+.studioPlanValueInput::placeholder { color: #9db3a6; }
+
+.studioPlanField.isRevised .studioPlanValueInput { background: #fbf1d9; }
+
+/* 회차 표: 칸을 그대로 고친다 */
+.studioPlanSessionTable tbody tr { cursor: default; }
+
+.studioPlanSessionTable td input {
+  width: 100%;
+  min-width: 60px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  padding: 3px 5px;
+  font: inherit;
+  font-size: 13.5px;
+  color: inherit;
+}
+
+.studioPlanSessionTable td input:hover { border-color: #e2ece6; }
+
+.studioPlanSessionTable td input:focus {
+  border-color: var(--moira-green, #2f7a52);
+  background: #fff;
+  outline: none;
+}
+
+.studioPlanSessionActions { white-space: nowrap; }
+
+.studioPlanSessionActions button {
+  border: 1px solid #cfe0d5;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f7a52;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.studioPlanSessionActions button + button { margin-left: 4px; }
+.studioPlanSessionActions button:hover { background: #f1f8f3; }
+
+.studioPlanSessionRemove { color: #a4553c; border-color: #e6cfc7 !important; }
+.studioPlanSessionRemove:hover { background: #fdf2ef !important; }
+
+.studioPlanSessionFoot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.studioPlanSessionFoot .studioPlanHint { margin: 0; }
+
+.studioPlanSessionAdd {
+  border: 1px dashed #b9d2c3;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f7a52;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.studioPlanSessionAdd:hover { background: #f1f8f3; border-style: solid; }
+
+/* --- 기획서 PDF 내보내기 --------------------------------------------------- */
+
+/* 화면에서는 숨긴다. 인쇄할 때만 이 문서가 나온다. */
+.studioPlanPrint { display: none; }
+
+@media print {
+  /* 인쇄에는 편집 화면이 필요 없다. 기획서만 남긴다.
+     페이지 루트의 형제들만 숨긴다. body 기준으로 숨기면 앱 껍데기까지 사라져
+     그 안에 있는 기획서도 함께 없어진다. */
+  body { background: #fff; }
+  .studioDocumentPage { display: block !important; padding: 0 !important; background: #fff !important; }
+  .studioDocumentPage > *:not(.studioPlanPrint) { display: none !important; }
+
+  .studioPlanPrint {
+    display: block !important;
+    position: static;
+    color: #111;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  .studioPlanPrintTitle {
+    margin: 0 0 18pt;
+    text-align: center;
+    font-size: 18pt;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  .studioPlanPrintHeading {
+    margin: 16pt 0 6pt;
+    font-size: 12pt;
+    font-weight: 700;
+    border-left: 3pt solid #333;
+    padding-left: 6pt;
+  }
+
+  .studioPlanPrintTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .studioPlanPrintTable th,
+  .studioPlanPrintTable td {
+    border: 0.5pt solid #444;
+    padding: 5pt 7pt;
+    vertical-align: top;
+    word-break: break-word;
+  }
+
+  .studioPlanPrintTable th {
+    width: 15%;
+    background: #f2f2f2;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* 회차 표는 머리글이 가로로 서므로 칸 너비를 따로 준다. */
+  .studioPlanPrintSessions th { width: auto; background: #f2f2f2; }
+  .studioPlanPrintSessions thead th:nth-child(1) { width: 8%; }
+  .studioPlanPrintSessions thead th:nth-child(2) { width: 14%; }
+  .studioPlanPrintSessions thead th:nth-child(4) { width: 20%; }
+  .studioPlanPrintSessions thead th:nth-child(5) { width: 16%; }
+  .studioPlanPrintSessions td { text-align: left; }
+  .studioPlanPrintSessions td:first-child { text-align: center; }
+
+  /* 회차 한 줄이 페이지 경계에서 잘리면 읽기 어렵다. */
+  .studioPlanPrintTable tr { break-inside: avoid; }
+  .studioPlanPrintHeading { break-after: avoid; }
+
+  .studioPlanPrintTable ul { margin: 0; padding-left: 14pt; }
+  .studioPlanPrintEmpty { color: #666; }
+
+  .studioPlanPrintFooter {
+    margin-top: 20pt;
+    padding-top: 6pt;
+    border-top: 0.5pt solid #bbb;
+    font-size: 9pt;
+    color: #555;
+    text-align: center;
+  }
+
+  @page { size: A4; margin: 18mm 16mm; }
+}

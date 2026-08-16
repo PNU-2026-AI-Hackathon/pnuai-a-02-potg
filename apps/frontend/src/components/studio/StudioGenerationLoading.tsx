@@ -10,6 +10,7 @@ import {
   type StudioSavedDocument,
   type StudioGenerateRequest,
 } from '@/lib/studio-draft';
+import { planToContent, studioPlanStorageKey, type StudioPlan } from '@/lib/studio-plan';
 
 type GenerationState = 'generating' | 'complete' | 'failed' | 'missing-request';
 
@@ -169,23 +170,38 @@ export default function StudioGenerationLoading() {
         throw new Error('기획서를 저장하려면 로그인이 필요합니다.');
       }
 
-      const response = await fetch('/api/studio/generate', {
+      const response = await fetch('/api/studio/generate-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(nextRequest),
+        // 새 경로는 기획 메모를 `memo`로 받는다. 참고 자료와 조건은 그대로 넘긴다.
+        body: JSON.stringify({
+          memo: nextRequest.prompt,
+          conditions: nextRequest.conditions,
+          referencesMarkdown: nextRequest.referencesMarkdown,
+          model: nextRequest.model,
+        }),
       });
-      const data = (await response.json()) as StudioGenerateResponse;
+      const data = (await response.json()) as { plan?: StudioPlan; documentId?: string; error?: string };
 
-      if (!response.ok || !data.draft) {
+      if (!response.ok || !data.plan) {
         throw new Error(data.error || '기획서 초안 생성에 실패했습니다.');
       }
 
-      const documentId = data.documentId || data.draft.id || createDocumentId();
+      const plan = data.plan;
+      const documentId = data.documentId || createDocumentId();
+      // 저장과 목록은 아직 글 한 덩어리를 다루므로 항목에서 글을 만들어 함께 보낸다.
       const draftWithId: StudioDraft = {
-        ...data.draft,
         id: documentId,
+        title: plan.title,
+        summary: plan.intent,
+        target: plan.target,
+        duration: plan.period,
+        details: plan.sessions.map((row) => `${row.session}회차: ${row.activity}`),
+        expectedEffects: plan.expectedEffects,
+        notes: plan.cautions,
+        content: planToContent(plan),
       };
       const saveResponse = await fetch('/api/studio/documents', {
         method: 'POST',
@@ -198,6 +214,8 @@ export default function StudioGenerationLoading() {
           stage: '기획 중',
           conditions: nextRequest.conditions,
           agenda: nextRequest.agenda ?? null,
+          /** 항목 구조를 문서와 함께 남겨야 나중에 항목 하나만 고칠 수 있다. */
+          plan,
         }),
       });
       const saveData = (await saveResponse.json()) as StudioDocumentCreateResponse;
@@ -214,6 +232,12 @@ export default function StudioGenerationLoading() {
         ...draftWithId,
         id: saveData.document.id,
       }));
+      // 항목 구조를 함께 넘겨야 편집 화면이 항목별로 고칠 수 있다.
+      // 글만 넘기면 어디부터 어디까지가 어느 항목인지 알 수 없다.
+      window.sessionStorage.setItem(
+        studioPlanStorageKey,
+        JSON.stringify({ documentId: saveData.document.id, plan }),
+      );
       setCreatedDocumentId(saveData.document.id);
       setGenerationState('complete');
       setActiveStepIndex(generationSteps.length - 1);
