@@ -349,30 +349,43 @@ type ManualPatchTarget = {
   board?: { sections: Array<{ id: string; title: string; items: Array<{ label: string; value: string }> }> };
 };
 
-/** 사람이 적은 값으로 같은 이름의 항목을 덮고, 없던 항목은 뒤에 붙인다. */
+/**
+ * 사람이 적은 값으로 같은 이름의 항목을 덮고, 없던 항목은 뒤에 붙인다.
+ * 값이 빈 문자열이면 그 항목을 지운다. 같은 이름이 여러 번 있으면 앞의 것만 남긴다.
+ */
 function patchLabeled(
   current: Array<{ label: string; value: string }>,
   patches: Array<{ label: string; value: string }>,
 ) {
   const patched = current.map((entry) => patches.find((patch) => patch.label === entry.label) ?? entry);
   const added = patches.filter((patch) => !current.some((entry) => entry.label === patch.label));
-  return [...patched, ...added];
+  const seen = new Set<string>();
+  return [...patched, ...added].filter((entry) => {
+    if (!entry.value || seen.has(entry.label)) return false;
+    seen.add(entry.label);
+    return true;
+  });
 }
 
-/** 프로그램 소개 칸에 사람이 적은 항목을 넣는다. 칸이 없으면 만든다. */
-function patchContentSection(
+const SECTION_TITLES: Record<string, string> = { content: '프로그램 소개', operation: '준비 사항' };
+
+/** 해당 칸에 사람이 적은 항목을 넣는다. 칸이 없으면 만든다. */
+function patchSection(
   board: NonNullable<ManualPatchTarget['board']>,
+  id: 'content' | 'operation',
   patches: Array<{ label: string; value: string }>,
 ) {
-  const existing = board.sections.find((section) => section.id === 'content');
-  if (!existing) {
-    return { ...board, sections: [...board.sections, { id: 'content', title: '프로그램 소개', items: patches }] };
+  if (!board.sections.some((section) => section.id === id)) {
+    const items = patches.filter((patch) => patch.value);
+    if (!items.length) return board;
+    return { ...board, sections: [...board.sections, { id, title: SECTION_TITLES[id], items }] };
   }
   return {
     ...board,
-    sections: board.sections.map((section) => (section.id === 'content'
-      ? { ...section, items: patchLabeled(section.items, patches) }
-      : section)),
+    // 항목이 다 빠진 칸은 머리글만 남으므로 통째로 뺀다.
+    sections: board.sections
+      .map((section) => (section.id === id ? { ...section, items: patchLabeled(section.items, patches) } : section))
+      .filter((section) => section.items.length),
   };
 }
 
@@ -389,8 +402,13 @@ export function withManualCurriculum<T extends ManualPatchTarget>(item: T): T {
     ...(manual.basicInfo && item.basicInfo
       ? { basicInfo: patchLabeled(item.basicInfo, manual.basicInfo) }
       : {}),
-    ...(manual.content && item.board
-      ? { board: patchContentSection(item.board, manual.content) }
+    ...(item.board && (manual.content || manual.operation)
+      ? {
+        board: [
+          ['content', manual.content] as const,
+          ['operation', manual.operation] as const,
+        ].reduce((board, [id, patches]) => (patches ? patchSection(board, id, patches) : board), item.board),
+      }
       : {}),
     curriculum: manual.rows.map((row) => ({
       session: row.session,

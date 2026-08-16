@@ -39,10 +39,13 @@ export type ManualCurriculumEntry = {
   /**
    * 자동 추출이 엉뚱한 값을 넣은 기본정보를 바로잡는다.
    * 표가 통째로 장소 칸에 들어가는 것처럼 값이 명백히 틀렸을 때만 쓴다.
+   * 값을 빈 문자열로 두면 그 항목을 지운다. 옆 프로그램에서 딸려 온 값을 뺄 때 쓴다.
    */
   basicInfo?: Array<{ label: string; value: string }>;
   /** 프로그램 내용에 넣을 항목. 목표처럼 자동으로 읽지 못한 것을 채운다. */
   content?: Array<{ label: string; value: string }>;
+  /** 준비 사항에 넣거나 뺄 항목. 규칙은 `basicInfo`와 같다. */
+  operation?: Array<{ label: string; value: string }>;
 };
 
 /**
