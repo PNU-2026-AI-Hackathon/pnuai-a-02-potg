@@ -387,15 +387,31 @@ button {
 }
 
 .loginCard {
-  border: 1px solid var(--line);
-  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(22, 116, 95, 0.25);
+  border-radius: 28px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 18px 45px rgba(31, 63, 105, 0.12);
-  padding: 32px;
+  padding: 28px 26px 20px;
+}
+
+.loginCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, rgba(22, 116, 95, 0.9) 0%, rgba(22, 116, 95, 0.35) 100%);
+}
+
+.loginHeader {
+  display: grid;
+  gap: 8px;
 }
 
 .loginEyebrow {
-  margin: 0 0 8px;
+  margin: 0;
   color: var(--blue);
   font-size: 13px;
   font-weight: 700;
@@ -403,15 +419,19 @@ button {
   text-transform: uppercase;
 }
 
+.loginIntro {
+  margin: 0 0 20px;
+}
+
 .loginTitle {
   margin: 0;
-  font-size: 30px;
+  font-size: 18px;
   line-height: 1.2;
   color: var(--deep);
 }
 
 .loginDescription {
-  margin: 12px 0 0;
+  margin: 4px 0 0;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.6;
@@ -430,7 +450,7 @@ button {
 .loginForm {
   display: grid;
   gap: 16px;
-  margin-top: 28px;
+  margin-top: 12px;
 }
 
 .loginField {
@@ -444,12 +464,18 @@ button {
   color: #334155;
 }
 
+.loginInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .loginField input {
   width: 100%;
-  border: 1px solid #cfd8e3;
+  border: 1px solid #dfe6ee;
   border-radius: 12px;
   background: #fff;
-  padding: 14px 16px;
+  padding: 14px 82px 14px 16px;
   color: var(--text);
   outline: none;
   transition:
@@ -462,8 +488,38 @@ button {
 }
 
 .loginField input:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 4px rgba(43, 95, 158, 0.12);
+  border-color: var(--moira-green);
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+}
+
+.loginPasswordToggle {
+  position: absolute;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #7b8ea2;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.loginRemember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  user-select: none;
+}
+
+.loginRemember input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--moira-green);
 }
 
 .loginNote {
@@ -477,7 +533,7 @@ button {
   border: 0;
   border-radius: 12px;
   padding: 14px 18px;
-  background: var(--blue);
+  background: var(--moira-green);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
@@ -489,12 +545,56 @@ button {
 
 .loginButton:hover:not(:disabled) {
   transform: translateY(-1px);
-  background: #224f84;
+  background: var(--moira-green-dark);
 }
 
 .loginButton:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.loginDivider {
+  position: relative;
+  margin: 2px 0;
+  text-align: center;
+}
+
+.loginDivider::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  border-top: 1px solid #e5e7eb;
+}
+
+.loginDivider span {
+  position: relative;
+  display: inline-block;
+  padding: 0 12px;
+  background: #fff;
+  color: #7b8ea2;
+  font-size: 12px;
+}
+
+.loginSecondaryButton {
+  border: 1px solid #e4e7eb;
+  border-radius: 12px;
+  background: #f3f5f7;
+  color: var(--moira-ink);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.loginSecondaryButton strong {
+  color: var(--moira-green-dark);
+  font-weight: 800;
+}
+
+.loginSecondaryButton:hover {
+  background: #edf4f2;
+  border-color: rgba(22, 116, 95, 0.28);
 }
 
 .loginSignupLink {
@@ -12151,25 +12251,43 @@ html:has(.moiraPage) {
 }
 
 .authBrand {
-  display: inline-flex;
-  width: fit-content;
-  align-items: baseline;
-  gap: 10px;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 22px;
   color: var(--moira-ink);
+}
+
+.authBrand span {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  text-align: left;
 }
 
 .authBrand strong {
   font-family: var(--font-do-hyeon), Arial, "Noto Sans KR", sans-serif;
   color: var(--moira-green-dark);
-  font-size: 30px;
-  font-weight: 400;
+  font-size: 38px;
+  font-weight: 700;
   line-height: 1;
 }
 
-.authBrand span {
+.authBrand small {
   color: var(--moira-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+}
+
+.authBrandLogo {
+  width: 84px;
+  height: 68px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .authBrand:focus-visible {
@@ -12187,7 +12305,38 @@ html:has(.moiraPage) {
 }
 
 .loginCard {
-  padding: 36px;
+  padding: 34px 36px 32px;
+}
+
+.loginCard .authBrand {
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e3ebe7;
+  padding-bottom: 16px;
+}
+
+.loginCard .loginForm {
+  gap: 14px;
+  margin-top: 0;
+}
+
+.loginCard .loginIntro {
+  margin-bottom: 4px;
+}
+
+.loginCard .loginTitle {
+  font-size: 18px;
+}
+
+.loginCard .loginDescription {
+  margin-top: 1px;
+}
+
+.loginCard .loginRegistrationMessage + .loginForm {
+  margin-top: 18px;
+}
+
+.loginCard .loginDivider {
+  margin-block: 4px;
 }
 
 .signupCard {
@@ -12393,6 +12542,15 @@ html:has(.moiraPage) {
   .signupCard {
     border-radius: var(--moira-radius-sm);
     padding: 24px 20px;
+  }
+
+  .loginCard .authBrand {
+    margin-bottom: 13px;
+    padding-bottom: 13px;
+  }
+
+  .loginCard .loginForm {
+    gap: 13px;
   }
 
   .signupTopRow {

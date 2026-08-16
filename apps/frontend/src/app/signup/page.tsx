@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
@@ -195,8 +196,18 @@ export default function SignupPage() {
     <main className="signupPage">
       <section className="signupShell" aria-labelledby="signup-title">
         <Link className="authBrand" href="/" aria-label="모이라 홈">
-          <strong>모이라</strong>
-          <span>모두가 이어지는 라이브러리</span>
+          <Image
+            className="authBrandLogo"
+            src="/moira-logo-mark-no-ai.png"
+            alt=""
+            width={72}
+            height={56}
+            priority
+          />
+          <span>
+            <strong>모이라</strong>
+            <small>모두가 이어지는 라이브러리</small>
+          </span>
         </Link>
         <div className="signupCard">
           <div className="signupTopRow">
