@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import hashlib
 import json
 import os
@@ -487,17 +488,30 @@ def parser() -> argparse.ArgumentParser:
     build_parser = commands.add_parser("build")
     build_parser.add_argument("--profile", choices=PROFILES, required=True)
     search_parser = commands.add_parser("search")
-    search_parser.add_argument("--query", required=True)
+    search_parser.add_argument("--query")
     search_parser.add_argument("--profile", choices=PROFILES, default="title+intro+target")
     search_parser.add_argument("--limit", type=int, default=5)
     search_parser.add_argument("--audience", choices=AUDIENCE_FILTERS, default=None)
     commands.add_parser("evaluate")
     context_parser = commands.add_parser("context")
-    context_parser.add_argument("--query", required=True)
+    context_parser.add_argument("--query")
     context_parser.add_argument("--profile", choices=PROFILES, default="title+intro+target")
     context_parser.add_argument("--limit", type=int, default=3)
     context_parser.add_argument("--audience", choices=AUDIENCE_FILTERS, default=None)
     return result
+
+
+def query_argument(args: argparse.Namespace) -> str:
+    """
+    질의를 읽는다. `--query`가 없으면 표준입력에서 받는다.
+
+    윈도우에서 다른 프로그램이 이 스크립트를 부르면 명령줄 인자가 UTF-8로 넘어오지
+    않아 한글이 깨진다. 깨진 질의는 오류가 아니라 엉뚱한 검색 결과로 나타나 알아채기
+    어렵다. 표준입력은 인코딩을 우리가 정할 수 있으므로 한글 질의는 이쪽으로 받는다.
+    """
+    if args.query:
+        return args.query
+    return sys.stdin.buffer.read().decode("utf-8")
 
 
 def main() -> int:
@@ -507,9 +521,9 @@ def main() -> int:
     elif args.command == "evaluate":
         payload = evaluate()
     elif args.command == "context":
-        payload = build_context(args.query, args.profile, args.limit, args.audience)
+        payload = build_context(query_argument(args), args.profile, args.limit, args.audience)
     else:
-        payload = search(args.query, args.profile, args.limit, args.audience)
+        payload = search(query_argument(args), args.profile, args.limit, args.audience)
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 
