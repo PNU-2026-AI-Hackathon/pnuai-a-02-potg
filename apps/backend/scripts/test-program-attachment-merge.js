@@ -116,4 +116,26 @@ assert.equal(socialScience.curriculum[1].category, 'Society');
 assert.equal(socialScience.curriculum[0].activity, 'Princess Hyacinth');
 assert.equal(socialScience.curriculum.filter((session) => session.referenceImages.length === 1).length, 8);
 
+// --- 검수 피드백으로 확정한 규칙 (HWP 표 셀 구조 기준) ---
+
+const bookPlaySessions = bookPlay.curriculum;
+assert.ok(bookPlaySessions.some((session) => session.activity.includes('\n')),
+  '표 셀 안의 줄바꿈은 활동 내용에 그대로 보존해야 한다');
+assert.ok(result.items.some((item) => item.curriculum.some((session) => /<[^>]+>/.test(session.activity))),
+  '<도서명> 표기를 지우면 안 된다');
+
+for (const item of result.items) {
+  const instructor = item.basicInfo.find((info) => info.label === '강사')?.value;
+  if (!instructor) continue;
+  assert.ok(!item.curriculum.some((session) => (session.activity ?? '').includes(instructor)),
+    `${item.sourceId}: 담당강사 열을 활동 내용에 합치면 안 된다`);
+}
+
+for (const item of result.items) {
+  assert.ok(!item.curriculum.some((session) => /^※/.test(session.notes ?? '')),
+    `${item.sourceId}: 표 아래 ※ 주의사항은 회차 비고가 아니라 이용 안내로 보내야 한다`);
+  assert.ok(!item.curriculum.some((session) => /강의\s*계획서$/.test((session.notes ?? '').trim())),
+    `${item.sourceId}: 다음 프로그램 계획서 제목이 회차에 섞이면 안 된다`);
+}
+
 console.log('Program attachment merge tests passed.');

@@ -99,18 +99,32 @@ function headingCandidates(text: string) {
   if (firstLine && firstLine.length <= 100) candidates.push(firstLine);
   const plan = heading.match(/^(.{0,60}?(?:독서지도|그림책\s*지도)\s*계획안)/);
   if (plan) candidates.push(plan[1]);
-  const named = heading.match(/(?:프로그램\s*명|강\s*좌\s*명)\s+(.+?)(?=프로그램\s*소개|개\s*요|목\s*표|대\s*상|교육|강사|교재|수\s*강|$)/);
+  const named = heading.match(/(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명)\s+(.+?)(?=프로그램\s*소개|개\s*요|목\s*표|대\s*상|교육|강사|교재|수\s*강|요일|일\s*자|장\s*소|$)/);
   if (named) candidates.push(named[1]);
   return candidates;
+}
+
+/**
+ * 첨부 파일명이 게시글 제목과 같은 프로그램을 가리키는지.
+ *
+ * 본문에 프로그램명 표기가 아예 없는 계획서가 있다. 이때 파일명이 제목과 일치하면
+ * 그 문서가 이 프로그램의 것이라는 근거가 된다. 단일 프로그램 문서에서만 쓸 수 있다.
+ */
+export function fileNameMatchesTitle(fileName: string, title: string) {
+  return matchScore(fileName, title) >= 0.55;
 }
 
 function matchScore(text: string, title: string) {
   const target = comparableTitle(title);
   const compactText = comparableTitle(text);
-  const titleTokens = withoutTags(title).normalize('NFKC').toLowerCase()
+  const allTokens = withoutTags(title).normalize('NFKC').toLowerCase()
     .split(/[^\p{L}\p{N}]+/gu)
     .map(comparableTitle)
     .filter((token) => token.length >= 2 && !/^(?:동|작은도서관)$/.test(token));
+  // `2025년`, `2기`는 운영 회차를 가리키는 행정 표기라 첨부 계획서에는 없는 경우가 많다.
+  // 다만 이를 빼고 남는 이름이 너무 짧으면 프로그램을 구분할 수 없으므로 그대로 둔다.
+  const withoutRunLabels = allTokens.filter((token) => !/^\d{4}년?$/.test(token) && !/^\d+기$/.test(token));
+  const titleTokens = withoutRunLabels.length >= 2 ? withoutRunLabels : allTokens;
   const tokenCoverage = titleTokens.length
     ? titleTokens.filter((token) => compactText.includes(token)).length / titleTokens.length
     : 0;
@@ -126,7 +140,40 @@ function matchScore(text: string, title: string) {
 
 function startsProgramSection(text: string) {
   const heading = text.replace(/\s+/g, ' ').trim().slice(0, 260);
-  return /(?:프로그램\s*명|강\s*좌\s*명|독서지도\s*계획안|그림책\s*지도\s*계획안)/.test(heading);
+  return /(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명|독서지도\s*계획안|그림책\s*지도\s*계획안)/.test(heading);
+}
+
+/**
+ * 프로그램 구간이 끝나고 부록이 시작되는 자리.
+ *
+ * `[붙임] 만들기 리스트`처럼 같은 프로그램의 참고 자료가 뒤에 붙는 계획서가 있다.
+ * 부록에도 주차·시수 표가 있어 회차표로 오인되므로 구간에서 제외한다.
+ */
+function startsAppendix(text: string) {
+  const heading = text.replace(/\s+/g, ' ').trim().slice(0, 60);
+  return /^[[［(]\s*(?:붙임|별첨|부록)\s*\d*\s*[\]］)]/.test(heading);
+}
+
+/** 프로그램 구간이 시작되는 머리말. 구간 분할과 경계 판정에 같은 기준을 쓴다. */
+const PROGRAM_HEADING = /(?:프로그램\s*명|강\s*좌\s*명|강\s*의\s*명)/g;
+
+/**
+ * HWP 텍스트를 프로그램 구간별로 나눈다.
+ *
+ * PDF는 페이지 단위로 구간을 나눌 수 있지만 HWP는 페이지 개념이 없어 문서 전체가 한 덩어리로 온다.
+ * `강의계획서(22. 겨울방학).hwp`처럼 한 파일에 여러 프로그램이 들어 있으면, 나누지 않을 경우
+ * 맨 앞 프로그램만 매칭되고 나머지는 전부 `NOT_FOUND`가 되며, 맨 앞 프로그램은 다른 프로그램의
+ * 회차·대상·강사까지 흡수한다.
+ *
+ * 머리말이 하나뿐이면 단일 프로그램 문서이므로 원문을 그대로 돌려준다.
+ */
+export function splitHwpProgramSections(text: string): Array<{ pageNumber: number; text: string }> {
+  const starts = [...text.matchAll(PROGRAM_HEADING)].map((match) => match.index ?? 0);
+  if (starts.length < 2) return [{ pageNumber: 1, text }];
+  return starts.map((start, index) => ({
+    pageNumber: index + 1,
+    text: text.slice(start, starts[index + 1] ?? text.length),
+  }));
 }
 
 export function matchDocumentSection(input: {
@@ -138,6 +185,15 @@ export function matchDocumentSection(input: {
   const scoredPages = input.pages.map((page) => ({ page, score: matchScore(page.text.slice(0, 600), input.targetTitle) }));
   const bestScore = Math.max(0, ...scoredPages.map((entry) => entry.score));
   const matchingPages = scoredPages.filter((entry) => entry.score === bestScore && entry.score >= 0.55).map((entry) => entry.page);
+  /**
+   * 계획서 본문과 뒤쪽 부록이 함께 걸리면 부록이 더 높은 점수를 받기도 한다.
+   * (`[붙임] 만들기 리스트`가 본문 첫 장보다 높게 나온 사례)
+   * 프로그램 구간은 앞에서 시작하므로, 최고점과 비슷한 점수면 더 앞선 장을 시작점으로 본다.
+   */
+  const NEAR_BEST = 0.1;
+  const nearBestStart = scoredPages
+    .filter((entry) => entry.score >= 0.55 && entry.score >= bestScore - NEAR_BEST)
+    .map((entry) => entry.page)[0];
   if (input.singleProgramDocument && matchingPages.length > 0) {
     return {
       status: 'WHOLE_DOCUMENT',
@@ -151,14 +207,34 @@ export function matchDocumentSection(input: {
     return { status: 'NOT_FOUND', selectedText: '', selectedPages: [], score: 0, reason: '제목이 포함된 페이지를 찾지 못함' };
   }
   if (matchingPages.length > 1) {
+    /**
+     * 한 프로그램짜리 계획서는 여러 장에 걸쳐 같은 제목이 반복된다.
+     * 다른 프로그램의 제목이 문서 어디에도 없으면 이는 모호함이 아니라 같은 프로그램의 연속이다.
+     */
+    const otherProgramTitles = input.knownProgramTitles
+      .filter((title) => comparableTitle(title) !== comparableTitle(input.targetTitle));
+    const hasOtherProgram = input.pages
+      .some((page) => otherProgramTitles.some((title) => titleMatches(page.text, title)));
+    if (!hasOtherProgram) {
+      return {
+        status: 'WHOLE_DOCUMENT',
+        selectedText: input.pages.map((page) => page.text).join('\n\n'),
+        selectedPages: input.pages.map((page) => page.pageNumber),
+        score: bestScore,
+        reason: '한 프로그램만 담긴 문서에서 제목이 여러 장에 반복됨',
+      };
+    }
     return { status: 'AMBIGUOUS', selectedText: '', selectedPages: matchingPages.map((page) => page.pageNumber), score: 0.4, reason: '제목이 여러 페이지에서 발견됨' };
   }
 
-  const startIndex = input.pages.findIndex((page) => page.pageNumber === matchingPages[0].pageNumber);
+  const sectionStart = nearBestStart ?? matchingPages[0];
+  const startIndex = input.pages.findIndex((page) => page.pageNumber === sectionStart.pageNumber);
   const otherTitles = input.knownProgramTitles.filter((title) => comparableTitle(title) !== comparableTitle(input.targetTitle));
   let endIndex = input.pages.length;
   for (let index = startIndex + 1; index < input.pages.length; index += 1) {
-    if (startsProgramSection(input.pages[index].text) || otherTitles.some((title) => titleMatches(input.pages[index].text, title))) {
+    if (startsProgramSection(input.pages[index].text)
+      || startsAppendix(input.pages[index].text)
+      || otherTitles.some((title) => titleMatches(input.pages[index].text, title))) {
       endIndex = index;
       break;
     }
