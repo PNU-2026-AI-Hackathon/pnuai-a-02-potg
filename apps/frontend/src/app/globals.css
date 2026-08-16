@@ -11573,7 +11573,7 @@ html:has(.moiraPage) {
 
 .studioDocumentWorkspace.hasAiPanel {
   /* 본문 칸이 먼저 줄어들 수 있어야 패널이 본문을 덮지 않는다. */
-  grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 440px);
 }
 
 .studioDocumentTitleField,
@@ -11632,8 +11632,9 @@ html:has(.moiraPage) {
   background: transparent;
   color: var(--moira-ink);
   outline: none;
-  padding: 0 0 16px;
-  font-size: clamp(28px, 4vw, 44px);
+  padding: 0 0 12px;
+  /* 본문 옆에 수정 패널이 서면 제목 칸이 좁아진다. 44px까지 키우면 긴 제목이 잘린다. */
+  font-size: clamp(20px, 2vw, 28px);
   font-weight: 850;
   line-height: 1.18;
 }
@@ -12561,12 +12562,12 @@ html:has(.moiraPage) {
 .studioPlanReferences h4 { margin: 18px 0 8px; font-size: 13px; color: #375c47; }
 .studioPlanReferences pre { max-height: 320px; overflow: auto; background: #f7faf8; border-radius: 10px; padding: 12px; font-size: 12px; white-space: pre-wrap; }
 
-.studioPlanSheet { background: #fff; border: 1px solid #d7e4da; border-radius: 18px; padding: 8px 24px 28px; }
-.studioPlanGroup { border-top: 1px solid #e8f0ea; padding-top: 18px; margin-top: 18px; }
+.studioPlanSheet { background: #fff; border: 1px solid #d7e4da; border-radius: 14px; padding: 4px 18px 18px; }
+.studioPlanGroup { border-top: 1px solid #e8f0ea; padding-top: 12px; margin-top: 12px; }
 .studioPlanGroup:first-child { border-top: 0; }
 .studioPlanGroup > h2 { font-size: 15px; color: #2f7a52; margin: 0 0 14px; letter-spacing: 0.02em; }
 
-.studioPlanField { padding: 12px 0; border-bottom: 1px dashed #eef4f0; }
+.studioPlanField { padding: 8px 0; border-bottom: 1px dashed #eef4f0; }
 .studioPlanField:last-child { border-bottom: 0; }
 .studioPlanFieldHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .studioPlanFieldHead h3 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
@@ -12614,6 +12615,35 @@ html:has(.moiraPage) {
 .studioPlanField.isRevised { background: #fdf8ec; border-left: 3px solid #d9a441; border-radius: 0 10px 10px 0; padding-left: 12px; }
 .studioPlanField.isRevised .studioPlanValue { background: #fbf1d9; border-radius: 6px; padding: 6px 8px; }
 .studioPlanRevisedBadge { font-size: 11px; font-weight: 600; color: #8a6d3b; background: #fbf1d9; border: 1px solid #eadcb8; border-radius: 999px; padding: 2px 9px; }
+.programCurriculumTable tbody tr.isRevised { background: #fbf1d9; }
+.programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
+
+.studioAiSelectedTarget { font-weight: 600; color: #2f7a52; margin: 0 0 6px; }
+
+/* --- 항목 시트: 폭·글자 크기와 수정 표시 ----------------------------------- */
+
+/* 그리드 자식은 기본이 min-width:auto라 회차 표가 칸을 밀어낸다.
+   0으로 두어야 좁은 칸에서도 표가 제 안에서 가로로 스크롤한다. */
+.studioDocumentBodyField { min-width: 0; }
+.studioPlanSheet { min-width: 0; overflow-x: hidden; }
+.studioPlanField { min-width: 0; }
+.studioPlanSheet .programTableScroll { max-width: 100%; }
+
+.studioPlanGroup > h3 { font-size: 13px; color: #2f7a52; margin: 0 0 8px; letter-spacing: 0.02em; }
+.studioPlanFieldHead { min-height: 26px; }
+.studioPlanFieldHead h4 { font-size: 13.5px; color: #4a6b57; font-weight: 700; }
+.studioPlanFieldHead button { padding: 3px 10px; font-size: 11.5px; }
+.studioPlanValue { margin: 4px 0 0; font-size: 14.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.studioPlanManualInput { margin-top: 4px; padding: 7px 10px; font-size: 14.5px; }
+.studioPlanSheet .programCurriculumTable { font-size: 13.5px; }
+.studioPlanSheet .programCurriculumTable td { overflow-wrap: anywhere; }
+.studioPlanHint { margin: 5px 0 0; font-size: 12px; }
+
+/* 고친 곳을 눈에 보이게 남긴다. 표시가 없으면 여러 번 고쳤을 때
+   어디를 손봤는지 되짚을 방법이 없다. */
+.studioPlanField.isRevised { background: #fdf8ec; border-left: 3px solid #d9a441; border-radius: 0 8px 8px 0; padding-left: 10px; }
+.studioPlanField.isRevised .studioPlanValue { background: #fbf1d9; border-radius: 5px; padding: 5px 7px; }
+.studioPlanRevisedBadge { font-size: 10.5px; font-weight: 600; color: #8a6d3b; background: #fbf1d9; border: 1px solid #eadcb8; border-radius: 999px; padding: 1px 8px; }
 .programCurriculumTable tbody tr.isRevised { background: #fbf1d9; }
 .programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
 
