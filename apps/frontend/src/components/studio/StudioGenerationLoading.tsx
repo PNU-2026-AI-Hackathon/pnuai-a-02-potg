@@ -77,21 +77,25 @@ function readStoredRequest() {
 
   try {
     const parsedRequest = JSON.parse(storedRequest) as Partial<StudioGenerateRequest>;
+    const prompt = typeof parsedRequest.prompt === 'string' ? parsedRequest.prompt.trim() : '';
+    const agenda =
+      parsedRequest.agenda && typeof parsedRequest.agenda === 'object' ? parsedRequest.agenda : null;
 
-    if (typeof parsedRequest.prompt !== 'string' || parsedRequest.prompt.trim().length === 0) {
+    /**
+     * 메모와 의제 중 하나만 있으면 된다. 예전에는 메모가 비면 요청 자체를 버려서,
+     * 의제만 골라 넘어오면 「요청이 없다」는 화면이 떴다.
+     */
+    if (!prompt && !agenda) {
       return null;
     }
 
     return {
-      prompt: parsedRequest.prompt.trim(),
+      prompt,
       conditions:
         parsedRequest.conditions && typeof parsedRequest.conditions === 'object'
           ? parsedRequest.conditions
           : {},
-      agenda:
-        parsedRequest.agenda && typeof parsedRequest.agenda === 'object'
-          ? parsedRequest.agenda
-          : null,
+      agenda,
     } satisfies StudioGenerateRequest;
   } catch (error) {
     console.error('Failed to read studio generate request:', error);
@@ -125,10 +129,13 @@ function summarizeConditions(request: StudioGenerateRequest | null) {
           value: request.agenda.title,
         }
       : null,
-    {
-      label: '기획 메모',
-      value: request.prompt,
-    },
+    // 의제만 골라도 생성되므로 메모가 비어 있을 수 있다. 빈 줄을 보여 주지 않는다.
+    request.prompt.trim()
+      ? {
+          label: '기획 메모',
+          value: request.prompt,
+        }
+      : null,
   ].filter((entry): entry is { label: string; value: string } => entry !== null);
 }
 
@@ -175,11 +182,13 @@ export default function StudioGenerationLoading() {
         headers: {
           'Content-Type': 'application/json',
         },
-        // 새 경로는 기획 메모를 `memo`로 받는다. 참고 자료와 조건은 그대로 넘긴다.
+        // 새 경로는 기획 메모를 `memo`로 받는다. 참고 자료와 조건, 의제는 그대로 넘긴다.
         body: JSON.stringify({
           memo: nextRequest.prompt,
           conditions: nextRequest.conditions,
           referencesMarkdown: nextRequest.referencesMarkdown,
+          /** 고른 의제를 보내지 않으면 사서가 고른 것이 기획서에 아무 영향을 주지 못한다. */
+          agenda: nextRequest.agenda ?? null,
           model: nextRequest.model,
         }),
       });
@@ -339,7 +348,8 @@ export default function StudioGenerationLoading() {
                     ? '조건 없음'
                     : '생성 중'}
             </span>
-            <strong>{request?.prompt || '새 프로그램 기획안'}</strong>
+            {/* 메모가 없으면 의제 제목을 보여 준다. 무엇으로 만들고 있는지는 알려 줘야 한다. */}
+            <strong>{request?.prompt || request?.agenda?.title || '새 프로그램 기획안'}</strong>
             <small>{generationState === 'complete' ? '편집 화면으로 이동합니다.' : '생성 조건을 확인하고 있습니다.'}</small>
           </div>
         </div>
