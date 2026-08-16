@@ -16,6 +16,7 @@ import { planToContent, studioPlanStorageKey, type StudioPlan, type StudioPlanFi
 import StudioPlanSheet, {
   applyPlanRevision, planSelectionLabel, planSelectionValue, type PlanSelection,
 } from './StudioPlanSheet';
+import StudioPlanPrintView from './StudioPlanPrintView';
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
 type StageSaveState = 'idle' | 'saving' | 'failed';
@@ -754,6 +755,15 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             <button className="uiButton uiButtonSecondary" type="button" onClick={openAiPanel}>
               AI 수정
             </button>
+            {plan ? (
+              /**
+               * 브라우저 인쇄로 PDF를 만든다. 인쇄 창에서 「PDF로 저장」을 고르면 된다.
+               * 한글 글꼴을 번들에 싣지 않아도 되고 표가 그대로 나온다.
+               */
+              <button className="uiButton uiButtonSecondary" type="button" onClick={() => window.print()}>
+                PDF로 내보내기
+              </button>
+            ) : null}
             <Link className="uiButton uiButtonSecondary" href="/studio">
               새 기획서
             </Link>
@@ -975,6 +985,9 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         </div>
         ) : null}
       </main>
+      {/* 화면에서는 숨어 있다가 인쇄할 때만 나온다. 페이지 루트 안에 두어야
+          인쇄 규칙이 이 형제들만 숨기고 이것을 남길 수 있다. */}
+      {plan ? <StudioPlanPrintView plan={plan} title={title} /> : null}
     </div>
   );
 }

@@ -12648,3 +12648,90 @@ html:has(.moiraPage) {
 .programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
 
 .studioAiSelectedTarget { font-weight: 600; color: #2f7a52; margin: 0 0 6px; }
+
+/* --- 기획서 PDF 내보내기 --------------------------------------------------- */
+
+/* 화면에서는 숨긴다. 인쇄할 때만 이 문서가 나온다. */
+.studioPlanPrint { display: none; }
+
+@media print {
+  /* 인쇄에는 편집 화면이 필요 없다. 기획서만 남긴다.
+     페이지 루트의 형제들만 숨긴다. body 기준으로 숨기면 앱 껍데기까지 사라져
+     그 안에 있는 기획서도 함께 없어진다. */
+  body { background: #fff; }
+  .studioDocumentPage { display: block !important; padding: 0 !important; background: #fff !important; }
+  .studioDocumentPage > *:not(.studioPlanPrint) { display: none !important; }
+
+  .studioPlanPrint {
+    display: block !important;
+    position: static;
+    color: #111;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+
+  .studioPlanPrintTitle {
+    margin: 0 0 18pt;
+    text-align: center;
+    font-size: 18pt;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+
+  .studioPlanPrintHeading {
+    margin: 16pt 0 6pt;
+    font-size: 12pt;
+    font-weight: 700;
+    border-left: 3pt solid #333;
+    padding-left: 6pt;
+  }
+
+  .studioPlanPrintTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .studioPlanPrintTable th,
+  .studioPlanPrintTable td {
+    border: 0.5pt solid #444;
+    padding: 5pt 7pt;
+    vertical-align: top;
+    word-break: break-word;
+  }
+
+  .studioPlanPrintTable th {
+    width: 15%;
+    background: #f2f2f2;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* 회차 표는 머리글이 가로로 서므로 칸 너비를 따로 준다. */
+  .studioPlanPrintSessions th { width: auto; background: #f2f2f2; }
+  .studioPlanPrintSessions thead th:nth-child(1) { width: 8%; }
+  .studioPlanPrintSessions thead th:nth-child(2) { width: 14%; }
+  .studioPlanPrintSessions thead th:nth-child(4) { width: 20%; }
+  .studioPlanPrintSessions thead th:nth-child(5) { width: 16%; }
+  .studioPlanPrintSessions td { text-align: left; }
+  .studioPlanPrintSessions td:first-child { text-align: center; }
+
+  /* 회차 한 줄이 페이지 경계에서 잘리면 읽기 어렵다. */
+  .studioPlanPrintTable tr { break-inside: avoid; }
+  .studioPlanPrintHeading { break-after: avoid; }
+
+  .studioPlanPrintTable ul { margin: 0; padding-left: 14pt; }
+  .studioPlanPrintEmpty { color: #666; }
+
+  .studioPlanPrintFooter {
+    margin-top: 20pt;
+    padding-top: 6pt;
+    border-top: 0.5pt solid #bbb;
+    font-size: 9pt;
+    color: #555;
+    text-align: center;
+  }
+
+  @page { size: A4; margin: 18mm 16mm; }
+}
