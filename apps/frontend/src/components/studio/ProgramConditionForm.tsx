@@ -77,8 +77,12 @@ export default function ProgramConditionForm() {
     };
   }, [isTutorialOpen]);
 
-  const canGenerate = prompt.trim().length > 0;
   const selectedAgenda = agendaPosts.find((post) => post.id === selectedAgendaId) || null;
+  /**
+   * 메모와 의제 중 하나만 있으면 생성한다. 의제를 고르는 것 자체가 「이걸로 기획해 달라」는
+   * 요청이라, 같은 말을 메모에 한 번 더 적게 할 이유가 없다.
+   */
+  const canGenerate = prompt.trim().length > 0 || selectedAgenda !== null;
 
   function updateCondition(key: StudioConditionKey, value: string[]) {
     setConditions((current) => ({
@@ -186,7 +190,8 @@ export default function ProgramConditionForm() {
                 <section className="studioAgendaPicker" aria-label="지역 의제 제안 글 선택">
                   <div className="studioAgendaPickerHeader">
                     <strong>지역 의제 제안 글</strong>
-                    <Link href="/community/free">동네 광장 보기</Link>
+                    {/* 의제가 올라오는 곳은 아이디어 게시판이다. 자유 게시판이 아니다. */}
+                    <Link href="/community/ideas">동네 광장 보기</Link>
                   </div>
                   <div className="studioAgendaList">
                     {agendaPosts.map((post) => (
@@ -211,10 +216,12 @@ export default function ProgramConditionForm() {
                 </div>
               ) : null}
               <label className="studioPromptBox">
-                <span>기획 메모</span>
+                <span>기획 메모{selectedAgenda ? ' (선택)' : ''}</span>
                 <textarea
                   aria-label="기획 요청 입력"
-                  placeholder="예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램"
+                  placeholder={selectedAgenda
+                    ? '고른 의제에 덧붙일 것이 있으면 적어 주세요. 비워 두어도 됩니다.'
+                    : '예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램'}
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
                 />
@@ -233,7 +240,14 @@ export default function ProgramConditionForm() {
                 ))}
               </div>
               <div className="studioPromptMeta">
-                <span>{prompt.length > 0 ? `${prompt.length}자` : '짧게 적어도 괜찮아요'}</span>
+                {/* 의제를 골랐으면 메모가 없어도 된다는 것을 여기서 알려 준다. */}
+                <span>
+                  {prompt.length > 0
+                    ? `${prompt.length}자`
+                    : selectedAgenda
+                      ? '의제만으로도 만들 수 있어요. 메모를 더하면 더 잘 맞습니다.'
+                      : '짧게 적어도 괜찮아요'}
+                </span>
               </div>
               <GenerateButton
                 canGenerate={canGenerate}

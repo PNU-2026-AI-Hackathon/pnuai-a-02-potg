@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   color-scheme: light;
   --blue: #2b5f9e;
   --deep: #1f3f69;
@@ -12651,6 +12651,34 @@ html:has(.moiraPage) {
 .programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
 
 .studioAiSelectedTarget { font-weight: 600; color: #2f7a52; margin: 0 0 6px; }
+
+/* --- 편집 화면: 반영한 지역 의제 -------------------------------------------- */
+
+.studioDocumentAgenda {
+  display: grid;
+  gap: 3px;
+  border: 1px solid #cfe0d5;
+  border-left: 3px solid var(--moira-green, #2f7a52);
+  border-radius: 0 10px 10px 0;
+  background: #f4faf6;
+  padding: 10px 14px;
+}
+
+.studioDocumentAgenda > span {
+  color: var(--moira-green-dark, #1f5e3d);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.studioDocumentAgenda > strong { font-size: 14px; }
+
+.studioDocumentAgenda > p {
+  margin: 0;
+  color: #55645f;
+  font-size: 13px;
+  line-height: 1.6;
+}
 
 /* --- 항목 시트: 직접 고치기 ------------------------------------------------ */
 

@@ -43,10 +43,39 @@ const SHARED_RULES = [
   '- 회차 일자는 사서가 정한 기간이 있을 때만 적고, 없으면 비워 두세요.',
 ];
 
+/**
+ * 주민이 동네 광장에 올린 지역 의제. 사서가 이것을 골라 기획서를 시작할 수 있다.
+ *
+ * 의제는 「무엇을 하자」가 아니라 「왜 필요한가」다. 그대로 활동 이름으로 옮기면
+ * 기획서가 아니라 제안 글을 다시 쓴 것이 되므로, 아래 규칙으로 쓰임을 못박는다.
+ */
+export type StudioPlanAgenda = {
+  title: string;
+  content: string;
+  tags: string[];
+};
+
+const AGENDA_RULES = [
+  '- 지역 의제는 주민이 올린 제안입니다. 이 프로그램이 왜 필요한지를 말해 주는 근거로 쓰세요.',
+  '- 의제의 내용은 기획 의도와 목표에 녹이고, 회차 활동을 의제 문장으로 채우지 마세요.',
+  '- 의제 제목을 프로그램명으로 그대로 쓰지 말고, 프로그램에 맞는 이름을 새로 지으세요.',
+  '- 의제에 없는 대상·기간·인원을 의제가 정한 것처럼 적지 마세요.',
+];
+
+function agendaBlock(agenda?: StudioPlanAgenda | null) {
+  if (!agenda) return '- 없음';
+  return [
+    `- 제목: ${agenda.title}`,
+    `- 내용: ${agenda.content}`,
+    `- 태그: ${agenda.tags.join(', ') || '없음'}`,
+  ].join('\n');
+}
+
 export type StudioPlanGenerateInput = {
   memo: string;
   conditions: Record<string, string[]>;
   referencesMarkdown?: string;
+  agenda?: StudioPlanAgenda | null;
 };
 
 export function buildStudioPlanPrompt(input: StudioPlanGenerateInput) {
@@ -54,6 +83,7 @@ export function buildStudioPlanPrompt(input: StudioPlanGenerateInput) {
     .filter(([, values]) => values.length)
     .map(([key, values]) => `- ${key}: ${values.join(', ')}`)
     .join('\n') || '- 없음';
+  const memo = input.memo.trim();
   return [
     '당신은 도서관 프로그램 기획서를 쓰는 한국어 보조 AI입니다.',
     '아래 JSON만 반환하세요. 설명 문장이나 코드 블록은 넣지 마세요.',
@@ -63,9 +93,17 @@ export function buildStudioPlanPrompt(input: StudioPlanGenerateInput) {
     '',
     '작성 규칙',
     ...SHARED_RULES,
+    ...(input.agenda ? AGENDA_RULES : []),
     '',
     '기획 메모',
-    input.memo.trim() || '- 없음',
+    /**
+     * 메모는 없어도 된다. 의제만 고르고 시작할 수 있기 때문이다. 그럴 때 「- 없음」만
+     * 두면 아무 근거 없이 지어내라는 지시로 읽히므로, 무엇을 근거로 삼을지 알려 준다.
+     */
+    memo || (input.agenda ? '- 없음. 아래 지역 의제를 기획의 출발점으로 삼으세요.' : '- 없음'),
+    '',
+    '지역 의제',
+    agendaBlock(input.agenda),
     '',
     '사서가 고른 조건',
     conditions,

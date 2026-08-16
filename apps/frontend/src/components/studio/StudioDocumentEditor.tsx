@@ -9,6 +9,7 @@ import {
   studioDraftStorageKey,
   type StudioDraft,
   type StudioReviseRequest,
+  type StudioAgendaInput,
   type StudioDocumentStage,
   type StudioSavedDocument,
 } from '@/lib/studio-draft';
@@ -278,6 +279,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [content, setContent] = useState(document.content);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
+  /**
+   * 이 기획서가 어느 지역 의제에서 나왔는지. 표시가 없으면 사서가 의제를 골랐다는 사실이
+   * 결과에 남지 않아, 반영됐는지 확인할 방법이 없다.
+   */
+  const [agenda, setAgenda] = useState<StudioAgendaInput | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [lastSavedAt, setLastSavedAt] = useState(document.updatedAt);
   const [saveErrorMessage, setSaveErrorMessage] = useState('');
@@ -373,6 +379,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
          * 저장된 항목 구조가 없는 예전 문서는 항목이 아니라 글로 보여준다.
          */
         setPlan(toStudioPlan(data.document.plan));
+        setAgenda(data.document.agenda ?? null);
         setLastSavedAt(formatStudioDate(data.document.updatedAt));
         setSaveState('saved');
         setLoadState('ready');
@@ -856,6 +863,15 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
               />
             </label>
             {hasEmptyTitle ? <p className="studioDocumentError">제목은 비워둘 수 없습니다.</p> : null}
+
+            {/* 어느 의제에서 나온 기획서인지 남긴다. 사서가 반영 여부를 눈으로 확인할 수 있어야 한다. */}
+            {agenda ? (
+              <div className="studioDocumentAgenda">
+                <span>반영한 지역 의제</span>
+                <strong>{agenda.title}</strong>
+                <p>{agenda.content}</p>
+              </div>
+            ) : null}
 
             {plan ? (
               /**
