@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+﻿import { Router, Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { prisma } from '../lib/prisma';
@@ -15,6 +15,11 @@ type StudioDocumentRow = {
   stage: StudioDocumentStage;
   conditions: Prisma.JsonValue | null;
   agenda: Prisma.JsonValue | null;
+  /**
+   * 기획서의 항목 구조. 본문(content)은 사람이 읽는 글이라 다시 항목으로 쪼갤 수 없어,
+   * 항목 하나만 고치려면 이 구조가 문서와 함께 남아 있어야 한다.
+   */
+  plan: Prisma.JsonValue | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -25,12 +30,14 @@ type CreateStudioDocumentBody = {
   stage?: unknown;
   conditions?: unknown;
   agenda?: unknown;
+  plan?: unknown;
 };
 
 type UpdateStudioDocumentBody = {
   title?: string;
   content?: string;
   stage?: unknown;
+  plan?: unknown;
 };
 
 const router = Router();
@@ -67,6 +74,10 @@ function ensureStudioDocumentTable() {
     await prisma.$executeRawUnsafe(`
       CREATE INDEX IF NOT EXISTS "StudioDocument_anonymousOwnerId_updatedAt_idx"
       ON "StudioDocument"("anonymousOwnerId", "updatedAt")
+    `);
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "StudioDocument"
+      ADD COLUMN IF NOT EXISTS "plan" JSONB
     `);
     await prisma.$executeRawUnsafe(`
       DO $$
@@ -144,6 +155,7 @@ function serializeStudioDocument(document: StudioDocumentRow) {
     period: readConditionValue(document.conditions, 'period'),
     conditions: document.conditions,
     agenda: document.agenda,
+    plan: document.plan,
     createdAt: document.createdAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
   };
@@ -151,7 +163,7 @@ function serializeStudioDocument(document: StudioDocumentRow) {
 
 async function findScopedDocument(documentId: string, scope: { ownerId: string | null; anonymousOwnerId: string | null }) {
   const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
     FROM "StudioDocument"
     WHERE id = ${documentId}
       AND (
@@ -179,7 +191,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
       FROM "StudioDocument"
       WHERE
         (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
@@ -205,6 +217,7 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
   const stage = req.body.stage === undefined ? '기획 중' : req.body.stage;
   const conditions = req.body.conditions ?? {};
   const agenda = req.body.agenda ?? null;
+  const plan = req.body.plan ?? null;
 
   if (!title || !content) {
     return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
@@ -224,7 +237,7 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
     }
 
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda)
+      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan)
       VALUES (
         ${documentId},
         ${scope.ownerId},
@@ -233,9 +246,10 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
         ${content},
         ${stage},
         ${JSON.stringify(conditions)}::jsonb,
-        ${agenda === null ? null : JSON.stringify(agenda)}::jsonb
+        ${agenda === null ? null : JSON.stringify(agenda)}::jsonb,
+        ${plan === null ? null : JSON.stringify(plan)}::jsonb
       )
-      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
     `;
 
     return res.status(201).json({ document: serializeStudioDocument(documents[0]) });
@@ -271,6 +285,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
   const title = typeof req.body.title === 'string' ? req.body.title.trim() : undefined;
   const content = typeof req.body.content === 'string' ? req.body.content.trim() : undefined;
   const stage = req.body.stage;
+  const plan = req.body.plan;
 
   if (title !== undefined && title.length === 0) {
     return res.status(400).json({ code: 'INVALID_TITLE', error: 'title cannot be empty.' });
@@ -312,6 +327,14 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
       updateFields.push(Prisma.sql`stage = ${stage}`);
     }
 
+    /**
+     * 본문만 저장하면 다음에 열었을 때 항목 구조가 예전 것으로 남아, 고친 내용이
+     * 사라진 것처럼 보인다. 본문과 항목 구조는 늘 함께 저장한다.
+     */
+    if (plan !== undefined) {
+      updateFields.push(Prisma.sql`plan = ${plan === null ? null : JSON.stringify(plan)}::jsonb`);
+    }
+
     if (updateFields.length === 0) {
       return res.status(200).json({ document: serializeStudioDocument(currentDocument) });
     }
@@ -331,7 +354,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
             AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
           )
         )
-      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
     `);
 
     return res.status(200).json({ document: serializeStudioDocument(documents[0]) });

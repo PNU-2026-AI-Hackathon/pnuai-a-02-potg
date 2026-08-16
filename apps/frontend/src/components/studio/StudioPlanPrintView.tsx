@@ -16,6 +16,7 @@ import { studioPlanFieldMap, type StudioPlan } from '@/lib/studio-plan';
 const OVERVIEW_ROWS: Array<Array<keyof StudioPlan>> = [
   ['target', 'capacity'],
   ['period', 'sessionCount'],
+  ['classTime', 'applicationPeriod'],
   ['location', 'instructor'],
 ];
 

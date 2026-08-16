@@ -12,7 +12,7 @@ import {
   type StudioDocumentStage,
   type StudioSavedDocument,
 } from '@/lib/studio-draft';
-import { planToContent, studioPlanStorageKey, type StudioPlan, type StudioPlanFieldKey } from '@/lib/studio-plan';
+import { planToContent, studioPlanStorageKey, toStudioPlan, type StudioPlan, type StudioPlanFieldKey } from '@/lib/studio-plan';
 import StudioPlanSheet, {
   applyPlanRevision, planSelectionLabel, planSelectionValue, type PlanSelection,
 } from './StudioPlanSheet';
@@ -195,86 +195,91 @@ type StudioDocumentEditorViewProps = {
   document: StudioDocument;
 };
 
+/**
+ * 생성 화면이 남겨 둔 임시 초안. 저장이 끝나기 전에 편집 화면으로 넘어와도 방금 만든
+ * 내용을 볼 수 있게 한다.
+ *
+ * 첫 렌더에서 읽지 않는다. 서버에는 세션 저장소가 없어 서버가 그린 것과 화면이 달라지고,
+ * 그러면 hydration이 어긋난다.
+ */
+function readStoredDraft(documentId: string): StudioDraft | null {
+  const storedDraftText = window.sessionStorage.getItem(studioDraftStorageKey);
+
+  if (!storedDraftText) {
+    return null;
+  }
+
+  try {
+    const parsedDraft = JSON.parse(storedDraftText) as Partial<StudioDraft>;
+
+    if (parsedDraft.id !== documentId) {
+      return null;
+    }
+
+    if (!parsedDraft.title || !parsedDraft.summary || !parsedDraft.target || !parsedDraft.duration || !parsedDraft.expectedEffects) {
+      return null;
+    }
+
+    const details = Array.isArray(parsedDraft.details)
+      ? parsedDraft.details.filter((item): item is string => typeof item === 'string')
+      : [];
+    const notes = Array.isArray(parsedDraft.notes)
+      ? parsedDraft.notes.filter((item): item is string => typeof item === 'string')
+      : [];
+
+    return {
+      id: parsedDraft.id,
+      title: parsedDraft.title,
+      summary: parsedDraft.summary,
+      target: parsedDraft.target,
+      duration: parsedDraft.duration,
+      details,
+      expectedEffects: parsedDraft.expectedEffects,
+      notes,
+      content:
+        typeof parsedDraft.content === 'string' && parsedDraft.content.trim().length > 0
+          ? parsedDraft.content
+          : buildStudioDraftContent({
+              summary: parsedDraft.summary,
+              target: parsedDraft.target,
+              duration: parsedDraft.duration,
+              details,
+              expectedEffects: parsedDraft.expectedEffects,
+              notes,
+            }),
+    };
+  } catch (error) {
+    console.error('Failed to load studio draft from sessionStorage:', error);
+    return null;
+  }
+}
+
 function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const [storedDraft] = useState<StudioDraft | null>(() => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-
-    const storedDraftText = window.sessionStorage.getItem(studioDraftStorageKey);
-
-    if (!storedDraftText) {
-      return null;
-    }
-
-    try {
-      const parsedDraft = JSON.parse(storedDraftText) as Partial<StudioDraft>;
-
-      if (parsedDraft.id !== document.id) {
-        return null;
-      }
-
-      if (!parsedDraft.title || !parsedDraft.summary || !parsedDraft.target || !parsedDraft.duration || !parsedDraft.expectedEffects) {
-        return null;
-      }
-
-      return {
-        id: parsedDraft.id,
-        title: parsedDraft.title,
-        summary: parsedDraft.summary,
-        target: parsedDraft.target,
-        duration: parsedDraft.duration,
-        details: Array.isArray(parsedDraft.details) ? parsedDraft.details.filter((item): item is string => typeof item === 'string') : [],
-        expectedEffects: parsedDraft.expectedEffects,
-        notes: Array.isArray(parsedDraft.notes) ? parsedDraft.notes.filter((item): item is string => typeof item === 'string') : [],
-        content:
-          typeof parsedDraft.content === 'string' && parsedDraft.content.trim().length > 0
-            ? parsedDraft.content
-            : buildStudioDraftContent({
-                summary: parsedDraft.summary,
-                target: parsedDraft.target,
-                duration: parsedDraft.duration,
-                details: Array.isArray(parsedDraft.details) ? parsedDraft.details.filter((item): item is string => typeof item === 'string') : [],
-                expectedEffects: parsedDraft.expectedEffects,
-                notes: Array.isArray(parsedDraft.notes) ? parsedDraft.notes.filter((item): item is string => typeof item === 'string') : [],
-              }),
-      };
-    } catch (error) {
-      console.error('Failed to load studio draft from sessionStorage:', error);
-      return null;
-    }
-  });
+  /** 문서 조회에 실패했을 때 이것으로 대신 보여준다. 화면에 그리지는 않아 상태가 아니라 참조로 둔다. */
+  const storedDraftRef = useRef<StudioDraft | null>(null);
   /**
    * 생성 화면이 남겨 둔 항목 구조. 이것이 있어야 항목 하나만 고칠 수 있다.
    * 이미 저장된 기획서는 글만 있어 항목 구분이 없으므로 예전 편집 방식으로 보여준다.
+   *
+   * 첫 렌더에서 읽지 않고 마운트 뒤에 읽는다. 서버에는 세션 저장소가 없어
+   * 첫 렌더에서 읽으면 서버가 그린 것과 화면이 달라져 hydration이 어긋난다.
    */
-  const [plan, setPlan] = useState<StudioPlan | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
-      if (!raw) return null;
-      const stored = JSON.parse(raw) as { documentId?: string; plan?: StudioPlan };
-      return stored.documentId === document.id && stored.plan ? stored.plan : null;
-    } catch (error) {
-      console.error('Failed to load studio plan from sessionStorage:', error);
-      return null;
-    }
-  });
+  const [plan, setPlan] = useState<StudioPlan | null>(null);
   /** 기획서에서 지금 고르고 있는 곳. 오른쪽 수정 패널이 이것을 보고 무엇을 고칠지 정한다. */
   const [planSelection, setPlanSelection] = useState<PlanSelection | null>(null);
   /** 어디를 고쳤는지. 화면에 표시해 주지 않으면 사서가 바뀐 줄을 모른다. */
   const [revisedFields, setRevisedFields] = useState<Set<StudioPlanFieldKey>>(new Set());
   const [revisedSessions, setRevisedSessions] = useState<Set<number>>(new Set());
-  const [title, setTitle] = useState(storedDraft?.title || document.title);
+  const [title, setTitle] = useState(document.title);
   const [stage, setStage] = useState<StudioDocumentStage>(document.stage);
   const [stageSaveState, setStageSaveState] = useState<StageSaveState>('idle');
   const [stageMessage, setStageMessage] = useState('');
-  const [content, setContent] = useState(storedDraft?.content || document.content);
+  const [content, setContent] = useState(document.content);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
   const [saveState, setSaveState] = useState<SaveState>('saved');
-  const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
+  const [lastSavedAt, setLastSavedAt] = useState(document.updatedAt);
   const [saveErrorMessage, setSaveErrorMessage] = useState('');
   const [selectedText, setSelectedText] = useState('');
   const [selectedRange, setSelectedRange] = useState<TextSelectionRange | null>(null);
@@ -301,6 +306,29 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     })()
     : '';
   const activeSelectionRange = aiRevisionSource?.range ?? selectedRange;
+
+  /**
+   * 생성 화면이 남긴 것들을 마운트 뒤에 읽는다. 읽는 시점을 미루는 이유는 위 설명을 참고.
+   * 아래 문서 조회보다 먼저 놓아야 조회에 실패했을 때 임시 초안이 준비되어 있다.
+   */
+  useEffect(() => {
+    const draft = readStoredDraft(document.id);
+    if (draft) {
+      storedDraftRef.current = draft;
+      setTitle(draft.title);
+      setContent(draft.content);
+      setLastSavedAt('방금 전');
+    }
+
+    try {
+      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
+      if (!raw) return;
+      const stored = JSON.parse(raw) as { documentId?: string; plan?: unknown };
+      if (stored.documentId === document.id) setPlan(toStudioPlan(stored.plan));
+    } catch (error) {
+      console.error('Failed to load studio plan from sessionStorage:', error);
+    }
+  }, [document.id]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -339,6 +367,12 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         setStage(data.document.stage);
         setStageMessage('');
         setContent(data.document.content);
+        /**
+         * 조회에 성공했으면 저장된 것이 기준이다. 세션 저장소에 남은 항목 구조는 생성
+         * 직후의 옛 모습이라, 그것을 살려 두면 고친 뒤 다시 열었을 때 수정 전으로 보인다.
+         * 저장된 항목 구조가 없는 예전 문서는 항목이 아니라 글로 보여준다.
+         */
+        setPlan(toStudioPlan(data.document.plan));
         setLastSavedAt(formatStudioDate(data.document.updatedAt));
         setSaveState('saved');
         setLoadState('ready');
@@ -347,7 +381,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           return;
         }
 
-        if (storedDraft) {
+        if (storedDraftRef.current) {
           setLoadState('ready');
           setLoadErrorMessage('저장된 문서 조회에 실패해 생성 직후 임시 초안을 표시합니다.');
           return;
@@ -363,7 +397,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     return () => {
       isCancelled = true;
     };
-  }, [document.id, storedDraft]);
+  }, [document.id]);
 
   useEffect(() => {
     if (!isAiPanelOpen) {
@@ -418,6 +452,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         body: JSON.stringify({
           title: title.trim(),
           content,
+          /** 본문만 저장하면 다음에 열었을 때 항목이 예전 것으로 돌아간다. 같이 보낸다. */
+          ...(plan ? { plan } : {}),
         }),
       });
       const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
@@ -838,8 +874,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                     // 고르면 곧바로 오른쪽 수정 패널을 연다. 사서가 쓰던 흐름을 그대로 쓴다.
                     if (next) { setIsAiPanelOpen(true); setAiRequestState('idle'); setAiRevisedText(''); }
                   }}
-                  onManualChange={(key, value) => {
-                    const next = { ...plan, [key]: value } as StudioPlan;
+                  onChange={(next) => {
                     setPlan(next); setContent(planToContent(next)); markDirty();
                   }}
                 />

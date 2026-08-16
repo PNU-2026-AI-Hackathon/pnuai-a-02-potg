@@ -10372,9 +10372,12 @@ html:has(.moiraPage) {
   border-radius: 12px;
   background: transparent;
   color: #55645f;
-  padding: 8px 4px;
+  /* 좌우 여백을 좁혀 「작업내역」 네 글자가 72px 레일 안에서 한 줄로 들어가게 한다. */
+  padding: 8px 2px;
   font-size: 11px;
   font-weight: 750;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -12648,6 +12651,102 @@ html:has(.moiraPage) {
 .programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
 
 .studioAiSelectedTarget { font-weight: 600; color: #2f7a52; margin: 0 0 6px; }
+
+/* --- 항목 시트: 직접 고치기 ------------------------------------------------ */
+
+/* 평소에는 테두리를 지워 문서처럼 읽히게 두고, 손을 대는 순간에만 입력칸으로 보인다.
+   모든 항목에 테두리를 두르면 기획서가 아니라 서식 입력 화면이 된다. */
+.studioPlanValueInput {
+  display: block;
+  width: 100%;
+  margin: 4px 0 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: inherit;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}
+
+.studioPlanValueInput:hover { border-color: #e2ece6; }
+
+.studioPlanValueInput:focus {
+  border-color: var(--moira-green, #2f7a52);
+  background: #fff;
+  outline: none;
+}
+
+.studioPlanValueInput::placeholder { color: #9db3a6; }
+
+.studioPlanField.isRevised .studioPlanValueInput { background: #fbf1d9; }
+
+/* 회차 표: 칸을 그대로 고친다 */
+.studioPlanSessionTable tbody tr { cursor: default; }
+
+.studioPlanSessionTable td input {
+  width: 100%;
+  min-width: 60px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  padding: 3px 5px;
+  font: inherit;
+  font-size: 13.5px;
+  color: inherit;
+}
+
+.studioPlanSessionTable td input:hover { border-color: #e2ece6; }
+
+.studioPlanSessionTable td input:focus {
+  border-color: var(--moira-green, #2f7a52);
+  background: #fff;
+  outline: none;
+}
+
+.studioPlanSessionActions { white-space: nowrap; }
+
+.studioPlanSessionActions button {
+  border: 1px solid #cfe0d5;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f7a52;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.studioPlanSessionActions button + button { margin-left: 4px; }
+.studioPlanSessionActions button:hover { background: #f1f8f3; }
+
+.studioPlanSessionRemove { color: #a4553c; border-color: #e6cfc7 !important; }
+.studioPlanSessionRemove:hover { background: #fdf2ef !important; }
+
+.studioPlanSessionFoot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.studioPlanSessionFoot .studioPlanHint { margin: 0; }
+
+.studioPlanSessionAdd {
+  border: 1px dashed #b9d2c3;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f7a52;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.studioPlanSessionAdd:hover { background: #f1f8f3; border-style: solid; }
 
 /* --- 기획서 PDF 내보내기 --------------------------------------------------- */
 

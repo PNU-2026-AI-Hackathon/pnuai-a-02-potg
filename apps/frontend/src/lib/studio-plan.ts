@@ -33,6 +33,8 @@ export type StudioPlan = {
   intent: string;
   target: string;
   period: string;
+  classTime: string;
+  applicationPeriod: string;
   sessionCount: string;
   capacity: string;
   location: string;
@@ -79,6 +81,13 @@ export const studioPlanFields: StudioPlanField[] = [
   { key: 'intent', label: '기획 의도', group: '개요', kind: 'text', hint: '왜 이 프로그램이 필요한지' },
   { key: 'target', label: '대상', group: '개요', kind: 'text', hint: '참여 대상과 연령' },
   { key: 'period', label: '운영 기간', group: '개요', kind: 'text', hint: '언제부터 언제까지', factual: true },
+  /**
+   * 교육 시간과 신청 기간은 도서관 사정과 접수 일정에서 나오는 값이라 참고 사례에서
+   * 가져오면 남의 일정을 옮겨 적게 된다. 칸만 두고 사서가 채운다.
+   * 351건 중 신청 기간은 351건, 교육 시간은 350건에 있던 항목이다.
+   */
+  { key: 'classTime', label: '교육 시간', group: '개요', kind: 'text', hint: '요일과 시각', manualOnly: true },
+  { key: 'applicationPeriod', label: '신청 기간', group: '개요', kind: 'text', hint: '접수를 받는 기간과 방법', manualOnly: true },
   { key: 'sessionCount', label: '운영 횟수', group: '개요', kind: 'text', hint: '총 몇 회차인지' },
   { key: 'capacity', label: '모집 인원', group: '개요', kind: 'text', hint: '몇 명을 모집할지', factual: true },
   { key: 'location', label: '운영 장소', group: '개요', kind: 'text', hint: '어디에서 진행할지', factual: true },
@@ -104,6 +113,47 @@ export const studioPlanGroups = ['개요', '내용', '준비 사항', '마무리
 export const generatedStudioPlanFields = studioPlanFields.filter((field) => !field.manualOnly);
 
 export const studioPlanStorageKey = 'moira-studio-generated-plan';
+
+/**
+ * 저장소나 서버에서 온 값을 기획서 항목 구조로 만든다. 기획서가 아니면 null이다.
+ *
+ * 빠진 항목을 빈칸으로 채우고 넘긴다. 항목이 다 있어야만 받아 주면, 나중에 항목을
+ * 하나 늘릴 때마다 그 전에 저장한 기획서가 전부 「기획서가 아님」이 되어 화면에서
+ * 사라진다. 항목 목록은 앞으로도 늘어난다.
+ *
+ * 회차 배열이 있는지만 진짜 기준으로 본다. 값의 내용은 보지 않는다. 빈 문자열도
+ * 사서가 채워 가는 정상 상태다.
+ */
+export function toStudioPlan(value: unknown): StudioPlan | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value as Record<string, unknown>;
+  if (!Array.isArray(source.sessions)) return null;
+
+  const plan = emptyStudioPlan();
+  for (const field of studioPlanFields) {
+    if (field.kind === 'sessions') continue;
+    const raw = source[field.key];
+    if (field.kind === 'lines') {
+      if (Array.isArray(raw)) {
+        plan[field.key] = raw.filter((line): line is string => typeof line === 'string') as never;
+      }
+      continue;
+    }
+    if (typeof raw === 'string') plan[field.key] = raw as never;
+  }
+
+  plan.sessions = source.sessions
+    .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
+    .map((row, index) => ({
+      session: typeof row.session === 'number' ? row.session : index + 1,
+      date: typeof row.date === 'string' ? row.date : '',
+      activity: typeof row.activity === 'string' ? row.activity : '',
+      materials: typeof row.materials === 'string' ? row.materials : '',
+      notes: typeof row.notes === 'string' ? row.notes : '',
+    }));
+
+  return plan;
+}
 
 /**
  * 기획서를 글로 옮긴다.
@@ -139,7 +189,7 @@ export function planToContent(plan: StudioPlan) {
 export function emptyStudioPlan(): StudioPlan {
   return {
     title: '', intent: '', target: '', period: '', sessionCount: '', capacity: '', location: '',
-    instructor: '',
+    instructor: '', classTime: '', applicationPeriod: '',
     goal: '', sessions: [],
     materials: '', materialFee: '', roomSetup: '',
     expectedEffects: '', promotion: '', cautions: [],

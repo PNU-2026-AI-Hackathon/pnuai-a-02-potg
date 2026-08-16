@@ -214,6 +214,8 @@ export default function StudioGenerationLoading() {
           stage: '기획 중',
           conditions: nextRequest.conditions,
           agenda: nextRequest.agenda ?? null,
+          /** 항목 구조를 문서와 함께 남겨야 나중에 항목 하나만 고칠 수 있다. */
+          plan,
         }),
       });
       const saveData = (await saveResponse.json()) as StudioDocumentCreateResponse;
