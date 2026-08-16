@@ -50,9 +50,70 @@ function stripSessionUnit(text: string) {
   return text.replace(/(\d{1,2})\s*(?:회차|차시|회기|주차|시수|주)/, '$1');
 }
 
+/**
+ * 합쳐진 칸에 덮인 자리를 본 칸의 내용으로 채운다.
+ *
+ * 표 자료구조는 이미 네모난 격자다(`rows` × `cols`). 칸을 합치면 본 칸만 글을 갖고
+ * 덮인 자리는 빈 문자열로 남는다. 그대로 읽으면 한 회차를 여러 줄로 나눠 적은 표에서
+ * 아랫줄의 교육내용이 통째로 비어 보인다.
+ *
+ * 격자의 폭은 건드리지 않는다. 넓히면 가로로 합친 칸이 두 번 펼쳐져 열이 밀린다.
+ * 이미 글이 있는 자리도 덮지 않는다. 채우는 것은 비어 있는 자리뿐이다.
+ */
+export function fillMergedCells(rows: IRCell[][]): IRCell[][] {
+  const filled = rows.map((row) => [...row]);
+  for (const [rowIndex, row] of filled.entries()) {
+    for (const [columnIndex, cell] of row.entries()) {
+      const down = Math.max(1, cell.rowSpan ?? 1);
+      const across = Math.max(1, cell.colSpan ?? 1);
+      if (down === 1 && across === 1) continue;
+      if (!cell.text) continue;
+      for (let downStep = 0; downStep < down; downStep += 1) {
+        for (let acrossStep = 0; acrossStep < across; acrossStep += 1) {
+          if (downStep === 0 && acrossStep === 0) continue;
+          const target = filled[rowIndex + downStep]?.[columnIndex + acrossStep];
+          if (target && !target.text) filled[rowIndex + downStep][columnIndex + acrossStep] = cell;
+        }
+      }
+    }
+  }
+  return filled;
+}
+
+/**
+ * 같은 회차 번호로 나온 줄을 하나로 모은다.
+ *
+ * 한 회차를 여러 줄로 나눠 적은 표가 있고, 계획서가 표를 여러 개로 쪼개 같은 회차를
+ * 다시 적기도 한다(회차표 한 벌, 만들기 사진 한 벌). 어느 쪽이든 회차는 하나다.
+ * 합쳐진 칸은 같은 글이 되풀이되므로 이미 담긴 글은 다시 더하지 않는다.
+ */
+function mergeSameSession(rows: DocumentCurriculumRow[]): DocumentCurriculumRow[] {
+  const join = (before: string | null | undefined, after: string | null | undefined) => {
+    if (!after) return before ?? null;
+    if (before && before.includes(after)) return before;
+    return normalizeActivityText([before, after].filter(Boolean).join('\n'));
+  };
+  const bySession = new Map<number, DocumentCurriculumRow>();
+  for (const row of rows) {
+    const kept = bySession.get(row.session);
+    if (!kept) { bySession.set(row.session, { ...row }); continue; }
+    kept.content = join(kept.content, row.content) ?? '';
+    kept.note = join(kept.note, row.note);
+    kept.teachingMethod = join(kept.teachingMethod, row.teachingMethod);
+    kept.materials = join(kept.materials, row.materials);
+    kept.date = kept.date ?? row.date;
+    kept.category = kept.category ?? row.category;
+    if (row.referenceImages?.length) {
+      kept.referenceImages = [...(kept.referenceImages ?? []), ...row.referenceImages];
+    }
+  }
+  return [...bySession.values()].sort((left, right) => left.session - right.session);
+}
+
 function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
   const table = block.table;
   if (!table) return [];
+  const cells = fillMergedCells(table.cells);
   // 계획서마다 쓰는 말이 달라 머리글 어휘는 데이터처럼 넓게 연다.
   // `시수`·`Period`는 영어 계획서 계열에서, `활동`·`Activity`는 교육내용 자리에서 쓴다.
   const SESSION_LABEL = /^(?:차시|회차|회기|주|주차|일|시수|period|week)(?:날짜)?$/i;
@@ -73,13 +134,13 @@ function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
     return value.length <= HEADER_LABEL_MAX * 2
       && /(?:차시|회차|회기)/.test(value) && CONTENT_WORDS.test(value);
   };
-  const headerIndex = table.cells.findIndex((row) => row.some(mergedHeaderCell)
+  const headerIndex = cells.findIndex((row) => row.some(mergedHeaderCell)
     || (row.some((cell) => SESSION_LABEL.test(headerLabel(cell)))
       && row.some((cell) => {
         const value = compact(cell.text);
         return value.length <= HEADER_LABEL_MAX && CONTENT_WORDS.test(value);
       })));
-  const header = headerIndex >= 0 ? table.cells[headerIndex] : [];
+  const header = headerIndex >= 0 ? cells[headerIndex] : [];
   // `일`은 회차를 세는 열로 쓰이기도 한다(`일 | 일자 | 차시(60분)`).
   // 왼쪽부터 찾으므로 회차를 세는 바깥 열이 안쪽 `차시`보다 먼저 잡힌다.
   let sessionColumn = header.findIndex((cell) => SESSION_LABEL.test(headerLabel(cell)));
@@ -97,21 +158,13 @@ function curriculumFromTable(block: IRBlock): DocumentCurriculumRow[] {
   let materialsColumn = header.findIndex((cell) => /^준비물$/.test(compact(cell.text)));
   let teachingMethodColumn = header.findIndex((cell) => /^교수방법(?:준비물)?$/.test(compact(cell.text)));
   let categoryColumn = dateColumn >= 0 && contentColumn - dateColumn > 1 ? dateColumn + 1 : -1;
-  let dataRows = headerIndex >= 0 ? table.cells.slice(headerIndex + 1) : table.cells;
+  let dataRows = headerIndex >= 0 ? cells.slice(headerIndex + 1) : cells;
   // `Period | (빈 머리글) | Book | …` 처럼 회차 머리글 옆 칸에 실제 번호가 있는 표가 있다.
   // 지목한 열에 숫자가 하나도 없고 옆 칸에 있으면 옆 칸을 회차 열로 본다.
   if (sessionColumn >= 0) {
     const hasNumber = (index: number) => dataRows
       .some((row) => /^\d{1,2}$/.test(stripSessionUnit(cellAt(row, index))));
     if (!hasNumber(sessionColumn) && hasNumber(sessionColumn + 1)) sessionColumn += 1;
-  }
-  const firstNumberedRow = dataRows.find((row) => /^\d{1,2}(?:\s+\d{1,2}[./-]\d{1,2})?$/.test(stripSessionUnit(cellAt(row, sessionColumn))));
-  if (headerIndex >= 0 && contentColumn >= 0 && firstNumberedRow?.[contentColumn]?.rowSpan && firstNumberedRow[contentColumn].rowSpan > 1) {
-    const nextContent = firstNumberedRow.findIndex((cell, index) => index > contentColumn && Boolean(clean(cell.text)));
-    if (nextContent > contentColumn) {
-      categoryColumn = contentColumn;
-      contentColumn = nextContent;
-    }
   }
   if (headerIndex < 0) {
     const first = dataRows.find((row) => /^\d{1,2}$/.test(cellAt(row, 0)) && /^\d{1,2}[./-]\d{1,2}$/.test(cellAt(row, 1)));
@@ -233,7 +286,7 @@ function labeledFromTables(blocks: IRBlock[], labels: RegExp = DOCUMENT_LABELS) 
 export async function extractDocumentStructure(filePath: string, pages: number[], imageOutputDir?: string) {
   const parsed = await parse(await fs.readFile(filePath), { pages, keepTrailingEmptyCols: true });
   if (!parsed.success) throw new Error(parsed.error);
-  const curriculum = parsed.blocks.flatMap(curriculumFromTable).sort((left, right) => left.session - right.session);
+  const curriculum = mergeSameSession(parsed.blocks.flatMap(curriculumFromTable));
   const images = parsed.images ?? [];
   if (imageOutputDir && images.length === curriculum.length) {
     await fs.mkdir(imageOutputDir, { recursive: true });
@@ -348,7 +401,7 @@ export async function extractHwpProgramSections(filePath: string): Promise<HwpPr
   return groups.map((blocks, index) => ({
     index: index + 1,
     text: blocks.map(blockText).filter(Boolean).join('\n\n'),
-    curriculum: blocks.flatMap(curriculumFromTable).sort((left, right) => left.session - right.session),
+    curriculum: mergeSameSession(blocks.flatMap(curriculumFromTable)),
     labeled: [...labeledFromTables(blocks, DOCUMENT_LABELS), ...freeTextSectionsFrom(blocks)],
     notices: [...new Set(noticeLinesFrom(blocks))],
   }));
