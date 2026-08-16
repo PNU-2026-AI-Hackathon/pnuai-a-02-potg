@@ -11572,7 +11572,8 @@ html:has(.moiraPage) {
 }
 
 .studioDocumentWorkspace.hasAiPanel {
-  grid-template-columns: minmax(0, 0.9fr) minmax(520px, 620px);
+  /* 본문 칸이 먼저 줄어들 수 있어야 패널이 본문을 덮지 않는다. */
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
 }
 
 .studioDocumentTitleField,
@@ -11954,7 +11955,9 @@ html:has(.moiraPage) {
   font-weight: 850;
 }
 
-@media (max-width: 1180px) {
+/* 본문과 패널을 나란히 두기에 좁아지면 아래로 내린다.
+   기획서를 항목으로 보여주면서 본문이 넓어져 기준을 올렸다. */
+@media (max-width: 1360px) {
   .studioDocumentWorkspace.hasAiPanel {
     grid-template-columns: 1fr;
   }
@@ -12588,17 +12591,26 @@ html:has(.moiraPage) {
 .programCurriculumTable tbody tr.isChosen { background: #eaf5ee; }
 
 
-/* --- 항목 시트: 글자 크기와 수정 표시 ------------------------------------- */
 
-.studioPlanGroup > h3 { font-size: 17px; color: #2f7a52; margin: 0 0 16px; }
-.studioPlanFieldHead h4 { font-size: 16px; }
-.studioPlanValue { font-size: 15.5px; line-height: 1.75; }
-.studioPlanManualInput { font-size: 15.5px; }
-.studioPlanSheet .programCurriculumTable { font-size: 15px; }
-.studioPlanHint { font-size: 13px; }
+/* --- 항목 시트: 폭·글자 크기와 수정 표시 ----------------------------------- */
 
-/* 고친 곳을 눈에 보이게 남긴다. 사서가 무엇이 바뀌었는지 알 수 없으면
-   여러 번 고쳤을 때 어디를 손봤는지 되짚을 방법이 없다. */
+/* 그리드 자식은 기본이 min-width:auto라 표가 칸을 밀어낸다.
+   0으로 두어야 좁은 칸에서도 표가 제 안에서 가로로 스크롤한다. */
+.studioDocumentBodyField { min-width: 0; }
+.studioPlanSheet { min-width: 0; overflow-x: hidden; }
+.studioPlanField { min-width: 0; }
+.studioPlanSheet .programTableScroll { max-width: 100%; }
+
+.studioPlanGroup > h3 { font-size: 16px; color: #2f7a52; margin: 0 0 14px; }
+.studioPlanFieldHead h4 { font-size: 15px; }
+.studioPlanValue { font-size: 15px; line-height: 1.7; overflow-wrap: anywhere; }
+.studioPlanManualInput { font-size: 15px; }
+.studioPlanSheet .programCurriculumTable { font-size: 14px; }
+.studioPlanSheet .programCurriculumTable td { word-break: keep-all; overflow-wrap: anywhere; }
+.studioPlanHint { font-size: 12.5px; }
+
+/* 고친 곳을 눈에 보이게 남긴다. 표시가 없으면 여러 번 고쳤을 때
+   어디를 손봤는지 되짚을 방법이 없다. */
 .studioPlanField.isRevised { background: #fdf8ec; border-left: 3px solid #d9a441; border-radius: 0 10px 10px 0; padding-left: 12px; }
 .studioPlanField.isRevised .studioPlanValue { background: #fbf1d9; border-radius: 6px; padding: 6px 8px; }
 .studioPlanRevisedBadge { font-size: 11px; font-weight: 600; color: #8a6d3b; background: #fbf1d9; border: 1px solid #eadcb8; border-radius: 999px; padding: 2px 9px; }
