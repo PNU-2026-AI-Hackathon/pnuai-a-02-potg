@@ -35,6 +35,11 @@ export type ProgramBoardSearchDocument = {
   detailReason: string;
   sessionCount: number;
   sourceType: 'text' | 'attachment';
+  /**
+   * 같은 프로그램이 시간대만 달리해 따로 등록된 것들.
+   * 검색에는 대표 하나만 내보내되 나머지를 잃지 않도록 여기에 담는다.
+   */
+  variants?: Array<{ sourceId: number; title: string; sourceUrl: string }>;
 };
 
 const SEMANTIC_LABELS = /(?:내용|목표|소개|선정도서|공연내용|교육내용|운영내용)/;

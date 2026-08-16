@@ -57,3 +57,48 @@ assert.throws(() => buildCorpusSources([], []), /empty/);
 assert.throws(() => buildCorpusSources([normalized, normalized], []), /duplicate sourceId/);
 
 console.log('program board search corpus adapter tests passed');
+
+// --- 닮은 프로그램 묶기 -------------------------------------------------------
+
+const { groupSimilarPrograms, titleKey, targetKey } = require('../src/services/programBoardSemanticSearch/programGrouping');
+
+assert.equal(titleKey('마술체험(일요일 10:00~11:00)'), titleKey('마술체험(일요일 15:00~16:00)'),
+  '시간대만 다른 제목은 같은 것으로 본다');
+assert.equal(titleKey('향기로운 크리스마스 캔들 만들기 1차'), titleKey('향기로운 크리스마스 캔들 만들기 3차'));
+assert.notEqual(titleKey('들락날락 영어랑 놀자'), titleKey('들락날락 영어랑 놀자 1일 크리스마스 문화체험'));
+assert.equal(targetKey('초등학생 전학년(2024학년도 기준)'), targetKey('초등학생 전학년 (2024학년도 기준'),
+  '괄호 안 부연만 다른 대상은 같은 것으로 본다');
+
+const slot = (sourceId, title, sessions = 0) => ({
+  sourceId, sourceUrl: `https://example.test/${sourceId}`, title,
+  targetGroup: null, targetDetail: '유아, 초등학생', libraryName: null, description: null,
+  board: { intro: [], sections: [] },
+  curriculum: Array.from({ length: sessions }, (_, index) => ({ session: index + 1, activity: '활동' })),
+});
+const sameDay = () => '2021-11-07 ~ 2021-11-07';
+
+const folded = groupSimilarPrograms([
+  slot(2552, '마술체험(일요일 10:00~11:00)'),
+  slot(2553, '마술체험(일요일 11:00~12:00)'),
+  slot(2554, '마술체험(일요일 13:00~14:00)'),
+], sameDay);
+assert.equal(folded.length, 1, '같은 날 시간대만 다른 건은 한 묶음이다');
+assert.equal(folded[0].representative.sourceId, 2552, '같은 조건이면 먼저 등록된 것이 대표다');
+assert.deepEqual(folded[0].variants.map((variant) => variant.sourceId), [2553, 2554],
+  '나머지는 지우지 않고 대표에 딸려 보낸다');
+
+// 회차가 더 많은 쪽이 대표가 된다.
+const byDetail = groupSimilarPrograms([slot(2552, '마술체험(1부)'), slot(2553, '마술체험(2부)', 4)], sameDay);
+assert.equal(byDetail[0].representative.sourceId, 2553);
+
+// 대상이나 기간이 다르면 다른 프로그램이므로 묶이지 않는다.
+const kinder = { ...slot(3595, '들락날락 영어랑 놀자'), targetDetail: '유아 6~7세' };
+const elementary = { ...slot(3596, '들락날락 영어랑 놀자'), targetDetail: '초등학생 1~2학년' };
+assert.equal(groupSimilarPrograms([kinder, elementary], sameDay).length, 2, '대상이 다르면 나눈다');
+assert.equal(
+  groupSimilarPrograms([slot(1, '생활과학교실'), slot(2, '생활과학교실')], (source) => (source.sourceId === 1 ? '상반기' : '하반기')).length,
+  2,
+  '기간이 다르면 나눈다',
+);
+
+console.log('program board search grouping tests passed');

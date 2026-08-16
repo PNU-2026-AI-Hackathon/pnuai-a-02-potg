@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { buildSearchDocuments, SearchProfileKind } from '../services/programBoardSemanticSearch/profileBuilder';
 import { buildCorpusSources, type CrawlRecord, type NormalizedProgram } from '../services/programBoardSemanticSearch/corpusAdapter';
+import { groupSimilarPrograms } from '../services/programBoardSemanticSearch/programGrouping';
 
 const profiles: SearchProfileKind[] = ['title', 'title+intro', 'title+intro+target'];
 
@@ -27,9 +28,21 @@ function main() {
   const crawlRecords = crawlPath ? readJson<{ records: CrawlRecord[] }>(crawlPath).records : [];
   const sources = buildCorpusSources(programs, crawlRecords);
 
+  // 교육기간은 기본정보에 있으므로 정제 결과에서 찾아 쓴다.
+  const periodById = new Map(programs.map((program) => [
+    program.sourceId,
+    program.basicInfo?.find((entry) => entry.label === '교육기간')?.value ?? '',
+  ]));
+  const groups = groupSimilarPrograms(sources, (source) => periodById.get(source.sourceId) ?? '');
+  const variantsById = new Map(groups.map((group) => [group.representative.sourceId, group.variants]));
+  const representatives = groups.map((group) => group.representative);
+
   fs.mkdirSync(outputDirectory, { recursive: true });
   for (const profile of profiles) {
-    const documents = buildSearchDocuments(sources, profile);
+    const documents = buildSearchDocuments(representatives, profile).map((document) => {
+      const variants = variantsById.get(document.sourceId) ?? [];
+      return variants.length ? { ...document, variants } : document;
+    });
     fs.writeFileSync(
       path.join(outputDirectory, `documents.${profile}.json`),
       `${JSON.stringify({ schemaVersion: 'program-board-search/v1', profile, count: documents.length, documents }, null, 2)}\n`,
@@ -37,7 +50,7 @@ function main() {
     );
   }
 
-  const byDetail = sources.reduce<Record<string, number>>((counts, source) => {
+  const byDetail = representatives.reduce<Record<string, number>>((counts, source) => {
     const detail = buildSearchDocuments([source], 'title+intro+target')[0].detailLevel;
     counts[detail] = (counts[detail] ?? 0) + 1;
     return counts;
@@ -46,7 +59,9 @@ function main() {
     programsPath,
     crawlPath: crawlPath || null,
     outputDirectory,
-    count: sources.length,
+    programCount: sources.length,
+    searchableCount: representatives.length,
+    foldedCount: sources.length - representatives.length,
     crawlMatched: sources.filter((source) => source.description).length,
     detailLevels: byDetail,
     profiles,
