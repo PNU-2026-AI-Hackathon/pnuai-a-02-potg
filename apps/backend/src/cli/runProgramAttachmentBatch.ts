@@ -393,9 +393,12 @@ export function withManualCurriculum<T extends ManualPatchTarget>(item: T): T {
   const manual = manualCurriculumFor(item.sourceId);
   if (!manual) return item;
   // 사람이 원본을 보고 회차표가 없다고 확인한 건은 회차를 기다리지 않는다.
+  // 회차 말고 다른 칸만 고치는 건은 자동으로 읽은 회차를 그대로 둔다.
   const settled = manual.noCurriculum
     ? { code: 'CURRICULUM_CONFIRMED_ABSENT', message: `회차표가 없는 문서임을 사람이 확인했다. 근거: ${manual.source}` }
-    : { code: 'CURRICULUM_ENTERED_MANUALLY', message: `사람이 원본을 보고 채운 회차다. 근거: ${manual.source}` };
+    : manual.keepCurriculum
+      ? { code: 'FIELDS_ENTERED_MANUALLY', message: `사람이 원본을 보고 고친 항목이 있다. 근거: ${manual.source}` }
+      : { code: 'CURRICULUM_ENTERED_MANUALLY', message: `사람이 원본을 보고 채운 회차다. 근거: ${manual.source}` };
   return {
     ...item,
     ...(manual.noCurriculum ? { curriculumExpected: false } : {}),
@@ -410,7 +413,7 @@ export function withManualCurriculum<T extends ManualPatchTarget>(item: T): T {
         ].reduce((board, [id, patches]) => (patches ? patchSection(board, id, patches) : board), item.board),
       }
       : {}),
-    curriculum: manual.rows.map((row) => ({
+    curriculum: manual.keepCurriculum ? item.curriculum : manual.rows.map((row) => ({
       session: row.session,
       date: row.date ?? null,
       category: row.category ?? null,

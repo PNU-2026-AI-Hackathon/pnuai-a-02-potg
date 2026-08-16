@@ -383,6 +383,8 @@ const PLAN_COLUMNS = ' (Period | Book | Introduction | Activity | Phonics)';
 export const ENGLISH_PLAY_ENTRIES: Record<number, ManualCurriculumEntry> = {
   3595: {
     source: '들락날락 영어랑 놀자(Group A / 유아반) 강의계획서 이미지의 28회차 표' + PLAN_COLUMNS,
+    // 표가 통째로 장소 칸으로 딸려 들어가 있었다.
+    basicInfo: [{ label: '장소', value: '금정아이꿈자람 작은도서관' }],
     content: [{ label: '강의목표', value: GOAL_GROUP_A }],
     rows: rowsFromTuples(GROUP_A),
   },

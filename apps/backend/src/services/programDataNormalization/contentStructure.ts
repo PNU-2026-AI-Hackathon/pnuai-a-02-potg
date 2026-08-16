@@ -132,7 +132,9 @@ export function structureProgramContent(input: StructureInput): ProgramBoardCont
     }
 
     // 라벨 값이 다음 줄로 이어지는 경우(괄호나 하이픈으로 시작)만 앞 항목에 붙인다.
-    if (current && /^[（(\-–—→]/.test(line)) {
+    // 안내 문장도 '- 신청자명은 …'처럼 하이픈으로 시작하므로, 안내로 갈 줄은 빼야
+    // 준비물 값 뒤에 신청·폐강 안내가 통째로 딸려 붙지 않는다.
+    if (current && /^[（(\-–—→]/.test(line) && !isRoutableNotice(line)) {
       const bucket = items.get(current.section);
       const last = bucket?.[bucket.length - 1];
       if (last) last.value = `${last.value} ${line}`.trim();

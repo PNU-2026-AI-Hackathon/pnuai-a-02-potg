@@ -173,13 +173,36 @@ function deriveWeeklyDates(program: NormalizedProgram, count: number) {
   return dates.length === count ? dates : null;
 }
 
-function addItem(board: ProgramBoardContent, sectionId: ProgramSection['id'], title: string, label: string, value: string) {
+/**
+ * 항목을 넣는다. 넣지 못하고 밀려난 값이 있으면 돌려준다.
+ *
+ * 같은 이름이 두 줄로 보이면 읽는 사람은 어느 쪽이 맞는지 알 수 없다.
+ * 원사이트와 첨부가 같은 항목을 달리 적은 것이므로 자세한 쪽만 남기고,
+ * 밀려난 값은 버린 자리에 적어 원문 대조가 가능하게 둔다.
+ */
+function addItem(
+  board: ProgramBoardContent,
+  sectionId: ProgramSection['id'],
+  title: string,
+  label: string,
+  value: string,
+): { landed: boolean; displaced: string | null } {
   let section = board.sections.find((candidate) => candidate.id === sectionId);
   if (!section) {
     section = { id: sectionId, title, items: [] };
     board.sections.push(section);
   }
-  if (!section.items.some((item) => equivalentOrContained(item.value, value))) section.items.push({ label, value });
+  if (section.items.some((item) => equivalentOrContained(item.value, value))) return { landed: false, displaced: null };
+
+  const sameLabel = section.items.find((item) => item.label === label);
+  if (sameLabel) {
+    if (value.length <= sameLabel.value.length) return { landed: false, displaced: value };
+    const displaced = sameLabel.value;
+    sameLabel.value = value;
+    return { landed: true, displaced };
+  }
+  section.items.push({ label, value });
+  return { landed: true, displaced: null };
 }
 
 export function mergeProgramAttachment(input: MergeInput) {
@@ -243,8 +266,11 @@ export function mergeProgramAttachment(input: MergeInput) {
       const attachmentAmounts = amountsOf(item.value);
       if (attachmentAmounts.length && attachmentAmounts.every((amount) => basicAmounts.includes(amount))) skippedDuplicates.push(item);
       else if (!basicAmounts.length || !attachmentAmounts.length) {
-        addItem(board, 'operation', '운영 정보', item.label, item.value);
-        added.push({ section: 'operation', ...item });
+        const placed = addItem(board, 'operation', '운영 정보', item.label, item.value);
+        if (placed.landed) added.push({ section: 'operation', ...item });
+        if (placed.displaced) {
+          discardedNoise.push({ label: item.label, value: placed.displaced, reason: '같은 이름의 자세한 값으로 갈음' });
+        }
       } else warnings.push({ code: 'ATTACHMENT_FEE_CONFLICT', label: item.label, basicValue: basics.fee, attachmentValue: item.value });
       continue;
     }
@@ -265,8 +291,11 @@ export function mergeProgramAttachment(input: MergeInput) {
     const sectionId = kind === 'content' ? 'content' : 'operation';
     const sectionTitle = kind === 'content' ? '프로그램 소개' : '운영 정보';
     const displayItem = item.label === '프로그램소개' ? { ...item, label: '프로그램 소개' } : item;
-    addItem(board, sectionId, sectionTitle, displayItem.label, displayItem.value);
-    added.push({ section: sectionId, ...displayItem });
+    const placed = addItem(board, sectionId, sectionTitle, displayItem.label, displayItem.value);
+    if (placed.landed) added.push({ section: sectionId, ...displayItem });
+    if (placed.displaced) {
+      discardedNoise.push({ label: displayItem.label, value: placed.displaced, reason: '같은 이름의 자세한 값으로 갈음' });
+    }
   }
 
   cleanIntro(input.program, board, basicInfoSupplement, discardedNoise, skippedDuplicates);
