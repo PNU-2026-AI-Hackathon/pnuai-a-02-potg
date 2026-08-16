@@ -12,6 +12,10 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
   const others = review.board.sections.filter((section) => section.id !== 'content');
   // 사람이 직접 넣은 회차는 추출 결과와 다르게 안내한다. 대조할 대상이 원본 이미지가 아니라 입력한 근거다.
   const enteredManually = review.extractionWarnings.find((warning) => warning.code === 'CURRICULUM_ENTERED_MANUALLY');
+  // 원본에 회차 번호가 없는 목록은 번호를 붙이면 없는 순서를 지어내는 셈이라 감춘다.
+  const unnumbered = review.extractionWarnings.some((warning) => warning.code === 'CURRICULUM_UNNUMBERED');
+  // 회차 열이 없으면 분류를 제 열로 세워야 원본의 `주제 | 제목` 두 칸이 그대로 보인다.
+  const showCategory = unnumbered && review.curriculum.every((session) => Boolean(session.category));
   const showCurriculumDate = review.curriculum.some((session) => Boolean(session.date));
   const showTeachingMethod = review.curriculum.some((session) => Boolean(session.teachingMethod));
   const showMaterials = review.curriculum.some((session) => Boolean(session.materials));
@@ -49,13 +53,16 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
         {review.ocrConfidence != null ? (
           <section className="attachmentExtractionWarnings">
             <h3>
-              {enteredManually ? '사람이 원본을 보고 넣은 회차입니다'
+              {unnumbered ? '원본에 회차 번호가 없어 다룰 내용만 담았습니다'
+                : enteredManually ? '사람이 원본을 보고 넣은 회차입니다'
                 : review.curriculum.length ? '이미지에서 읽은 회차입니다'
                   : review.curriculumExpected ? '회차 입력이 필요합니다'
                     : '이미지에서 읽은 결과입니다'}
             </h3>
             <p className="attachmentSourceHint">
-              {enteredManually
+              {unnumbered && enteredManually
+                ? `원본에 회차 번호도 날짜도 없어 몇째 주에 무엇을 하는지는 알 수 없습니다. 다룰 내용 ${review.curriculum.length}가지를 실린 순서대로 담았습니다. ${enteredManually.message}`
+                : enteredManually
                 ? `자동으로 읽지 못해 사람이 원본을 보고 ${review.curriculum.length}개 회차를 넣었습니다. ${enteredManually.message}`
                 : review.curriculum.length
                 ? `표 머리글을 찾아 ${review.curriculum.length}개 회차를 읽었습니다. 문서가 아니라 글자 위치로 복원한 것이니 원본 이미지와 대조해 주세요.`
@@ -117,7 +124,7 @@ export default async function ProgramAttachmentReviewDetail({ params }: PageProp
           <section className="programDescription attachmentPreviewSection" aria-labelledby="attachment-content"><h2 id="attachment-content">프로그램 내용</h2>
             {content || review.board.intro.length ? <section className="programTextSection is-content"><h3>{content?.title ?? '프로그램 소개'}</h3>{content ? <dl>{content.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl> : null}{review.board.intro.map((line, index) => <p key={index}>{line}</p>)}</section> : null}
             {others.map((section) => <section className={`programTextSection is-${section.id}`} key={section.id}><h3>{section.title}</h3><dl>{section.items.map((item, index) => <div key={index}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl></section>)}
-            <section className="attachmentCurriculum"><h3>회차별 활동 <span>{review.curriculum.length}</span></h3>{review.curriculum.length ? <div className="programTableScroll"><table className="programCurriculumTable"><thead><tr><th>회차</th>{showCurriculumDate ? <th>일자</th> : null}<th>활동 내용</th>{showTeachingMethod ? <th>교수방법</th> : null}{showMaterials ? <th>준비물</th> : null}{showNotes ? <th>비고</th> : null}</tr></thead><tbody>{review.curriculum.map((session) => <tr key={session.session}><td>{session.session}</td>{showCurriculumDate ? <td>{session.date ?? '-'}</td> : null}<td>{session.category ? <strong className="attachmentCurriculumCategory">{session.category}</strong> : null}{session.activity}</td>{showTeachingMethod ? <td>{session.teachingMethod ?? '-'}</td> : null}{showMaterials ? <td>{session.materials ?? '-'}</td> : null}{showNotes ? <td>{session.referenceBooks.length || session.referenceImages.some((image) => image.src) || session.notes ? <div className="attachmentCurriculumReferences">{session.referenceBooks.length ? <div><strong>참고도서</strong><ul>{session.referenceBooks.map((book) => <li key={book}>{book}</li>)}</ul></div> : null}{session.referenceImages.filter((image) => image.src).map((image, index) => <img key={image.filename} src={image.src} alt={`${session.session}회차 참고 이미지 ${index + 1}`} />)}{session.notes ? <p>{session.notes}</p> : null}</div> : '-'}</td> : null}</tr>)}</tbody></table></div> : <p className="attachmentEmptyState">{review.curriculumExpected
+            <section className="attachmentCurriculum"><h3>{unnumbered ? '수업 내용' : '회차별 활동'} <span>{review.curriculum.length}</span></h3>{review.curriculum.length ? <div className="programTableScroll"><table className="programCurriculumTable"><thead><tr>{unnumbered ? null : <th>회차</th>}{showCurriculumDate ? <th>일자</th> : null}{showCategory ? <th>주제</th> : null}<th>{showCategory ? '제목' : '활동 내용'}</th>{showTeachingMethod ? <th>교수방법</th> : null}{showMaterials ? <th>준비물</th> : null}{showNotes ? <th>비고</th> : null}</tr></thead><tbody>{review.curriculum.map((session) => <tr key={session.session}>{unnumbered ? null : <td>{session.session}</td>}{showCurriculumDate ? <td>{session.date ?? '-'}</td> : null}{showCategory ? <td>{session.category}</td> : null}<td>{!showCategory && session.category ? <strong className="attachmentCurriculumCategory">{session.category}</strong> : null}{session.activity}</td>{showTeachingMethod ? <td>{session.teachingMethod ?? '-'}</td> : null}{showMaterials ? <td>{session.materials ?? '-'}</td> : null}{showNotes ? <td>{session.referenceBooks.length || session.referenceImages.some((image) => image.src) || session.notes ? <div className="attachmentCurriculumReferences">{session.referenceBooks.length ? <div><strong>참고도서</strong><ul>{session.referenceBooks.map((book) => <li key={book}>{book}</li>)}</ul></div> : null}{session.referenceImages.filter((image) => image.src).map((image, index) => <img key={image.filename} src={image.src} alt={`${session.session}회차 참고 이미지 ${index + 1}`} />)}{session.notes ? <p>{session.notes}</p> : null}</div> : '-'}</td> : null}</tr>)}</tbody></table></div> : <p className="attachmentEmptyState">{review.curriculumExpected
               ? '포스터에 회차표가 있습니다. 위 추출문과 원본 이미지를 보고 회차를 입력해 주세요.'
               : review.ocrConfidence != null
                 ? '회차표가 없는 안내문이라 회차가 비어 있는 것이 정상입니다.'

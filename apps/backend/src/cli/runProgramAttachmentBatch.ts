@@ -430,6 +430,10 @@ export function withManualCurriculum<T extends ManualPatchTarget>(item: T): T {
       ...item.extractionWarnings.filter((warning) => !warning.code.startsWith('OCR_CURRICULUM')
         && warning.code !== 'CURRICULUM_NOT_EXTRACTED'),
       settled,
+      // 번호 없는 목록임을 화면에 알려 회차 열을 감추게 한다.
+      ...(manual.unnumbered
+        ? [{ code: 'CURRICULUM_UNNUMBERED', message: '원본에 회차 번호가 없어 다룰 내용만 순서 없이 담았다.' }]
+        : []),
     ],
   };
 }
