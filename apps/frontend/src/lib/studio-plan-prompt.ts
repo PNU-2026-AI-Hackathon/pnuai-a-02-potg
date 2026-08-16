@@ -84,6 +84,13 @@ export type StudioPlanReviseInput = {
   currentValue: unknown;
   instruction: string;
   /**
+   * 항목 전체가 아니라 그 안의 일부만 고칠 때 무엇을 고르는지.
+   * 사서가 문장을 끌어 고르거나 회차 한 줄을 누른 경우다.
+   * 이때는 항목의 원래 모양이 아니라 고른 부분과 같은 모양으로 돌려받아야
+   * 제자리에 다시 끼울 수 있다.
+   */
+  scope?: { label: string };
+  /**
    * 이 항목이 어느 프로그램의 것인지 알려 주는 최소한의 말.
    * 참고 사례 Markdown은 다시 보내지 않는다. 이 기능을 둔 목적이 호출 비용을 줄이는 것이다.
    */
@@ -94,25 +101,32 @@ export type StudioPlanReviseInput = {
 export function buildStudioPlanRevisePrompt(input: StudioPlanReviseInput) {
   const field = studioPlanFieldMap.get(input.fieldKey);
   if (!field) throw new Error(`unknown studio plan field: ${input.fieldKey}`);
+  const partial = Boolean(input.scope);
   return [
-    '당신은 도서관 프로그램 기획서의 한 항목만 고치는 한국어 보조 AI입니다.',
-    '아래 JSON만 반환하세요. 요청한 항목 하나만 담고 다른 항목은 넣지 마세요.',
+    partial
+      ? '당신은 도서관 프로그램 기획서의 한 부분만 고치는 한국어 보조 AI입니다.'
+      : '당신은 도서관 프로그램 기획서의 한 항목만 고치는 한국어 보조 AI입니다.',
+    '아래 JSON만 반환하세요. 요청한 것 하나만 담고 다른 것은 넣지 마세요.',
     '',
-    `고칠 항목: ${field.key} (${field.label}) — ${field.hint}`,
-    field.factual ? `근거가 없으면 "${UNDECIDED}"로 적으세요.` : '',
+    partial
+      ? `고칠 곳: ${input.scope?.label} (${field.label} 안)`
+      : `고칠 항목: ${field.key} (${field.label}) — ${field.hint}`,
+    !partial && field.factual ? `근거가 없으면 "${UNDECIDED}"로 적으세요.` : '',
+    partial ? '고른 부분만 고치고 길이와 형식은 크게 바꾸지 마세요.' : '',
     '',
     '이 기획서가 무엇인지',
     `- 프로그램명: ${input.planTitle || '미정'}`,
     `- 대상: ${input.planTarget || '미정'}`,
     '',
     '지금 값',
-    JSON.stringify(input.currentValue, null, 2),
+    typeof input.currentValue === 'string' ? input.currentValue : JSON.stringify(input.currentValue, null, 2),
     '',
     '사서의 수정 요청',
     input.instruction.trim(),
     '',
     '반환할 JSON 형식',
-    schemaBlock([field]),
+    // 일부만 고칠 때는 고친 글 하나만 돌려받아야 제자리에 다시 끼울 수 있다.
+    partial ? '{\n  "value": ""\n}' : schemaBlock([field]),
   ].filter(Boolean).join('\n');
 }
 

@@ -12578,3 +12578,20 @@ html:has(.moiraPage) {
 .studioPlanRevise input { flex: 1; border: 1px solid #cfe0d5; border-radius: 10px; padding: 9px 12px; font: inherit; }
 .studioPlanRevise button { border: 0; background: #2f7a52; color: #fff; border-radius: 10px; padding: 9px 16px; font-size: 13px; cursor: pointer; white-space: nowrap; }
 .studioPlanRevise button:disabled { background: #b6ccbe; cursor: default; }
+
+/* --- 기획서 항목 시트 (문서 편집 화면 안) ---------------------------------- */
+
+.studioPlanField.isChosen { background: #f1f8f3; border-radius: 10px; padding-left: 10px; padding-right: 10px; }
+.studioPlanValue { cursor: text; }
+.studioPlanHint { margin: 6px 0 0; font-size: 12px; color: #6b8878; }
+.programCurriculumTable tbody tr { cursor: pointer; }
+.programCurriculumTable tbody tr.isChosen { background: #eaf5ee; }
+
+.studioPlanRevisePanel { position: sticky; bottom: 12px; margin-top: 18px; background: #fff; border: 1px solid #cfe0d5; border-radius: 14px; padding: 16px; box-shadow: 0 8px 24px rgba(24, 59, 39, 0.12); }
+.studioPlanReviseTarget { margin: 0 0 10px; font-size: 13px; color: #375c47; }
+.studioPlanRevisePanel blockquote { margin: 0 0 10px; padding: 10px 12px; background: #f7faf8; border-left: 3px solid #9ec7ae; border-radius: 6px; font-size: 13px; }
+.studioPlanRevisePanel textarea { width: 100%; min-height: 72px; border: 1px solid #cfe0d5; border-radius: 10px; padding: 10px 12px; font: inherit; resize: vertical; }
+.studioPlanQuickChips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.studioPlanQuickChips button { border: 1px solid #cfe0d5; background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
+.studioPlanQuickChips button:hover { background: #f1f8f3; }
+.studioPlanReviseActions { display: flex; justify-content: flex-end; gap: 8px; }

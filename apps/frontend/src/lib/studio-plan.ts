@@ -103,6 +103,38 @@ export const studioPlanGroups = ['개요', '내용', '준비 사항', '마무리
 /** 생성과 수정에 넘길 항목. 사서가 직접 적는 항목은 뺀다. */
 export const generatedStudioPlanFields = studioPlanFields.filter((field) => !field.manualOnly);
 
+export const studioPlanStorageKey = 'moira-studio-generated-plan';
+
+/**
+ * 기획서를 글로 옮긴다.
+ *
+ * 저장과 목록은 아직 글 한 덩어리를 다루므로 항목에서 글을 만들어 함께 보낸다.
+ * 진실은 항목이고 이 글은 그때그때 만들어 쓴다. 반대로 글을 고쳐 항목을 되맞추지는 않는다.
+ */
+export function planToContent(plan: StudioPlan) {
+  const blocks: string[] = [];
+  for (const field of studioPlanFields) {
+    const value = plan[field.key];
+    if (field.kind === 'sessions') {
+      const rows = value as StudioPlanSession[];
+      if (!rows.length) continue;
+      blocks.push([field.label, ...rows.map((row) => {
+        const parts = [`- ${row.session}회차`];
+        if (row.date) parts.push(`(${row.date})`);
+        parts.push(`: ${row.activity}`);
+        if (row.materials) parts.push(` / 준비물: ${row.materials}`);
+        if (row.notes) parts.push(` / 비고: ${row.notes}`);
+        return parts.join('');
+      })].join('\n'));
+      continue;
+    }
+    const text = field.kind === 'lines' ? (value as string[]).map((line) => `- ${line}`).join('\n') : String(value ?? '');
+    if (!text.trim()) continue;
+    blocks.push(`${field.label}\n${text}`);
+  }
+  return blocks.join('\n\n');
+}
+
 /** 빈 기획서. 파서가 값을 채우지 못했을 때의 바닥값으로 쓴다. */
 export function emptyStudioPlan(): StudioPlan {
   return {

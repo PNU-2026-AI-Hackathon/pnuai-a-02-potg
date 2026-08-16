@@ -12,6 +12,8 @@ import {
   type StudioDocumentStage,
   type StudioSavedDocument,
 } from '@/lib/studio-draft';
+import { planToContent, studioPlanStorageKey, type StudioPlan } from '@/lib/studio-plan';
+import StudioPlanSheet from './StudioPlanSheet';
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
 type StageSaveState = 'idle' | 'saving' | 'failed';
@@ -237,6 +239,22 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       };
     } catch (error) {
       console.error('Failed to load studio draft from sessionStorage:', error);
+      return null;
+    }
+  });
+  /**
+   * 생성 화면이 남겨 둔 항목 구조. 이것이 있어야 항목 하나만 고칠 수 있다.
+   * 이미 저장된 기획서는 글만 있어 항목 구분이 없으므로 예전 편집 방식으로 보여준다.
+   */
+  const [plan, setPlan] = useState<StudioPlan | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
+      if (!raw) return null;
+      const stored = JSON.parse(raw) as { documentId?: string; plan?: StudioPlan };
+      return stored.documentId === document.id && stored.plan ? stored.plan : null;
+    } catch (error) {
+      console.error('Failed to load studio plan from sessionStorage:', error);
       return null;
     }
   });
@@ -726,6 +744,19 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             </label>
             {hasEmptyTitle ? <p className="studioDocumentError">제목은 비워둘 수 없습니다.</p> : null}
 
+            {plan ? (
+              /**
+               * 항목 구조가 있으면 항목으로 보여준다. 항목 하나만 고치려면 어디부터
+               * 어디까지가 어느 항목인지 알아야 하는데, 글 한 덩어리에서는 알 수 없다.
+               */
+              <div className="studioDocumentBodyField">
+                <div className="studioDocumentBodyHeader"><span>기획서 본문</span></div>
+                <StudioPlanSheet
+                  plan={plan}
+                  onChange={(next) => { setPlan(next); setContent(planToContent(next)); markDirty(); }}
+                />
+              </div>
+            ) : (
             <div className="studioDocumentBodyField">
               <div className="studioDocumentBodyHeader">
                 <span>기획서 본문</span>
@@ -756,6 +787,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                 }}
               />
             </div>
+            )}
           </section>
 
           {isAiPanelOpen ? (

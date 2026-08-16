@@ -17,7 +17,19 @@ export type StudioReviseFieldRequest = {
   planTitle?: string;
   planTarget?: string;
   model?: string;
+  /**
+   * 항목 안의 일부만 고칠 때 그 부분의 이름. 문장을 끌어 고르거나 회차 한 줄을 누른 경우다.
+   * 이때는 항목의 원래 모양이 아니라 고친 글 하나만 돌려받아 제자리에 끼운다.
+   */
+  scopeLabel?: string;
 };
+
+/** 일부만 고쳤을 때 돌아오는 값. 글 하나뿐이라 항목 파서를 태우지 않는다. */
+function readScopedValue(value: unknown) {
+  const record = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>;
+  const text = typeof record.value === 'string' ? record.value.trim() : '';
+  return text || null;
+}
 
 export async function POST(request: Request) {
   try {
@@ -41,12 +53,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '어떻게 고칠지 적어 주세요.' }, { status: 400 });
     }
 
+    const scopeLabel = typeof body.scopeLabel === 'string' ? body.scopeLabel.trim() : '';
     const prompt = buildStudioPlanRevisePrompt({
       fieldKey: field.key,
       currentValue: body.currentValue ?? '',
       instruction,
       planTitle: typeof body.planTitle === 'string' ? body.planTitle : '',
       planTarget: typeof body.planTarget === 'string' ? body.planTarget : '',
+      scope: scopeLabel ? { label: scopeLabel } : undefined,
     });
 
     const result = await requestGeminiJson(apiKey, prompt, resolveModels(body.model));
@@ -54,7 +68,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
-    const value = parseStudioPlanField(field.key, result.value);
+    // 일부만 고칠 때는 고친 글 하나만 돌아온다. 항목 전체를 고칠 때만 항목 모양으로 읽는다.
+    const value = scopeLabel
+      ? readScopedValue(result.value)
+      : parseStudioPlanField(field.key, result.value);
     if (value === null) {
       return NextResponse.json({ error: `${field.label}을(를) 고친 결과를 읽지 못했습니다.` }, { status: 502 });
     }
