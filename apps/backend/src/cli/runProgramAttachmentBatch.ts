@@ -344,6 +344,7 @@ type ManualPatchTarget = {
   sourceId: number;
   curriculum: unknown[];
   extractionWarnings: Array<{ code: string; message: string }>;
+  curriculumExpected?: boolean;
   basicInfo?: Array<{ label: string; value: string }>;
   board?: { sections: Array<{ id: string; title: string; items: Array<{ label: string; value: string }> }> };
 };
@@ -378,8 +379,13 @@ function patchContentSection(
 export function withManualCurriculum<T extends ManualPatchTarget>(item: T): T {
   const manual = manualCurriculumFor(item.sourceId);
   if (!manual) return item;
+  // 사람이 원본을 보고 회차표가 없다고 확인한 건은 회차를 기다리지 않는다.
+  const settled = manual.noCurriculum
+    ? { code: 'CURRICULUM_CONFIRMED_ABSENT', message: `회차표가 없는 문서임을 사람이 확인했다. 근거: ${manual.source}` }
+    : { code: 'CURRICULUM_ENTERED_MANUALLY', message: `사람이 원본을 보고 채운 회차다. 근거: ${manual.source}` };
   return {
     ...item,
+    ...(manual.noCurriculum ? { curriculumExpected: false } : {}),
     ...(manual.basicInfo && item.basicInfo
       ? { basicInfo: patchLabeled(item.basicInfo, manual.basicInfo) }
       : {}),
@@ -402,7 +408,7 @@ export function withManualCurriculum<T extends ManualPatchTarget>(item: T): T {
     extractionWarnings: [
       ...item.extractionWarnings.filter((warning) => !warning.code.startsWith('OCR_CURRICULUM')
         && warning.code !== 'CURRICULUM_NOT_EXTRACTED'),
-      { code: 'CURRICULUM_ENTERED_MANUALLY', message: `사람이 원본을 보고 채운 회차다. 근거: ${manual.source}` },
+      settled,
     ],
   };
 }
