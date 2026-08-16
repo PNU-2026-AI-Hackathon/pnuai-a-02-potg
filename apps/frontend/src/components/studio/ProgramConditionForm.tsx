@@ -47,17 +47,8 @@ export default function ProgramConditionForm() {
   const [selectedAgendaId, setSelectedAgendaId] = useState<string | null>(null);
   const [conditions, setConditions] = useState<Record<StudioConditionKey, string[]>>({
     category: [],
-    topic: [],
     audience: [],
-    age: [],
-    operation: [],
     period: [],
-    sessions: [],
-    capacity: [],
-    budget: [],
-    location: [],
-    agenda: [],
-    example: [],
   });
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 

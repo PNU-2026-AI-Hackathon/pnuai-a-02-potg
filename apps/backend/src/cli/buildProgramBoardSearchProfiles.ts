@@ -4,7 +4,7 @@ import { buildSearchDocuments, SearchProfileKind } from '../services/programBoar
 import { buildCorpusSources, type CrawlRecord, type NormalizedProgram } from '../services/programBoardSemanticSearch/corpusAdapter';
 import { groupSimilarPrograms } from '../services/programBoardSemanticSearch/programGrouping';
 
-const profiles: SearchProfileKind[] = ['title', 'title+intro', 'title+intro+target'];
+const profiles: SearchProfileKind[] = ['title', 'title+intro', 'title+intro+target', 'title+intro+target+curriculum'];
 
 function readJson<T>(file: string): T {
   return JSON.parse(fs.readFileSync(file, 'utf8')) as T;

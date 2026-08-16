@@ -1,6 +1,14 @@
 import { createHash } from 'node:crypto';
 
-export type SearchProfileKind = 'title' | 'title+intro' | 'title+intro+target';
+export type SearchProfileKind = 'title' | 'title+intro' | 'title+intro+target' | 'title+intro+target+curriculum';
+
+/**
+ * 회차 글을 임베딩에 넣을 때의 길이 한도.
+ *
+ * 회차 글은 중앙값 251자지만 긴 것은 6,500자가 넘어 모델 입력을 넘긴다.
+ * 90%를 그대로 담으면서 제목·소개가 묻히지 않는 선으로 자른다.
+ */
+const CURRICULUM_TEXT_LIMIT = 600;
 
 type BoardItem = { label: string; value: string };
 
@@ -70,6 +78,19 @@ export function programSummary(source: ProgramBoardSearchSource) {
   return values.join(' · ');
 }
 
+/**
+ * 회차에서 검색에 쓸 말만 모은다.
+ *
+ * 분류·활동·비고만 쓴다. 날짜와 교수방법은 무엇을 배우는지와 상관이 없어 넣지 않는다.
+ * 같은 문구가 회차마다 되풀이되는 계획서가 많아 중복은 접는다.
+ */
+export function curriculumText(source: ProgramBoardSearchSource) {
+  const lines = unique((source.curriculum ?? [])
+    .map((session) => [session.category, session.activity, session.notes].filter(Boolean).join(' ')));
+  const joined = lines.join(' · ');
+  return joined.length > CURRICULUM_TEXT_LIMIT ? `${joined.slice(0, CURRICULUM_TEXT_LIMIT)}…` : joined;
+}
+
 export function buildSearchDocument(
   source: ProgramBoardSearchSource,
   profile: SearchProfileKind,
@@ -78,7 +99,11 @@ export function buildSearchDocument(
   const target = clean(source.targetDetail || source.targetGroup || '') || null;
   const parts = [`[제목] ${clean(source.title)}`];
   if (profile !== 'title' && summary) parts.push(`[소개·목표] ${summary}`);
-  if (profile === 'title+intro+target' && target) parts.push(`[대상] ${target}`);
+  if (profile.includes('target') && target) parts.push(`[대상] ${target}`);
+  if (profile.includes('curriculum')) {
+    const sessions = curriculumText(source);
+    if (sessions) parts.push(`[회차] ${sessions}`);
+  }
   const embeddingText = parts.join('\n');
   const description = source.description || '';
   const numberedSessions = [...description.matchAll(/(?:^|\n)\s*(\d{1,2})\s+(?=\d{1,2}[./-]|\d{1,2}\s*월|<|[-ㆍ◈])/g)].length;

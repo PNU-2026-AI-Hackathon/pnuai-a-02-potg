@@ -17,8 +17,21 @@ from program_case_semantic_search.config import (
 from program_case_semantic_search.kure_embedding_provider import KureEmbeddingProvider
 
 
-PROFILES = ("title", "title+intro", "title+intro+target")
+PROFILES = ("title", "title+intro", "title+intro+target", "title+intro+target+curriculum")
+# 한 번에 돌려줄 수 있는 결과 수의 상한. 파일럿은 코퍼스가 17건이라 그 수를 그대로 썼다.
+# 검색 대상이 300건으로 늘었으므로 코퍼스 크기에 매이지 않는 값으로 둔다.
+MAX_RESULT_LIMIT = 50
+
+# 사서가 스튜디오에서 고를 수 있는 대상. 1차 필터로 후보를 좁히는 데 쓴다.
+AUDIENCE_FILTERS = ("preschool", "elementary-lower", "elementary-upper", "adult", "everyone")
+
+# 평가에서 살펴보는 순위 깊이. Hit@5보다 넉넉하게 두어 MRR이 잘리지 않게 한다.
+EVALUATION_LIMIT = 20
+
+# 파일럿(37건)에서 쓰던 열두 개에, 전체(351건)에서만 드러나는 것을 더했다.
+# 닮은 프로그램이 떼로 있는 구간에서 대상과 기수를 가려내는지 보는 질의가 핵심이다.
 EVALUATION_QUERIES = (
+    # --- 파일럿에서 이어받은 질의 ---
     ("초등 저학년이 환경과 기후를 배우면서 만들기도 하는 수업", {4354}),
     ("아이와 함께 그림책을 읽고 클레이 활동을 하는 프로그램", {4351}),
     ("여름에 초등학생이 영어를 재미있게 배우는 강좌", {4353}),
@@ -31,6 +44,28 @@ EVALUATION_QUERIES = (
     ("초등 고학년이 친구들과 하는 보드게임 수업", {2701}),
     ("성인이 그림책으로 감정을 이해하는 테라피", {2484}),
     ("초등 저학년을 위한 파닉스 영어 읽기", {2703}),
+    # --- 닮은 프로그램을 가려내는 질의 ---
+    # 영어랑 놀자는 유아반과 초등반이 기수마다 있어 대상을 못 가리면 뒤섞인다.
+    ("유아가 원어민 선생님과 영어로 놀며 배우는 수업", {3595, 3702, 3849, 3939, 4224, 4382}),
+    ("초등 1~2학년이 원어민 선생님과 영어로 놀며 배우는 수업", {3596, 3703, 3850, 3938, 4225, 4383}),
+    ("2026년 하반기에 하는 초등학생 과학 실험 교실", {4325}),
+    # --- 대상이 갈리는 질의 ---
+    ("성인이 유럽 미술관과 명화를 감상하는 인문학 강좌", {2887}),
+    ("어르신이 삼국지로 한자를 배우는 수업", {2708}),
+    ("초등 고학년이 유물과 유적으로 한국사를 배우는 수업", {2882}),
+    ("초등 중학년이 교과서에 실린 명화를 다시 그려보는 수업", {2607}),
+    ("유아가 글쓰기를 미리 연습해보는 수업", {2489}),
+    # --- 주제가 갈리는 질의 ---
+    ("초등학생이 칼림바를 배우는 음악 수업", {2812, 3000}),
+    ("초등 고학년이 전기회로와 사물인터넷을 배우는 코딩 수업", {3093, 3393}),
+    ("3D펜으로 생활 소품을 만드는 수업", {3392}),
+    ("유아가 영어 그림책을 읽고 요리하는 수업", {3679}),
+    ("초등 저학년이 책을 읽고 요리 활동을 하는 수업", {3096}),
+    ("유아가 동화를 읽고 미술로 표현하는 수업", {2604}),
+    ("초등 고학년이 메타버스와 메이커 활동을 하는 수업", {2808}),
+    ("초등 중학년이 천천히 읽으며 메타인지를 기르는 독서 수업", {2490}),
+    ("유아가 동시를 낭송하고 창작하는 수업", {3210}),
+    ("유아가 클래식 음악과 작곡가 이야기를 동화로 배우는 수업", {3001}),
 )
 
 AUDIENCE_LABELS = {
@@ -212,20 +247,70 @@ def build(profile: str) -> dict[str, Any]:
     return {"ok": True, "profile": profile, "count": len(documents), "outputPath": str(output_path)}
 
 
-def rank(query: str, profile: str, limit: int, encoder: KureEmbeddingProvider) -> dict[str, Any]:
+def series_key(title: str, target: str | None) -> str:
+    """
+    같은 프로그램의 다른 회차를 한 덩어리로 보기 위한 열쇠.
+
+    코퍼스를 만들 때 제목·대상·기간이 모두 같은 것은 이미 하나로 접었다.
+    그래도 「이야기로 만나는 동화나라(10/15(토))」처럼 날짜마다 따로 접수해
+    기간까지 다른 시리즈가 남는다. 사서에게 같은 프로그램을 여러 줄 보여줘 봐야
+    참고할 자리만 줄어들므로, 검색 결과에서 한 줄로 줄인다.
+    """
+    name = re.sub(r"\(.*?\)|\[.*?\]", "", title)
+    name = re.sub(r"\d+\s*(?:기|차|회|타임|반)", "", name)
+    name = re.sub(r"\d{4}년|상반기|하반기", "", name)
+    name = re.sub(r"[^\w가-힣]", "", name)
+    audience = "".join(sorted(document_audiences(target))) or "-"
+    return f"{name}|{audience}"
+
+
+def audience_candidates(selected: str) -> set[str]:
+    """
+    사서가 고른 대상을 사례의 대상 표기와 맞춘다.
+
+    초등을 저학년·고학년으로 나눠 적지 않은 사례가 서른여덟 건 있다.
+    어느 쪽을 고르든 그런 사례는 후보에 남겨야 참고할 것이 사라지지 않는다.
+    """
+    return {
+        "preschool": {"preschool"},
+        "elementary-lower": {"elementary_lower", "elementary"},
+        "elementary-upper": {"elementary_upper", "elementary"},
+        "adult": {"adult"},
+        "everyone": {"general"},
+    }.get(selected, set())
+
+
+def rank(
+    query: str,
+    profile: str,
+    limit: int,
+    encoder: KureEmbeddingProvider,
+    audience: str | None = None,
+) -> dict[str, Any]:
     query = query.strip()
     if not query or len(query) > 1000:
         raise ValueError("query must contain 1-1000 characters")
-    if limit < 1 or limit > 17:
-        raise ValueError("limit must be between 1 and 17")
+    if limit < 1 or limit > MAX_RESULT_LIMIT:
+        raise ValueError(f"limit must be between 1 and {MAX_RESULT_LIMIT}")
+    if audience and not audience_candidates(audience):
+        raise ValueError(f"unsupported audience: {audience}")
     artifact = read_json(artifact_directory() / f"embeddings.{profile}.json")
     if not artifact.get("count") or artifact.get("count") != len(artifact.get("items", [])) or artifact.get("dimension") != MODEL_DIMENSION:
         raise ValueError("embedding artifact metadata is invalid")
+    items = artifact["items"]
+    filtered_out = 0
+    if audience:
+        wanted = audience_candidates(audience)
+        # 연령 제한이 없는 사례는 어느 대상에나 참고가 되므로 늘 남긴다.
+        keep = wanted | {"general"}
+        kept = [item for item in items if document_audiences(item["target"]) & keep]
+        filtered_out = len(items) - len(kept)
+        items = kept
     query_vector = encoder.encode_query(query)
     requested_audience = query_audience(query)
     requested_concepts = text_concepts(query)
     scored = []
-    for item in artifact["items"]:
+    for item in items:
         vector = item["embedding"]
         similarity = sum(left * right for left, right in zip(query_vector, vector))
         semantic_similarity = round(float(similarity), 8)
@@ -263,7 +348,17 @@ def rank(query: str, profile: str, limit: int, encoder: KureEmbeddingProvider) -
         and item["audienceAdjustment"] > -0.25
         and (not has_requested_concepts or item["conceptCoverage"] >= required_concept_coverage)
     ]
-    results = [{"rank": rank, **item} for rank, item in enumerate(eligible[:limit], 1)]
+    # 같은 시리즈는 가장 잘 맞는 한 건만 남기고 몇 회차가 더 있는지만 알려 준다.
+    best_of_series: dict[str, dict[str, Any]] = {}
+    for item in eligible:
+        key = series_key(item["title"], item["target"])
+        kept = best_of_series.get(key)
+        if kept is None:
+            best_of_series[key] = {**item, "seriesCount": 1}
+        else:
+            kept["seriesCount"] += 1
+    deduped = list(best_of_series.values())
+    results = [{"rank": rank, **item} for rank, item in enumerate(deduped[:limit], 1)]
     return {
         "query": query,
         "limit": limit,
@@ -274,14 +369,16 @@ def rank(query: str, profile: str, limit: int, encoder: KureEmbeddingProvider) -
         "conceptReranking": "topic-activity-compatibility-v1",
         "requestedConcepts": {group: sorted(values) for group, values in requested_concepts.items()},
         "minimumCriteria": {"rankingScore": 0.45, "conceptCoverage": required_concept_coverage if has_requested_concepts else None},
+        "requestedAudienceFilter": audience,
+        "filteredOutByAudience": filtered_out,
         "candidateCount": len(scored),
         "eligibleCount": len(eligible),
         "results": results,
     }
 
 
-def search(query: str, profile: str, limit: int) -> dict[str, Any]:
-    return rank(query, profile, limit, provider())
+def search(query: str, profile: str, limit: int, audience: str | None = None) -> dict[str, Any]:
+    return rank(query, profile, limit, provider(), audience)
 
 
 def evaluate() -> dict[str, Any]:
@@ -292,7 +389,7 @@ def evaluate() -> dict[str, Any]:
         reciprocal_rank = 0.0
         hits = {1: 0, 3: 0, 5: 0}
         for query, expected in EVALUATION_QUERIES:
-            response = rank(query, profile, 17, encoder)
+            response = rank(query, profile, EVALUATION_LIMIT, encoder)
             first_rank = next((item["rank"] for item in response["results"] if item["sourceId"] in expected), None)
             if first_rank:
                 reciprocal_rank += 1.0 / first_rank
@@ -343,12 +440,11 @@ def attachment_curriculum_excerpt(curriculum: list[dict[str, Any]]) -> str:
     return "\n\n".join(rows)[:8000]
 
 
-def build_context(query: str, profile: str, limit: int) -> dict[str, Any]:
-    response = search(query, profile, limit)
-    board = read_json(backend_directory() / ".local" / "program-board" / "programs.json")
-    programs = {item["normalized"]["sourceId"]: item["normalized"] for item in board["items"]}
-    attachment_board = read_json(backend_directory() / ".local" / "program-attachment-enrichment" / "merged-samples.json")
-    attachment_programs = {item["sourceId"]: item for item in attachment_board["items"]}
+def build_context(query: str, profile: str, limit: int, audience: str | None = None) -> dict[str, Any]:
+    response = search(query, profile, limit, audience)
+    # 정제 결과 하나만 읽는다. 파일럿이 나눠 읽던 텍스트 열일곱 건도 여기에 모두 들어 있다.
+    board = read_json(backend_directory() / ".local" / "program-attachment-batch" / "full.json")
+    programs = {item["sourceId"]: item for item in board["items"]}
     lines = [
         "# 유사 프로그램 참고 컨텍스트", "", f"## 사용자 요청\n{query}", "",
         "## 검색 및 사용 원칙",
@@ -357,9 +453,8 @@ def build_context(query: str, profile: str, limit: int) -> dict[str, Any]:
         "- 아래 자료를 복사하기보다 공통 구조와 활동 아이디어를 참고해 새로운 기획안을 작성한다.", "",
     ]
     for result in response["results"]:
-        program = programs.get(result["sourceId"])
-        attachment_program = attachment_programs.get(result["sourceId"])
-        basic = {item["label"]: item["value"] for item in (attachment_program or {}).get("basicInfo", [])}
+        program = programs.get(result["sourceId"]) or {}
+        basic = {item["label"]: item["value"] for item in program.get("basicInfo", [])}
         lines.extend([
             f"## 참고 {result['rank']}. {result['title']}",
             f"- sourceId: {result['sourceId']}",
@@ -367,11 +462,12 @@ def build_context(query: str, profile: str, limit: int) -> dict[str, Any]:
             f"- 상세도: {result['detailLevel']} ({result['detailReason']})",
             f"- 대상: {result['target'] or '정보 없음'}",
             f"- 운영 도서관: {result['libraryName'] or '정보 없음'}",
-            f"- 교육 기간: {(program or {}).get('programStartDate') or basic.get('교육기간') or '정보 없음'}{(' ~ ' + (program or {}).get('programEndDate')) if (program or {}).get('programEndDate') else ''}",
-            f"- 교육 시간: {(program or {}).get('scheduleText') or basic.get('교육시간') or '정보 없음'}",
+            f"- 교육 기간: {basic.get('교육기간') or '정보 없음'}",
+            f"- 교육 시간: {basic.get('교육시간') or '정보 없음'}",
+            f"- 모집 인원: {basic.get('모집인원') or '정보 없음'}",
             f"- 소개·목표: {result['summary'] or '정보 없음'}",
         ])
-        excerpt = curriculum_excerpt((program or {}).get("description") or "") if program else attachment_curriculum_excerpt((attachment_program or {}).get("curriculum", []))
+        excerpt = attachment_curriculum_excerpt(program.get("curriculum", []))
         if excerpt:
             lines.extend(["", "### 회차별 참고 내용", "```text", excerpt, "```"])
         else:
@@ -394,11 +490,13 @@ def parser() -> argparse.ArgumentParser:
     search_parser.add_argument("--query", required=True)
     search_parser.add_argument("--profile", choices=PROFILES, default="title+intro+target")
     search_parser.add_argument("--limit", type=int, default=5)
+    search_parser.add_argument("--audience", choices=AUDIENCE_FILTERS, default=None)
     commands.add_parser("evaluate")
     context_parser = commands.add_parser("context")
     context_parser.add_argument("--query", required=True)
     context_parser.add_argument("--profile", choices=PROFILES, default="title+intro+target")
     context_parser.add_argument("--limit", type=int, default=3)
+    context_parser.add_argument("--audience", choices=AUDIENCE_FILTERS, default=None)
     return result
 
 
@@ -409,9 +507,9 @@ def main() -> int:
     elif args.command == "evaluate":
         payload = evaluate()
     elif args.command == "context":
-        payload = build_context(args.query, args.profile, args.limit)
+        payload = build_context(args.query, args.profile, args.limit, args.audience)
     else:
-        payload = search(args.query, args.profile, args.limit)
+        payload = search(args.query, args.profile, args.limit, args.audience)
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 
