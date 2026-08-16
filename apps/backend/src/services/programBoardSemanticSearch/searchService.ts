@@ -11,6 +11,8 @@ export type ProgramBoardSearchResponse = {
   model: string;
   profile: SearchProfileKind;
   requestedAudience: string | null;
+  requestedAudienceFilter: string | null;
+  filteredOutByAudience: number;
   reranking: 'audience-compatibility-v1';
   candidateCount: number;
   eligibleCount: number;
@@ -41,6 +43,7 @@ export async function searchProgramBoard(
   query: string,
   limit: number,
   profile: SearchProfileKind,
+  audience?: string,
 ): Promise<ProgramBoardSearchResponse> {
   const backendDirectory = path.resolve(__dirname, '../../..');
   const python = process.platform === 'win32'
@@ -49,7 +52,8 @@ export async function searchProgramBoard(
   const script = path.join(backendDirectory, 'python', 'program_board_semantic_search.py');
   const { stdout } = await execFileAsync(
     python,
-    [script, 'search', '--query', query, '--limit', String(limit), '--profile', profile],
+    [script, 'search', '--query', query, '--limit', String(limit), '--profile', profile,
+      ...(audience ? ['--audience', audience] : [])],
     {
       cwd: path.join(backendDirectory, 'python'),
       env: {
@@ -67,14 +71,15 @@ export async function searchProgramBoard(
   return JSON.parse(stdout) as ProgramBoardSearchResponse;
 }
 
-export async function buildProgramBoardContext(query: string, limit: number) {
+export async function buildProgramBoardContext(query: string, limit: number, audience?: string) {
   const backendDirectory = path.resolve(__dirname, '../../..');
   const python = process.platform === 'win32'
     ? path.join(backendDirectory, '.venv', 'Scripts', 'python.exe')
     : path.join(backendDirectory, '.venv', 'bin', 'python');
   const { stdout } = await execFileAsync(
     python,
-    [path.join(backendDirectory, 'python', 'program_board_semantic_search.py'), 'context', '--query', query, '--limit', String(limit)],
+    [path.join(backendDirectory, 'python', 'program_board_semantic_search.py'), 'context', '--query', query, '--limit', String(limit),
+      ...(audience ? ['--audience', audience] : [])],
     {
       cwd: path.join(backendDirectory, 'python'),
       env: { ...process.env, KURE_MODEL_CACHE_DIR: process.env.KURE_MODEL_CACHE_DIR || path.join(backendDirectory, '.model-cache'), PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', HF_HUB_OFFLINE: '1', TRANSFORMERS_OFFLINE: '1' },
