@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   color-scheme: light;
   --blue: #2b5f9e;
   --deep: #1f3f69;
@@ -11657,7 +11657,7 @@ html:has(.moiraPage) {
   font-weight: 700;
 }
 
-.studioDocumentBodyField textarea {
+.studioDocumentBodyTextarea {
   width: 100%;
   min-height: 960px;
   resize: none;
@@ -11679,12 +11679,12 @@ html:has(.moiraPage) {
   white-space: pre-wrap;
 }
 
-.studioDocumentBodyField textarea::selection {
+.studioDocumentBodyTextarea::selection {
   background: rgba(189, 232, 212, 0.95);
   color: var(--moira-ink);
 }
 
-.studioDocumentBodyField textarea:focus {
+.studioDocumentBodyTextarea:focus {
   box-shadow: inset 0 3px 0 rgba(22, 116, 95, 0.12);
 }
 
@@ -12141,7 +12141,7 @@ html:has(.moiraPage) {
     font-size: 28px;
   }
 
-  .studioDocumentBodyField textarea {
+  .studioDocumentBodyTextarea {
     min-height: 740px;
     font-size: 14px;
     line-height: 2;
@@ -12658,7 +12658,12 @@ html:has(.moiraPage) {
    모든 항목에 테두리를 두르면 기획서가 아니라 서식 입력 화면이 된다. */
 .studioPlanValueInput {
   display: block;
+  box-sizing: border-box;
   width: 100%;
+  /* 적은 만큼만 자리를 차지한다. 높이는 글이 늘어날 때마다 스크립트가 다시 잡는다.
+     예전 「한 덩어리 본문」 칸과 달리 최소 높이를 두지 않는다. */
+  height: auto;
+  min-height: 0;
   margin: 4px 0 0;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -12668,8 +12673,9 @@ html:has(.moiraPage) {
   font-size: 14.5px;
   line-height: 1.65;
   color: inherit;
+  overflow-y: hidden;
   overflow-wrap: anywhere;
-  resize: vertical;
+  resize: none;
 }
 
 .studioPlanValueInput:hover { border-color: #e2ece6; }

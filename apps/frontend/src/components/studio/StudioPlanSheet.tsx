@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import {
   studioPlanFields, studioPlanGroups,
   type StudioPlan, type StudioPlanField, type StudioPlanFieldKey, type StudioPlanSession,
@@ -101,6 +101,21 @@ export default function StudioPlanSheet({
    * 입력칸 안의 선택은 window.getSelection으로 읽히지 않는다.
    */
   const inputRefs = useRef(new Map<StudioPlanFieldKey, HTMLTextAreaElement>());
+
+  /**
+   * 적은 만큼만 자리를 차지하게 한다. 줄 수를 고정해 두면 짧은 항목은 빈 칸이 남고
+   * 긴 항목은 제 안에서 스크롤되어, 기획서 한 장을 눈으로 훑을 수가 없다.
+   */
+  const fitHeight = useCallback((input: HTMLTextAreaElement | null) => {
+    if (!input) return;
+    input.style.height = 'auto';
+    input.style.height = `${input.scrollHeight}px`;
+  }, []);
+
+  /** 처음 그릴 때와 AI가 값을 바꿨을 때도 맞춘다. 타이핑만 따라가면 그때는 어긋난다. */
+  useLayoutEffect(() => {
+    for (const input of inputRefs.current.values()) fitHeight(input);
+  }, [plan, fitHeight]);
 
   function setField(field: StudioPlanField, text: string) {
     onChange({ ...plan, [field.key]: textToValue(field, text) } as StudioPlan);
@@ -245,14 +260,17 @@ export default function StudioPlanSheet({
                   <textarea
                     className="studioPlanValueInput"
                     ref={(node) => {
-                      if (node) inputRefs.current.set(field.key, node);
+                      if (node) { inputRefs.current.set(field.key, node); fitHeight(node); }
                       else inputRefs.current.delete(field.key);
                     }}
                     value={valueText(plan, field)}
-                    rows={field.kind === 'lines' ? 3 : 2}
+                    rows={1}
                     placeholder={field.manualOnly ? `${field.label}을(를) 적어 주세요` : field.hint}
                     aria-label={field.label}
-                    onChange={(event) => setField(field, event.target.value)}
+                    onChange={(event) => {
+                      fitHeight(event.currentTarget);
+                      setField(field, event.target.value);
+                    }}
                     onMouseUp={() => !field.manualOnly && chooseText(field)}
                   />
                 )}

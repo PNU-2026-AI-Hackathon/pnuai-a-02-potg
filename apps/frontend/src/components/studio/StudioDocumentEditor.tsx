@@ -896,6 +896,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                 <SelectedTextMarker content={content} selectionRange={activeSelectionRange} />
               ) : null}
               <textarea
+                className="studioDocumentBodyTextarea"
                 aria-label="기획서 본문 편집"
                 ref={bodyTextareaRef}
                 value={content}
