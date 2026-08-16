@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import hashlib
 import json
 import os
@@ -17,20 +18,61 @@ from program_case_semantic_search.config import (
 from program_case_semantic_search.kure_embedding_provider import KureEmbeddingProvider
 
 
-PROFILES = ("title", "title+intro", "title+intro+target")
-EVALUATION_QUERIES = (
-    ("초등 저학년이 환경과 기후를 배우면서 만들기도 하는 수업", {4354}),
-    ("아이와 함께 그림책을 읽고 클레이 활동을 하는 프로그램", {4351}),
-    ("여름에 초등학생이 영어를 재미있게 배우는 강좌", {4353}),
-    ("성인이 한 권의 책을 읽고 이야기를 나누는 독서 모임", {3052, 3105, 3130, 3276, 3355, 3390, 3408}),
-    ("어린이가 관람할 수 있는 토끼 인형극", {4194}),
-    ("크리스마스 장식을 직접 만드는 체험", {2990}),
-    ("성인을 위한 지역 경제 인문학 강연", {2634}),
-    ("초등 저학년이 직접 만들며 배우는 과학 실험 수업", {2488}),
-    ("성인이 영상과 일상 표현으로 배우는 생활 영어", {2697}),
-    ("초등 고학년이 친구들과 하는 보드게임 수업", {2701}),
-    ("성인이 그림책으로 감정을 이해하는 테라피", {2484}),
-    ("초등 저학년을 위한 파닉스 영어 읽기", {2703}),
+PROFILES = ("title", "title+intro", "title+intro+target", "title+intro+target+curriculum")
+# 한 번에 돌려줄 수 있는 결과 수의 상한. 파일럿은 코퍼스가 17건이라 그 수를 그대로 썼다.
+# 검색 대상이 300건으로 늘었으므로 코퍼스 크기에 매이지 않는 값으로 둔다.
+MAX_RESULT_LIMIT = 50
+
+# 사서가 스튜디오에서 고를 수 있는 대상. 1차 필터로 후보를 좁히는 데 쓴다.
+AUDIENCE_FILTERS = ("preschool", "elementary-lower", "elementary-upper", "adult", "everyone")
+
+# 사서가 기획안에 참고할 사례 수. 개발계획서가 정한 「상위 3~5개」의 위쪽을 쓴다.
+EVALUATION_TOP_N = 5
+
+# 1위 유사도의 몇 배까지를 같은 자리에서 볼 결과로 삼을지.
+# 평가 질의 서른 개의 결과 224건으로 재 보니 이 값에서 결과의 63%가 남고
+# 결과가 0건이 되는 질의는 없었다. 더 올리면 참고 사례가 모자라기 시작한다.
+RELATIVE_SIMILARITY_FLOOR = 0.85
+
+# 사서가 기획안을 쓰며 던질 법한 요청과, 스튜디오에서 함께 고를 대상.
+# 대상은 1차 필터로도 쓰이므로 평가에서도 같은 값을 넘겨 실제 화면과 맞춘다.
+EVALUATION_QUERIES: tuple[tuple[str, str | None], ...] = (
+    # --- 유아 ---
+    ("그림책을 읽고 만들기 활동을 하는 프로그램", "preschool"),
+    ("동화를 듣고 몸으로 표현하는 놀이 프로그램", "preschool"),
+    ("영어 그림책으로 영어를 처음 접하는 프로그램", "preschool"),
+    ("동시를 낭송하고 창작하는 프로그램", "preschool"),
+    ("클래식 음악과 악기를 만나는 프로그램", "preschool"),
+    ("글쓰기를 미리 연습해 보는 프로그램", "preschool"),
+    # --- 초등 저학년 ---
+    ("환경과 기후를 배우며 만들기도 하는 프로그램", "elementary-lower"),
+    ("책을 읽고 요리 활동을 하는 프로그램", "elementary-lower"),
+    ("직접 만들며 배우는 과학 실험 프로그램", "elementary-lower"),
+    ("파닉스로 영어 읽기를 배우는 프로그램", "elementary-lower"),
+    ("미술 기법으로 그림책을 표현하는 프로그램", "elementary-lower"),
+    ("칼림바 같은 악기를 배우는 음악 프로그램", "elementary-lower"),
+    # --- 초등 고학년 ---
+    ("친구들과 함께 하는 보드게임 프로그램", "elementary-upper"),
+    ("유물과 유적으로 한국사를 배우는 프로그램", "elementary-upper"),
+    ("코딩과 메이커 활동을 하는 프로그램", "elementary-upper"),
+    ("독서하고 생각을 글로 쓰는 논술 프로그램", "elementary-upper"),
+    ("교과서 속 명화를 다시 그려 보는 미술 프로그램", "elementary-upper"),
+    ("천천히 읽으며 생각하는 힘을 기르는 독서 프로그램", "elementary-upper"),
+    # --- 성인·어르신 ---
+    ("한 권의 책을 읽고 이야기를 나누는 독서 모임", "adult"),
+    ("지역 경제를 다루는 인문학 강연", "adult"),
+    ("영상과 일상 표현으로 배우는 생활 영어", "adult"),
+    ("그림책으로 감정을 이해하는 테라피", "adult"),
+    ("유럽 미술관과 명화를 감상하는 인문학 강좌", "adult"),
+    ("일본어를 처음부터 배우는 강좌", "adult"),
+    # --- 누구나 ---
+    ("어린이가 관람할 수 있는 인형극", "everyone"),
+    ("크리스마스 장식을 직접 만드는 체험", "everyone"),
+    ("가족이 함께 즐기는 공연", "everyone"),
+    # --- 대상을 고르지 않은 경우 ---
+    ("클레이로 무언가를 만드는 프로그램", None),
+    ("샌드아트 공연", None),
+    ("보드게임으로 생각하는 힘을 기르는 수업", None),
 )
 
 AUDIENCE_LABELS = {
@@ -212,20 +254,70 @@ def build(profile: str) -> dict[str, Any]:
     return {"ok": True, "profile": profile, "count": len(documents), "outputPath": str(output_path)}
 
 
-def rank(query: str, profile: str, limit: int, encoder: KureEmbeddingProvider) -> dict[str, Any]:
+def series_key(title: str, target: str | None) -> str:
+    """
+    같은 프로그램의 다른 회차를 한 덩어리로 보기 위한 열쇠.
+
+    코퍼스를 만들 때 제목·대상·기간이 모두 같은 것은 이미 하나로 접었다.
+    그래도 「이야기로 만나는 동화나라(10/15(토))」처럼 날짜마다 따로 접수해
+    기간까지 다른 시리즈가 남는다. 사서에게 같은 프로그램을 여러 줄 보여줘 봐야
+    참고할 자리만 줄어들므로, 검색 결과에서 한 줄로 줄인다.
+    """
+    name = re.sub(r"\(.*?\)|\[.*?\]", "", title)
+    name = re.sub(r"\d+\s*(?:기|차|회|타임|반)", "", name)
+    name = re.sub(r"\d{4}년|상반기|하반기", "", name)
+    name = re.sub(r"[^\w가-힣]", "", name)
+    audience = "".join(sorted(document_audiences(target))) or "-"
+    return f"{name}|{audience}"
+
+
+def audience_candidates(selected: str) -> set[str]:
+    """
+    사서가 고른 대상을 사례의 대상 표기와 맞춘다.
+
+    초등을 저학년·고학년으로 나눠 적지 않은 사례가 서른여덟 건 있다.
+    어느 쪽을 고르든 그런 사례는 후보에 남겨야 참고할 것이 사라지지 않는다.
+    """
+    return {
+        "preschool": {"preschool"},
+        "elementary-lower": {"elementary_lower", "elementary"},
+        "elementary-upper": {"elementary_upper", "elementary"},
+        "adult": {"adult"},
+        "everyone": {"general"},
+    }.get(selected, set())
+
+
+def rank(
+    query: str,
+    profile: str,
+    limit: int,
+    encoder: KureEmbeddingProvider,
+    audience: str | None = None,
+) -> dict[str, Any]:
     query = query.strip()
     if not query or len(query) > 1000:
         raise ValueError("query must contain 1-1000 characters")
-    if limit < 1 or limit > 17:
-        raise ValueError("limit must be between 1 and 17")
+    if limit < 1 or limit > MAX_RESULT_LIMIT:
+        raise ValueError(f"limit must be between 1 and {MAX_RESULT_LIMIT}")
+    if audience and not audience_candidates(audience):
+        raise ValueError(f"unsupported audience: {audience}")
     artifact = read_json(artifact_directory() / f"embeddings.{profile}.json")
     if not artifact.get("count") or artifact.get("count") != len(artifact.get("items", [])) or artifact.get("dimension") != MODEL_DIMENSION:
         raise ValueError("embedding artifact metadata is invalid")
+    items = artifact["items"]
+    filtered_out = 0
+    if audience:
+        wanted = audience_candidates(audience)
+        # 연령 제한이 없는 사례는 어느 대상에나 참고가 되므로 늘 남긴다.
+        keep = wanted | {"general"}
+        kept = [item for item in items if document_audiences(item["target"]) & keep]
+        filtered_out = len(items) - len(kept)
+        items = kept
     query_vector = encoder.encode_query(query)
     requested_audience = query_audience(query)
     requested_concepts = text_concepts(query)
     scored = []
-    for item in artifact["items"]:
+    for item in items:
         vector = item["embedding"]
         similarity = sum(left * right for left, right in zip(query_vector, vector))
         semantic_similarity = round(float(similarity), 8)
@@ -263,7 +355,29 @@ def rank(query: str, profile: str, limit: int, encoder: KureEmbeddingProvider) -
         and item["audienceAdjustment"] > -0.25
         and (not has_requested_concepts or item["conceptCoverage"] >= required_concept_coverage)
     ]
-    results = [{"rank": rank, **item} for rank, item in enumerate(eligible[:limit], 1)]
+    # 유사도가 1위에 한참 못 미치는 결과를 뗀다.
+    #
+    # 대상·개념 가점이 더해지면서 유사도가 낮은 사례가 통과하는 일이 있었다.
+    # 「글쓰기」 한 낱말이 겹친다는 이유로 블로그 운영 강좌가 독후감 프로그램 사이에
+    # 끼어드는 식이다. 임베딩은 그것을 0.513으로 이미 낮게 봤는데 가점이 뒤집었다.
+    #
+    # 절대 하한을 두지 않는 이유는 질의마다 유사도 크기가 다르기 때문이다.
+    # 1위 유사도가 0.494인 질의도 있고 0.790인 질의도 있어, 절대값으로 자르면
+    # 낮게 나오는 질의는 결과가 통째로 비어 버린다. 1위를 기준으로 삼으면 그런 일이 없다.
+    if eligible:
+        floor = max(item["similarity"] for item in eligible) * RELATIVE_SIMILARITY_FLOOR
+        eligible = [item for item in eligible if item["similarity"] >= floor]
+    # 같은 시리즈는 가장 잘 맞는 한 건만 남기고 몇 회차가 더 있는지만 알려 준다.
+    best_of_series: dict[str, dict[str, Any]] = {}
+    for item in eligible:
+        key = series_key(item["title"], item["target"])
+        kept = best_of_series.get(key)
+        if kept is None:
+            best_of_series[key] = {**item, "seriesCount": 1}
+        else:
+            kept["seriesCount"] += 1
+    deduped = list(best_of_series.values())
+    results = [{"rank": rank, **item} for rank, item in enumerate(deduped[:limit], 1)]
     return {
         "query": query,
         "limit": limit,
@@ -273,44 +387,106 @@ def rank(query: str, profile: str, limit: int, encoder: KureEmbeddingProvider) -
         "reranking": "audience-compatibility-v1",
         "conceptReranking": "topic-activity-compatibility-v1",
         "requestedConcepts": {group: sorted(values) for group, values in requested_concepts.items()},
-        "minimumCriteria": {"rankingScore": 0.45, "conceptCoverage": required_concept_coverage if has_requested_concepts else None},
+        "minimumCriteria": {
+            "rankingScore": 0.45,
+            "conceptCoverage": required_concept_coverage if has_requested_concepts else None,
+            "relativeSimilarityFloor": RELATIVE_SIMILARITY_FLOOR,
+        },
+        "requestedAudienceFilter": audience,
+        "filteredOutByAudience": filtered_out,
         "candidateCount": len(scored),
         "eligibleCount": len(eligible),
         "results": results,
     }
 
 
-def search(query: str, profile: str, limit: int) -> dict[str, Any]:
-    return rank(query, profile, limit, provider())
+def search(query: str, profile: str, limit: int, audience: str | None = None) -> dict[str, Any]:
+    return rank(query, profile, limit, provider(), audience)
+
+
+def audience_matches(requested: str, target: str | None) -> bool:
+    """사례의 대상이 요청한 대상에 맞는지. 연령 제한이 없는 사례는 어디에나 맞는 것으로 본다."""
+    return bool(document_audiences(target) & (audience_candidates(requested) | {"general"}))
 
 
 def evaluate() -> dict[str, Any]:
+    """
+    상위 결과가 요청한 조건에 맞는지를 잰다.
+
+    사서는 「이 프로그램 하나」를 찾는 것이 아니라 기획안을 쓸 때 참고할 사례를
+    서너 건 받는다. 그래서 정답을 미리 정해 두고 몇 등에 나왔는지 보는 대신,
+    상위 결과가 요청한 대상·주제에 실제로 맞는지를 센다. 개발계획서가 검증 방법으로
+    적어 둔 「대상 연령 일치도, 태그 일치도」가 이것이다.
+
+    무엇을 재는지 두 가지에 주의한다.
+
+    대상은 **필터를 끄고** 잰다. 필터를 켜면 맞지 않는 사례가 애초에 후보에서
+    빠지므로 늘 100%가 나와 아무것도 알려 주지 않는다. 필터 없이 재야 검색만으로
+    대상을 얼마나 맞히는지, 그래서 필터가 무엇을 보태는지 보인다.
+
+    주제는 **몇 개나 맞았는지**를 센다. 하나라도 맞으면 통과로 보면 후보를 고를 때
+    이미 같은 기준을 썼기 때문에 역시 늘 100%가 된다.
+    """
     encoder = provider()
     profiles = []
     for profile in PROFILES:
         rows = []
-        reciprocal_rank = 0.0
-        hits = {1: 0, 3: 0, 5: 0}
-        for query, expected in EVALUATION_QUERIES:
-            response = rank(query, profile, 17, encoder)
-            first_rank = next((item["rank"] for item in response["results"] if item["sourceId"] in expected), None)
-            if first_rank:
-                reciprocal_rank += 1.0 / first_rank
-                for k in hits:
-                    hits[k] += int(first_rank <= k)
+        coverage_total = filtered_audience_hits = unfiltered_audience_hits = 0.0
+        graded = unfiltered_graded = empty_queries = 0
+        for query, audience in EVALUATION_QUERIES:
+            response = rank(query, profile, EVALUATION_TOP_N, encoder, audience)
+            results = response["results"]
+            if not results:
+                empty_queries += 1
+            requested = text_concepts(query)
+            wanted = {(group, value) for group, values in requested.items() for value in values}
+            per_result = []
+            for item in results:
+                found = text_concepts(f'{item["title"]} {item["summary"]}')
+                matched = {(group, value) for group, value in wanted if value in found[group]}
+                coverage = len(matched) / len(wanted) if wanted else 1.0
+                audience_ok = audience_matches(audience, item["target"]) if audience else True
+                graded += 1
+                coverage_total += coverage
+                filtered_audience_hits += int(audience_ok)
+                per_result.append({
+                    "sourceId": item["sourceId"], "title": item["title"], "target": item["target"],
+                    "similarity": item["similarity"], "audienceMatched": audience_ok,
+                    "conceptCoverage": round(coverage, 4),
+                    "matchedConcepts": sorted(value for _, value in matched),
+                })
+            # 필터를 끄고 같은 질의를 다시 던져 검색만으로 대상을 얼마나 맞히는지 본다.
+            bare_matched = None
+            if audience:
+                bare = rank(query, profile, EVALUATION_TOP_N, encoder, None)["results"]
+                bare_matched = sum(int(audience_matches(audience, item["target"])) for item in bare)
+                unfiltered_audience_hits += bare_matched
+                unfiltered_graded += len(bare)
             rows.append({
-                "query": query,
-                "expectedSourceIds": sorted(expected),
-                "firstRelevantRank": first_rank,
-                "top5": [{"sourceId": item["sourceId"], "title": item["title"], "similarity": item["similarity"]} for item in response["results"][:5]],
+                "query": query, "audience": audience, "resultCount": len(results),
+                "requestedConcepts": sorted(value for _, value in wanted),
+                "audienceHitsWithoutFilter": bare_matched,
+                "results": per_result,
             })
-        total = len(EVALUATION_QUERIES)
         profiles.append({
-            "profile": profile, "hitAt1": hits[1] / total,
-            "hitAt3": hits[3] / total, "hitAt5": hits[5] / total,
-            "mrr": reciprocal_rank / total, "queries": rows,
+            "profile": profile,
+            # 필터를 켠 결과. 필터가 제 일을 하는지 확인하는 값이라 100%가 정상이다.
+            "audiencePrecision": round(filtered_audience_hits / graded, 4) if graded else 0.0,
+            # 필터를 끈 결과. 검색만으로 대상을 얼마나 맞히는지 보여 준다.
+            "audiencePrecisionWithoutFilter": round(unfiltered_audience_hits / unfiltered_graded, 4) if unfiltered_graded else 0.0,
+            # 요청한 주제 가운데 몇 개가 맞았는지의 평균.
+            "conceptCoverage": round(coverage_total / graded, 4) if graded else 0.0,
+            "averageResultCount": round(graded / len(EVALUATION_QUERIES), 2),
+            "emptyQueries": empty_queries,
+            "queries": rows,
         })
-    result = {"schemaVersion": "program-board-search-evaluation/v1", "queryCount": len(EVALUATION_QUERIES), "profiles": profiles}
+    result = {
+        "schemaVersion": "program-board-search-evaluation/v2",
+        "metric": "상위 결과의 대상·주제 일치도",
+        "topN": EVALUATION_TOP_N,
+        "queryCount": len(EVALUATION_QUERIES),
+        "profiles": profiles,
+    }
     write_json(artifact_directory() / "evaluation.json", result)
     return result
 
@@ -343,12 +519,11 @@ def attachment_curriculum_excerpt(curriculum: list[dict[str, Any]]) -> str:
     return "\n\n".join(rows)[:8000]
 
 
-def build_context(query: str, profile: str, limit: int) -> dict[str, Any]:
-    response = search(query, profile, limit)
-    board = read_json(backend_directory() / ".local" / "program-board" / "programs.json")
-    programs = {item["normalized"]["sourceId"]: item["normalized"] for item in board["items"]}
-    attachment_board = read_json(backend_directory() / ".local" / "program-attachment-enrichment" / "merged-samples.json")
-    attachment_programs = {item["sourceId"]: item for item in attachment_board["items"]}
+def build_context(query: str, profile: str, limit: int, audience: str | None = None) -> dict[str, Any]:
+    response = search(query, profile, limit, audience)
+    # 정제 결과 하나만 읽는다. 파일럿이 나눠 읽던 텍스트 열일곱 건도 여기에 모두 들어 있다.
+    board = read_json(backend_directory() / ".local" / "program-attachment-batch" / "full.json")
+    programs = {item["sourceId"]: item for item in board["items"]}
     lines = [
         "# 유사 프로그램 참고 컨텍스트", "", f"## 사용자 요청\n{query}", "",
         "## 검색 및 사용 원칙",
@@ -357,9 +532,8 @@ def build_context(query: str, profile: str, limit: int) -> dict[str, Any]:
         "- 아래 자료를 복사하기보다 공통 구조와 활동 아이디어를 참고해 새로운 기획안을 작성한다.", "",
     ]
     for result in response["results"]:
-        program = programs.get(result["sourceId"])
-        attachment_program = attachment_programs.get(result["sourceId"])
-        basic = {item["label"]: item["value"] for item in (attachment_program or {}).get("basicInfo", [])}
+        program = programs.get(result["sourceId"]) or {}
+        basic = {item["label"]: item["value"] for item in program.get("basicInfo", [])}
         lines.extend([
             f"## 참고 {result['rank']}. {result['title']}",
             f"- sourceId: {result['sourceId']}",
@@ -367,11 +541,12 @@ def build_context(query: str, profile: str, limit: int) -> dict[str, Any]:
             f"- 상세도: {result['detailLevel']} ({result['detailReason']})",
             f"- 대상: {result['target'] or '정보 없음'}",
             f"- 운영 도서관: {result['libraryName'] or '정보 없음'}",
-            f"- 교육 기간: {(program or {}).get('programStartDate') or basic.get('교육기간') or '정보 없음'}{(' ~ ' + (program or {}).get('programEndDate')) if (program or {}).get('programEndDate') else ''}",
-            f"- 교육 시간: {(program or {}).get('scheduleText') or basic.get('교육시간') or '정보 없음'}",
+            f"- 교육 기간: {basic.get('교육기간') or '정보 없음'}",
+            f"- 교육 시간: {basic.get('교육시간') or '정보 없음'}",
+            f"- 모집 인원: {basic.get('모집인원') or '정보 없음'}",
             f"- 소개·목표: {result['summary'] or '정보 없음'}",
         ])
-        excerpt = curriculum_excerpt((program or {}).get("description") or "") if program else attachment_curriculum_excerpt((attachment_program or {}).get("curriculum", []))
+        excerpt = attachment_curriculum_excerpt(program.get("curriculum", []))
         if excerpt:
             lines.extend(["", "### 회차별 참고 내용", "```text", excerpt, "```"])
         else:
@@ -391,15 +566,30 @@ def parser() -> argparse.ArgumentParser:
     build_parser = commands.add_parser("build")
     build_parser.add_argument("--profile", choices=PROFILES, required=True)
     search_parser = commands.add_parser("search")
-    search_parser.add_argument("--query", required=True)
+    search_parser.add_argument("--query")
     search_parser.add_argument("--profile", choices=PROFILES, default="title+intro+target")
     search_parser.add_argument("--limit", type=int, default=5)
+    search_parser.add_argument("--audience", choices=AUDIENCE_FILTERS, default=None)
     commands.add_parser("evaluate")
     context_parser = commands.add_parser("context")
-    context_parser.add_argument("--query", required=True)
+    context_parser.add_argument("--query")
     context_parser.add_argument("--profile", choices=PROFILES, default="title+intro+target")
     context_parser.add_argument("--limit", type=int, default=3)
+    context_parser.add_argument("--audience", choices=AUDIENCE_FILTERS, default=None)
     return result
+
+
+def query_argument(args: argparse.Namespace) -> str:
+    """
+    질의를 읽는다. `--query`가 없으면 표준입력에서 받는다.
+
+    윈도우에서 다른 프로그램이 이 스크립트를 부르면 명령줄 인자가 UTF-8로 넘어오지
+    않아 한글이 깨진다. 깨진 질의는 오류가 아니라 엉뚱한 검색 결과로 나타나 알아채기
+    어렵다. 표준입력은 인코딩을 우리가 정할 수 있으므로 한글 질의는 이쪽으로 받는다.
+    """
+    if args.query:
+        return args.query
+    return sys.stdin.buffer.read().decode("utf-8")
 
 
 def main() -> int:
@@ -409,9 +599,9 @@ def main() -> int:
     elif args.command == "evaluate":
         payload = evaluate()
     elif args.command == "context":
-        payload = build_context(args.query, args.profile, args.limit)
+        payload = build_context(query_argument(args), args.profile, args.limit, args.audience)
     else:
-        payload = search(args.query, args.profile, args.limit)
+        payload = search(query_argument(args), args.profile, args.limit, args.audience)
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 
