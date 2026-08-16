@@ -12,8 +12,10 @@ import {
   type StudioDocumentStage,
   type StudioSavedDocument,
 } from '@/lib/studio-draft';
-import { planToContent, studioPlanStorageKey, type StudioPlan } from '@/lib/studio-plan';
-import StudioPlanSheet from './StudioPlanSheet';
+import { planToContent, studioPlanStorageKey, type StudioPlan, type StudioPlanFieldKey } from '@/lib/studio-plan';
+import StudioPlanSheet, {
+  applyPlanRevision, planSelectionLabel, planSelectionValue, type PlanSelection,
+} from './StudioPlanSheet';
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
 type StageSaveState = 'idle' | 'saving' | 'failed';
@@ -258,6 +260,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       return null;
     }
   });
+  /** 기획서에서 지금 고르고 있는 곳. 오른쪽 수정 패널이 이것을 보고 무엇을 고칠지 정한다. */
+  const [planSelection, setPlanSelection] = useState<PlanSelection | null>(null);
+  /** 어디를 고쳤는지. 화면에 표시해 주지 않으면 사서가 바뀐 줄을 모른다. */
+  const [revisedFields, setRevisedFields] = useState<Set<StudioPlanFieldKey>>(new Set());
+  const [revisedSessions, setRevisedSessions] = useState<Set<number>>(new Set());
   const [title, setTitle] = useState(storedDraft?.title || document.title);
   const [stage, setStage] = useState<StudioDocumentStage>(document.stage);
   const [stageSaveState, setStageSaveState] = useState<StageSaveState>('idle');
@@ -281,6 +288,17 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const canSave = saveState === 'dirty' && !hasEmptyTitle;
   const hasSelectedText = selectedText.trim().length > 0;
   const canRequestAiEdit = hasSelectedText && aiRequest.trim().length > 0 && aiRequestState !== 'submitting';
+  /** 기획서 항목을 고른 경우에는 그 선택이 곧 수정 대상이라 문장 선택이 필요 없다. */
+  const canRequestPlanEdit = Boolean(plan && planSelection) && aiRequest.trim().length > 0 && aiRequestState !== 'submitting';
+  const planSelectionPreview = plan && planSelection
+    ? (() => {
+      const value = planSelectionValue(plan, planSelection);
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) return value.map((row) => (typeof row === 'string' ? row : row?.activity ?? '')).join(' · ');
+      if (value && typeof value === 'object' && 'activity' in value) return String((value as { activity: string }).activity);
+      return '';
+    })()
+    : '';
   const activeSelectionRange = aiRevisionSource?.range ?? selectedRange;
 
   useEffect(() => {
@@ -489,7 +507,56 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 
+  /**
+   * 기획서 항목을 고르고 보낸 수정 요청. 고른 곳만 보내고 고친 결과만 돌려받는다.
+   * 글 한 덩어리를 고치는 경로와 달리 결과가 곧바로 그 항목에 들어가므로
+   * 「적용」 단계를 따로 두지 않는다.
+   */
+  async function handlePlanRevision() {
+    if (!plan || !planSelection || !aiRequest.trim()) return;
+    setAiRequestState('submitting');
+    setAiReviewMessage('AI 수정안을 생성하고 있습니다.');
+    try {
+      const response = await fetch('/api/studio/revise-field', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fieldKey: planSelection.field.key,
+          currentValue: planSelectionValue(plan, planSelection),
+          instruction: aiRequest.trim(),
+          scopeLabel: planSelection.kind === 'field' ? undefined : planSelectionLabel(planSelection),
+          planTitle: plan.title,
+          planTarget: plan.target,
+        }),
+      });
+      const data = (await response.json()) as { value?: unknown; error?: string };
+      if (!response.ok || data.value === undefined) {
+        throw new Error(data.error || 'AI 수정안을 생성하지 못했습니다.');
+      }
+      const next = applyPlanRevision(plan, planSelection, data.value);
+      setPlan(next);
+      setContent(planToContent(next));
+      markDirty();
+      setRevisedFields((current) => new Set(current).add(planSelection.field.key));
+      if (planSelection.kind === 'session') {
+        setRevisedSessions((current) => new Set(current).add(planSelection.session));
+      }
+      setAiRequestState('idle');
+      setAiRequest('');
+      setPlanSelection(null);
+      setIsAiPanelOpen(false);
+      setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+    } catch (error) {
+      setAiRequestState('failed');
+      setAiReviewMessage(error instanceof Error ? error.message : 'AI 수정안을 생성하지 못했습니다.');
+    }
+  }
+
   async function handleAiRequest() {
+    if (plan && planSelection) {
+      await handlePlanRevision();
+      return;
+    }
     if (!canRequestAiEdit || !selectedRange) {
       return;
     }
@@ -753,7 +820,18 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                 <div className="studioDocumentBodyHeader"><span>기획서 본문</span></div>
                 <StudioPlanSheet
                   plan={plan}
-                  onChange={(next) => { setPlan(next); setContent(planToContent(next)); markDirty(); }}
+                  selection={planSelection}
+                  revisedFields={revisedFields}
+                  revisedSessions={revisedSessions}
+                  onSelect={(next) => {
+                    setPlanSelection(next);
+                    // 고르면 곧바로 오른쪽 수정 패널을 연다. 사서가 쓰던 흐름을 그대로 쓴다.
+                    if (next) { setIsAiPanelOpen(true); setAiRequestState('idle'); setAiRevisedText(''); }
+                  }}
+                  onManualChange={(key, value) => {
+                    const next = { ...plan, [key]: value } as StudioPlan;
+                    setPlan(next); setContent(planToContent(next)); markDirty();
+                  }}
                 />
               </div>
             ) : (
@@ -807,11 +885,18 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
               ) : (
                 <>
                   <section className="studioAiSelectedSource" aria-label="선택한 원문">
-                    <strong>선택한 원문</strong>
-                    {hasSelectedText ? (
+                    <strong>{planSelection ? '고칠 곳' : '선택한 원문'}</strong>
+                    {planSelection ? (
+                      <>
+                        <p className="studioAiSelectedTarget">{planSelectionLabel(planSelection)}</p>
+                        <p>{planSelectionPreview}</p>
+                      </>
+                    ) : hasSelectedText ? (
                       <p>{selectedText}</p>
                     ) : (
-                      <p className="studioAiEmptySource">수정할 문장을 먼저 선택해 주세요.</p>
+                      <p className="studioAiEmptySource">
+                        {plan ? '고칠 항목이나 회차를 먼저 눌러 주세요.' : '수정할 문장을 먼저 선택해 주세요.'}
+                      </p>
                     )}
                   </section>
 
@@ -877,7 +962,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                     <button
                       className="uiButton uiButtonPrimary"
                       type="button"
-                      disabled={!canRequestAiEdit}
+                      disabled={plan && planSelection ? !canRequestPlanEdit : !canRequestAiEdit}
                       onClick={handleAiRequest}
                     >
                       {aiRequestState === 'submitting' ? '요청 중' : aiRequestState === 'failed' ? '다시 요청' : '수정 요청'}

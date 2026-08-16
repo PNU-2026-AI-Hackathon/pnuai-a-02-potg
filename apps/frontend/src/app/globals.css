@@ -12587,11 +12587,22 @@ html:has(.moiraPage) {
 .programCurriculumTable tbody tr { cursor: pointer; }
 .programCurriculumTable tbody tr.isChosen { background: #eaf5ee; }
 
-.studioPlanRevisePanel { position: sticky; bottom: 12px; margin-top: 18px; background: #fff; border: 1px solid #cfe0d5; border-radius: 14px; padding: 16px; box-shadow: 0 8px 24px rgba(24, 59, 39, 0.12); }
-.studioPlanReviseTarget { margin: 0 0 10px; font-size: 13px; color: #375c47; }
-.studioPlanRevisePanel blockquote { margin: 0 0 10px; padding: 10px 12px; background: #f7faf8; border-left: 3px solid #9ec7ae; border-radius: 6px; font-size: 13px; }
-.studioPlanRevisePanel textarea { width: 100%; min-height: 72px; border: 1px solid #cfe0d5; border-radius: 10px; padding: 10px 12px; font: inherit; resize: vertical; }
-.studioPlanQuickChips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-.studioPlanQuickChips button { border: 1px solid #cfe0d5; background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
-.studioPlanQuickChips button:hover { background: #f1f8f3; }
-.studioPlanReviseActions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* --- 항목 시트: 글자 크기와 수정 표시 ------------------------------------- */
+
+.studioPlanGroup > h3 { font-size: 17px; color: #2f7a52; margin: 0 0 16px; }
+.studioPlanFieldHead h4 { font-size: 16px; }
+.studioPlanValue { font-size: 15.5px; line-height: 1.75; }
+.studioPlanManualInput { font-size: 15.5px; }
+.studioPlanSheet .programCurriculumTable { font-size: 15px; }
+.studioPlanHint { font-size: 13px; }
+
+/* 고친 곳을 눈에 보이게 남긴다. 사서가 무엇이 바뀌었는지 알 수 없으면
+   여러 번 고쳤을 때 어디를 손봤는지 되짚을 방법이 없다. */
+.studioPlanField.isRevised { background: #fdf8ec; border-left: 3px solid #d9a441; border-radius: 0 10px 10px 0; padding-left: 12px; }
+.studioPlanField.isRevised .studioPlanValue { background: #fbf1d9; border-radius: 6px; padding: 6px 8px; }
+.studioPlanRevisedBadge { font-size: 11px; font-weight: 600; color: #8a6d3b; background: #fbf1d9; border: 1px solid #eadcb8; border-radius: 999px; padding: 2px 9px; }
+.programCurriculumTable tbody tr.isRevised { background: #fbf1d9; }
+.programCurriculumTable tbody tr.isRevised.isChosen { background: #f5e6c3; }
+
+.studioAiSelectedTarget { font-weight: 600; color: #2f7a52; margin: 0 0 6px; }
