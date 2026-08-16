@@ -277,6 +277,100 @@ const ELEMENTARY_SECOND: PlanTuple[] = [
   [32, '12월 22일', '', '', '<Special program 2>', ''],
 ];
 
+/**
+ * 유아반 2기 32회차. 2024. 9. 7. ~ 12. 22.
+ *
+ * 원본에 [23] 11월 23일 줄이 없다. 오른쪽 표가 [22]에서 끝나고 아래 표가 [24]로 시작하며
+ * 그 사이는 빈 여백이다. 지어낼 수 없으므로 23회차는 비워 둔다.
+ */
+const KINDER_SECOND: PlanTuple[] = [
+  [1, '9월 7일', 'Animal farm', '- Story Telling',
+    '- Student Book: learning animal sounds and Differentiating between farm animals and wild animals\n- Craft: My Name Tag', ''],
+  [2, '9월 8일', 'Animal farm', '- Presentation: My name tag\n- Story Telling: review',
+    '- Chant: Animal sounds\n- Phonics game\n- ABC Worksheets',
+    'Aa: ant, apple\nBb: banana, bus\nCc: cat, cow\nDd: doll, dog'],
+  [3, '9월 14일', 'Animal farm', '- Phonics review\n- Story Telling',
+    '- Student Book: Learning the number of limbs each animal has.\n- Craft: My farm animal puppet', ''],
+  [4, '9월 15일', 'Animal farm', '- Presentation: My farm animal puppet\n- Story Telling: review',
+    '- Song: Bow Wow Meow\n- Phonics game\n- ABC Worksheets',
+    'Ee: egg, elephant\nFf: fan, fox\nGg: goat, gorilla\nHh: hat, hand'],
+  [5, '9월 21일', 'Animal farm', '- Story telling: Overall review',
+    'Review expression and words learned in book', 'Aa ~ Hh review'],
+
+  [6, '9월 22일', 'Fruit Monster', '- Story Telling',
+    '- Student Book: Learning the names of different fruits\n- Craft: My fruit basket', ''],
+  [7, '9월 28일', 'Fruit Monster', "- Presentation: What's in my fruit basket\n- Story Telling: review",
+    '- Chant: Yummy fruits\n- Phonics game\n- ABC Worksheets',
+    'Ii: igloo, ink\nJj: jam, jelly\nKk: key, kite\nLl: lion, lemon'],
+  [8, '9월 29일', 'Fruit Monster', '- Phonics review\n- Story Telling',
+    '- Student Book: Learning the colors of fruit and expressing desire/preference.\n- Craft: Watermelon hat', ''],
+  [9, '10월 5일', 'Fruit Monster', "- Presentation: what's my favourite fruit.\n- Story Telling: review",
+    '- Song: What do you like\n- Phonics game\n- ABC Worksheets',
+    'Mm: mask, moon\nNn: nose, nail\nOo: orange, oreo\nPp: pear, penguin'],
+  [10, '10월 6일', 'Fruit Monster', '- Story Telling: Overall review',
+    'Review expressions and words learned in book', 'Aa ~ Pp Review\nAlphabet Dance'],
+
+  [11, '10월 12일', 'Shake, Shake, Shake.', '- Story Telling',
+    '- Student Book: Learning the name of different body movements.\n- Craft: My marionette', ''],
+  [12, '10월 13일', 'Shake, Shake, Shake.',
+    '- Presentation: Describe your Marionette\n- Story Telling: Review',
+    '- Chant: Super Dancer\n- Phonics game\n- ABC Worksheets',
+    'Qq: queen, quilt\nRr: ring, robot\nSs: socks, saw\nTt: tomato, turtle'],
+  [13, '10월 19일', 'Shake, Shake, Shake.', '- Phonics review\n- Story Telling',
+    '- Student Book: Use the expression "can you?" "yes i can" to express ability to do something.\n- Craft: Dancing Rabbit', ''],
+  [14, '10월 20일', 'Shake, Shake, Shake.',
+    '- Presentation: Describe the dancing rabbit, and show the different move it can do.\n- Story telling',
+    '- Song: Dance and freeze\n- Phonics game\n- ABC Worksheets',
+    'Uu: umbrella\nVv: vase, van\nWw: watch, whale'],
+  [15, '10월 26일', 'Shake, Shake, Shake.', 'Story telling: Overall review',
+    'Review expression and words learned in book', 'Qq ~ Ww Review'],
+
+  [16, '10월 27일', 'I am not scared now', '- Phonics review\n- Story Telling',
+    '- Student book: Learn the different scary thing that we can find in our room.\n- Craft: Scary castle', ''],
+  [17, '11월 2일', 'I am not scared now',
+    "- Presentation: What's your favourite thing about Halloween and why.\n- Story Telling",
+    '- Chant: Boo Yawn\n- Phonics game\n- ABC Worksheets',
+    'Xx: box, fox\nYy: yo-yo, yellow\nZz: zero, zipper'],
+  [18, '11월 3일', 'I am not scared now', '- Phonics review\n- Story Telling',
+    "- Student book: Learn morning and night greeting expressions. answering the question with; yes i am/no i'm not.\n- Craft: My pumpkin bag", ''],
+  [19, '11월 9일', 'I am not scared now', '- Presentation: My halloween costume\n- Story Telling',
+    '- Song: I am not scared\n- Phonics game\n- ABC Worksheets',
+    'Aa: ant, apple\nBb: banana, bus\nCc: cat, cow\nDd: doll, dog\nEe: egg, elephant'],
+  [20, '11월 10일', 'I am not scared now', '- Story telling: Overall review',
+    '- Review expression and words learned in book', 'Aa ~ Zz Review\nAlphabet Dance'],
+
+  [21, '11월 16일', 'Gorilla drum', '- Phonics review\n- Story Telling',
+    '- Student book: Finding the difference between the pictures and learn different instruments\n- Craft: Straw Flute', ''],
+  [22, '11월 17일', 'Gorilla drum',
+    '- Presentation: talk about your flute and your favourite song\n- Story Telling',
+    '- Phonics game\n- ABC Worksheets',
+    'Ff: fan, fox\nGg: goat, gorilla\nHh: hat, hand\nIi: igloo, ink\nJj: jam, jelly'],
+  // 23회차는 원본에 실려 있지 않다.
+  [24, '11월 24일', 'Gorilla drum', '- Presentation:\n- Story Telling: review',
+    '- Song: Yawn Yawn Yawn\n- Phonics game\n- ABC Worksheets',
+    'Kk: key, kite\nLl: lion, lemon\nMm: mask, moon\nNn: nose, nail\nOo: orange, oreo'],
+  [25, '11월 30일', 'Gorilla drum', 'Story telling: Overall review',
+    '- Review expressions and words learned in book', 'Aa ~ Oo Review\nAlphabet Dance'],
+
+  [26, '12월 1일', 'Merry Christmas', '- Phonics Review\n- Story Telling',
+    '- Student book: leaning the different christmas gifts and guessing what is inside the boxes.\n- Craft: My Christmas hat.', ''],
+  [27, '12월 7일', 'Merry Christmas',
+    '- Presentation: Describe your christmas hat and tell us who you want to give it to as a christmas present.\n- Story Telling: review\n- Story Telling',
+    '- Chant: Look at my Sled\n- Phonics game\n- ABC Worksheets',
+    'Pp: pear, penguin\nQq: queen, quilt\nRr: ring, robot\nSs: socks, saw\nTt: tomato, turtle\nXx: box, fox'],
+  [28, '12월 8일', 'Merry Christmas', '- Phonics review\n- Story Telling',
+    '- Student book: learn different winter spots equipment.\n- Craft: christmas Picture holder.', ''],
+  [29, '12월 14일', 'Merry Christmas',
+    '- Presentation: Describe the picture holder and present who you want to give it as a gift to.\n- Story Telling',
+    '- Song Christmas Present\n- Phonics game\n- ABC Worksheets',
+    'Uu: umbrella\nVv: vase, van\nWw: watch, whale\nXx: box, fox\nYy: yo-yo, yellow\nZz: zero, zipper'],
+  [30, '12월 15일', 'Merry Christmas', 'Story telling: Overall review',
+    '- Review expression and words learned in book', 'Aa~ Zz Review\nAlphabet Dance'],
+
+  [31, '12월 21일', '', '', '<Special program 1>', ''],
+  [32, '12월 22일', '', '', '<Special program 2>', ''],
+];
+
 const GOAL_GROUP_A = '· 일상생활에서 사용되는 쉽고 간단한 표현을 듣고 말할 수 있다.\n'
   + '· 구두로 익힌 쉽고 간단한 표현을 따라 읽고 쓸 수 있으며 쉽고 간단한 단어를 스스로 인식할 수 있다.';
 
@@ -296,6 +390,15 @@ export const ENGLISH_PLAY_ENTRIES: Record<number, ManualCurriculumEntry> = {
     source: '들락날락 영어랑 놀자(Group B / 초등반) 강의계획서 이미지의 28회차 표' + PLAN_COLUMNS,
     content: [{ label: '강의목표', value: GOAL_ELEMENTARY }],
     rows: rowsFromTuples(GROUP_B),
+  },
+  3702: {
+    source: '들락날락 영어랑 놀자(Group A / 유아반) 2기 강의계획서 이미지의 회차표' + PLAN_COLUMNS
+      + '. 원본에 [23] 11월 23일 줄이 없어 23회차는 비어 있다.'
+      + ' 오른쪽 표가 [22]에서 끝나고 아래 표가 [24]로 시작하며 그 사이는 여백이다.',
+    // 3703과 같은 계획서 양식이라 표가 통째로 장소 칸으로 딸려 들어가 있었다.
+    basicInfo: [{ label: '장소', value: '금정아이꿈자람 작은도서관' }],
+    content: [{ label: '강의목표', value: GOAL_GROUP_A }],
+    rows: rowsFromTuples(KINDER_SECOND),
   },
   3703: {
     source: '들락날락 영어랑 놀자(Group B / 초등반) 2기 강의계획서 이미지의 32회차 표' + PLAN_COLUMNS
