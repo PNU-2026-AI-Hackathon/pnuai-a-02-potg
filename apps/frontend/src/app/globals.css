@@ -6588,11 +6588,9 @@ html:has(.moiraPage) {
     box-shadow 0.24s ease;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .introPage .introCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 24px 48px rgba(30, 57, 44, 0.11);
-  }
+.introPage .introCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(30, 57, 44, 0.11);
 }
 
 .introCard strong {
@@ -6666,20 +6664,18 @@ html:has(.moiraPage) {
     box-shadow 0.3s ease;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .featureCard:hover {
-    border-color: rgba(22, 116, 95, 0.25);
-  }
+.featureCard:hover {
+  border-color: rgba(22, 116, 95, 0.25);
+}
 
-  .featureCard:hover::before {
-    transform: scale(1.35);
-  }
+.featureCard:hover::before {
+  transform: scale(1.35);
+}
 
-  .featureCard:hover .introCardIcon {
-    background: #e2f0e8;
-    box-shadow: 0 10px 22px rgba(22, 116, 95, 0.12);
-    transform: translateY(-3px) rotate(-4deg) scale(1.04);
-  }
+.featureCard:hover .introCardIcon {
+  background: #e2f0e8;
+  box-shadow: 0 10px 22px rgba(22, 116, 95, 0.12);
+  transform: translateY(-3px) rotate(-4deg) scale(1.04);
 }
 
 .introCardIcon {
