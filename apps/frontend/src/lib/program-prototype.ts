@@ -126,10 +126,13 @@ async function fetchBoard<T>(path: string, empty: T): Promise<T> {
 
     if (!response.ok) {
       /**
-       * 데이터는 정제 배치를 돌리고 `npm run program-board:publish` 로 올려야 생긴다.
-       * 아직 안 올린 사람에게도 화면이 죽지 않고 열려야, 무엇을 해야 하는지 안내라도 한다.
+       * 여기까지 왔다면 백엔드에는 닿았고 백엔드가 거절한 것이다. 데이터가 없는 것과 다르다.
+       * 스키마를 받고 `prisma generate` 를 안 돌려 `programBoardEntry` 가 없을 때 500으로
+       * 떨어지는 것이 가장 흔하므로, 배치 대신 그것을 먼저 짚어 준다.
+       *
+       * 던지지 않는 것은, 게시판이 비는 편이 사이트 전체가 닫히는 것보다 낫기 때문이다.
        */
-      console.warn(`프로그램 게시판 데이터를 받지 못했습니다 (${response.status}). 백엔드에서 program-board:publish 를 돌렸는지 확인해 주세요.`);
+      console.warn(`프로그램 게시판 데이터를 받지 못했습니다 (${response.status}). 백엔드 로그를 보고, 스키마를 새로 받았다면 apps/backend 에서 npx prisma generate 를 돌려 주세요.`);
       return empty;
     }
 

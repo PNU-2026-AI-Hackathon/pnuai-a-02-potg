@@ -176,7 +176,15 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             <p className="programBoardNotice" role="status">
               {hasFilters
                 ? '조건에 맞는 프로그램이 없습니다. 조건을 바꾸거나 지워 보세요.'
-                : <>프로그램 데이터가 아직 준비되지 않았습니다. 백엔드에서 <code>npm run program-board:build -- --profile all</code> 뒤에 <code>npm run program-board:publish</code>를 실행해 주세요.</>}
+                /**
+                 * 흔한 순서대로 안내한다.
+                 *
+                 * 예전에는 이 자리에서 정제 배치부터 돌리라고 했다. 그런데 목록이 비는 흔한
+                 * 이유는 데이터가 없는 것이 아니라 백엔드가 안 떠 있거나, 새 스키마를 받고
+                 * `prisma generate` 를 안 돌려 `programBoardEntry` 가 없는 것이다. 배치를
+                 * 앞세우면 크롤 결과가 없는 컴퓨터에서 몇십 분을 헛돌게 된다.
+                 */
+                : <>프로그램 목록을 받지 못했습니다. 백엔드가 떠 있는지, 스키마를 새로 받았다면 <code>npx prisma generate</code>를 돌렸는지 확인해 주세요. 둘 다 맞다면 DB에 올린 것이 없는 것이니 <code>npm run program-board:publish</code>가 필요합니다.</>}
             </p>
           ) : (
             <div className="programCardGrid">
