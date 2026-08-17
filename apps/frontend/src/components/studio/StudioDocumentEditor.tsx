@@ -98,6 +98,18 @@ surveyResult: {
     { label: '책 기반 대화 활동', ratio: 26, count: 22 },
     { label: '작품 전시 및 공유', ratio: 19, count: 16 },
   ],
+  intentionBreakdown: [
+    { label: '꼭 참여하고 싶어요', ratio: 42, count: 35 },
+    { label: '일정이 맞으면 참여하고 싶어요', ratio: 29, count: 24 },
+    { label: '관심은 있지만 참여는 어려워요', ratio: 19, count: 16 },
+    { label: '관심이 없어요', ratio: 10, count: 8 },
+  ],
+  timeSlotBreakdown: [
+    { label: '평일 오전', ratio: 18, count: 15 },
+    { label: '평일 오후', ratio: 34, count: 29 },
+    { label: '평일 저녁', ratio: 22, count: 18 },
+    { label: '주말', ratio: 26, count: 22 },
+  ],
   comments: [
     '가족이 함께 참여할 수 있는 프로그램이라 부담이 적어요.',
     '주말 오후 수업이 가장 참여하기 편합니다.',
@@ -152,6 +164,18 @@ surveyResult: {
     { label: '시니어·청년 협업', ratio: 31, count: 22 },
     { label: '사진과 인터뷰 결합', ratio: 27, count: 19 },
     { label: '마을 전시 공유회', ratio: 21, count: 15 },
+  ],
+  intentionBreakdown: [
+    { label: '꼭 참여하고 싶어요', ratio: 39, count: 28 },
+    { label: '일정이 맞으면 참여하고 싶어요', ratio: 31, count: 22 },
+    { label: '관심은 있지만 참여는 어려워요', ratio: 18, count: 13 },
+    { label: '관심이 없어요', ratio: 12, count: 9 },
+  ],
+  timeSlotBreakdown: [
+    { label: '평일 오전', ratio: 22, count: 16 },
+    { label: '평일 오후', ratio: 29, count: 21 },
+    { label: '평일 저녁', ratio: 24, count: 17 },
+    { label: '주말', ratio: 25, count: 18 },
   ],
   comments: [
     '마을 이야기를 모으는 활동이 의미 있어 보여요.',
@@ -309,45 +333,26 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
   /** 문서 조회에 실패했을 때 이것으로 대신 보여준다. 화면에 그리지는 않아 상태가 아니라 참조로 둔다. */
   const storedDraftRef = useRef<StudioDraft | null>(null);
-  const storedDraft = useMemo(() => readStoredDraft(document.id), [document.id]);
+  const [storedDraft, setStoredDraft] = useState<StudioDraft | null>(null);
+  const [hasMounted, setHasMounted] = useState(false);
   /**
    * 생성 화면이 남겨 둔 항목 구조. 이것이 있어야 항목 하나만 고칠 수 있다.
    * 이미 저장된 기획서는 글만 있어 항목 구분이 없으므로 예전 편집 방식으로 보여준다.
    *
-   * 첫 렌더에서 읽지 않고 마운트 뒤에 읽는다. 서버에는 세션 저장소가 없어
-   * 첫 렌더에서 읽으면 서버가 그린 것과 화면이 달라져 hydration이 어긋난다.
+   * 서버와 클라이언트 첫 렌더가 달라지지 않도록 마운트 뒤에 세션 저장소를 읽는다.
    */
-  const [plan, setPlan] = useState<StudioPlan | null>(() => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-
-    try {
-      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
-      if (!raw) {
-        return null;
-      }
-      const stored = JSON.parse(raw) as { documentId?: string; plan?: unknown };
-      if (stored.documentId !== document.id) {
-        return null;
-      }
-      return toStudioPlan(stored.plan);
-    } catch (error) {
-      console.error('Failed to load studio plan from sessionStorage:', error);
-      return null;
-    }
-  });
+  const [plan, setPlan] = useState<StudioPlan | null>(null);
   /** 기획서에서 지금 고르고 있는 곳. 오른쪽 수정 패널이 이것을 보고 무엇을 고칠지 정한다. */
   const [planSelection, setPlanSelection] = useState<PlanSelection | null>(null);
   /** 어디를 고쳤는지. 화면에 표시해 주지 않으면 사서가 바뀐 줄을 모른다. */
   const [revisedFields, setRevisedFields] = useState<Set<StudioPlanFieldKey>>(new Set());
   const [revisedSessions, setRevisedSessions] = useState<Set<number>>(new Set());
-  const [title, setTitle] = useState(storedDraft?.title ?? document.title);
+  const [title, setTitle] = useState(document.title);
   const [stage, setStage] = useState<StudioDocumentStage>(document.stage);
   const [surveyResult, setSurveyResult] = useState<StudioSurveyResult | undefined>(document.surveyResult ?? defaultSurveyResult);
   const [stageSaveState, setStageSaveState] = useState<StageSaveState>('idle');
   const [stageMessage, setStageMessage] = useState('');
-  const [content, setContent] = useState(storedDraft?.content ?? document.content);
+  const [content, setContent] = useState(document.content);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
   /**
@@ -356,7 +361,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
    */
   const [agenda, setAgenda] = useState<StudioAgendaInput | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('saved');
-  const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
+  const [lastSavedAt, setLastSavedAt] = useState(document.updatedAt);
   const [saveErrorMessage, setSaveErrorMessage] = useState('');
   const [selectedText, setSelectedText] = useState('');
   const [selectedRange, setSelectedRange] = useState<TextSelectionRange | null>(null);
@@ -366,6 +371,39 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [aiRevisedText, setAiRevisedText] = useState('');
   const [aiRevisionSource, setAiRevisionSource] = useState<AiRevisionSource | null>(null);
   const [aiReviewMessage, setAiReviewMessage] = useState('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+
+  // 세션 저장소는 서버 초기 HTML과 달라지므로 하이드레이션 전에는 읽지 않는다.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    setHasMounted(true);
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const nextStoredDraft = readStoredDraft(document.id);
+    setStoredDraft(nextStoredDraft);
+
+    if (nextStoredDraft) {
+      setTitle(nextStoredDraft.title);
+      setContent(nextStoredDraft.content);
+      setLastSavedAt('방금 전');
+    }
+
+    try {
+      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
+      if (!raw) {
+        return;
+      }
+      const stored = JSON.parse(raw) as { documentId?: string; plan?: unknown };
+      if (stored.documentId !== document.id) {
+        return;
+      }
+      setPlan(toStudioPlan(stored.plan));
+    } catch (error) {
+      console.error('Failed to load studio plan from sessionStorage:', error);
+    }
+  }, [document.id]);
 
   const hasEmptyTitle = title.trim().length === 0;
   const canSave = saveState === 'dirty' && !hasEmptyTitle;
@@ -857,7 +895,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             <button className="uiButton uiButtonSecondary" type="button" onClick={openAiPanel}>
               AI 수정
             </button>
-            {plan ? (
+            {plan && hasMounted ? (
               /**
                * 브라우저 인쇄로 PDF를 만든다. 인쇄 창에서 「PDF로 저장」을 고르면 된다.
                * 한글 글꼴을 번들에 싣지 않아도 되고 표가 그대로 나온다.

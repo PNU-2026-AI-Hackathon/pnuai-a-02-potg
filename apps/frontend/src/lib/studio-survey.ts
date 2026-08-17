@@ -9,6 +9,8 @@ export type StudioSurveyResult = {
   totalTarget: number;
   satisfaction: number;
   topChoices: StudioSurveyChoice[];
+  intentionBreakdown: StudioSurveyChoice[];
+  timeSlotBreakdown: StudioSurveyChoice[];
   comments: string[];
   actionPoints: string[];
 };
@@ -16,23 +18,27 @@ export type StudioSurveyResult = {
 export const defaultSurveyResult: StudioSurveyResult = {
   respondents: 96,
   totalTarget: 120,
-  satisfaction: 92,
+  satisfaction: 72,
   topChoices: [
-    { label: '생활 밀착형 디지털 교육', ratio: 44, count: 42 },
-    { label: '주민 참여형 프로그램', ratio: 31, count: 30 },
-    { label: '주말/오후 시간대 운영', ratio: 25, count: 24 },
-    { label: '혼합형 소그룹 수업', ratio: 18, count: 17 },
+    { label: '꼭 참여하고 싶어요', ratio: 42, count: 40 },
+    { label: '일정이 맞으면 참여하고 싶어요', ratio: 31, count: 30 },
+    { label: '관심은 있지만 참여는 어려워요', ratio: 18, count: 17 },
+    { label: '관심이 없어요', ratio: 9, count: 9 },
   ],
-  comments: [
-    '기초부터 천천히 배우는 구조가 가장 편안해 보여요.',
-    '주말이나 오후 시간대가 참여하기 더 쉬울 것 같아요.',
-    '실생활 문제를 함께 해결하는 방식이 실용적입니다.',
+  intentionBreakdown: [
+    { label: '꼭 참여하고 싶어요', ratio: 42, count: 40 },
+    { label: '일정이 맞으면 참여하고 싶어요', ratio: 31, count: 30 },
+    { label: '관심은 있지만 참여는 어려워요', ratio: 18, count: 17 },
+    { label: '관심이 없어요', ratio: 9, count: 9 },
   ],
-  actionPoints: [
-    '기초 디지털 활용 중심의 프로그램 구성 우선 유지',
-    '주말 또는 오후 시간대 운영을 우선 검토',
-    '소그룹 실습과 주민 참여형 활동 비중 확대',
+  timeSlotBreakdown: [
+    { label: '평일 오전', ratio: 26, count: 25 },
+    { label: '평일 오후', ratio: 34, count: 33 },
+    { label: '평일 저녁', ratio: 22, count: 21 },
+    { label: '주말', ratio: 18, count: 17 },
   ],
+  comments: [],
+  actionPoints: [],
 };
 
 function toNumber(value: unknown, fallback = 0) {
@@ -95,10 +101,19 @@ export function normalizeSurveyResult(value: unknown): StudioSurveyResult | null
   const totalTarget = toNumber(record.totalTarget, 0);
   const satisfaction = toNumber(record.satisfaction, 0);
   const topChoices = toChoiceArray(record.topChoices);
+  const intentionBreakdown = toChoiceArray(record.intentionBreakdown);
+  const timeSlotBreakdown = toChoiceArray(record.timeSlotBreakdown);
   const comments = toStringArray(record.comments);
   const actionPoints = toStringArray(record.actionPoints);
 
-  if (respondents <= 0 && totalTarget <= 0 && satisfaction <= 0 && topChoices.length === 0) {
+  if (
+    respondents <= 0 &&
+    totalTarget <= 0 &&
+    satisfaction <= 0 &&
+    topChoices.length === 0 &&
+    intentionBreakdown.length === 0 &&
+    timeSlotBreakdown.length === 0
+  ) {
     return null;
   }
 
@@ -107,6 +122,10 @@ export function normalizeSurveyResult(value: unknown): StudioSurveyResult | null
     totalTarget,
     satisfaction,
     topChoices: topChoices.length > 0 ? topChoices : defaultSurveyResult.topChoices,
+    intentionBreakdown:
+      intentionBreakdown.length > 0 ? intentionBreakdown : defaultSurveyResult.intentionBreakdown,
+    timeSlotBreakdown:
+      timeSlotBreakdown.length > 0 ? timeSlotBreakdown : defaultSurveyResult.timeSlotBreakdown,
     comments: comments.length > 0 ? comments : defaultSurveyResult.comments,
     actionPoints: actionPoints.length > 0 ? actionPoints : defaultSurveyResult.actionPoints,
   };
