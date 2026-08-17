@@ -28,6 +28,8 @@ type CreateCommunityPostBody = {
 type UpdateCommunityPostBody = {
   title?: string;
   content?: string;
+  type?: string;
+  tags?: unknown;
   password?: string;
 };
 
@@ -44,7 +46,7 @@ const VALID_POST_TYPES = new Set(['notice', 'normal']);
 const MIN_PASSWORD_LENGTH = 4;
 const MAX_PASSWORD_LENGTH = 64;
 const MAX_TITLE_LENGTH = 100;
-const MAX_CONTENT_LENGTH = 5000;
+const MAX_CONTENT_LENGTH = 2_000_000;
 const MAX_COMMENT_LENGTH = 2000;
 
 const router = Router();
@@ -350,6 +352,8 @@ async function updatePost(
 ) {
   const title = readString(req.body?.title);
   const content = readString(req.body?.content);
+  const requestedType = readString(req.body?.type);
+  const requestedTags = Array.isArray(req.body?.tags) ? readTags(req.body.tags) : undefined;
 
   if (!title || !content) {
     return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
@@ -361,6 +365,9 @@ async function updatePost(
   try {
     const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
     if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
+    if (post.boardSlug === 'library-news' && requestedType && !VALID_POST_TYPES.has(requestedType)) {
+      return res.status(400).json({ code: 'INVALID_POST_TYPE', error: 'Invalid post type.' });
+    }
     const canEdit = req.user?.id === post.authorId || await verifyPostPassword(post.passwordHash, req.body?.password);
     if (!canEdit) {
       return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
@@ -368,7 +375,12 @@ async function updatePost(
 
     const updatedPost = await prisma.communityPost.update({
       where: { id: post.id },
-      data: { title, content },
+      data: {
+        title,
+        content,
+        ...(post.boardSlug === 'library-news' && requestedType ? { type: requestedType } : {}),
+        ...(post.boardSlug === 'library-news' && requestedTags ? { tags: requestedTags } : {}),
+      },
     });
     return res.status(200).json({ post: serializePost(updatedPost, req.user?.id) });
   } catch (error) {

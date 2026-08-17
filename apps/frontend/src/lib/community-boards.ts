@@ -43,9 +43,9 @@ export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
   'library-news': {
     slug: 'library-news',
     href: '/community/library-news',
-    title: '작은도서관 행사 및 소식 게시판',
+    title: '도서관 행사 및 소식 게시판',
     shortTitle: '도서관 소식',
-    description: '작은도서관 운영 안내, 행사, 프로그램 소식을 공유하는 게시판입니다.',
+    description: '도서관 운영 안내, 행사, 프로그램 소식을 공유하는 게시판입니다.',
     purpose: '휴관, 공사, 운영 시간 변경, 프로그램 모집 등 도서관 이용에 필요한 정보를 확인합니다.',
     typeLabels: {
       notice: '공지',
