@@ -306,9 +306,23 @@ model StudioDocument {
   owner            User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  votes            StudioDocumentVote[]
 
   @@index([ownerId, updatedAt])
   @@index([anonymousOwnerId, updatedAt])
+}
+
+model StudioDocumentVote {
+  id               String         @id @default(uuid())
+  studioDocumentId String
+  voterKey         String
+  intention        String?
+  timeSlot         String?
+  createdAt        DateTime       @default(now())
+  document         StudioDocument @relation(fields: [studioDocumentId], references: [id], onDelete: Cascade)
+
+  @@unique([studioDocumentId, voterKey])
+  @@index([studioDocumentId, createdAt])
 }
 
 /**

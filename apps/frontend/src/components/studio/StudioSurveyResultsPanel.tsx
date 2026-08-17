@@ -24,10 +24,6 @@ export default function StudioSurveyResultsPanel({
     return null;
   }
 
-  const responseRate = surveyResult.totalTarget
-    ? Math.round((surveyResult.respondents / surveyResult.totalTarget) * 100)
-    : 0;
-
   const palette = ['#2a7a57', '#8cc5a3', '#67a67e', '#dfeee4'];
   const labelLines: Record<string, string[]> = {
     '꼭 참여하고 싶어요': ['꼭 참여하고', '싶어요'],
@@ -47,7 +43,7 @@ export default function StudioSurveyResultsPanel({
                 <span key={line}>{line}</span>
               ))}
             </span>
-            <strong>{choice.ratio}%</strong>
+            <strong>{choice.ratio}% <small>{choice.count}명</small></strong>
           </div>
           <div className="studioSurveyBarTrack" aria-hidden="true">
             <span
@@ -69,31 +65,11 @@ export default function StudioSurveyResultsPanel({
           <p className="uiEyebrow">수요조사 결과</p>
           <h2>응답 현황</h2>
         </div>
-        <span className="studioSurveyStateBadge">
-          {stage === '수요조사 완료' ? '검토 완료' : '검토 중'}
-        </span>
-      </div>
-
-      <div className="studioSurveyStatsGrid">
-        <div className="studioSurveyStatCard">
-          <span>참여 인원</span>
-          <strong>{surveyResult.respondents}명</strong>
-          <small>대상 {surveyResult.totalTarget}명 중 {responseRate}% 응답</small>
-        </div>
-        <div className="studioSurveyStatCard">
-          <span>최다 응답</span>
-          <strong>{surveyResult.intentionBreakdown[0]?.label ?? '결과 없음'}</strong>
-          <small>{surveyResult.intentionBreakdown[0]?.ratio ?? 0}% 선택</small>
-        </div>
-        <div className="studioSurveyStatCard">
-          <span>응답 비율</span>
-          <strong>{responseRate}%</strong>
-          <small>전체 설문 참여율</small>
-        </div>
-        <div className="studioSurveyStatCard">
-          <span>만족도</span>
-          <strong>{surveyResult.satisfaction}%</strong>
-          <small>참여 경험 만족도</small>
+        <div className="studioSurveyHeaderMeta">
+          <span className="studioSurveyRespondents">참여 인원 <strong>{surveyResult.respondents}명</strong></span>
+          <span className="studioSurveyStateBadge">
+            {stage === '수요조사 완료' ? '검토 완료' : '검토 중'}
+          </span>
         </div>
       </div>
 
