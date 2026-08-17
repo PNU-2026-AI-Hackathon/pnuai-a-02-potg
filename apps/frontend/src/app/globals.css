@@ -13263,18 +13263,80 @@ html:has(.moiraPage) {
   font-size: 13px;
 }
 
-.programFilterPreview {
+/* --- 검색·필터 줄 ------------------------------------------------------------
+   공공예약 화면처럼 한 줄에 늘어놓되, 모서리와 색은 이 사이트 것으로. */
+
+.programFilterBar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
   border: 1px solid #dce5df;
   border-radius: 24px;
   background: #fff;
+  margin-bottom: 22px;
+  padding: 18px 22px;
   box-shadow: 0 14px 36px rgba(25, 58, 49, 0.06);
-  padding: 22px 24px;
 }
 
-.programFilterPreview input,
-.programFilterPreview button {
+.programFilterBar label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.programFilterBar label > span {
+  color: var(--moira-ink);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.programFilterBar select,
+.programFilterBar input {
+  min-height: 40px;
   border: 1px solid #dbe5df;
   border-radius: 999px;
+  background: #fff;
+  padding: 0 14px;
+  color: var(--moira-ink);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.programFilterBar select:focus,
+.programFilterBar input:focus {
+  border-color: var(--moira-green);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+}
+
+/* 검색어 칸만 남는 자리를 차지한다. 고르는 칸은 내용만큼만 있으면 된다. */
+.programFilterSearch {
+  flex: 1 1 220px;
+}
+
+.programFilterBar .uiButton {
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 0 22px;
+}
+
+.programFilterReset {
+  align-self: center;
+  color: #6a7772;
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.programFilterReset:hover {
+  color: var(--moira-green-dark);
+}
+
+@media (max-width: 720px) {
+  .programFilterBar label,
+  .programFilterBar .uiButton {
+    flex: 1 1 100%;
+  }
 }
 
 .programListHeading h2 {
