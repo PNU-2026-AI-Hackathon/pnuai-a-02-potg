@@ -84,6 +84,12 @@ const studioLandingFeatures = [
   },
 ];
 
+/**
+ * 이 화면은 로그인 상태에 따라 버튼이 다르게 움직인다. 미리 만들어 둔 화면을 내주면
+ * 로그인한 사서에게 로그아웃 상태로 만든 화면이 그대로 갈 수 있어, 매번 새로 그린다.
+ */
+export const dynamic = 'force-dynamic';
+
 export default async function StudioAboutPage() {
   const user = await getCurrentUser();
   const accountType = user?.accountType ?? null;

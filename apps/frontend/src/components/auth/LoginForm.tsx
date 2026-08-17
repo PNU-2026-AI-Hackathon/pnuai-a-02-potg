@@ -39,8 +39,12 @@ export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
         return;
       }
 
-      router.replace(redirectTo);
-      router.refresh();
+      /**
+       * 로그인 쿠키는 서버가 심는다. router 로 옮기면 브라우저가 들고 있던 로그아웃 시절
+       * 화면이 그대로 나올 수 있어, 사서로 들어와도 「로그인이 필요합니다」가 뜬다.
+       * 주소를 통째로 새로 여는 쪽이 확실하다 — 쿠키를 달고 서버가 다시 그린다.
+       */
+      window.location.assign(redirectTo);
     } catch (error) {
       console.error(error);
       setErrorMessage('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.');

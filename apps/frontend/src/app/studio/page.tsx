@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import ProgramConditionForm from '@/components/studio/ProgramConditionForm';
 import { getCommunityPost, getCommunityPosts, type CommunityPost } from '@/lib/community-boards';
 import type { StudioAgendaOption } from '@/components/studio/ProgramConditionForm';
+import { requireStudioStaff } from '@/lib/studio-access';
 
 export const metadata: Metadata = {
   title: 'MOIRA STUDIO | 프로그램 기획 조건 선택',
@@ -25,6 +26,8 @@ type StudioPageProps = {
 };
 
 export default async function StudioPage({ searchParams }: StudioPageProps) {
+  await requireStudioStaff('/studio');
+
   const { agenda } = await searchParams;
   const [posts, pickedPost] = await Promise.all([
     getCommunityPosts('ideas'),

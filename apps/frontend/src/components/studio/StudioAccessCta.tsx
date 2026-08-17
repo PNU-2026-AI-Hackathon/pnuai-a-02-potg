@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import type { AuthUser } from '@/lib/auth-config';
+import { isStudioStaff, type AuthUser } from '@/lib/auth-config';
 
 type StudioAccessCtaProps = {
   accountType: AuthUser['accountType'] | null;
@@ -17,7 +17,7 @@ export default function StudioAccessCta({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const isStaff = accountType === 'LIBRARIAN' || accountType === 'ADMIN';
+  const isStaff = isStudioStaff(accountType);
   const isLoggedOut = accountType === null;
 
   function handleAccess() {
@@ -88,7 +88,7 @@ export default function StudioAccessCta({
                   <button
                     className="isPrimary"
                     type="button"
-                    onClick={() => router.push('/login?next=/studio/about')}
+                    onClick={() => router.push('/login?next=/studio')}
                   >
                     로그인하기
                   </button>
