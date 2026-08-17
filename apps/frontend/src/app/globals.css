@@ -16122,3 +16122,86 @@ html:has(.moiraPage) {
 .programDetailActions .uiButton {
   border-radius: 999px;
 }
+
+.studioVotingPage { min-height: 100vh; background: #f7f4ea; padding: 30px 0 96px; color: #1f2937; }
+.studioVotingShell { max-width: 1280px; }
+.studioVotingBreadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 44px; color: #687280; font-size: 13px; }
+.studioVotingBreadcrumb a { display: inline-flex; align-items: center; color: inherit; text-decoration: none; }
+.studioVotingBreadcrumb svg { width: 15px; height: 15px; }
+.studioVotingHero { display: flex; align-items: center; justify-content: space-between; min-height: 220px; margin-bottom: 48px; }
+.studioVotingHero p { margin: 0 0 10px; color: #136f63; font-size: 13px; font-weight: 800; letter-spacing: .13em; }
+.studioVotingHero h1 { margin: 0 0 16px; color: #1f2937; font-size: clamp(36px, 4.2vw, 48px); line-height: 1.15; letter-spacing: -.035em; }
+.studioVotingHero span { color: #687280; font-size: 17px; line-height: 1.75; }
+.studioVotingHeroArt { position: relative; width: 270px; height: 180px; margin-right: 45px; }
+.studioVotingBallot { position: absolute; right: 20px; bottom: 12px; width: 150px; height: 112px; border: 2px solid #88b8a8; border-radius: 18px; background: #f1f8f5; transform: rotate(2deg); }
+.studioVotingBallot::before { content: ''; position: absolute; top: 18px; left: 25px; width: 98px; height: 7px; border-radius: 9px; background: #a7d7c5; }
+.studioVotingBallot i { position: absolute; top: -38px; left: 38px; width: 82px; height: 75px; border: 2px solid #88b8a8; border-radius: 10px; background: #fff; transform: rotate(-7deg); }
+.studioVotingBallot i:nth-child(2) { top: -25px; left: 48px; transform: rotate(6deg); }
+.studioVotingBallot svg { position: absolute; z-index: 2; top: -4px; left: 75px; width: 28px; color: #136f63; }
+.studioVotingBooks { position: absolute; bottom: 10px; left: 10px; display: flex; align-items: end; gap: 5px; }
+.studioVotingBooks i { display: block; width: 18px; height: 70px; border-radius: 5px 5px 2px 2px; background: #a7d7c5; transform: rotate(-4deg); }
+.studioVotingBooks i:nth-child(2) { height: 88px; background: #e6c98e; transform: rotate(3deg); }
+.studioVotingBooks i:nth-child(3) { height: 60px; background: #6c9f8d; }
+.studioVotingControls { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid #dce7e3; }
+.studioVotingControls > p { margin: 0; color: #687280; font-size: 14px; }
+.studioVotingControls > p strong { color: #136f63; }
+.studioVotingControls > div { display: flex; gap: 10px; }
+.studioVotingSearch { position: relative; display: flex; align-items: center; }
+.studioVotingSearch svg { position: absolute; left: 13px; width: 18px; height: 18px; color: #77837d; pointer-events: none; }
+.studioVotingSearch input, .studioVotingSort select { height: 44px; border: 1px solid #dce7e3; border-radius: 11px; background: #fff; color: #1f2937; font: inherit; outline: none; }
+.studioVotingSearch input { width: 290px; padding: 0 14px 0 42px; }
+.studioVotingSort select { min-width: 105px; padding: 0 34px 0 13px; }
+.studioVotingSearch input:focus, .studioVotingSort select:focus { border-color: #136f63; box-shadow: 0 0 0 3px rgba(19,111,99,.12); }
+.studioVotingGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.studioVotingCard { display: flex; flex-direction: column; min-width: 0; min-height: 350px; padding: 24px; border: 1px solid #dce7e3; border-radius: 16px; background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.04); transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.studioVotingCard:hover { border-color: #a7d7c5; box-shadow: 0 9px 24px rgba(30,70,56,.09); transform: translateY(-2px); }
+.studioVotingCardTop { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+.studioVotingCardTop > span { padding: 5px 9px; border-radius: 999px; background: #f1f8f5; color: #136f63; font-size: 12px; font-weight: 700; }
+.studioVotingCardTop strong { display: inline-flex; align-items: center; gap: 4px; color: #136f63; font-size: 12px; }
+.studioVotingCardTop svg, .studioVotingCardFooter svg { width: 16px; height: 16px; }
+.studioVotingCardIdentity { display: grid; grid-template-columns: 44px minmax(0,1fr); align-items: center; gap: 13px; margin: 20px 0 14px; }
+.studioVotingCardIdentity > div { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 12px; background: #f1f8f5; color: #136f63; }
+.studioVotingCardIdentity svg { width: 23px; height: 23px; }
+.studioVotingCard h2 { display: -webkit-box; min-width: 0; margin: 0; overflow: hidden; color: #1f2937; font-size: 19px; font-weight: 700; line-height: 1.42; letter-spacing: -.015em; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.studioVotingContent { display: -webkit-box; margin: 0; overflow: hidden; color: #687280; font-size: 14px; line-height: 1.7; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.studioVotingDetailLink { align-self: flex-start; margin-top: 12px; color: #136f63; font-size: 13px; font-weight: 700; text-decoration: none; }
+.studioVotingDetailLink:focus-visible { border-radius: 4px; outline: 3px solid rgba(19,111,99,.22); outline-offset: 3px; }
+.studioVotingCardFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 22px; border-top: 1px solid #edf1ef; }
+.studioVotingCardFooter > span { display: inline-flex; align-items: center; gap: 6px; color: #687280; font-size: 13px; white-space: nowrap; }
+.studioVotingCardFooter button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 42px; margin: 0; border: 0; border-radius: 10px; padding: 0 17px; background: #136f63; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.studioVotingCardFooter button.isVoted { border: 1px solid #a7d7c5; background: #f1f8f5; color: #136f63; }
+.studioVotingCardFooter button:focus-visible, .studioVotingState button:focus-visible, .studioVotingPagination button:focus-visible { outline: 3px solid rgba(19,111,99,.25); outline-offset: 2px; }
+.studioVotingState { display: grid; min-height: 330px; place-items: center; align-content: center; border: 1px dashed #cbdcd6; border-radius: 18px; background: rgba(255,255,255,.55); text-align: center; }
+.studioVotingState svg { width: 42px; height: 42px; color: #6c9f8d; }
+.studioVotingState h2 { margin: 16px 0 6px; font-size: 20px; }
+.studioVotingState p { margin: 0; color: #687280; line-height: 1.6; }
+.studioVotingState button { margin-top: 18px; border: 0; border-radius: 10px; padding: 11px 18px; background: #136f63; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.studioVotingSkeleton { display: flex; min-height: 350px; flex-direction: column; gap: 14px; padding: 24px; border: 1px solid #e4ebe8; border-radius: 16px; background: #fff; }
+.studioVotingSkeleton > * { display: block; border-radius: 8px; background: linear-gradient(90deg,#edf1ef 25%,#f7f9f8 50%,#edf1ef 75%); background-size: 200% 100%; animation: studioVotingShimmer 1.4s infinite; }
+.studioVotingSkeleton i { width: 80px; height: 24px; }.studioVotingSkeleton b { width: 80%; height: 48px; }.studioVotingSkeleton span { width: 100%; height: 18px; }.studioVotingSkeleton span:nth-of-type(2) { width: 72%; }.studioVotingSkeleton em { height: 44px; margin-top: auto; }
+@keyframes studioVotingShimmer { to { background-position: -200% 0; } }
+.studioVotingPagination { display: flex; justify-content: center; gap: 7px; margin-top: 42px; }
+.studioVotingPagination button { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid #dce7e3; border-radius: 10px; background: #fff; color: #47534d; cursor: pointer; }
+.studioVotingPagination button.isCurrent { border-color: #136f63; background: #136f63; color: #fff; }.studioVotingPagination button:disabled { cursor: default; opacity: .4; }
+.studioVotingOptions { margin: 24px 0 0; border: 0; padding: 0; }
+.studioVotingOptions legend { margin-bottom: 10px; font-weight: 700; }
+.studioVotingOptions legend em { color: #25704a; font-size: 12px; font-style: normal; }
+.studioVotingOptions legend small { color: #77837c; font-weight: 400; }
+.studioVotingOptions label { display: block; margin: 7px 0; cursor: pointer; }
+.studioVotingOptions input { position: absolute; opacity: 0; }
+.studioVotingOptions label span { display: block; border: 1px solid #dce5df; border-radius: 10px; padding: 10px 12px; background: #fafcfb; }
+.studioVotingOptions input:checked + span { border-color: #25704a; background: #e8f3ec; color: #1f6844; font-weight: 700; }
+.studioVotingOptions.isTime > div { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.studioVotingOptions.isTime label { margin: 0; text-align: center; }
+.studioVotingDetail { max-width: 860px; padding: 42px; border: 1px solid #dfe5df; border-radius: 24px; background: #fff; }
+.studioVotingBack { color: #5d6d64; text-decoration: none; }
+.studioVotingDetail header { margin: 32px 0; padding-bottom: 26px; border-bottom: 1px solid #e0e7e2; }
+.studioVotingDetail header span { color: #25704a; font-weight: 700; }
+.studioVotingDetail header h1 { margin: 12px 0 0; font-size: clamp(28px, 5vw, 44px); line-height: 1.25; }
+.studioVotingFullContent { white-space: pre-wrap; color: #3f5047; font-size: 16px; line-height: 1.9; }
+.studioVotingDetailActions { margin-top: 36px; padding-top: 24px; border-top: 1px solid #e0e7e2; }
+.studioVotingModal { max-height: min(760px, calc(100vh - 40px)); overflow-y: auto; }
+.studioVotingModalCancel { width: 100%; margin-top: 10px; border: 0; background: transparent; color: #65736b; cursor: pointer; font: inherit; }
+.studioVotingNotice { padding: 18px; border-radius: 12px; background: #fff; text-align: center; }
+@media (max-width: 1199px) { .studioVotingGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .studioVotingPage { padding-top: 22px; }.studioVotingBreadcrumb { margin-bottom: 28px; overflow-x: auto; white-space: nowrap; }.studioVotingHero { min-height: 180px; margin-bottom: 32px; }.studioVotingHeroArt { display: none; }.studioVotingHero span { font-size: 15px; }.studioVotingControls { align-items: stretch; flex-direction: column; }.studioVotingControls > div { width: 100%; }.studioVotingSearch { flex: 1; }.studioVotingSearch input { width: 100%; }.studioVotingGrid { grid-template-columns: 1fr; }.studioVotingCard { min-height: 330px; padding: 21px; }.studioVotingCardFooter { align-items: stretch; flex-direction: column; }.studioVotingCardFooter button { width: 100%; }.studioVotingPagination { overflow-x: auto; justify-content: flex-start; padding-bottom: 5px; } }
