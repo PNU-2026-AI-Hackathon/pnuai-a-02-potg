@@ -8,7 +8,7 @@ type Comment = { id: string; content: string; author: string; createdAt: string;
 type Activity = { likeCount: number; saveCount: number; liked: boolean; saved: boolean };
 
 const dateFormatter = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long', timeStyle: 'short' });
-const boardNames: Record<string, string> = { 'library-news': '도서관 행사 및 소식', free: '동네 광장', ideas: '함께 만드는 행사' };
+const boardNames: Record<string, string> = { 'library-news': '도서관 행사 및 소식', ideas: '우리동네 아이디어' };
 
 async function fetchPostDetails(postId: string) {
   const [postResponse, commentsResponse, activityResponse] = await Promise.all([
