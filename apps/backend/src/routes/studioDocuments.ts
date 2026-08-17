@@ -45,6 +45,8 @@ type UpdateStudioDocumentBody = {
 
 const router = Router();
 const validStages = new Set<StudioDocumentStage>(['기획 중', '수요조사 중', '수요조사 완료', '기획서 확정']);
+const surveyIntentions = ['꼭 참여하고 싶어요', '일정이 맞으면 참여하고 싶어요', '관심은 있지만 참여는 어려워요', '관심이 없어요'];
+const surveyTimeSlots = ['평일 오전', '평일 오후', '평일 저녁', '주말'];
 let ensureTablePromise: Promise<void> | null = null;
 
 router.use(authenticateOptionalJwt);
@@ -172,7 +174,7 @@ function readConditionValue(conditions: Prisma.JsonValue | null, key: string) {
     : '';
 }
 
-function serializeStudioDocument(document: StudioDocumentRow) {
+function serializeStudioDocument(document: StudioDocumentRow, surveyResult: Prisma.JsonValue | null = document.surveyResult) {
   return {
     id: document.id,
     title: document.title,
@@ -185,9 +187,49 @@ function serializeStudioDocument(document: StudioDocumentRow) {
     conditions: document.conditions,
     agenda: document.agenda,
     plan: document.plan,
-    surveyResult: document.surveyResult,
+    surveyResult,
     createdAt: document.createdAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
+  };
+}
+
+async function liveSurveyResult(documentId: string): Promise<Prisma.JsonObject> {
+  type CountRow = { label: string | null; count: bigint };
+  const [intentionRows, timeSlotRows] = await Promise.all([
+    prisma.$queryRaw<CountRow[]>`
+      SELECT intention AS label, COUNT(*)::bigint AS count
+      FROM "StudioDocumentVote"
+      WHERE "studioDocumentId" = ${documentId}
+      GROUP BY intention
+    `,
+    prisma.$queryRaw<CountRow[]>`
+      SELECT "timeSlot" AS label, COUNT(*)::bigint AS count
+      FROM "StudioDocumentVote"
+      WHERE "studioDocumentId" = ${documentId} AND "timeSlot" IS NOT NULL
+      GROUP BY "timeSlot"
+    `,
+  ]);
+
+  const intentionCounts = new Map(intentionRows.map((row) => [row.label, Number(row.count)]));
+  const timeSlotCounts = new Map(timeSlotRows.map((row) => [row.label, Number(row.count)]));
+  const respondents = [...intentionCounts.values()].reduce((sum, count) => sum + count, 0);
+  const choice = (label: string, count: number) => ({
+    label,
+    count,
+    ratio: respondents > 0 ? Math.round((count / respondents) * 100) : 0,
+  });
+  const intentionBreakdown = surveyIntentions.map((label) => choice(label, intentionCounts.get(label) ?? 0));
+  const timeSlotBreakdown = surveyTimeSlots.map((label) => choice(label, timeSlotCounts.get(label) ?? 0));
+
+  return {
+    respondents,
+    totalTarget: respondents,
+    satisfaction: 0,
+    topChoices: [...intentionBreakdown].sort((a, b) => b.count - a.count),
+    intentionBreakdown,
+    timeSlotBreakdown,
+    comments: [],
+    actionPoints: [],
   };
 }
 
@@ -306,7 +348,7 @@ router.get('/:documentId', async (req: Request<{ documentId: string }>, res: Res
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
     }
 
-    return res.status(200).json({ document: serializeStudioDocument(document) });
+    return res.status(200).json({ document: serializeStudioDocument(document, await liveSurveyResult(document.id)) });
   } catch (error) {
     console.error('Studio document detail lookup failed:', error);
     return res.status(500).json({ code: 'STUDIO_DOCUMENT_DETAIL_FAILED', error: 'Unable to load studio document.' });
@@ -373,7 +415,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
     }
 
     if (updateFields.length === 0) {
-      return res.status(200).json({ document: serializeStudioDocument(currentDocument) });
+      return res.status(200).json({ document: serializeStudioDocument(currentDocument, await liveSurveyResult(currentDocument.id)) });
     }
 
     updateFields.push(Prisma.sql`"updatedAt" = CURRENT_TIMESTAMP`);
@@ -394,7 +436,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
       RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
     `);
 
-    return res.status(200).json({ document: serializeStudioDocument(documents[0]) });
+    return res.status(200).json({ document: serializeStudioDocument(documents[0], await liveSurveyResult(documents[0].id)) });
   } catch (error) {
     console.error('Studio document update failed:', error);
     return res.status(500).json({ code: 'STUDIO_DOCUMENT_UPDATE_FAILED', error: 'Unable to update studio document.' });
