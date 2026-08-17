@@ -79,9 +79,31 @@ function ensureStudioDocumentTable() {
       ALTER TABLE "StudioDocument"
       ADD COLUMN IF NOT EXISTS "plan" JSONB
     `);
+    /**
+     * 로그인하지 않은 사람의 기획서는 ownerId 가 비어 있다. 예전 마이그레이션이 이 열을
+     * NOT NULL 로 묶어 둔 DB가 있어, 그대로 두면 익명 저장이 23502 로 떨어진다.
+     */
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "StudioDocument"
+      ALTER COLUMN "ownerId" DROP NOT NULL
+    `);
+    /**
+     * 주인이 탈퇴해도 문서는 남기고 주인만 지운다. 예전 제약은 CASCADE 였는데,
+     * 그대로면 사람을 지울 때 그 사람이 만든 기획서까지 함께 사라진다.
+     */
     await prisma.$executeRawUnsafe(`
       DO $$
       BEGIN
+        IF EXISTS (
+          SELECT 1
+          FROM pg_constraint
+          WHERE conname = 'StudioDocument_ownerId_fkey'
+            AND confdeltype <> 'n'
+        ) THEN
+          ALTER TABLE "StudioDocument"
+          DROP CONSTRAINT "StudioDocument_ownerId_fkey";
+        END IF;
+
         IF NOT EXISTS (
           SELECT 1
           FROM pg_constraint

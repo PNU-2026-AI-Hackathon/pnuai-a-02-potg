@@ -487,6 +487,9 @@ PORT=4000
 # 자체 서명 SSL 인증서를 쓰는 로컬 개발 DB에서만 false로 설정
 DATABASE_SSL_REJECT_UNAUTHORIZED=true
 
+# 브라우저가 이 서버를 직접 부를 때만 필요. 배포한 프런트 주소를 쉼표로 나열
+FRONTEND_ORIGINS=https://your-app.vercel.app
+
 # apps/frontend/.env.local (생략 시 기본값: http://localhost:4000)
 BACKEND_URL=http://localhost:4000
 ```
@@ -504,11 +507,53 @@ npm run program-board:publish
 
 두 명령 모두 `apps/backend`에서 실행합니다. 앞이 파일을 만들고, 뒤가 그 파일을 `ProgramBoardEntry` 표에 올립니다. 배치는 매번 전체를 다시 만들므로 `publish`도 전체를 기준으로 맞춥니다 — 새 결과에 없는 건은 표에서 지웁니다.
 
-`publish`는 `DATABASE_URL`만 있으면 되니 배포 서버가 아니라 배치를 돌린 기계에서 실행해도 됩니다. 프런트와 백엔드를 따로 배포할 때는 다음 순서를 지켜 주세요.
+`publish`는 `DATABASE_URL`만 있으면 되니 배포 서버가 아니라 배치를 돌린 기계에서 실행해도 됩니다.
 
-1. 백엔드 배포 후 `npx prisma migrate deploy`
-2. `npm run program-board:publish`
-3. 프런트의 `BACKEND_URL`이 배포된 백엔드를 가리키는지 확인
+---
+
+### 14.7. 프런트와 백엔드를 따로 배포할 때
+
+프런트(Vercel)와 백엔드(AWS 등)를 나눠 올리면, 프런트는 **백엔드 없이는 아무 데이터도 못 봅니다.** 게시판·스튜디오의 모든 읽기와 쓰기가 프런트의 `/api/*` 경로를 거쳐 백엔드로 가고, 저장은 백엔드가 DB에 합니다. 순서대로 맞춰 주세요.
+
+**1. 백엔드를 현재 코드로 배포**
+
+옛 코드가 떠 있으면 응답 모양이 달라 화면이 깨집니다. 예를 들어 예전 판은 글에 `tags`·`boardSlug`를 담지 않아서 아이디어 게시판이 빈 채로 열립니다.
+
+**2. DB 스키마 맞추기**
+
+```bash
+npx prisma migrate deploy
+```
+
+이미 표가 있는 DB인데 `_prisma_migrations` 기록이 없으면 「schema is not empty」로 거부합니다. 그때는 이미 반영된 마이그레이션을 먼저 적용됨으로 표시한 뒤 다시 실행합니다.
+
+```bash
+npx prisma migrate resolve --applied 0_canonical_pre_issue92
+npx prisma migrate deploy
+```
+
+**3. 프로그램 게시판 데이터 올리기** — 14.6절
+
+**4. 환경 변수**
+
+| 어디 | 이름 | 값 |
+| --- | --- | --- |
+| 프런트 | `BACKEND_URL` | 배포된 백엔드 주소 |
+| 백엔드 | `DATABASE_URL`, `JWT_SECRET` | 실제 값 |
+| 백엔드 | `FRONTEND_ORIGINS` | 배포된 프런트 주소 |
+
+`BACKEND_URL`을 빼먹으면 `http://localhost:4000`으로 붙습니다. 배포된 기계 자신이라 아무것도 없고 화면만 빕니다. 운영 모드에서는 서버 로그에 한 번 경고를 남깁니다.
+
+**5. 확인**
+
+```bash
+curl https://<백엔드>/api/health
+curl https://<백엔드>/api/health/db
+```
+
+앞은 서버가 살아 있는지, 뒤는 **DB까지 닿고 스키마가 맞는지**를 봅니다. 뒤가 `{"status":"ok","programBoardEntries":350}`처럼 나와야 게시판에 프로그램이 뜹니다. 503이면 3번이나 2번이 빠진 것입니다.
+
+그다음 프런트에서 `/programs`(목록), `/community/ideas`(글 작성·댓글), `/studio`(기획서 저장)를 한 번씩 확인하면 연결이 확정됩니다.
 
 ---
 

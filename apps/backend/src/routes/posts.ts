@@ -39,10 +39,8 @@ type CreateCommunityCommentBody = {
 
 const DEFAULT_BOARD_SLUG = 'library-news';
 const DEFAULT_POST_TYPE = 'normal';
-const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'ideas']);
+const VALID_BOARD_SLUGS = new Set(['library-news', 'ideas']);
 const VALID_POST_TYPES = new Set(['notice', 'normal']);
-const MIN_PASSWORD_LENGTH = 4;
-const MAX_PASSWORD_LENGTH = 64;
 const MAX_TITLE_LENGTH = 100;
 const MAX_CONTENT_LENGTH = 5000;
 const MAX_COMMENT_LENGTH = 2000;
@@ -96,10 +94,6 @@ function serializePost(post: {
   };
 }
 
-function isPasswordLengthValid(password: string) {
-  return password.length >= MIN_PASSWORD_LENGTH && password.length <= MAX_PASSWORD_LENGTH;
-}
-
 async function verifyPostPassword(passwordHash: string | null, password: unknown) {
   const candidate = readPassword(password);
   return Boolean(passwordHash && candidate && (await bcrypt.compare(candidate, passwordHash)));
@@ -113,7 +107,7 @@ router.get('/', async (req: Request, res: Response) => {
   if (!VALID_BOARD_SLUGS.has(boardSlug)) {
     return res.status(400).json({
       code: 'INVALID_BOARD_SLUG',
-      error: 'boardSlug must be library-news, free, proposals, or ideas.',
+      error: 'boardSlug must be library-news or ideas.',
     });
   }
 
@@ -168,9 +162,7 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
   const title = readString(req.body?.title);
   const content = readString(req.body?.content);
   const author = req.user?.name || readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
-  const password = readPassword(req.body.password);
-  const requestedTags = readTags(req.body.tags);
-  const tags = boardSlug === 'free' && requestedTags.length === 0 ? ['자유글'] : requestedTags;
+  const tags = readTags(req.body.tags);
 
   if (!VALID_BOARD_SLUGS.has(boardSlug)) {
     return res.status(400).json({ code: 'INVALID_BOARD_SLUG', error: 'Invalid boardSlug.' });
@@ -184,17 +176,15 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
   if (title.length > MAX_TITLE_LENGTH || content.length > MAX_CONTENT_LENGTH) {
     return res.status(400).json({ code: 'POST_TOO_LONG', error: 'title or content is too long.' });
   }
-  if (boardSlug === 'free' && !isPasswordLengthValid(password)) {
-    return res.status(400).json({
-      code: 'INVALID_POST_PASSWORD',
-      error: `password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters.`,
-    });
-  }
 
   try {
-    const passwordHash = boardSlug === 'free' ? await bcrypt.hash(password, 10) : null;
+    /**
+     * 비밀번호로 글을 지키던 게시판은 자유 게시판뿐이었고 그 게시판은 없어졌다.
+     * 새 글은 로그인한 사람의 것으로만 남는다. verifyPostPassword 는 지우지 않는다 —
+     * 예전에 비밀번호로 쓴 글이 DB에 남아 있고, 그 주인이 지울 길까지 막을 이유는 없다.
+     */
     const post = await prisma.communityPost.create({
-      data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash, authorId: req.user?.id },
+      data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash: null, authorId: req.user?.id },
     });
     return res.status(201).json({ post: serializePost(post, req.user?.id) });
   } catch (error) {
