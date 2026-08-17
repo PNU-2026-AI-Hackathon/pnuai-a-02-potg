@@ -14520,6 +14520,14 @@ html:has(.moiraPage) {
   .studioPlanPrintHeading { break-after: avoid; }
   .studioPlanPrintSessions thead { display: table-header-group; }
 
+  /* 원본 계획서들이 맨 아래에 두는 한 줄. 표에 붙지 않게 조금 띄운다. */
+  .studioPlanPrintFooter {
+    margin: 7pt 0 0;
+    color: #444;
+    font-size: 8.5pt;
+    font-weight: 600;
+  }
+
   .studioPlanPrintTable ul { margin: 0; padding-left: 12pt; }
   .studioPlanPrintTable li + li { margin-top: 2pt; }
   .studioPlanPrintEmpty { color: #666; }

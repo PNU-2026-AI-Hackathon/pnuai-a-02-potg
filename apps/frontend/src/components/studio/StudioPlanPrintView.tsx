@@ -127,6 +127,10 @@ export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintView
         <p className="studioPlanPrintEmpty">회차별 활동이 아직 없습니다.</p>
       )}
 
+      {/* 원본 계획서들이 맨 아래에 두는 한 줄. 확정본이 아님을 종이에서도 알 수 있다. */}
+      <p className="studioPlanPrintFooter">
+        ※ 도서관 또는 강사 사정에 따라 차시 및 내용은 변경될 수 있습니다.
+      </p>
     </article>
   );
 }
