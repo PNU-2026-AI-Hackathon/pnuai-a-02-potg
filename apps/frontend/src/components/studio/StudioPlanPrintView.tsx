@@ -24,13 +24,10 @@ const PAIRED_ROWS: Array<Array<keyof StudioPlan>> = [
 ];
 
 /** 한 줄을 다 쓰는 항목. 문장이라 두 칸으로 쪼개면 읽기 어렵다. */
-const WIDE_ROWS: Array<keyof StudioPlan> = ['intent', 'goal'];
+const WIDE_ROWS: Array<keyof StudioPlan> = ['intent', 'goal', 'expectedEffects', 'promotion'];
 
-/** 「준비 사항」 라벨 하나로 세로로 묶을 항목. */
+/** 「준비 사항」 라벨 하나로 세로로 묶을 항목. 원본 계획서가 쓰는 묶음이다. */
 const PREPARATION_ROWS: Array<keyof StudioPlan> = ['materials', 'materialFee', 'roomSetup'];
-
-/** 「기대 효과」 아래로 묶을 항목. */
-const CLOSING_ROWS: Array<keyof StudioPlan> = ['expectedEffects', 'promotion'];
 
 function label(key: keyof StudioPlan) {
   return studioPlanFieldMap.get(key as never)?.label ?? String(key);
@@ -67,12 +64,13 @@ export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintView
             <td className="studioPlanPrintName" colSpan={3}>{programName}</td>
           </tr>
 
+          {/* 짧은 값은 가운데로 모은다. 왼쪽에 붙여 두면 넓은 칸에 글자 두어 개만 떠 있다. */}
           {PAIRED_ROWS.map((row) => (
             <tr key={row.join('-')}>
               {row.map((key) => (
                 <Fragment key={key}>
                   <th>{label(key)}</th>
-                  <td>{text(plan, key)}</td>
+                  <td className="studioPlanPrintTerm">{text(plan, key)}</td>
                 </Fragment>
               ))}
             </tr>
@@ -90,21 +88,14 @@ export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintView
             <tr key={key}>
               {index === 0 ? <th className="studioPlanPrintGroupLabel" rowSpan={PREPARATION_ROWS.length}>준비 사항</th> : null}
               <th className="studioPlanPrintSubLabel">{label(key)}</th>
-              <td colSpan={2}>{text(plan, key)}</td>
+              <td className={key === 'materialFee' ? 'studioPlanPrintTerm' : undefined} colSpan={2}>{text(plan, key)}</td>
             </tr>
           ))}
 
-          {CLOSING_ROWS.map((key, index) => (
-            <tr key={key}>
-              {index === 0 ? <th className="studioPlanPrintGroupLabel" rowSpan={CLOSING_ROWS.length + (plan.cautions.length ? 1 : 0)}>마무리</th> : null}
-              <th className="studioPlanPrintSubLabel">{label(key)}</th>
-              <td colSpan={2}>{text(plan, key)}</td>
-            </tr>
-          ))}
           {plan.cautions.length ? (
             <tr>
-              <th className="studioPlanPrintSubLabel">{label('cautions')}</th>
-              <td colSpan={2}>
+              <th>{label('cautions')}</th>
+              <td colSpan={3}>
                 <ul>{plan.cautions.map((line) => <li key={line}>{line}</li>)}</ul>
               </td>
             </tr>
@@ -124,7 +115,7 @@ export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintView
             {plan.sessions.map((session) => (
               <tr key={session.session}>
                 <td>{session.session}</td>
-                <td>{session.date || '-'}</td>
+                <td className="studioPlanPrintTerm">{session.date || '-'}</td>
                 <td>{session.activity}</td>
                 <td>{session.materials || '-'}</td>
                 <td>{session.notes || '-'}</td>
