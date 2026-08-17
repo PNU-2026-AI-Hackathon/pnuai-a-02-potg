@@ -82,15 +82,20 @@ export default async function ProgramDetailPage({ params }: PageProps) {
         </nav>
 
         <article className="programDetailArticle">
+          {/*
+            공고 상세는 「제목 → 요약 정보 상자 → 본문 구획 → 첨부 → 신청」 순서로 읽힌다.
+            지원사업 공고 화면들이 모두 이 차례를 쓰는 이유는, 신청하러 온 사람이
+            기간과 대상을 먼저 확인하고 그다음에 내용을 읽기 때문이다.
+          */}
           <header className="programDetailHeader">
-            <div className="programDetailBadges">
-              {/* 모집 상태를 제일 먼저 보여 준다. 신청할 수 있는지가 첫 질문이다. */}
+            <p className="programDetailStatusLine">
               <span className={`programStatusBadge is-${status}`}>{programRecruitLabel[status]}</span>
-              <span>{program.targetGroup ?? '대상 미정'}</span>
-              <span>{program.libraryName ?? '도서관 확인 필요'}</span>
-            </div>
+              <span className="programDetailLibrary">{program.libraryName ?? '운영 도서관 확인 필요'}</span>
+            </p>
             <h1>{program.title}</h1>
-            <p>{program.targetDetail ?? program.targetGroup ?? '대상 정보 확인 필요'}</p>
+            <p className="programDetailSubtitle">
+              {program.targetDetail ?? program.targetGroup ?? '대상 정보 확인 필요'}
+            </p>
           </header>
 
           {hasCapacityConflict ? (
@@ -100,20 +105,27 @@ export default async function ProgramDetailPage({ params }: PageProps) {
             </aside>
           ) : null}
 
-          <section className="programInfoPanel" aria-labelledby="program-info-title">
-            <h2 id="program-info-title">프로그램 기본 정보</h2>
-            <dl>
-              <div><dt>운영 도서관</dt><dd>{program.libraryName ?? '확인 필요'}</dd></div>
-              <div><dt>대상</dt><dd>{program.targetDetail ?? program.targetGroup ?? '확인 필요'}</dd></div>
-              <div><dt>강사</dt><dd>{program.instructor ?? '확인 필요'}</dd></div>
-              <div><dt>모집인원</dt><dd>{programCapacityLabel(program)}</dd></div>
-              <div><dt>교육기간</dt><dd>{formatProgramPeriod(program.programStartDate, program.programEndDate)}</dd></div>
-              <div><dt>신청기간</dt><dd>{formatProgramPeriod(program.applyStartDate, program.applyEndDate)}</dd></div>
-              <div className="isWide"><dt>교육시간</dt><dd>{program.scheduleText ?? '확인 필요'}</dd></div>
-              <div className="isWide"><dt>온라인 접수 여부</dt><dd>{program.onlineApplicationStatus ?? '원사이트에서 확인'}</dd></div>
-              {/* 비용은 원본에 없는 프로그램이 많다. 「정보 없음」 줄을 만들지 않는다. */}
-              {feeLabel ? <div className="isWide"><dt>비용</dt><dd>{feeLabel}</dd></div> : null}
-            </dl>
+          {/* 요약 상자. 신청에 필요한 것만 세 줄기로 나눠 한눈에 담는다. */}
+          <section className="programSummaryBox" aria-labelledby="program-info-title">
+            <h2 className="uiSrOnly" id="program-info-title">프로그램 기본 정보</h2>
+            <div>
+              <dl>
+                <div><dt>대상</dt><dd>{program.targetDetail ?? program.targetGroup ?? '확인 필요'}</dd></div>
+                <div><dt>모집인원</dt><dd>{programCapacityLabel(program)}</dd></div>
+                <div><dt>강사</dt><dd>{program.instructor ?? '확인 필요'}</dd></div>
+              </dl>
+              <dl>
+                <div><dt>신청기간</dt><dd>{formatProgramPeriod(program.applyStartDate, program.applyEndDate)}</dd></div>
+                <div><dt>교육기간</dt><dd>{formatProgramPeriod(program.programStartDate, program.programEndDate)}</dd></div>
+                <div><dt>교육시간</dt><dd>{program.scheduleText ?? '확인 필요'}</dd></div>
+              </dl>
+              <dl>
+                <div><dt>운영 도서관</dt><dd>{program.libraryName ?? '확인 필요'}</dd></div>
+                <div><dt>접수 방법</dt><dd>{program.onlineApplicationStatus ?? '원사이트에서 확인'}</dd></div>
+                {/* 비용은 원본에 없는 프로그램이 많다. 「정보 없음」 줄을 만들지 않는다. */}
+                {feeLabel ? <div><dt>비용</dt><dd>{feeLabel}</dd></div> : null}
+              </dl>
+            </div>
           </section>
 
           <section className="programDescription" aria-labelledby="program-description-title">

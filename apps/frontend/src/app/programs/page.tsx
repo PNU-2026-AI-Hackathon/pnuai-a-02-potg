@@ -119,10 +119,6 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       <div><dt>교육기간</dt><dd>{formatProgramPeriod(program.programStartDate, program.programEndDate)}</dd></div>
                       <div><dt>모집인원</dt><dd>{programCapacityLabel(program)}</dd></div>
                     </dl>
-                    {/* 첨부·포스터에서 회차를 뽑아 둔 프로그램은 눌러 볼 값이 있다는 뜻이다. */}
-                    {program.curriculum.length ? (
-                      <p className="programCurriculumChip">회차 {program.curriculum.length}회 정리됨</p>
-                    ) : null}
                     <Link className="programCardLink" href={`/programs/${program.sourceId}`}>상세 정보 보기 <span aria-hidden="true">→</span></Link>
                   </article>
                 );
