@@ -14524,7 +14524,15 @@ html:has(.moiraPage) {
   .studioPlanPrintTable li + li { margin-top: 2pt; }
   .studioPlanPrintEmpty { color: #666; }
 
-  @page { size: A4; margin: 15mm 14mm; }
+  /*
+    브라우저가 종이 위아래에 날짜·문서 제목·주소·쪽번호를 스스로 찍는다. 이걸 끄는
+    표준 CSS는 없고, 인쇄 창의 「머리글 및 바닥글」 설정이 원래 자리다.
+    다만 페이지 여백이 0이면 그것들을 놓을 자리가 없어 크롬·엣지는 그리지 않는다.
+    그래서 여백을 문서 안쪽 패딩으로 옮긴다.
+  */
+  @page { size: A4; margin: 0; }
+
+  .studioPlanPrint { padding: 15mm 14mm; }
 }
 
 /* --- 프로그램 게시판: 다른 게시판과 같은 결로 ---------------------------------
