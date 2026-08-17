@@ -10,47 +10,66 @@ import { studioFields, type StudioConditionKey } from './studio-options';
 const storageKey = 'moira-studio-tutorial-seen';
 const conditionKeys: StudioConditionKey[] = ['category', 'audience', 'period'];
 const planningFields = studioFields.filter((field) => conditionKeys.includes(field.key));
-type AgendaPost = {
+/** 선택창에 실리는 의제 하나. 의제 게시판 글에서 필요한 것만 뽑아 온다. */
+export type StudioAgendaOption = {
   id: string;
   title: string;
   content: string;
   tags: string[];
 };
 
-const agendaPosts = [
-  {
-    id: 'proposals-2',
-    title: '시니어 대상 스마트폰 반복 교육이 필요합니다',
-    content:
-      '키오스크, 공공앱, 모바일 은행 사용을 여러 번 연습할 수 있는 소규모 프로그램을 제안합니다.',
-    tags: ['디지털 교육', '시니어'],
-  },
-  {
-    id: 'proposals-3',
-    title: '방과후 숙제 도움 프로그램을 운영하면 좋겠습니다',
-    content:
-      '맞벌이 가정 아이들이 도서관에서 안전하게 머물며 숙제를 도울 수 있는 시간이 있으면 좋겠습니다.',
-    tags: ['아동', '방과후'],
-  },
-  {
-    id: 'proposals-4',
-    title: '도서관 주변 분리배출 캠페인을 제안합니다',
-    content:
-      '작은도서관을 거점으로 어린이와 주민이 함께 참여하는 자원순환 캠페인을 열면 좋겠습니다.',
-    tags: ['환경', '캠페인'],
-  },
-];
+/**
+ * 게시판에 다녀오는 동안 적어 둔 것을 맡아 두는 자리.
+ *
+ * 「의제 게시판 둘러보기」를 누르면 화면이 통째로 바뀌므로, 담아 두지 않으면
+ * 돌아왔을 때 메모와 고른 조건이 사라진다.
+ */
+const draftStorageKey = 'moira-studio-condition-draft';
 
-export default function ProgramConditionForm() {
+type ConditionDraft = {
+  prompt: string;
+  conditions: Record<StudioConditionKey, string[]>;
+};
+
+export type ProgramConditionFormProps = {
+  agendaOptions: StudioAgendaOption[];
+  /** 게시판에서 고르고 돌아왔을 때 미리 골라 둘 의제. */
+  initialAgendaId: string | null;
+};
+
+export default function ProgramConditionForm({ agendaOptions, initialAgendaId }: ProgramConditionFormProps) {
   const [prompt, setPrompt] = useState('');
-  const [activeMode, setActiveMode] = useState<'planning' | 'agenda'>('planning');
-  const [selectedAgendaId, setSelectedAgendaId] = useState<string | null>(null);
+  // 의제를 골라 돌아왔으면 그 탭을 펴 둔다. 고른 것이 안 보이면 골라진 줄 모른다.
+  const [activeMode, setActiveMode] = useState<'planning' | 'agenda'>(initialAgendaId ? 'agenda' : 'planning');
+  const [selectedAgendaId, setSelectedAgendaId] = useState<string | null>(initialAgendaId);
   const [conditions, setConditions] = useState<Record<StudioConditionKey, string[]>>({
     category: [],
     audience: [],
     period: [],
   });
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+
+  /**
+   * 게시판에 다녀오기 전에 적어 둔 것을 되살린다.
+   *
+   * 첫 렌더가 아니라 마운트 뒤에 읽는다. 서버에는 세션 저장소가 없어, 첫 렌더에서 읽으면
+   * 서버가 그린 화면과 달라져 hydration이 어긋난다.
+   */
+  useEffect(() => {
+    const stored = window.sessionStorage.getItem(draftStorageKey);
+    if (!stored) return;
+    window.sessionStorage.removeItem(draftStorageKey);
+
+    try {
+      const draft = JSON.parse(stored) as Partial<ConditionDraft>;
+      if (typeof draft.prompt === 'string') setPrompt(draft.prompt);
+      if (draft.conditions && typeof draft.conditions === 'object') {
+        setConditions((current) => ({ ...current, ...draft.conditions }));
+      }
+    } catch (error) {
+      console.error('Failed to restore studio condition draft:', error);
+    }
+  }, []);
 
   useEffect(() => {
     if (window.localStorage.getItem(storageKey) !== 'true') {
@@ -77,7 +96,13 @@ export default function ProgramConditionForm() {
     };
   }, [isTutorialOpen]);
 
-  const selectedAgenda = agendaPosts.find((post) => post.id === selectedAgendaId) || null;
+  const selectedAgenda = agendaOptions.find((post) => post.id === selectedAgendaId) || null;
+
+  /** 게시판으로 떠나기 전에 적어 둔 것을 맡긴다. 돌아오면 위 effect가 되살린다. */
+  function keepDraftBeforeLeaving() {
+    const draft: ConditionDraft = { prompt, conditions };
+    window.sessionStorage.setItem(draftStorageKey, JSON.stringify(draft));
+  }
   /**
    * 메모와 의제 중 하나만 있으면 생성한다. 의제를 고르는 것 자체가 「이걸로 기획해 달라」는
    * 요청이라, 같은 말을 메모에 한 번 더 적게 할 이유가 없다.
@@ -190,23 +215,36 @@ export default function ProgramConditionForm() {
                 <section className="studioAgendaPicker" aria-label="지역 의제 제안 글 선택">
                   <div className="studioAgendaPickerHeader">
                     <strong>지역 의제 제안 글</strong>
-                    {/* 의제가 올라오는 곳은 아이디어 게시판이다. 자유 게시판이 아니다. */}
-                    <Link href="/community/ideas">동네 광장 보기</Link>
+                    {/*
+                      의제가 올라오는 곳은 아이디어 게시판이다. 자유 게시판이 아니다.
+                      `pick=studio`를 달고 가면 게시판이 「고르는 화면」으로 열려, 거기서 고른
+                      의제를 들고 이 화면으로 돌아온다. 단순 링크면 읽고 와서 다시 찾아야 하고,
+                      아래 목록에 없는 글은 아예 고를 수가 없다.
+                    */}
+                    <Link href="/community/ideas?pick=studio" onClick={keepDraftBeforeLeaving}>
+                      의제 게시판 둘러보기
+                    </Link>
                   </div>
-                  <div className="studioAgendaList">
-                    {agendaPosts.map((post) => (
-                      <button
-                        className={post.id === selectedAgendaId ? 'isSelected' : ''}
-                        key={post.id}
-                        type="button"
-                        onClick={() => setSelectedAgendaId((currentId) => (currentId === post.id ? null : post.id))}
-                      >
-                        <span>{post.tags.join(' · ')}</span>
-                        <strong>{post.title}</strong>
-                        <p>{post.content}</p>
-                      </button>
-                    ))}
-                  </div>
+                  {agendaOptions.length > 0 ? (
+                    <div className="studioAgendaList">
+                      {agendaOptions.map((post) => (
+                        <button
+                          className={post.id === selectedAgendaId ? 'isSelected' : ''}
+                          key={post.id}
+                          type="button"
+                          onClick={() => setSelectedAgendaId((currentId) => (currentId === post.id ? null : post.id))}
+                        >
+                          <span>{post.tags.join(' · ')}</span>
+                          <strong>{post.title}</strong>
+                          <p>{post.content}</p>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="studioAgendaEmpty">
+                      아직 올라온 의제가 없습니다. 게시판에서 주민 제안이 올라오면 여기에 보입니다.
+                    </p>
+                  )}
                 </section>
               ) : null}
               {selectedAgenda ? (
