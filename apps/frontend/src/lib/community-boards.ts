@@ -30,7 +30,7 @@ export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
   ideas: {
     slug: 'ideas',
     href: '/community/ideas',
-    title: '함께 만드는 행사',
+    title: '우리동네 아이디어',
     shortTitle: '아이디어 게시판',
     description: '시민이 행사 아이디어를 제안하고 대화로 함께 발전시키는 게시판입니다.',
     purpose: '아이디어에 의견과 답글을 보태 실행 가능한 지역 행사로 구체화합니다.',
