@@ -12681,10 +12681,15 @@ html:has(.moiraPage) {
   color: #b42318;
 }
 
+/*
+  캡션을 셀렉트 위에 얹으면 이 항목만 54px이 되어, 38px짜리 단추들과 가운데가 어긋난다.
+  캡션을 옆으로 눕혀 한 줄로 만들면 툴바의 모든 항목이 같은 높이로 선다.
+*/
 .studioDocumentStageControl {
-  display: inline-grid;
-  gap: 5px;
-  min-width: 150px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .studioDocumentStageControl span {
@@ -12692,6 +12697,7 @@ html:has(.moiraPage) {
   font-size: 11px;
   font-weight: 850;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .studioDocumentStageControl select {
@@ -14284,6 +14290,48 @@ html:has(.moiraPage) {
 
 .studioPlanField.isRevised .studioPlanValueInput { background: #fbf1d9; }
 
+/* 날짜·시각·인원을 고르는 칸. 손으로 적으면 표기가 제각각이 된다. */
+.studioPlanPicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.studioPlanPicker input {
+  min-height: 34px;
+  border: 1px solid #dbe5df;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+.studioPlanPicker input:hover { border-color: #c3d8cd; }
+
+.studioPlanPicker input:focus {
+  border-color: var(--moira-green);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22, 116, 95, 0.12);
+}
+
+.studioPlanPickerNumber { width: 96px; }
+
+.studioPlanPickerUnit,
+.studioPlanPickerTilde {
+  color: #6b8878;
+  font-size: 13.5px;
+}
+
+/* AI가 「미정」처럼 적어 둔 값. 고르는 칸에 담기지 않으므로 옆에 그대로 보여 준다. */
+.studioPlanPickerNote {
+  color: #8a9a92;
+  font-size: 12.5px;
+}
+
 /* 회차 표: 칸을 그대로 고친다 */
 .studioPlanSessionTable tbody tr { cursor: default; }
 
@@ -14327,14 +14375,21 @@ html:has(.moiraPage) {
 }
 
 /* 칸마다 폭을 정해 준다. 정하지 않으면 활동 내용이 좁아지고 「수정」 칸이 넓어진다. */
-.studioPlanSessionTable th:nth-child(1), .studioPlanSessionTable td:nth-child(1) { width: 8%; }
-.studioPlanSessionTable th:nth-child(2), .studioPlanSessionTable td:nth-child(2) { width: 13%; }
-.studioPlanSessionTable th:nth-child(3), .studioPlanSessionTable td:nth-child(3) { width: 37%; }
-.studioPlanSessionTable th:nth-child(4), .studioPlanSessionTable td:nth-child(4) { width: 18%; }
-.studioPlanSessionTable th:nth-child(5), .studioPlanSessionTable td:nth-child(5) { width: 18%; }
-.studioPlanSessionTable th:nth-child(6), .studioPlanSessionTable td:nth-child(6) { width: 6%; }
+.studioPlanSessionTable th:nth-child(1), .studioPlanSessionTable td:nth-child(1) { width: 7%; }
+.studioPlanSessionTable th:nth-child(2), .studioPlanSessionTable td:nth-child(2) { width: 12%; }
+.studioPlanSessionTable th:nth-child(3), .studioPlanSessionTable td:nth-child(3) { width: 34%; }
+.studioPlanSessionTable th:nth-child(4), .studioPlanSessionTable td:nth-child(4) { width: 16%; }
+.studioPlanSessionTable th:nth-child(5), .studioPlanSessionTable td:nth-child(5) { width: 16%; }
+/* 「수정」 칸. 좁으면 머리글이 「수/정」으로 쪼개지고 단추도 위아래로 쌓인다. */
+.studioPlanSessionTable th:nth-child(6), .studioPlanSessionTable td:nth-child(6) { width: 15%; }
+.studioPlanSessionTable th { white-space: nowrap; }
 
 /* 수정 단추는 내용이 아니라 도구다. 평소에는 물러나 있다가 그 줄에 손이 갔을 때 드러난다. */
+/*
+  두 단추를 한 줄로. 세로로 쌓이면 줄 높이가 늘어 표가 성글어진다.
+  칸 자체를 flex로 만들면 안 된다. td가 표 레이아웃에서 빠져 나와 칸 너비가 무너진다.
+  줄바꿈만 막고 칸 너비로 자리를 준다.
+*/
 .studioPlanSessionActions {
   white-space: nowrap;
   text-align: center;
@@ -14408,78 +14463,139 @@ html:has(.moiraPage) {
   .studioDocumentPage { display: block !important; padding: 0 !important; background: #fff !important; }
   .studioDocumentPage > *:not(.studioPlanPrint) { display: none !important; }
 
+  /*
+    브라우저는 인쇄할 때 바탕색을 기본으로 빼 버린다. 라벨 칸의 색이 문서를 읽는 단서라
+    그대로 찍히게 한다.
+  */
+  .studioPlanPrint,
+  .studioPlanPrint * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .studioPlanPrint {
     display: block !important;
     position: static;
-    color: #111;
-    font-size: 11pt;
-    line-height: 1.6;
+    color: #1a1a1a;
+    /* A4 한 장에 담기도록 조인 값. 회차가 열 줄쯤 되어도 넘치지 않는다. */
+    font-size: 9.5pt;
+    line-height: 1.45;
   }
 
   .studioPlanPrintTitle {
-    margin: 0 0 18pt;
+    margin: 0 0 4pt;
     text-align: center;
-    font-size: 18pt;
+    color: #111;
+    font-size: 16pt;
     font-weight: 800;
-    letter-spacing: 0.02em;
+    /* 관공서 문서 제목의 넓은 자간. 마지막 글자 뒤 여백은 되돌려 가운데를 맞춘다. */
+    letter-spacing: 0.24em;
+    text-indent: 0.24em;
+  }
+
+  .studioPlanPrintTitle::after {
+    content: "";
+    display: block;
+    width: 100%;
+    margin: 7pt auto 11pt;
+    border-top: 1pt solid #333;
   }
 
   .studioPlanPrintHeading {
-    margin: 16pt 0 6pt;
-    font-size: 12pt;
-    font-weight: 700;
-    border-left: 3pt solid #333;
-    padding-left: 6pt;
+    margin: 11pt 0 4pt;
+    color: #222;
+    font-size: 10.5pt;
+    font-weight: 800;
+    padding-left: 0;
   }
 
   .studioPlanPrintTable {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
+    border: 0.8pt solid #555;
   }
 
   .studioPlanPrintTable th,
   .studioPlanPrintTable td {
-    border: 0.5pt solid #444;
-    padding: 5pt 7pt;
-    vertical-align: top;
-    word-break: break-word;
+    border: 0.4pt solid #999;
+    padding: 4pt 6pt;
+    vertical-align: middle;
+    /* 한국어는 단어 안에서 끊으면 읽기 나쁘다. 띄어쓰기에서만 넘긴다. */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
 
   .studioPlanPrintTable th {
-    width: 15%;
-    background: #f2f2f2;
+    background: #eeeeee;
+    color: #222;
     font-weight: 700;
     text-align: center;
-    white-space: nowrap;
+  }
+
+  /* 라벨 칸 너비. colgroup으로 잡아야 세로 병합이 있어도 흔들리지 않는다. */
+  .studioPlanPrintLabelCol { width: 13%; }
+
+  /* 낱말 하나짜리 값은 가운데로. 왼쪽에 붙이면 넓은 칸에 글자 두어 개만 떠 있다. */
+  .studioPlanPrintTerm { text-align: center; }
+
+  /* 문장인 칸만 위에 붙인다. 여러 줄일 때 가운데 정렬은 읽기 나쁘다. */
+  .studioPlanPrintTable td:not(.studioPlanPrintTerm) { vertical-align: top; }
+
+  .studioPlanPrintName {
+    font-size: 11.5pt;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  /* 여러 줄을 묶는 라벨. 가운데에 세워 묶음의 머리임을 보인다. */
+  .studioPlanPrintGroupLabel {
+    background: #e2e2e2 !important;
+    vertical-align: middle !important;
+  }
+
+  .studioPlanPrintSubLabel {
+    width: 13%;
+    background: #f6f6f6 !important;
+    font-weight: 600 !important;
   }
 
   /* 회차 표는 머리글이 가로로 서므로 칸 너비를 따로 준다. */
-  .studioPlanPrintSessions th { width: auto; background: #f2f2f2; }
-  .studioPlanPrintSessions thead th:nth-child(1) { width: 8%; }
-  .studioPlanPrintSessions thead th:nth-child(2) { width: 14%; }
-  .studioPlanPrintSessions thead th:nth-child(4) { width: 20%; }
-  .studioPlanPrintSessions thead th:nth-child(5) { width: 16%; }
+  .studioPlanPrintSessions th { width: auto; }
+  .studioPlanPrintSessions thead th { background: #e2e2e2; }
+  .studioPlanPrintSessions thead th:nth-child(1) { width: 7%; }
+  .studioPlanPrintSessions thead th:nth-child(2) { width: 11%; }
+  .studioPlanPrintSessions thead th:nth-child(4) { width: 19%; }
+  .studioPlanPrintSessions thead th:nth-child(5) { width: 19%; }
   .studioPlanPrintSessions td { text-align: left; }
-  .studioPlanPrintSessions td:first-child { text-align: center; }
+  .studioPlanPrintSessions td:first-child { text-align: center; font-weight: 700; }
 
   /* 회차 한 줄이 페이지 경계에서 잘리면 읽기 어렵다. */
   .studioPlanPrintTable tr { break-inside: avoid; }
   .studioPlanPrintHeading { break-after: avoid; }
+  .studioPlanPrintSessions thead { display: table-header-group; }
 
-  .studioPlanPrintTable ul { margin: 0; padding-left: 14pt; }
-  .studioPlanPrintEmpty { color: #666; }
-
+  /* 원본 계획서들이 맨 아래에 두는 한 줄. 표에 붙지 않게 조금 띄운다. */
   .studioPlanPrintFooter {
-    margin-top: 20pt;
-    padding-top: 6pt;
-    border-top: 0.5pt solid #bbb;
-    font-size: 9pt;
-    color: #555;
-    text-align: center;
+    margin: 7pt 0 0;
+    color: #444;
+    font-size: 8.5pt;
+    font-weight: 600;
   }
 
-  @page { size: A4; margin: 18mm 16mm; }
+  .studioPlanPrintTable ul { margin: 0; padding-left: 12pt; }
+  .studioPlanPrintTable li + li { margin-top: 2pt; }
+  .studioPlanPrintEmpty { color: #666; }
+
+  /*
+    브라우저가 종이 위아래에 날짜·문서 제목·주소·쪽번호를 스스로 찍는다. 이걸 끄는
+    표준 CSS는 없고, 인쇄 창의 「머리글 및 바닥글」 설정이 원래 자리다.
+    다만 페이지 여백이 0이면 그것들을 놓을 자리가 없어 크롬·엣지는 그리지 않는다.
+    그래서 여백을 문서 안쪽 패딩으로 옮긴다.
+  */
+  @page { size: A4; margin: 0; }
+
+  .studioPlanPrint { padding: 15mm 14mm; }
 }
 
 /* --- 프로그램 게시판: 다른 게시판과 같은 결로 ---------------------------------
