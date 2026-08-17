@@ -7,6 +7,8 @@ import {
   getProgramPrototype,
   programCapacityLabel,
   programFeeLabel,
+  programRecruitLabel,
+  programRecruitStatus,
 } from '@/lib/program-prototype';
 
 type PageProps = { params: Promise<{ sourceId: string }> };
@@ -35,6 +37,8 @@ export default async function ProgramDetailPage({ params }: PageProps) {
    * 비고는 활동 내용과 같은 글이 들어 있는 경우가 있다. 원본 표에서 한 칸을 두 번 읽어
    * 온 것이라, 그대로 두면 같은 문장이 나란히 두 번 보인다.
    */
+  const status = programRecruitStatus(program);
+
   /** 비용은 원본에 없는 프로그램이 많다. 없으면 줄 자체를 만들지 않는다. */
   const rawFeeLabel = programFeeLabel(program);
   const feeLabel = rawFeeLabel === '비용 정보 없음' ? null : rawFeeLabel;
@@ -80,6 +84,8 @@ export default async function ProgramDetailPage({ params }: PageProps) {
         <article className="programDetailArticle">
           <header className="programDetailHeader">
             <div className="programDetailBadges">
+              {/* 모집 상태를 제일 먼저 보여 준다. 신청할 수 있는지가 첫 질문이다. */}
+              <span className={`programStatusBadge is-${status}`}>{programRecruitLabel[status]}</span>
               <span>{program.targetGroup ?? '대상 미정'}</span>
               <span>{program.libraryName ?? '도서관 확인 필요'}</span>
             </div>
@@ -274,13 +280,6 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               <ul>{program.attachments.map((attachment) => <li key={attachment.url}><a href={attachment.url} rel="noreferrer" target="_blank">{attachment.name}</a></li>)}</ul>
             ) : <p className="programEmptyText">첨부파일이 없습니다.</p>}
           </section>
-
-          {program.description ? (
-            <details className="programRawDescription">
-              <summary>공공예약 본문 원문 전체 보기</summary>
-              <p>{program.description}</p>
-            </details>
-          ) : null}
 
           <div className="programDetailActions">
             <Link className="uiButton uiButtonSecondary" href="/programs">목록으로</Link>
