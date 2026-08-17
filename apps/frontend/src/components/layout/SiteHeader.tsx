@@ -66,8 +66,26 @@ export default function SiteHeader({
               MOIRA Studio
             </Link>
           </div>
-          <AuthActions initialUser={user} />
+          <div className="siteNavUtility">
+            <AuthActions initialUser={user} />
+          </div>
         </nav>
+
+        <details className="siteMobileMenu">
+          <summary aria-label="메뉴 열기">
+            <span /><span /><span />
+          </summary>
+          <div className="siteMobileMenuPanel">
+            <nav aria-label="모바일 주요 메뉴">
+              <Link href="/about">모이라 소개</Link>
+              <Link href="/#library-finder">우리동네 도서관</Link>
+              <Link href="/programs">프로그램 게시판</Link>
+              <Link className={activeMenu === 'community' ? 'isActive' : ''} href="/community">우리동네 이야기</Link>
+              <Link className="siteStudioLink" href="/studio">✦ MOIRA Studio</Link>
+            </nav>
+            <AuthActions initialUser={user} />
+          </div>
+        </details>
       </div>
     </header>
   );
