@@ -120,7 +120,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
           <div>
             <p className="programBoardEyebrow">MOIRA LIBRARY · PROGRAM</p>
             <h1 id="program-board-title">우리 동네에서<br />열리는 프로그램들.</h1>
-            <p>금정구 작은도서관이 운영한 문화·교육 프로그램을 한곳에서 확인해 보세요.</p>
+            <p>금정구 도서관이 운영한 문화·교육 프로그램을 한곳에서 확인해 보세요.</p>
           </div>
         </header>
 
