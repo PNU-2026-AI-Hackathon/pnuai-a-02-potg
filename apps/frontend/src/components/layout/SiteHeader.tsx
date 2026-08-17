@@ -55,7 +55,6 @@ export default function SiteHeader({
               </Link>
               <div className="siteNavSubmenu">
                 <Link href="/community/library-news">도서관 행사 및 소식</Link>
-                {/* 동네 광장(/community/free)은 주소로는 열리되 이 차림표에는 올리지 않는다. */}
                 <Link href="/community/ideas">우리동네 아이디어</Link>
               </div>
             </div>

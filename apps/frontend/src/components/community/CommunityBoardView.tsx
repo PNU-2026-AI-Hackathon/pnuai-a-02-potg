@@ -58,15 +58,8 @@ export default function CommunityBoardView({
   const normalCount = visiblePosts.length - noticeCount;
 
   useEffect(() => {
-    if (board.slug !== 'free') return;
-
-    fetch('/api/posts?boardSlug=free', { cache: 'no-store' })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data?.error || '작성된 글을 불러오지 못했습니다.');
-        setCreatedPosts(data.posts || []);
-      })
-      .catch(() => setLoadMessage('새로 작성된 글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'));
+    setCreatedPosts([]);
+    setLoadMessage('');
   }, [board.slug]);
 
   return (
@@ -101,16 +94,6 @@ export default function CommunityBoardView({
               <span aria-hidden="true"> / </span>
               {board.typeLabels.normal} <strong>{normalCount}</strong>건
             </p>
-            {board.slug === 'free' ? (
-              <Link
-                className="uiButton uiButtonPrimary communityWriteButton"
-                href="/community/free/write"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                게시글 작성
-              </Link>
-            ) : null}
           </div>
 
           {loadMessage ? <p className="communityLoadMessage" role="status">{loadMessage}</p> : null}
@@ -122,7 +105,7 @@ export default function CommunityBoardView({
                 <thead>
                   <tr>
                     <th scope="col">번호</th>
-                    {board.slug !== 'free' ? <th scope="col">분류</th> : null}
+                    <th scope="col">분류</th>
                     <th scope="col">제목</th>
                     <th scope="col">작성자</th>
                     <th scope="col">작성일</th>
@@ -133,7 +116,7 @@ export default function CommunityBoardView({
                     <CommunityPostCard
                       board={board}
                       key={post.id}
-                      number={post.type === 'notice' && board.slug !== 'free' ? '공지' : String(orderedPosts.length - index)}
+                      number={post.type === 'notice' ? '공지' : String(orderedPosts.length - index)}
                       post={post}
                     />
                   ))}
@@ -155,14 +138,12 @@ function CommunityPostCard({ board, number, post }: CommunityPostCardProps) {
       <td className="communityPostNumber">
         <span>{number}</span>
       </td>
-      {board.slug !== 'free' ? (
-        <td>
-          <span className="uiTag communityPostType">{board.typeLabels[post.type]}</span>
-        </td>
-      ) : null}
+      <td>
+        <span className="uiTag communityPostType">{board.typeLabels[post.type]}</span>
+      </td>
       <td className="communityPostBody">
         <h3>
-          {board.slug === 'free' && post.type === 'notice' ? (
+          {post.type === 'notice' ? (
             <span className="communityNoticeIcon" role="img" aria-label="공지">📣</span>
           ) : null}
           <Link href={`/community/posts/${encodeURIComponent(post.id)}`}>{post.title}</Link>
