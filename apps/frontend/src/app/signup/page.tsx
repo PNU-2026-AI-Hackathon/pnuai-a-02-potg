@@ -95,6 +95,17 @@ export default function SignupPage() {
     selectedInterests.includes(item.id),
   );
 
+  // 한국어 목적격 조사(을/를)를 단어 끝받침에 따라 결정합니다.
+  function josaEulReul(word: string) {
+    if (!word) return '을';
+    const last = word.slice(-1);
+    const code = last.charCodeAt(0);
+    // 한글 완성형 음절 범위인지 확인
+    if (code < 0xac00 || code > 0xd7a3) return '을';
+    const jong = (code - 0xac00) % 28;
+    return jong === 0 ? '를' : '을';
+  }
+
   function toggleInterest(interestId: string) {
     setStatusMessage('');
     setSelectedInterests((current) =>
@@ -210,7 +221,7 @@ export default function SignupPage() {
 
           <p className="uiEyebrow signupEyebrow">모이라 회원가입</p>
           <h1 id="signup-title" className="signupTitle">
-            {step === 8 ? '환영합니다' : `${stepTitle}을 입력해 주세요`}
+            {step === 8 ? '환영합니다' : `${stepTitle}${josaEulReul(stepTitle)} 입력해 주세요`}
           </h1>
 
           <div className="signupProgressWrap" aria-label="진행률">
