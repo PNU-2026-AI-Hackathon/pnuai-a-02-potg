@@ -14285,10 +14285,12 @@ html:has(.moiraPage) {
 
 /* Library news board redesign */
 .communityDetailBackRow {
-  display: flex;
-  justify-content: flex-start;
-  margin: 18px 0 26px;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
+
+.communityDetailHeader { position: relative; padding-right: 132px; }
 
 .communityDetailBackLink {
   display: inline-flex;
@@ -14312,6 +14314,11 @@ html:has(.moiraPage) {
   outline-offset: 2px;
   background: #f1f8f5;
   color: #136f63;
+}
+
+@media (max-width: 640px) {
+  .communityDetailHeader { padding-right: 0; }
+  .communityDetailBackRow { position: static; justify-content: flex-end; display: flex; margin-bottom: 14px; }
 }
 
 .libraryNewsPage {
