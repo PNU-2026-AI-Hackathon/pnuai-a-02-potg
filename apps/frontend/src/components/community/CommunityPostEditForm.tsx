@@ -41,6 +41,11 @@ export default function CommunityPostEditForm({ postId }: { postId: string }) {
     }).catch((error) => setMessage(error.message));
   }, [postId]);
 
+  useEffect(() => {
+    if (post?.boardSlug !== 'library-news' || !editorRef.current) return;
+    editorRef.current.innerHTML = sanitizeRichPostHtml(initialContent);
+  }, [initialContent, post?.boardSlug]);
+
   function applyFormat(command: string, value?: string) {
     editorRef.current?.focus(); document.execCommand(command, false, value); setContent(editorRef.current?.innerHTML ?? '');
   }
@@ -60,9 +65,10 @@ export default function CommunityPostEditForm({ postId }: { postId: string }) {
     if (!post.isOwner && !password) return setMessage('작성할 때 사용한 게시글 비밀번호를 입력해 주세요.');
     setIsSubmitting(true); setMessage('');
     const isLibraryNews = post.boardSlug === 'library-news';
+    const currentContent = isLibraryNews ? (editorRef.current?.innerHTML ?? content) : content;
     const response = await fetch(`/api/posts/${encodeURIComponent(postId)}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: title.trim(), content: isLibraryNews ? serializeRichPostContent(sanitizeRichPostHtml(content)) : content.trim(), type: isLibraryNews ? (category === '공지' ? 'notice' : 'normal') : undefined, tags: isLibraryNews ? [category, ...tags.split(',').map((tag) => tag.trim()).filter(Boolean)] : undefined, password: post?.isOwner ? undefined : password }),
+      body: JSON.stringify({ title: title.trim(), content: isLibraryNews ? serializeRichPostContent(sanitizeRichPostHtml(currentContent)) : currentContent.trim(), type: isLibraryNews ? (category === '공지' ? 'notice' : 'normal') : undefined, tags: isLibraryNews ? [category, ...tags.split(',').map((tag) => tag.trim()).filter(Boolean)] : undefined, password: post.isOwner ? undefined : password }),
     });
     const data = await response.json();
     if (!response.ok) { setMessage(response.status === 403 ? '게시글 비밀번호가 올바르지 않습니다.' : data.error || '게시글을 수정하지 못했습니다.'); setIsSubmitting(false); return; }
@@ -89,7 +95,7 @@ export default function CommunityPostEditForm({ postId }: { postId: string }) {
           <div className="libraryNewsColorPalette" aria-label="글씨 색상">{colors.map((color, index) => <button type="button" key={color} style={{ '--editor-color': color } as CSSProperties} onClick={() => applyFormat('foreColor', color)} aria-label={`글씨 색상 ${index + 1}`} />)}</div>
           <button className="libraryNewsImageButton" type="button" onClick={() => imageInputRef.current?.click()}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 2-2 5 4"/></svg>사진 첨부</button>
           <input ref={imageInputRef} className="libraryNewsHiddenInput" type="file" accept="image/png,image/jpeg,image/webp" onChange={attachImage} />
-        </div><div id="edit-post-content" key={post.id} ref={editorRef} className="libraryNewsRichEditor" contentEditable role="textbox" aria-multiline="true" dangerouslySetInnerHTML={{ __html: sanitizeRichPostHtml(initialContent) }} onInput={(event) => setContent(event.currentTarget.innerHTML)} suppressContentEditableWarning /><footer><span>JPG, PNG, WEBP</span><span>이미지당 최대 5MB</span></footer></div>
+        </div><div id="edit-post-content" key={post.id} ref={editorRef} className="libraryNewsRichEditor" contentEditable role="textbox" aria-multiline="true" onInput={(event) => setContent(event.currentTarget.innerHTML)} suppressContentEditableWarning /><footer><span>JPG, PNG, WEBP</span><span>이미지당 최대 5MB</span></footer></div>
       </section>
       <section className="libraryNewsComposerSection libraryNewsTagSection"><div className="libraryNewsComposerField"><label htmlFor="edit-post-tags">태그 <span>선택</span></label><input id="edit-post-tags" value={tags} onChange={(event) => setTags(event.target.value)} placeholder="예: 여름방학, 초등학생, 독서모임" /><small>쉼표로 구분하면 여러 태그를 등록할 수 있습니다.</small></div></section>
       {message ? <p className="libraryNewsComposerError" role="alert">{message}</p> : null}

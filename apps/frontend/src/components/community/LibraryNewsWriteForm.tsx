@@ -39,7 +39,8 @@ export default function LibraryNewsWriteForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setMessage(''); setIsSubmitting(true);
     try {
-      const response = await fetch('/api/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boardSlug: 'library-news', type: category === '공지' ? 'notice' : 'normal', title: title.trim(), content: serializeRichPostContent(sanitizeRichPostHtml(content)), tags: [category, ...tags.split(',').map((tag) => tag.trim()).filter(Boolean)] }) });
+      const currentContent = editorRef.current?.innerHTML ?? content;
+      const response = await fetch('/api/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ boardSlug: 'library-news', type: category === '공지' ? 'notice' : 'normal', title: title.trim(), content: serializeRichPostContent(sanitizeRichPostHtml(currentContent)), tags: [category, ...tags.split(',').map((tag) => tag.trim()).filter(Boolean)] }) });
       const data = await response.json();
       if (!response.ok) throw new Error(response.status === 401 ? '로그인 후 작성해 주세요.' : data.error || '게시글을 등록하지 못했습니다.');
       router.push(`/community/posts/${encodeURIComponent(data.post.id)}`); router.refresh();

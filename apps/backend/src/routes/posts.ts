@@ -84,7 +84,7 @@ function serializePost(post: {
   createdAt: Date;
   tags: string[];
   authorId?: string | null;
-}, viewerId?: string): CommunityPostResponse & { isOwner: boolean } {
+}, viewerId?: string, viewerRole?: string): CommunityPostResponse & { isOwner: boolean } {
   return {
     id: post.id,
     boardSlug: post.boardSlug,
@@ -94,8 +94,12 @@ function serializePost(post: {
     author: post.author,
     createdAt: post.createdAt.toISOString(),
     tags: post.tags,
-    isOwner: Boolean(viewerId && post.authorId === viewerId),
+    isOwner: Boolean(viewerId && (post.authorId === viewerId || canManageLibraryNews(post.boardSlug, viewerRole))),
   };
+}
+
+function canManageLibraryNews(boardSlug: string, accountType?: string) {
+  return boardSlug === 'library-news' && (accountType === 'LIBRARIAN' || accountType === 'ADMIN');
 }
 
 function isPasswordLengthValid(password: string) {
@@ -146,7 +150,7 @@ router.get('/', async (req: Request, res: Response) => {
       where,
       orderBy: [{ type: 'asc' }, { createdAt: 'desc' }],
     });
-    return res.status(200).json({ posts: posts.map((post) => serializePost(post, req.user?.id)) });
+    return res.status(200).json({ posts: posts.map((post) => serializePost(post, req.user?.id, req.user?.accountType)) });
   } catch (error) {
     console.error('Community post list lookup failed:', error);
     return res.status(500).json({ code: 'POST_LIST_FAILED', error: 'Unable to load posts.' });
@@ -157,7 +161,7 @@ router.get('/:postId', async (req: Request<{ postId: string }>, res: Response) =
   try {
     const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
     if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-    return res.status(200).json({ post: serializePost(post, req.user?.id) });
+    return res.status(200).json({ post: serializePost(post, req.user?.id, req.user?.accountType) });
   } catch (error) {
     console.error('Community post detail lookup failed:', error);
     return res.status(500).json({ code: 'POST_DETAIL_FAILED', error: 'Unable to load post.' });
@@ -198,7 +202,7 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
     const post = await prisma.communityPost.create({
       data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash, authorId: req.user?.id },
     });
-    return res.status(201).json({ post: serializePost(post, req.user?.id) });
+    return res.status(201).json({ post: serializePost(post, req.user?.id, req.user?.accountType) });
   } catch (error) {
     console.error('Community post creation failed:', error);
     return res.status(500).json({ code: 'POST_CREATE_FAILED', error: 'Unable to create post.' });
@@ -368,7 +372,7 @@ async function updatePost(
     if (post.boardSlug === 'library-news' && requestedType && !VALID_POST_TYPES.has(requestedType)) {
       return res.status(400).json({ code: 'INVALID_POST_TYPE', error: 'Invalid post type.' });
     }
-    const canEdit = req.user?.id === post.authorId || await verifyPostPassword(post.passwordHash, req.body?.password);
+    const canEdit = req.user?.id === post.authorId || canManageLibraryNews(post.boardSlug, req.user?.accountType) || await verifyPostPassword(post.passwordHash, req.body?.password);
     if (!canEdit) {
       return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
     }
@@ -382,7 +386,7 @@ async function updatePost(
         ...(post.boardSlug === 'library-news' && requestedTags ? { tags: requestedTags } : {}),
       },
     });
-    return res.status(200).json({ post: serializePost(updatedPost, req.user?.id) });
+    return res.status(200).json({ post: serializePost(updatedPost, req.user?.id, req.user?.accountType) });
   } catch (error) {
     console.error('Community post update failed:', error);
     return res.status(500).json({ code: 'POST_UPDATE_FAILED', error: 'Unable to update post.' });
@@ -398,7 +402,7 @@ router.delete(
     try {
       const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
       if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-      const canDelete = req.user?.id === post.authorId || await verifyPostPassword(post.passwordHash, req.body?.password);
+      const canDelete = req.user?.id === post.authorId || canManageLibraryNews(post.boardSlug, req.user?.accountType) || await verifyPostPassword(post.passwordHash, req.body?.password);
       if (!canDelete) {
         return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
       }
