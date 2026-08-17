@@ -14620,7 +14620,186 @@ html:has(.moiraPage) {
   body { background: #fff; }
   .studioDocumentPage { display: block !important; padding: 0 !important; background: #fff !important; }
   .studioDocumentPage > *:not(.studioPlanPrint) { display: none !important; }
+}
 
+.studioSurveyResultsPanel {
+  display: grid;
+  gap: 20px;
+  border: 1px solid #dae5dc;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(151, 201, 170, 0.18), transparent 32%),
+    linear-gradient(180deg, #f8faf7 0%, #ffffff 100%);
+  padding: 24px 22px 20px;
+  box-shadow: 0 16px 32px rgba(24, 47, 35, 0.06);
+}
+
+.studioSurveyResultsHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.studioSurveyResultsHeader h2 {
+  margin: 6px 0 0;
+  color: #121c1a;
+  font-size: clamp(24px, 2vw, 30px);
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+
+.studioSurveyStateBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cfe7d7;
+  border-radius: 999px;
+  background: #edf9f0;
+  color: #21694c;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.studioSurveyStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.studioSurveyStatCard {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #e3ece6;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faf8 100%);
+  padding: 14px 16px;
+}
+
+.studioSurveyStatCard span,
+.studioSurveyStatCard small {
+  color: #5f6f6b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.studioSurveyStatCard strong {
+  color: #12211d;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+  word-break: break-word;
+}
+
+.studioSurveyStatCard:nth-child(2) strong {
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.studioSurveyContent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.studioSurveyChartGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.studioSurveyList {
+  border: 1px solid #e4ece6;
+  border-radius: 16px;
+  background: #fff;
+  padding: 16px;
+}
+
+.studioSurveyList h3 {
+  margin: 0 0 12px;
+  color: #142621;
+  font-size: 15px;
+}
+
+.studioSurveyBarRow {
+  display: grid;
+  gap: 6px;
+}
+
+.studioSurveyBarRow + .studioSurveyBarRow {
+  margin-top: 14px;
+}
+
+.studioSurveyBarLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #40534f;
+}
+
+.studioSurveyChoiceLabel {
+  display: grid;
+  align-content: center;
+  min-height: 36px;
+  line-height: 1.35;
+}
+
+.studioSurveyChoiceLabel span {
+  display: block;
+}
+
+.studioSurveyBarLabelRow strong {
+  color: #132522;
+  font-weight: 800;
+  align-self: center;
+}
+
+.studioSurveyBarTrack {
+  height: 10px;
+  border-radius: 999px;
+  background: #edf3ef;
+  overflow: hidden;
+}
+
+.studioSurveyBarTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8cc5a3 0%, #2a7a57 100%);
+}
+
+.studioSurveyCompletedNote {
+  color: #205d46;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .studioSurveyStatsGrid,
+  .studioSurveyChartGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .studioSurveyResultsHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .studioSurveyStatsGrid,
+  .studioSurveyChartGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
   /*
     브라우저는 인쇄할 때 바탕색을 기본으로 빼 버린다. 라벨 칸의 색이 문서를 읽는 단서라
     그대로 찍히게 한다.

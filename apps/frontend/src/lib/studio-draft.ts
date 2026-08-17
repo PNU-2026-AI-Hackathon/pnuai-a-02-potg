@@ -40,6 +40,7 @@ export type StudioSavedDocument = {
   agenda?: StudioAgendaInput | null;
   /** 기획서의 항목 구조. 항목 단위로 고치려면 본문 말고 이것이 있어야 한다. */
   plan?: unknown;
+  surveyResult?: unknown;
   createdAt: string;
   updatedAt: string;
 };
