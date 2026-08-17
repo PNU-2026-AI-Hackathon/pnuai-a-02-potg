@@ -14693,6 +14693,12 @@ html:has(.moiraPage) {
   word-break: break-word;
 }
 
+.studioSurveyStatCard:nth-child(2) strong {
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
 .studioSurveyContent {
   display: grid;
   grid-template-columns: 1fr;
@@ -14729,15 +14735,28 @@ html:has(.moiraPage) {
 
 .studioSurveyBarLabelRow {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   font-size: 13px;
   color: #40534f;
 }
 
+.studioSurveyChoiceLabel {
+  display: grid;
+  align-content: center;
+  min-height: 36px;
+  line-height: 1.35;
+}
+
+.studioSurveyChoiceLabel span {
+  display: block;
+}
+
 .studioSurveyBarLabelRow strong {
   color: #132522;
   font-weight: 800;
+  align-self: center;
 }
 
 .studioSurveyBarTrack {

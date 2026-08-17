@@ -29,13 +29,24 @@ export default function StudioSurveyResultsPanel({
     : 0;
 
   const palette = ['#2a7a57', '#8cc5a3', '#67a67e', '#dfeee4'];
+  const labelLines: Record<string, string[]> = {
+    '꼭 참여하고 싶어요': ['꼭 참여하고', '싶어요'],
+    '일정이 맞으면 참여하고 싶어요': ['일정이 맞으면', '참여하고 싶어요'],
+    '관심은 있지만 참여는 어려워요': ['관심은 있지만', '참여는 어려워요'],
+    '관심이 없어요': ['관심이 없어요'],
+  };
+
   const renderChart = (title: string, data: typeof surveyResult.intentionBreakdown) => (
     <div className="studioSurveyList" key={title}>
       <h3>{title}</h3>
       {data.map((choice, index) => (
         <div className="studioSurveyBarRow" key={choice.label}>
           <div className="studioSurveyBarLabelRow">
-            <span>{choice.label}</span>
+            <span className="studioSurveyChoiceLabel">
+              {(labelLines[choice.label] ?? [choice.label]).map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </span>
             <strong>{choice.ratio}%</strong>
           </div>
           <div className="studioSurveyBarTrack" aria-hidden="true">
