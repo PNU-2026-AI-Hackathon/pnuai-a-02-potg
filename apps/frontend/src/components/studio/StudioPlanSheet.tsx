@@ -346,7 +346,7 @@ export default function StudioPlanSheet({
                     }}
                     value={valueText(plan, field)}
                     rows={1}
-                    placeholder={field.manualOnly ? UNDECIDED : field.hint}
+                    placeholder={field.manualOnly || field.factual ? UNDECIDED : field.hint}
                     aria-label={field.label}
                     onChange={(event) => {
                       fitHeight(event.currentTarget);
