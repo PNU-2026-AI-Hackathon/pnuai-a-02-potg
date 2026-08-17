@@ -14408,27 +14408,53 @@ html:has(.moiraPage) {
   .studioDocumentPage { display: block !important; padding: 0 !important; background: #fff !important; }
   .studioDocumentPage > *:not(.studioPlanPrint) { display: none !important; }
 
+  /*
+    브라우저는 인쇄할 때 바탕색을 기본으로 빼 버린다. 라벨 칸의 색이 문서를 읽는 단서라
+    그대로 찍히게 한다.
+  */
+  .studioPlanPrint,
+  .studioPlanPrint * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .studioPlanPrint {
     display: block !important;
     position: static;
-    color: #111;
-    font-size: 11pt;
-    line-height: 1.6;
+    color: #1a1a1a;
+    /* A4 한 장에 담기도록 조인 값. 회차가 열 줄쯤 되어도 넘치지 않는다. */
+    font-size: 9.5pt;
+    line-height: 1.45;
   }
 
   .studioPlanPrintTitle {
-    margin: 0 0 18pt;
+    margin: 0 0 4pt;
     text-align: center;
-    font-size: 18pt;
+    color: #0f5848;
+    font-size: 17pt;
     font-weight: 800;
-    letter-spacing: 0.02em;
+    /* 관공서 문서 제목의 넓은 자간. 마지막 글자 뒤 여백은 되돌려 가운데를 맞춘다. */
+    letter-spacing: 0.28em;
+    text-indent: 0.28em;
+  }
+
+  /* 제목 아래 가는 두 줄. 굵은 선 하나보다 문서다운 인상을 준다. */
+  .studioPlanPrintTitle::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 2.4pt;
+    margin: 6pt auto 12pt;
+    border-top: 1.6pt solid #0f5848;
+    border-bottom: 0.5pt solid #0f5848;
   }
 
   .studioPlanPrintHeading {
-    margin: 16pt 0 6pt;
-    font-size: 12pt;
-    font-weight: 700;
-    border-left: 3pt solid #333;
+    margin: 12pt 0 5pt;
+    color: #0f5848;
+    font-size: 11pt;
+    font-weight: 800;
+    border-left: 3pt solid #16745f;
     padding-left: 6pt;
   }
 
@@ -14436,50 +14462,80 @@ html:has(.moiraPage) {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
+    /* 표 바깥선만 진하게. 안쪽은 가늘어 내용이 앞에 선다. */
+    border: 1pt solid #0f5848;
   }
 
   .studioPlanPrintTable th,
   .studioPlanPrintTable td {
-    border: 0.5pt solid #444;
-    padding: 5pt 7pt;
+    border: 0.4pt solid #9fc0b5;
+    padding: 4pt 6pt;
     vertical-align: top;
     word-break: break-word;
   }
 
   .studioPlanPrintTable th {
-    width: 15%;
-    background: #f2f2f2;
+    background: #e8f2ee;
+    color: #0f5848;
     font-weight: 700;
     text-align: center;
     white-space: nowrap;
   }
 
+  /* 라벨 칸 너비. colgroup으로 잡아야 세로 병합이 있어도 흔들리지 않는다. */
+  .studioPlanPrintLabelCol { width: 15%; }
+
+  /* 프로그램명은 이 문서에서 제일 중요한 한 줄이다. */
+  .studioPlanPrintName {
+    background: #f6faf8;
+    font-size: 12pt;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  /* 여러 줄을 묶는 라벨은 조금 더 진하게 해서 묶음의 머리임을 보인다. */
+  .studioPlanPrintGroupLabel {
+    background: #d8e9e2 !important;
+    vertical-align: middle !important;
+  }
+
+  .studioPlanPrintSubLabel {
+    width: 14%;
+    background: #f2f8f5 !important;
+    font-weight: 600 !important;
+  }
+
   /* 회차 표는 머리글이 가로로 서므로 칸 너비를 따로 준다. */
-  .studioPlanPrintSessions th { width: auto; background: #f2f2f2; }
-  .studioPlanPrintSessions thead th:nth-child(1) { width: 8%; }
-  .studioPlanPrintSessions thead th:nth-child(2) { width: 14%; }
-  .studioPlanPrintSessions thead th:nth-child(4) { width: 20%; }
-  .studioPlanPrintSessions thead th:nth-child(5) { width: 16%; }
+  .studioPlanPrintSessions th { width: auto; }
+  .studioPlanPrintSessions thead th { background: #d8e9e2; }
+  .studioPlanPrintSessions thead th:nth-child(1) { width: 7%; }
+  .studioPlanPrintSessions thead th:nth-child(2) { width: 13%; }
+  .studioPlanPrintSessions thead th:nth-child(4) { width: 18%; }
+  .studioPlanPrintSessions thead th:nth-child(5) { width: 15%; }
   .studioPlanPrintSessions td { text-align: left; }
-  .studioPlanPrintSessions td:first-child { text-align: center; }
+  .studioPlanPrintSessions td:first-child { text-align: center; font-weight: 700; }
+  /* 회차가 많을 때 줄무늬가 있으면 가로로 읽기 쉽다. */
+  .studioPlanPrintSessions tbody tr:nth-child(even) td { background: #f8fbfa; }
 
   /* 회차 한 줄이 페이지 경계에서 잘리면 읽기 어렵다. */
   .studioPlanPrintTable tr { break-inside: avoid; }
   .studioPlanPrintHeading { break-after: avoid; }
+  .studioPlanPrintSessions thead { display: table-header-group; }
 
-  .studioPlanPrintTable ul { margin: 0; padding-left: 14pt; }
+  .studioPlanPrintTable ul { margin: 0; padding-left: 12pt; }
+  .studioPlanPrintTable li + li { margin-top: 2pt; }
   .studioPlanPrintEmpty { color: #666; }
 
   .studioPlanPrintFooter {
-    margin-top: 20pt;
-    padding-top: 6pt;
-    border-top: 0.5pt solid #bbb;
-    font-size: 9pt;
-    color: #555;
+    margin-top: 10pt;
+    padding-top: 5pt;
+    border-top: 0.5pt solid #9fc0b5;
+    font-size: 8.5pt;
+    color: #4a5b56;
     text-align: center;
   }
 
-  @page { size: A4; margin: 18mm 16mm; }
+  @page { size: A4; margin: 15mm 14mm; }
 }
 
 /* --- 프로그램 게시판: 다른 게시판과 같은 결로 ---------------------------------

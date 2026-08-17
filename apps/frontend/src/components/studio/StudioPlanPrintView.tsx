@@ -8,17 +8,29 @@ import { studioPlanFieldMap, type StudioPlan } from '@/lib/studio-plan';
  * 나오기 때문이다. PDF 라이브러리로 그리면 한글 글꼴 파일을 몇 MB씩 싣고 표도
  * 직접 그려야 한다.
  *
+ * 도서관이 실제로 쓰는 강의계획서를 따라, 정보를 테두리 하나로 묶은 표에 담는다.
+ * 표를 여러 개 쌓으면 결재 문서가 아니라 인쇄물 묶음처럼 보인다.
+ *
  * 화면용 시트를 그대로 인쇄하지 않고 따로 그리는 이유는 결재 문서로 쓸 모양이
- * 다르기 때문이다. 수정 단추와 선택 표시는 종이에 필요 없고, 개요는 줄글보다
- * 표로 있어야 결재판에서 읽힌다.
+ * 다르기 때문이다. 수정 단추와 선택 표시는 종이에 필요 없다.
  */
 
-const OVERVIEW_ROWS: Array<Array<keyof StudioPlan>> = [
+/** 두 칸씩 나란히 놓을 항목. 짧은 값이라 한 줄에 둘이 들어간다. */
+const PAIRED_ROWS: Array<Array<keyof StudioPlan>> = [
   ['target', 'capacity'],
   ['period', 'sessionCount'],
   ['classTime', 'applicationPeriod'],
   ['location', 'instructor'],
 ];
+
+/** 한 줄을 다 쓰는 항목. 문장이라 두 칸으로 쪼개면 읽기 어렵다. */
+const WIDE_ROWS: Array<keyof StudioPlan> = ['intent', 'goal'];
+
+/** 「준비 사항」 라벨 하나로 세로로 묶을 항목. */
+const PREPARATION_ROWS: Array<keyof StudioPlan> = ['materials', 'materialFee', 'roomSetup'];
+
+/** 「기대 효과」 아래로 묶을 항목. */
+const CLOSING_ROWS: Array<keyof StudioPlan> = ['expectedEffects', 'promotion'];
 
 function label(key: keyof StudioPlan) {
   return studioPlanFieldMap.get(key as never)?.label ?? String(key);
@@ -35,14 +47,27 @@ export type StudioPlanPrintViewProps = {
 };
 
 export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintViewProps) {
-  const hasSessions = plan.sessions.length > 0;
+  const programName = title || plan.title || '프로그램 계획서';
+
   return (
     <article className="studioPlanPrint" aria-hidden="true">
-      <h1 className="studioPlanPrintTitle">{title || plan.title || '프로그램 기획서'}</h1>
+      <h1 className="studioPlanPrintTitle">프로그램 계획서</h1>
 
       <table className="studioPlanPrintTable">
+        <colgroup>
+          <col className="studioPlanPrintLabelCol" />
+          <col />
+          <col className="studioPlanPrintLabelCol" />
+          <col />
+        </colgroup>
         <tbody>
-          {OVERVIEW_ROWS.map((row) => (
+          {/* 프로그램명은 문서 제목이 아니라 표 첫 칸에 둔다. 결재 문서의 차례다. */}
+          <tr>
+            <th>프로그램명</th>
+            <td className="studioPlanPrintName" colSpan={3}>{programName}</td>
+          </tr>
+
+          {PAIRED_ROWS.map((row) => (
             <tr key={row.join('-')}>
               {row.map((key) => (
                 <Fragment key={key}>
@@ -52,22 +77,48 @@ export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintView
               ))}
             </tr>
           ))}
-          <tr>
-            <th>{label('intent')}</th>
-            <td colSpan={3}>{text(plan, 'intent')}</td>
-          </tr>
-          <tr>
-            <th>{label('goal')}</th>
-            <td colSpan={3}>{text(plan, 'goal')}</td>
-          </tr>
+
+          {WIDE_ROWS.map((key) => (
+            <tr key={key}>
+              <th>{label(key)}</th>
+              <td colSpan={3}>{text(plan, key)}</td>
+            </tr>
+          ))}
+
+          {/* 준비 사항 셋은 라벨 하나로 세로로 묶는다. 라벨 칸이 세 번 반복되지 않는다. */}
+          {PREPARATION_ROWS.map((key, index) => (
+            <tr key={key}>
+              {index === 0 ? <th className="studioPlanPrintGroupLabel" rowSpan={PREPARATION_ROWS.length}>준비 사항</th> : null}
+              <th className="studioPlanPrintSubLabel">{label(key)}</th>
+              <td colSpan={2}>{text(plan, key)}</td>
+            </tr>
+          ))}
+
+          {CLOSING_ROWS.map((key, index) => (
+            <tr key={key}>
+              {index === 0 ? <th className="studioPlanPrintGroupLabel" rowSpan={CLOSING_ROWS.length + (plan.cautions.length ? 1 : 0)}>마무리</th> : null}
+              <th className="studioPlanPrintSubLabel">{label(key)}</th>
+              <td colSpan={2}>{text(plan, key)}</td>
+            </tr>
+          ))}
+          {plan.cautions.length ? (
+            <tr>
+              <th className="studioPlanPrintSubLabel">{label('cautions')}</th>
+              <td colSpan={2}>
+                <ul>{plan.cautions.map((line) => <li key={line}>{line}</li>)}</ul>
+              </td>
+            </tr>
+          ) : null}
         </tbody>
       </table>
 
-      <h2 className="studioPlanPrintHeading">{label('sessions')}</h2>
-      {hasSessions ? (
+      <h2 className="studioPlanPrintHeading">회차별 활동</h2>
+      {plan.sessions.length ? (
         <table className="studioPlanPrintTable studioPlanPrintSessions">
           <thead>
-            <tr><th>회차</th><th>일자</th><th>활동 내용</th><th>준비물</th><th>비고</th></tr>
+            <tr>
+              <th>회차</th><th>일자</th><th>활동 내용</th><th>준비물</th><th>비고</th>
+            </tr>
           </thead>
           <tbody>
             {plan.sessions.map((session) => (
@@ -85,34 +136,9 @@ export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintView
         <p className="studioPlanPrintEmpty">회차별 활동이 아직 없습니다.</p>
       )}
 
-      <h2 className="studioPlanPrintHeading">준비 사항</h2>
-      <table className="studioPlanPrintTable">
-        <tbody>
-          <tr><th>{label('materials')}</th><td>{text(plan, 'materials')}</td></tr>
-          <tr><th>{label('materialFee')}</th><td>{text(plan, 'materialFee')}</td></tr>
-          <tr><th>{label('roomSetup')}</th><td>{text(plan, 'roomSetup')}</td></tr>
-        </tbody>
-      </table>
-
-      <h2 className="studioPlanPrintHeading">기대 효과와 안내</h2>
-      <table className="studioPlanPrintTable">
-        <tbody>
-          <tr><th>{label('expectedEffects')}</th><td>{text(plan, 'expectedEffects')}</td></tr>
-          <tr><th>{label('promotion')}</th><td>{text(plan, 'promotion')}</td></tr>
-          <tr>
-            <th>{label('cautions')}</th>
-            <td>
-              {plan.cautions.length ? (
-                <ul>{plan.cautions.map((line) => <li key={line}>{line}</li>)}</ul>
-              ) : '-'}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
       {/* 초안임을 종이에도 남긴다. 결재판에 올라간 뒤에는 화면 안내가 보이지 않는다. */}
       <p className="studioPlanPrintFooter">
-        이 문서는 MOIRA Studio가 만든 기획 초안입니다. 최종 내용은 담당 사서가 검토·확정합니다.
+        ※ 이 문서는 MOIRA STUDIO가 만든 기획 초안이며, 최종 내용과 일정은 담당 사서의 검토 후 확정됩니다.
       </p>
     </article>
   );
