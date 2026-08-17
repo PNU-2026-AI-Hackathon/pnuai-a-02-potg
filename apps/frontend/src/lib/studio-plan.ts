@@ -72,6 +72,16 @@ export type StudioPlanField = {
    * 엉뚱한 프로그램에 붙이게 된다. 빈칸으로 두고 사서가 채운다.
    */
   manualOnly?: boolean;
+  /**
+   * 화면에서 이 값을 받는 방법.
+   *
+   * 날짜와 시각, 인원은 사서가 손으로 적으면 표기가 제각각이 된다(「9월 1일」,
+   * 「9/1」, 「2026-09-01」). 고르게 해서 저장 형태를 하나로 맞춘다.
+   * 저장은 여전히 문자열이다. 프롬프트와 PDF가 그대로 읽어 쓴다.
+   */
+  control?: 'dateRange' | 'timeRange' | 'number';
+  /** 숫자 뒤에 붙일 말. 「4회」, 「12명」처럼 저장된다. */
+  unit?: string;
 };
 
 export const UNDECIDED = '미정(담당자 확정 필요)';
@@ -80,16 +90,16 @@ export const studioPlanFields: StudioPlanField[] = [
   { key: 'title', label: '프로그램명', group: '개요', kind: 'text', hint: '프로그램 이름' },
   { key: 'intent', label: '기획 의도', group: '개요', kind: 'text', hint: '왜 이 프로그램이 필요한지' },
   { key: 'target', label: '대상', group: '개요', kind: 'text', hint: '참여 대상과 연령' },
-  { key: 'period', label: '운영 기간', group: '개요', kind: 'text', hint: '언제부터 언제까지', factual: true },
+  { key: 'period', label: '운영 기간', group: '개요', kind: 'text', hint: '언제부터 언제까지', factual: true, control: 'dateRange' },
   /**
    * 교육 시간과 신청 기간은 도서관 사정과 접수 일정에서 나오는 값이라 참고 사례에서
    * 가져오면 남의 일정을 옮겨 적게 된다. 칸만 두고 사서가 채운다.
    * 351건 중 신청 기간은 351건, 교육 시간은 350건에 있던 항목이다.
    */
-  { key: 'classTime', label: '교육 시간', group: '개요', kind: 'text', hint: '요일과 시각', manualOnly: true },
-  { key: 'applicationPeriod', label: '신청 기간', group: '개요', kind: 'text', hint: '접수를 받는 기간과 방법', manualOnly: true },
-  { key: 'sessionCount', label: '운영 횟수', group: '개요', kind: 'text', hint: '총 몇 회차인지' },
-  { key: 'capacity', label: '모집 인원', group: '개요', kind: 'text', hint: '몇 명을 모집할지', factual: true },
+  { key: 'classTime', label: '교육 시간', group: '개요', kind: 'text', hint: '요일과 시각', manualOnly: true, control: 'timeRange' },
+  { key: 'applicationPeriod', label: '신청 기간', group: '개요', kind: 'text', hint: '접수를 받는 기간과 방법', manualOnly: true, control: 'dateRange' },
+  { key: 'sessionCount', label: '운영 횟수', group: '개요', kind: 'text', hint: '총 몇 회차인지', control: 'number', unit: '회' },
+  { key: 'capacity', label: '모집 인원', group: '개요', kind: 'text', hint: '몇 명을 모집할지', factual: true, control: 'number', unit: '명' },
   { key: 'location', label: '운영 장소', group: '개요', kind: 'text', hint: '어디에서 진행할지', factual: true },
   { key: 'instructor', label: '강사', group: '개요', kind: 'text', hint: '수업을 맡을 강사', manualOnly: true },
 
@@ -113,6 +123,32 @@ export const studioPlanGroups = ['개요', '내용', '준비 사항', '마무리
 export const generatedStudioPlanFields = studioPlanFields.filter((field) => !field.manualOnly);
 
 export const studioPlanStorageKey = 'moira-studio-generated-plan';
+
+/**
+ * 고르는 칸과 저장 문자열 사이를 오간다.
+ *
+ * 저장은 계속 문자열이다. 프롬프트도 PDF도 이미 문자열을 읽고 있어서, 저장 형태를
+ * 바꾸면 그쪽까지 다 손대야 한다. 화면에서만 나눠 받고 합쳐서 넣는다.
+ *
+ * 되읽을 때는 형태가 맞는 것만 가져온다. AI가 「미정(담당자 확정 필요)」처럼 적어 둔
+ * 값은 날짜가 아니므로 빈칸으로 두고, 사서가 고르면 그때 덮어쓴다.
+ */
+export function readRangeParts(value: string, control: 'dateRange' | 'timeRange') {
+  const pattern = control === 'dateRange' ? /\d{4}-\d{2}-\d{2}/g : /\d{1,2}:\d{2}/g;
+  const found = value.match(pattern) ?? [];
+  const pad = (time: string) => (control === 'timeRange' && time.length === 4 ? `0${time}` : time);
+  return { start: pad(found[0] ?? ''), end: pad(found[1] ?? '') };
+}
+
+export function joinRangeParts(start: string, end: string) {
+  if (start && end) return `${start} ~ ${end}`;
+  return start || end || '';
+}
+
+/** 「4회차」, 「12명 내외」처럼 적힌 값에서 숫자만 꺼낸다. */
+export function readNumberPart(value: string) {
+  return value.match(/\d+/)?.[0] ?? '';
+}
 
 /**
  * 저장소나 서버에서 온 값을 기획서 항목 구조로 만든다. 기획서가 아니면 null이다.

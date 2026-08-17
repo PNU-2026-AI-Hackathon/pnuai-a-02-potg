@@ -14284,6 +14284,48 @@ html:has(.moiraPage) {
 
 .studioPlanField.isRevised .studioPlanValueInput { background: #fbf1d9; }
 
+/* 날짜·시각·인원을 고르는 칸. 손으로 적으면 표기가 제각각이 된다. */
+.studioPlanPicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.studioPlanPicker input {
+  min-height: 34px;
+  border: 1px solid #dbe5df;
+  border-radius: 10px;
+  background: #fff;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+.studioPlanPicker input:hover { border-color: #c3d8cd; }
+
+.studioPlanPicker input:focus {
+  border-color: var(--moira-green);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22, 116, 95, 0.12);
+}
+
+.studioPlanPickerNumber { width: 96px; }
+
+.studioPlanPickerUnit,
+.studioPlanPickerTilde {
+  color: #6b8878;
+  font-size: 13.5px;
+}
+
+/* AI가 「미정」처럼 적어 둔 값. 고르는 칸에 담기지 않으므로 옆에 그대로 보여 준다. */
+.studioPlanPickerNote {
+  color: #8a9a92;
+  font-size: 12.5px;
+}
+
 /* 회차 표: 칸을 그대로 고친다 */
 .studioPlanSessionTable tbody tr { cursor: default; }
 
