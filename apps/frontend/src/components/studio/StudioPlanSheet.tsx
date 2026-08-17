@@ -2,7 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import {
-  joinRangeParts, readNumberPart, readRangeParts, studioPlanFields, studioPlanGroups,
+  UNDECIDED, joinRangeParts, readNumberPart, readRangeParts, studioPlanFields, studioPlanGroups,
   type StudioPlan, type StudioPlanField, type StudioPlanFieldKey, type StudioPlanSession,
 } from '@/lib/studio-plan';
 
@@ -185,14 +185,29 @@ export default function StudioPlanSheet({
   function pickerControl(field: StudioPlanField) {
     const value = String(plan[field.key] ?? '');
 
+    /**
+     * 아직 고르지 않은 칸에 무엇이 들어갈 자리인지 알려 준다.
+     *
+     * 날짜·시각·숫자 칸은 placeholder가 먹지 않는다. 브라우저가 제 형식 안내를
+     * 대신 보여주기 때문이다. 그래서 칸 옆에 글로 띄운다.
+     *
+     * AI가 이미 「미정(담당자 확정 필요)」처럼 적어 둔 값이 있으면 그것을 보여 준다.
+     * 지우지 않는 이유는, 사서가 원래 뭐라고 적혀 있었는지 알아야 하기 때문이다.
+     */
+    const undecidedNote = (chosen: boolean) => {
+      if (chosen) return null;
+      return <span className="studioPlanPickerNote">{value.trim() || UNDECIDED}</span>;
+    };
+
     if (field.control === 'number') {
+      const number = readNumberPart(value);
       return (
         <div className="studioPlanPicker">
           <input
             className="studioPlanPickerNumber"
             type="number"
             min={0}
-            value={readNumberPart(value)}
+            value={number}
             aria-label={field.label}
             onChange={(event) => {
               const next = event.target.value.trim();
@@ -200,6 +215,7 @@ export default function StudioPlanSheet({
             }}
           />
           {field.unit ? <span className="studioPlanPickerUnit">{field.unit}</span> : null}
+          {undecidedNote(Boolean(number))}
         </div>
       );
     }
@@ -224,8 +240,7 @@ export default function StudioPlanSheet({
           aria-label={`${field.label} 종료`}
           onChange={(event) => setField(field, joinRangeParts(range.start, event.target.value))}
         />
-        {/* AI가 「미정」처럼 적어 둔 값은 날짜가 아니라 칸에 담기지 않는다. 그대로 보여 준다. */}
-        {value && !range.start && !range.end ? <span className="studioPlanPickerNote">{value}</span> : null}
+        {undecidedNote(Boolean(range.start || range.end))}
       </div>
     );
   }
@@ -331,7 +346,7 @@ export default function StudioPlanSheet({
                     }}
                     value={valueText(plan, field)}
                     rows={1}
-                    placeholder={field.manualOnly ? '' : field.hint}
+                    placeholder={field.manualOnly ? UNDECIDED : field.hint}
                     aria-label={field.label}
                     onChange={(event) => {
                       fitHeight(event.currentTarget);
