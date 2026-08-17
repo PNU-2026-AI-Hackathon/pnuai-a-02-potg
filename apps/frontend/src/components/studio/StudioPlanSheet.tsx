@@ -186,16 +186,16 @@ export default function StudioPlanSheet({
     const value = String(plan[field.key] ?? '');
 
     /**
-     * 아직 고르지 않은 칸에 무엇이 들어갈 자리인지 알려 준다.
+     * 아직 고르지 않은 기간에 무엇이 들어갈 자리인지 알려 준다.
      *
-     * 날짜·시각·숫자 칸은 placeholder가 먹지 않는다. 브라우저가 제 형식 안내를
-     * 대신 보여주기 때문이다. 그래서 칸 옆에 글로 띄운다.
+     * 날짜 칸은 placeholder가 먹지 않아 칸 옆에 글로 띄운다. 시각과 숫자 칸에는
+     * 붙이지 않는다. 칸이 짧아 안내가 바로 옆에 붙으면 값처럼 읽힌다.
      *
      * AI가 이미 「미정(담당자 확정 필요)」처럼 적어 둔 값이 있으면 그것을 보여 준다.
      * 지우지 않는 이유는, 사서가 원래 뭐라고 적혀 있었는지 알아야 하기 때문이다.
      */
     const undecidedNote = (chosen: boolean) => {
-      if (chosen) return null;
+      if (chosen || field.control !== 'dateRange') return null;
       return <span className="studioPlanPickerNote">{value.trim() || UNDECIDED}</span>;
     };
 
