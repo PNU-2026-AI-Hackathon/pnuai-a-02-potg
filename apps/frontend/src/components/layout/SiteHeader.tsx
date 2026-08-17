@@ -5,7 +5,7 @@ import type { AuthUser } from '@/lib/auth-config';
 
 type SiteHeaderProps = {
   user: AuthUser | null;
-  activeMenu?: 'home' | 'community' | 'programs' | 'about';
+  activeMenu?: 'home' | 'community' | 'programs' | 'about' | 'studio';
 };
 
 export default function SiteHeader({
@@ -55,11 +55,13 @@ export default function SiteHeader({
               </Link>
               <div className="siteNavSubmenu">
                 <Link href="/community/library-news">도서관 행사 및 소식</Link>
-                <Link href="/community/ideas">함께 만드는 행사</Link>
-                <Link href="/community/free">동네 광장</Link>
+                <Link href="/community/ideas">우리동네 아이디어</Link>
               </div>
             </div>
-            <Link className="siteStudioLink" href="/studio">
+            <Link
+              className={`siteStudioLink ${activeMenu === 'studio' ? 'isActive' : ''}`}
+              href="/studio/about"
+            >
               <span className="siteStudioIcon" aria-hidden="true">✦</span>
               MOIRA Studio
             </Link>

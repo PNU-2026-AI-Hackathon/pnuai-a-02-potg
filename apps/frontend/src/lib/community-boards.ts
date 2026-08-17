@@ -1,6 +1,6 @@
 import { getBackendUrl } from './backend-url';
 
-export type CommunityBoardSlug = 'library-news' | 'free' | 'ideas';
+export type CommunityBoardSlug = 'library-news' | 'ideas';
 
 export type CommunityPostType = 'notice' | 'normal';
 
@@ -30,10 +30,10 @@ export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
   ideas: {
     slug: 'ideas',
     href: '/community/ideas',
-    title: '함께 만드는 행사',
-    shortTitle: '아이디어 게시판',
-    description: '시민이 행사 아이디어를 제안하고 대화로 함께 발전시키는 게시판입니다.',
-    purpose: '아이디어에 의견과 답글을 보태 실행 가능한 지역 행사로 구체화합니다.',
+    title: '우리동네 아이디어',
+    shortTitle: '우리동네 아이디어',
+    description: '시민이 지역 아이디어를 제안하고 함께 발전시키는 게시판입니다.',
+    purpose: '아이디어에 의견과 답글을 보태 실행 가능한 지역 프로그램과 행사로 구체화합니다.',
     typeLabels: {
       notice: '공지',
       normal: '아이디어',
@@ -53,22 +53,46 @@ export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
     },
     tags: ['행사', '운영 안내', '프로그램'],
   },
-  free: {
-    slug: 'free',
-    href: '/community/free',
-    title: '자유 게시판',
-    shortTitle: '자유 게시판',
-    description: '지역 주민이 일상 이야기와 생활 정보를 자유롭게 나누는 게시판입니다.',
-    purpose: '주민 간 소통, 정보 공유, 모이라 운영진 안내를 한곳에서 확인합니다.',
-    typeLabels: {
-      notice: '공지',
-      normal: '일반 글',
-    },
-    tags: ['소통', '정보 공유', '동네 이야기'],
-  },
 };
 
 export const communityPosts: CommunityPost[] = [
+  /**
+   * 의제 글. 스튜디오 의제 선택창이 이 게시판을 읽으므로, 백엔드가 멈췄을 때
+   * 선택창이 텅 비지 않도록 목 데이터에도 의제가 있어야 한다.
+   */
+  {
+    id: 'ideas-1',
+    boardSlug: 'ideas',
+    type: 'normal',
+    title: '시니어 대상 스마트폰 반복 교육이 필요합니다',
+    content:
+      '키오스크, 공공앱, 모바일 은행 사용을 여러 번 연습할 수 있는 소규모 프로그램을 제안합니다.',
+    author: '박이웃',
+    createdAt: '2026-07-09T02:00:00.000Z',
+    tags: ['생활', '시니어'],
+  },
+  {
+    id: 'ideas-2',
+    boardSlug: 'ideas',
+    type: 'normal',
+    title: '방과후 숙제 도움 프로그램을 운영하면 좋겠습니다',
+    content:
+      '맞벌이 가정 아이들이 도서관에서 안전하게 머물며 숙제를 도울 수 있는 시간이 있으면 좋겠습니다.',
+    author: '김돌봄',
+    createdAt: '2026-07-08T06:40:00.000Z',
+    tags: ['책·배움', '아동'],
+  },
+  {
+    id: 'ideas-3',
+    boardSlug: 'ideas',
+    type: 'normal',
+    title: '도서관 주변 분리배출 캠페인을 제안합니다',
+    content:
+      '작은도서관을 거점으로 어린이와 주민이 함께 참여하는 자원순환 캠페인을 열면 좋겠습니다.',
+    author: '이초록',
+    createdAt: '2026-07-06T08:15:00.000Z',
+    tags: ['환경', '캠페인'],
+  },
   {
     id: 'library-news-1',
     boardSlug: 'library-news',
@@ -113,50 +137,6 @@ export const communityPosts: CommunityPost[] = [
     createdAt: '2026-07-02T01:10:00.000Z',
     tags: ['전시', '그림책'],
   },
-  {
-    id: 'free-1',
-    boardSlug: 'free',
-    type: 'notice',
-    title: '자유 게시판 이용 안내',
-    content:
-      '서로를 존중하는 표현을 사용해 주세요. 개인정보가 포함된 글은 관리자 확인 후 숨김 처리될 수 있습니다.',
-    author: '관리자',
-    createdAt: '2026-07-08T00:30:00.000Z',
-    tags: ['공지', '이용 안내'],
-  },
-  {
-    id: 'free-2',
-    boardSlug: 'free',
-    type: 'normal',
-    title: '아이와 함께 가기 좋은 작은도서관을 추천해 주세요',
-    content:
-      '주말에 미취학 아동과 방문하기 좋은 공간이나 그림책 코너가 있는 곳을 찾고 있습니다.',
-    author: '김모이라',
-    createdAt: '2026-07-07T04:10:00.000Z',
-    tags: ['질문', '추천'],
-  },
-  {
-    id: 'free-3',
-    boardSlug: 'free',
-    type: 'normal',
-    title: '서동누리 작은도서관 앞 플리마켓 후기',
-    content:
-      '동네 주민들이 직접 만든 물품과 책을 나누는 분위기가 좋아서 다음 행사도 기대됩니다.',
-    author: '박동네',
-    createdAt: '2026-07-05T11:45:00.000Z',
-    tags: ['후기', '행사'],
-  },
-  {
-    id: 'free-4',
-    boardSlug: 'free',
-    type: 'normal',
-    title: '비 오는 날 읽기 좋은 책을 나눠 봐요',
-    content:
-      '장마철에 집이나 도서관에서 읽기 좋은 소설, 에세이, 그림책을 서로 추천해 주세요.',
-    author: '이책방',
-    createdAt: '2026-07-03T03:25:00.000Z',
-    tags: ['책 추천', '일상'],
-  },
 ];
 
 export function getCommunityBoard(slug: CommunityBoardSlug) {
@@ -178,7 +158,7 @@ function isCommunityPost(value: unknown): value is CommunityPost {
 
   return (
     typeof post.id === 'string' &&
-    (post.boardSlug === 'library-news' || post.boardSlug === 'free' || post.boardSlug === 'ideas') &&
+    (post.boardSlug === 'library-news' || post.boardSlug === 'ideas') &&
     (post.type === 'notice' || post.type === 'normal') &&
     typeof post.title === 'string' &&
     typeof post.content === 'string' &&
@@ -187,6 +167,30 @@ function isCommunityPost(value: unknown): value is CommunityPost {
     Array.isArray(post.tags) &&
     post.tags.every((tag) => typeof tag === 'string')
   );
+}
+
+/**
+ * 글 하나만 가져온다. 스튜디오가 `?agenda=<글id>`로 넘어왔을 때 그 글을 되찾는 데 쓴다.
+ * 게시판에서 고른 글이 목록 상위에 없을 수도 있어, 목록과 별개로 읽을 길이 필요하다.
+ */
+export async function getCommunityPost(postId: string) {
+  try {
+    const response = await fetch(getBackendUrl(`/api/posts/${encodeURIComponent(postId)}`), {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: unknown = await response.json();
+    const post = (data as { post?: unknown } | null)?.post;
+
+    return isCommunityPost(post) ? post : null;
+  } catch (error) {
+    console.error('Community post request failed:', error);
+    return null;
+  }
 }
 
 export async function getCommunityPosts(slug: CommunityBoardSlug) {

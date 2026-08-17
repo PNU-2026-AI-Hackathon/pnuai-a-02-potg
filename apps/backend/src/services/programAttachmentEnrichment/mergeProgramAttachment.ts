@@ -28,6 +28,17 @@ const LABEL_KIND: Record<string, 'title' | 'target' | 'capacity' | 'instructor' 
   학습자준비물: 'materials', 강의실준비: 'materials', 프로그램소개: 'content', 강사성명: 'instructor',
   '프로그램 소개': 'content', 교육내용: 'content', 강의목표: 'content', 목표: 'content', 참고자료: 'content',
   '온라인 가능 여부': 'online', 온라인가능여부: 'online',
+  // 표가 아니라 번호 붙은 문단으로 적은 계획서에서 나오는 라벨
+  '강의 개요': 'content', 강의개요: 'content', '강의 운영 방법': 'content', 강의운영방법: 'content',
+  '강의 목표': 'content', '프로그램 개요': 'content', 프로그램개요: 'content',
+  // 회차 표 없이 도입·전개·마무리를 한 덩어리로 적은 계획서
+  '활동 계획': 'content', 활동계획: 'content',
+  // 수강생 모집 홍보문이 글머리표 목록으로 적는 항목
+  운영내용: 'content', 프로그램내용: 'content',
+  기간: 'schedule', 시간: 'schedule', 운영시간: 'schedule',
+  장소: 'location', 운영장소: 'location',
+  모집대상: 'target', 신청대상: 'target',
+  모집인원: 'capacity',
 };
 
 function comparable(value: unknown) {
@@ -88,7 +99,11 @@ function standardBasicInfo(program: NormalizedProgram) {
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
 }
 
-function combinedBasicInfo(program: NormalizedProgram, supplements: Array<{ label: string; value: string }>) {
+/**
+ * 첨부 없이 본문만으로 게시하는 레코드도 같은 기본정보 구조를 써야 하므로 내보낸다.
+ * 첨부 보강이 없으면 `supplements`는 빈 배열이다.
+ */
+export function combinedBasicInfo(program: NormalizedProgram, supplements: Array<{ label: string; value: string }>) {
   const result = standardBasicInfo(program);
   for (const supplement of supplements) {
     const canonicalLabel = /^(?:교육기간|운영기간)$/.test(supplement.label) ? '교육기간' : supplement.label;
@@ -158,13 +173,36 @@ function deriveWeeklyDates(program: NormalizedProgram, count: number) {
   return dates.length === count ? dates : null;
 }
 
-function addItem(board: ProgramBoardContent, sectionId: ProgramSection['id'], title: string, label: string, value: string) {
+/**
+ * 항목을 넣는다. 넣지 못하고 밀려난 값이 있으면 돌려준다.
+ *
+ * 같은 이름이 두 줄로 보이면 읽는 사람은 어느 쪽이 맞는지 알 수 없다.
+ * 원사이트와 첨부가 같은 항목을 달리 적은 것이므로 자세한 쪽만 남기고,
+ * 밀려난 값은 버린 자리에 적어 원문 대조가 가능하게 둔다.
+ */
+function addItem(
+  board: ProgramBoardContent,
+  sectionId: ProgramSection['id'],
+  title: string,
+  label: string,
+  value: string,
+): { landed: boolean; displaced: string | null } {
   let section = board.sections.find((candidate) => candidate.id === sectionId);
   if (!section) {
     section = { id: sectionId, title, items: [] };
     board.sections.push(section);
   }
-  if (!section.items.some((item) => equivalentOrContained(item.value, value))) section.items.push({ label, value });
+  if (section.items.some((item) => equivalentOrContained(item.value, value))) return { landed: false, displaced: null };
+
+  const sameLabel = section.items.find((item) => item.label === label);
+  if (sameLabel) {
+    if (value.length <= sameLabel.value.length) return { landed: false, displaced: value };
+    const displaced = sameLabel.value;
+    sameLabel.value = value;
+    return { landed: true, displaced };
+  }
+  section.items.push({ label, value });
+  return { landed: true, displaced: null };
 }
 
 export function mergeProgramAttachment(input: MergeInput) {
@@ -211,7 +249,11 @@ export function mergeProgramAttachment(input: MergeInput) {
       }
       continue;
     }
-    if (kind === 'fee' && /^(?:없음|0원|무료|[-ㅡ—])$/i.test(comparable(item.value))) {
+    // 줄표만 적힌 재료비·교재비는 `없음`을 뜻한다.
+    // `comparable()`은 기호를 지우므로 줄표는 원문 값에서 직접 판정해야 한다.
+    // 줄표나 빗금만 적힌 재료비·교재비는 `없음`을 뜻한다.
+    // `comparable()`은 기호를 지우므로 원문 값에서 직접 판정해야 한다.
+    if (kind === 'fee' && (/^[-ㅡ—–/／]+$/.test(item.value.trim()) || /^(?:없음|0원|무료)$/i.test(comparable(item.value)))) {
       const value = /무료/.test(item.value) ? '무료' : '없음';
       if (!basicInfoSupplement.some((candidate) => candidate.label === item.label)) {
         basicInfoSupplement.push({ label: item.label, value });
@@ -224,8 +266,11 @@ export function mergeProgramAttachment(input: MergeInput) {
       const attachmentAmounts = amountsOf(item.value);
       if (attachmentAmounts.length && attachmentAmounts.every((amount) => basicAmounts.includes(amount))) skippedDuplicates.push(item);
       else if (!basicAmounts.length || !attachmentAmounts.length) {
-        addItem(board, 'operation', '운영 정보', item.label, item.value);
-        added.push({ section: 'operation', ...item });
+        const placed = addItem(board, 'operation', '운영 정보', item.label, item.value);
+        if (placed.landed) added.push({ section: 'operation', ...item });
+        if (placed.displaced) {
+          discardedNoise.push({ label: item.label, value: placed.displaced, reason: '같은 이름의 자세한 값으로 갈음' });
+        }
       } else warnings.push({ code: 'ATTACHMENT_FEE_CONFLICT', label: item.label, basicValue: basics.fee, attachmentValue: item.value });
       continue;
     }
@@ -246,8 +291,11 @@ export function mergeProgramAttachment(input: MergeInput) {
     const sectionId = kind === 'content' ? 'content' : 'operation';
     const sectionTitle = kind === 'content' ? '프로그램 소개' : '운영 정보';
     const displayItem = item.label === '프로그램소개' ? { ...item, label: '프로그램 소개' } : item;
-    addItem(board, sectionId, sectionTitle, displayItem.label, displayItem.value);
-    added.push({ section: sectionId, ...displayItem });
+    const placed = addItem(board, sectionId, sectionTitle, displayItem.label, displayItem.value);
+    if (placed.landed) added.push({ section: sectionId, ...displayItem });
+    if (placed.displaced) {
+      discardedNoise.push({ label: displayItem.label, value: placed.displaced, reason: '같은 이름의 자세한 값으로 갈음' });
+    }
   }
 
   cleanIntro(input.program, board, basicInfoSupplement, discardedNoise, skippedDuplicates);

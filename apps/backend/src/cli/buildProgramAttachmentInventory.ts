@@ -10,6 +10,17 @@ const DEFAULT_OUT_DIR = path.resolve(process.cwd(), '.local', 'program-attachmen
 export type TextReadiness = 'TEXT_READY' | 'TEXT_PARTIAL' | 'TEXT_INSUFFICIENT';
 export type ExtractionRoute = 'HWP_TEXT' | 'HWPX_TEXT' | 'PDF_CLASSIFY' | 'IMAGE_OCR' | 'UNKNOWN_REVIEW';
 
+/**
+ * 인벤토리 대상 범위.
+ *
+ * `text_with_supplement`는 #145까지의 기본값이며 첨부 보강이 필요한 레코드만 담는다.
+ * `all`은 전체 351건 배치를 위해 텍스트 전용·이미지 전용·첨부 전용·빈 레코드까지 포함한다.
+ */
+export type InventoryProfile = 'text_with_supplement' | 'all';
+
+/** 첨부가 없어 본문 정제 결과만 사용하는 레코드의 경로. 첨부 확장자 판별과는 무관하다. */
+export const TEXT_ONLY_ROUTE = 'TEXT_ONLY';
+
 type InventoryAttachment = RawAttachment & {
   extension: string | null;
   route: ExtractionRoute;
@@ -83,16 +94,18 @@ function attachmentRows(raw: RawProgram): InventoryAttachment[] {
   return [...attachments, ...inlineImages];
 }
 
-export function buildProgramAttachmentInventory(records: RawProgram[]) {
+export function buildProgramAttachmentInventory(records: RawProgram[], profile: InventoryProfile = 'text_with_supplement') {
   const targets = records
-    .filter((raw) => contentProfileOf(raw) === 'text_with_supplement')
+    .filter((raw) => profile === 'all' || contentProfileOf(raw) === 'text_with_supplement')
     .map((raw) => {
       const normalized = normalizeProgram(raw);
       const attachments = attachmentRows(raw);
+      const routes = [...new Set(attachments.map((attachment) => attachment.route))];
       return {
         sourceId: raw.idx,
         sourceUrl: raw.url,
         title: raw.title,
+        contentProfile: contentProfileOf(raw),
         bodyTextLength: String(raw.programContent?.text ?? raw.detailText ?? '').trim().length,
         structuredItemCount: normalized.board.sections.reduce((sum, section) => sum + section.items.length, 0),
         introLineCount: normalized.board.intro.length,
@@ -101,7 +114,7 @@ export function buildProgramAttachmentInventory(records: RawProgram[]) {
         attachmentCount: raw.attachments.length,
         textReadiness: textReadinessOf(normalized),
         attachmentReviewStatus: 'ATTACHMENT_UNCHECKED' as const,
-        extractionRoutes: [...new Set(attachments.map((attachment) => attachment.route))],
+        extractionRoutes: routes.length ? routes : [TEXT_ONLY_ROUTE],
         attachments,
         warnings: normalized.warnings,
       };
@@ -113,9 +126,10 @@ export function buildProgramAttachmentInventory(records: RawProgram[]) {
   return {
     schemaVersion: 'program-attachment-inventory/v1',
     generatedAt: new Date().toISOString(),
-    profile: 'text_with_supplement',
+    profile,
     count: targets.length,
     stats: {
+      contentProfiles: countBy(targets.map((item) => item.contentProfile)),
       textReadiness: countBy(targets.map((item) => item.textReadiness)),
       extractionRoutes: countBy(targets.flatMap((item) => item.extractionRoutes)),
       attachmentFiles: targets.reduce((sum, item) => sum + item.attachmentCount, 0),
@@ -129,12 +143,17 @@ export function buildProgramAttachmentInventory(records: RawProgram[]) {
 export async function main(args = process.argv.slice(2)) {
   const inputIndex = args.indexOf('--input');
   const outIndex = args.indexOf('--out');
+  const profileIndex = args.indexOf('--profile');
+  const profile = (profileIndex >= 0 ? args[profileIndex + 1] : 'text_with_supplement') as InventoryProfile;
+  if (!['text_with_supplement', 'all'].includes(profile)) {
+    throw new Error(`알 수 없는 프로파일: ${profile} (text_with_supplement | all)`);
+  }
   const inputFile = inputIndex >= 0 ? path.resolve(args[inputIndex + 1]) : latestCrawlFile(DEFAULT_CRAWL_DIR);
   const outDir = outIndex >= 0 ? path.resolve(args[outIndex + 1]) : DEFAULT_OUT_DIR;
   const payload = JSON.parse(fs.readFileSync(inputFile, 'utf8')) as { records: RawProgram[] };
-  const result = { ...buildProgramAttachmentInventory(payload.records), input: path.basename(inputFile) };
+  const result = { ...buildProgramAttachmentInventory(payload.records, profile), input: path.basename(inputFile) };
   fs.mkdirSync(outDir, { recursive: true });
-  const output = path.join(outDir, 'inventory.json');
+  const output = path.join(outDir, profile === 'all' ? 'inventory-all.json' : 'inventory.json');
   fs.writeFileSync(output, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
   console.log(JSON.stringify({ output, count: result.count, stats: result.stats }, null, 2));
   return result;

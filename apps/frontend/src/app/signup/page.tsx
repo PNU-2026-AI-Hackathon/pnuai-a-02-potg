@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
@@ -26,12 +27,22 @@ const interestCategories: InterestCategory[] = [
 ];
 
 const accountTypes: AccountType[] = [
-  { id: 'resident', title: '일반 사용자', description: '마을 주민으로 가입해요' },
-  { id: 'librarian', title: '사서', description: '도서관 운영자 계정이에요' },
-  { id: 'admin', title: '관리자', description: '전체 관리 권한 계정이에요' },
+  { id: 'resident', title: '일반 사용자', description: '마을 주민으로 가입할 수 있어요' },
+  { id: 'librarian', title: '사서', description: '도서관 운영자 계정입니다' },
+  { id: 'admin', title: '관리자', description: '전체 관리 권한 계정입니다' },
 ];
 
 const steps = ['계정 유형', '계정 정보', '이름', '기본 정보', '지역', '연락처', '관심분야', '완료'] as const;
+const stepTitles = [
+  '계정 유형을 선택해 주세요',
+  '계정 정보를 입력해 주세요',
+  '이름을 입력해 주세요',
+  '기본 정보를 입력해 주세요',
+  '지역을 선택해 주세요',
+  '연락처를 입력해 주세요',
+  '관심분야를 선택해 주세요',
+  '회원가입이 완료되었습니다',
+] as const;
 const regions = ['금정구', '부산진구', '동래구', '해운대구', '북구', '남구'];
 const genders = ['선택 안 함', '여성', '남성', '기타'];
 const today = new Date();
@@ -67,7 +78,7 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const progress = Math.round(((step - 1) / (steps.length - 1)) * 100);
-  const stepTitle = useMemo(() => steps[step - 1], [step]);
+  const stepTitle = useMemo(() => stepTitles[step - 1] ?? '회원가입', [step]);
 
   const isStepOneValid = Boolean(accountType);
   const isStepTwoValid = /^[a-zA-Z0-9_-]{4,30}$/.test(userId.trim()) && password.length >= 8 && password === confirmPassword;
@@ -133,7 +144,7 @@ export default function SignupPage() {
     }
 
     if (step === 6 && !isStepSixValid) {
-      setStatusMessage('이메일은 필수입니다.');
+      setStatusMessage('이메일을 올바르게 입력해 주세요.');
       return;
     }
 
@@ -195,8 +206,18 @@ export default function SignupPage() {
     <main className="signupPage">
       <section className="signupShell" aria-labelledby="signup-title">
         <Link className="authBrand" href="/" aria-label="모이라 홈">
-          <strong>모이라</strong>
-          <span>모두가 이어지는 라이브러리</span>
+          <Image
+            className="authBrandLogo"
+            src="/moira-logo-mark-no-ai.png"
+            alt=""
+            width={72}
+            height={56}
+            priority
+          />
+          <span>
+            <strong>모이라</strong>
+            <small>모두가 이어지는 라이브러리</small>
+          </span>
         </Link>
         <div className="signupCard">
           <div className="signupTopRow">
@@ -210,7 +231,7 @@ export default function SignupPage() {
 
           <p className="uiEyebrow signupEyebrow">모이라 회원가입</p>
           <h1 id="signup-title" className="signupTitle">
-            {step === 8 ? '환영합니다' : `${stepTitle}을 입력해 주세요`}
+            {step === 8 ? '환영합니다' : stepTitle}
           </h1>
 
           <div className="signupProgressWrap" aria-label="진행률">

@@ -9,7 +9,7 @@ type Comment = { id: string; content: string; author: string; createdAt: string;
 type Activity = { likeCount: number; saveCount: number; liked: boolean; saved: boolean };
 
 const dateFormatter = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long', timeStyle: 'short' });
-const boardNames: Record<string, string> = { 'library-news': '도서관 행사 및 소식', free: '동네 광장', ideas: '함께 만드는 행사' };
+const boardNames: Record<string, string> = { 'library-news': '도서관 행사 및 소식', ideas: '우리동네 아이디어' };
 
 async function fetchPostDetails(postId: string) {
   const [postResponse, commentsResponse, activityResponse] = await Promise.all([
@@ -48,7 +48,7 @@ export default function CommunityPostDetail({ postId }: { postId: string }) {
     const password = post?.isOwner ? undefined : window.prompt('작성할 때 사용한 게시글 비밀번호를 입력해 주세요.');
     if (!post?.isOwner && !password) return;
     const response = await fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
-    if (response.ok) { window.location.href = `/community/${post?.boardSlug ?? 'free'}`; return; }
+    if (response.ok) { window.location.href = `/community/${post?.boardSlug ?? 'ideas'}`; return; }
     setMessage((await response.json()).error || '게시글을 삭제하지 못했습니다.');
   }
 

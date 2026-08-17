@@ -28,6 +28,8 @@ export type ImageOcrProcessingResult = {
   averageConfidence?: number;
   fieldCount?: number;
   readingOrderStrategy?: OcrRecognitionResult['readingOrderStrategy'];
+  /** 인식된 글자 조각의 위치. 포스터 표를 복원할 때 쓴다. */
+  boxes?: OcrRecognitionResult['boxes'];
 };
 
 export function imageOcrLogSummary(result: ImageOcrProcessingResult) {
@@ -86,6 +88,7 @@ export async function processImageForOcr(input: {
       averageConfidence: result.averageConfidence,
       fieldCount: result.fieldCount,
       readingOrderStrategy: result.readingOrderStrategy,
+      boxes: result.boxes,
     };
   } finally {
     await prepared?.cleanup().catch(() => undefined);
