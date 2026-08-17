@@ -14524,15 +14524,6 @@ html:has(.moiraPage) {
   .studioPlanPrintTable li + li { margin-top: 2pt; }
   .studioPlanPrintEmpty { color: #666; }
 
-  .studioPlanPrintFooter {
-    margin-top: 8pt;
-    padding-top: 0;
-    border-top: 0;
-    font-size: 8.5pt;
-    color: #555;
-    text-align: left;
-  }
-
   @page { size: A4; margin: 15mm 14mm; }
 }
 

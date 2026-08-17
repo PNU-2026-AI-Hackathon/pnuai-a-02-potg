@@ -127,10 +127,6 @@ export default function StudioPlanPrintView({ plan, title }: StudioPlanPrintView
         <p className="studioPlanPrintEmpty">회차별 활동이 아직 없습니다.</p>
       )}
 
-      {/* 초안임을 종이에도 남긴다. 결재판에 올라간 뒤에는 화면 안내가 보이지 않는다. */}
-      <p className="studioPlanPrintFooter">
-        ※ 이 문서는 MOIRA STUDIO가 만든 기획 초안이며, 최종 내용과 일정은 담당 사서의 검토 후 확정됩니다.
-      </p>
     </article>
   );
 }
