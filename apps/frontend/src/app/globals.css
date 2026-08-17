@@ -14284,6 +14284,36 @@ html:has(.moiraPage) {
 @media (max-width: 700px) { .programSearchOptions, .programSearchResultHeading, .programSearchResultTitle { align-items: stretch; flex-direction: column; } .programSearchOptions button { margin-left: 0; } .programSearchResultCard { grid-template-columns: 1fr; } }
 
 /* Library news board redesign */
+.communityDetailBackRow {
+  display: flex;
+  justify-content: flex-start;
+  margin: 18px 0 26px;
+}
+
+.communityDetailBackLink {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d3e1db;
+  border-radius: 11px;
+  background: #fff;
+  color: #405049;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: border-color .2s ease, background-color .2s ease, color .2s ease;
+}
+
+.communityDetailBackLink:hover,
+.communityDetailBackLink:focus-visible {
+  border-color: #8fc4ae;
+  outline: 3px solid rgba(19, 111, 99, .12);
+  outline-offset: 2px;
+  background: #f1f8f5;
+  color: #136f63;
+}
+
 .libraryNewsPage {
   --library-green: #136f63;
   --library-green-soft: #a7d7c5;
