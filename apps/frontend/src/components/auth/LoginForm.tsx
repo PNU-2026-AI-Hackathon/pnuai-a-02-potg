@@ -11,6 +11,8 @@ export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -49,41 +51,73 @@ export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
 
   return (
     <form className="loginForm" onSubmit={handleSubmit}>
+      <div className="loginIntro">
+        <h1 id="login-title" className="loginTitle">환영합니다!</h1>
+        <p className="loginDescription">이메일과 비밀번호를 입력하여 로그인하세요.</p>
+      </div>
+
       <label className="loginField" htmlFor="login-email">
         <span>이메일</span>
-        <input
-          id="login-email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="example@domain.com"
-          autoComplete="email"
-        />
+        <div className="loginInputWrap">
+          <input
+            id="login-email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="example@domain.com"
+            autoComplete="email"
+          />
+        </div>
       </label>
 
       <label className="loginField" htmlFor="login-password">
         <span>비밀번호</span>
-        <input
-          id="login-password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="비밀번호를 입력하세요"
-          autoComplete="current-password"
-        />
+        <div className="loginInputWrap">
+          <input
+            id="login-password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="비밀번호를 입력하세요"
+            autoComplete="current-password"
+          />
+          <button
+            type="button"
+            className="loginPasswordToggle"
+            aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+            onClick={() => setShowPassword((value) => !value)}
+          >
+            {showPassword ? '숨기기' : '보기'}
+          </button>
+        </div>
       </label>
 
-      <p className="loginNote">
-        로그인 상태는 보안 쿠키로 안전하게 유지됩니다.
-      </p>
+      <label className="loginRemember" htmlFor="login-remember-me">
+        <input
+          id="login-remember-me"
+          type="checkbox"
+          checked={rememberMe}
+          onChange={(event) => setRememberMe(event.target.checked)}
+        />
+        <span>로그인 상태 유지</span>
+      </label>
 
       {errorMessage ? (
         <p className="loginMessage error" role="alert" aria-live="polite">
           {errorMessage}
         </p>
       ) : null}
+
       <button type="submit" className="uiButton uiButtonPrimary loginButton" disabled={isSubmitDisabled}>
-        {isSubmitting ? '로그인 중...' : '로그인'}
+        {isSubmitting ? '로그인 중...' : '로그인하기'}
+      </button>
+
+      <div className="loginDivider" aria-hidden="true">
+        <span>또는</span>
+      </div>
+
+      <button type="button" className="loginSecondaryButton" onClick={() => router.push('/signup')}>
+        아직 회원이 아니신가요? <strong>회원가입</strong>
       </button>
     </form>
   );

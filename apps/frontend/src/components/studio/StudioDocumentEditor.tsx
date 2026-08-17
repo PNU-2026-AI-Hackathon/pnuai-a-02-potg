@@ -645,6 +645,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setAiRequestState('idle');
     setAiRevisedText('');
     setAiRevisionSource(null);
+    /**
+     * 고른 곳도 함께 푼다. 패널을 닫았는데 항목이 골라진 채로 남으면, 화면에는
+     * 「선택 해제」가 떠 있는데 수정할 자리는 사라진 상태가 된다.
+     */
+    setPlanSelection(null);
     setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
   }
 

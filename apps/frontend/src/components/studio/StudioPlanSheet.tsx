@@ -2,7 +2,7 @@
 
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import {
-  studioPlanFields, studioPlanGroups,
+  UNDECIDED, joinRangeParts, readNumberPart, readRangeParts, studioPlanFields, studioPlanGroups,
   type StudioPlan, type StudioPlanField, type StudioPlanFieldKey, type StudioPlanSession,
 } from '@/lib/studio-plan';
 
@@ -176,6 +176,75 @@ export default function StudioPlanSheet({
     );
   }
 
+  /**
+   * 날짜·시각·인원을 고르는 칸.
+   *
+   * 손으로 적으면 「9/1」, 「9월 1일」, 「2026-09-01」이 섞인다. 골라 넣게 해서
+   * 저장 형태를 하나로 맞춘다. 저장은 여전히 문자열이라 프롬프트와 PDF는 그대로다.
+   */
+  function pickerControl(field: StudioPlanField) {
+    const value = String(plan[field.key] ?? '');
+
+    /**
+     * 아직 고르지 않은 기간에 무엇이 들어갈 자리인지 알려 준다.
+     *
+     * 날짜 칸은 placeholder가 먹지 않아 칸 옆에 글로 띄운다. 시각과 숫자 칸에는
+     * 붙이지 않는다. 칸이 짧아 안내가 바로 옆에 붙으면 값처럼 읽힌다.
+     *
+     * AI가 이미 「미정(담당자 확정 필요)」처럼 적어 둔 값이 있으면 그것을 보여 준다.
+     * 지우지 않는 이유는, 사서가 원래 뭐라고 적혀 있었는지 알아야 하기 때문이다.
+     */
+    const undecidedNote = (chosen: boolean) => {
+      if (chosen || field.control !== 'dateRange') return null;
+      return <span className="studioPlanPickerNote">{value.trim() || UNDECIDED}</span>;
+    };
+
+    if (field.control === 'number') {
+      const number = readNumberPart(value);
+      return (
+        <div className="studioPlanPicker">
+          <input
+            className="studioPlanPickerNumber"
+            type="number"
+            min={0}
+            value={number}
+            aria-label={field.label}
+            onChange={(event) => {
+              const next = event.target.value.trim();
+              setField(field, next ? `${next}${field.unit ?? ''}` : '');
+            }}
+          />
+          {field.unit ? <span className="studioPlanPickerUnit">{field.unit}</span> : null}
+          {undecidedNote(Boolean(number))}
+        </div>
+      );
+    }
+
+    const range = field.control === 'dateRange' || field.control === 'timeRange'
+      ? readRangeParts(value, field.control)
+      : { start: '', end: '' };
+    const type = field.control === 'dateRange' ? 'date' : 'time';
+
+    return (
+      <div className="studioPlanPicker">
+        <input
+          type={type}
+          value={range.start}
+          aria-label={`${field.label} 시작`}
+          onChange={(event) => setField(field, joinRangeParts(event.target.value, range.end))}
+        />
+        <span className="studioPlanPickerTilde">~</span>
+        <input
+          type={type}
+          value={range.end}
+          aria-label={`${field.label} 종료`}
+          onChange={(event) => setField(field, joinRangeParts(range.start, event.target.value))}
+        />
+        {undecidedNote(Boolean(range.start || range.end))}
+      </div>
+    );
+  }
+
   /** 항목 안에서 글을 끌면 그 문장만 고르되, 고른 범위는 그 항목을 벗어나지 않는다. */
   function chooseText(field: StudioPlanField) {
     const input = inputRefs.current.get(field.key);
@@ -201,7 +270,6 @@ export default function StudioPlanSheet({
                 <div className="studioPlanFieldHead">
                   <h4>
                     {field.label}
-                    {field.manualOnly && <em>직접 입력</em>}
                     {revised && <b className="studioPlanRevisedBadge">수정됨</b>}
                   </h4>
                   {!field.manualOnly && (
@@ -267,6 +335,8 @@ export default function StudioPlanSheet({
                       <p className="studioPlanHint">칸을 눌러 바로 고치고, 「AI」를 누르면 그 회차만 맡깁니다.</p>
                     </div>
                   </>
+                ) : field.control ? (
+                  pickerControl(field)
                 ) : (
                   <textarea
                     className="studioPlanValueInput"
@@ -276,7 +346,7 @@ export default function StudioPlanSheet({
                     }}
                     value={valueText(plan, field)}
                     rows={1}
-                    placeholder={field.manualOnly ? `${field.label}을(를) 적어 주세요` : field.hint}
+                    placeholder={field.manualOnly || field.factual ? UNDECIDED : field.hint}
                     aria-label={field.label}
                     onChange={(event) => {
                       fitHeight(event.currentTarget);
