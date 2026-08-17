@@ -13465,14 +13465,103 @@ html:has(.moiraPage) {
   }
 }
 
-/* 묶음마다 둥근 판. 판이 갈려야 어디까지가 한 덩어리인지 보인다. */
+/* --- 본문은 판이 아니라 글로 -------------------------------------------------
+   내용마다 판을 두르니 화면이 상자로 가득 찼다. 공고 화면들은 본문을 글로 흘려 쓰고
+   제목만 굵게 둔다. 읽는 사람에게 필요한 것은 테두리가 아니라 글의 차례다. */
+
 .programTextSection,
 .programNoticeGroup,
 .programMediaSection {
-  border: 1px solid #dce5df;
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 10px 26px rgba(25, 58, 49, 0.05);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* 소제목은 굵은 한 줄로. 바탕색을 깔면 그게 또 상자가 된다. */
+.programTextSection h3,
+.programNoticeGroup h3 {
+  margin: 0 0 8px;
+  background: transparent;
+  padding: 0;
+  color: var(--moira-ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.programTextSection h3::before,
+.programNoticeGroup h3::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 13px;
+  margin-right: 8px;
+  border-radius: 2px;
+  background: var(--moira-green);
+  vertical-align: -1px;
+}
+
+/* 라벨과 값을 한 줄로. 표 칸처럼 바탕을 깔지 않는다. */
+.programTextSection dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.programTextSection dl > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  border: 0;
+  padding: 0;
+}
+
+.programTextSection dt {
+  background: transparent;
+  padding: 0;
+  color: #55645f;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.programTextSection dd {
+  margin: 0;
+  padding: 0;
+  color: #3d4a52;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.programTextSection .programStructuredContent p {
+  margin: 6px 0 0;
+  color: #3d4a52;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.programNoticeGroup ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.programNoticeGroup li {
+  color: #3d4a52;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* 구획 사이는 여백으로만 나눈다. */
+.programTextSections,
+.programNoticeGrid {
+  gap: 26px 40px;
+}
+
+.programTextSection + .programTextSection,
+.programNoticeGroup + .programNoticeGroup {
+  margin-top: 0;
 }
 
 /* 구획 제목 아래에 선을 긋는다. 공고 화면들이 쓰는 방식이고, 판을 겹겹이 쌓는 것보다
@@ -13499,21 +13588,7 @@ html:has(.moiraPage) {
   white-space: nowrap;
 }
 
-.programTextSection h3,
-.programNoticeGroup h3 {
-  background: #eef5f1;
-  color: var(--moira-green-dark);
-  font-weight: 800;
-}
-
-.programNoticeGroup {
-  border-color: #ecdfc6;
-}
-
-.programNoticeGroup h3 {
-  background: #fbf1de;
-  color: #7a5c17;
-}
+/* 소제목 바탕색은 걷어냈다. 위 「본문은 판이 아니라 글로」에서 굵은 한 줄로 다시 잡는다. */
 
 /* 표: 머리줄을 진하게. 옅은 회색이라 값과 구분이 안 됐다. */
 .programCurriculumTable th {

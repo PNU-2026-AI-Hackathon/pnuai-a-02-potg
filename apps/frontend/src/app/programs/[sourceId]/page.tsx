@@ -39,6 +39,19 @@ export default async function ProgramDetailPage({ params }: PageProps) {
    */
   const status = programRecruitStatus(program);
 
+  /**
+   * 첨부가 그림이면 링크 대신 그대로 펼쳐 보여준다. 포스터 한 장에 프로그램 내용이
+   * 다 들어 있는 경우가 많은데, 파일 이름만 걸어 두면 눌러 보기 전에는 알 수 없다.
+   * hwp·pdf는 브라우저가 못 그리므로 링크로 남기고, 그 안의 회차는 위 표로 대신한다.
+   */
+  const isImageFile = (name: string) => /\.(png|jpe?g|gif|webp|bmp)$/i.test(name);
+  const imageAttachments = program.attachments.filter((file) => isImageFile(file.name));
+  const fileAttachments = program.attachments.filter((file) => !isImageFile(file.name));
+  const posters = [
+    ...program.programContent.images.map((image) => ({ url: image.url, alt: image.alt })),
+    ...imageAttachments.map((file) => ({ url: file.url, alt: file.name })),
+  ];
+
   /** 비용은 원본에 없는 프로그램이 많다. 없으면 줄 자체를 만들지 않는다. */
   const rawFeeLabel = programFeeLabel(program);
   const feeLabel = rawFeeLabel === '비용 정보 없음' ? null : rawFeeLabel;
@@ -234,11 +247,11 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               </div>
             ) : null}
 
-            {program.programContent.images.length ? (
+            {posters.length ? (
               <section className="programTextSection is-content programMediaSection">
                 <h3>안내 이미지</h3>
                 <div className="programPosterList">
-                  {program.programContent.images.map((image, index) => (
+                  {posters.map((image, index) => (
                     <a href={image.url} id={`program-image-${cellImageNumber.get(image.url) ?? index + 1}`} key={image.url} rel="noreferrer" target="_blank">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={image.url} alt={image.alt || `${program.title} 안내 이미지`} />
@@ -248,7 +261,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               </section>
             ) : null}
 
-            {!program.curriculum.length && !tables.length && !program.board.sections.length && !program.board.intro.length && !program.programContent.images.length ? (
+            {!program.curriculum.length && !tables.length && !program.board.sections.length && !program.board.intro.length && !posters.length ? (
               <p className="programEmptyText">
                 {program.attachments.length
                   ? '프로그램 내용이 첨부파일로 제공되었습니다. 아래 첨부파일을 확인해 주세요.'
@@ -288,9 +301,10 @@ export default async function ProgramDetailPage({ params }: PageProps) {
 
           <section className="programAttachments" aria-labelledby="program-attachments-title">
             <h2 id="program-attachments-title">첨부파일</h2>
-            {program.attachments.length ? (
-              <ul>{program.attachments.map((attachment) => <li key={attachment.url}><a href={attachment.url} rel="noreferrer" target="_blank">{attachment.name}</a></li>)}</ul>
-            ) : <p className="programEmptyText">첨부파일이 없습니다.</p>}
+            {/* 그림 첨부는 위에서 이미 펼쳐 보여줬으므로 여기서는 내려받을 파일만 남긴다. */}
+            {fileAttachments.length ? (
+              <ul>{fileAttachments.map((attachment) => <li key={attachment.url}><a href={attachment.url} rel="noreferrer" target="_blank">{attachment.name}</a></li>)}</ul>
+            ) : <p className="programEmptyText">내려받을 첨부파일이 없습니다.</p>}
           </section>
 
           <div className="programDetailActions">
