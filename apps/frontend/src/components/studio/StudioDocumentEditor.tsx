@@ -18,6 +18,8 @@ import StudioPlanSheet, {
   applyPlanRevision, planSelectionLabel, planSelectionValue, type PlanSelection,
 } from './StudioPlanSheet';
 import StudioPlanPrintView from './StudioPlanPrintView';
+import StudioSurveyResultsPanel from './StudioSurveyResultsPanel';
+import { defaultSurveyResult, normalizeSurveyResult, type StudioSurveyResult } from '@/lib/studio-survey';
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
 type StageSaveState = 'idle' | 'saving' | 'failed';
@@ -34,11 +36,12 @@ type AiRevisionSource = {
 };
 
 type StudioDocument = {
-  id: string;
-  title: string;
-  stage: StudioDocumentStage;
-  updatedAt: string;
-  content: string;
+ id: string;
+ title: string;
+ stage: StudioDocumentStage;
+ updatedAt: string;
+ content: string;
+ surveyResult?: StudioSurveyResult;
 };
 
 const dummyDocument: StudioDocument = {
@@ -46,6 +49,7 @@ const dummyDocument: StudioDocument = {
   title: '시니어 디지털 생활 교실',
   stage: '기획 중',
   updatedAt: '방금 전',
+  surveyResult: defaultSurveyResult,
   content: `기획 배경
 지역 작은도서관을 이용하는 중장년 및 시니어 주민 가운데 스마트폰, 키오스크, 온라인 행정 서비스 이용에 어려움을 겪는 사례가 꾸준히 확인되고 있다. 일상생활에 필요한 디지털 도구 활용 역량은 정보 접근성과 사회 참여를 높이는 기본 조건이므로, 도서관이 안전하고 익숙한 학습 거점이 되어 단계적인 생활 디지털 교육을 제공한다.
 
@@ -84,7 +88,28 @@ const historyDocuments: StudioDocument[] = [
     title: '가족 독서 주말 프로그램',
     stage: '수요조사 중',
     updatedAt: '3일 전',
-    content: `기획 배경
+surveyResult: {
+  respondents: 84,
+  totalTarget: 100,
+  satisfaction: 91,
+  topChoices: [
+    { label: '가족 독서 워크숍', ratio: 42, count: 35 },
+    { label: '주말/오후 시간대', ratio: 29, count: 24 },
+    { label: '책 기반 대화 활동', ratio: 26, count: 22 },
+    { label: '작품 전시 및 공유', ratio: 19, count: 16 },
+  ],
+  comments: [
+    '가족이 함께 참여할 수 있는 프로그램이라 부담이 적어요.',
+    '주말 오후 수업이 가장 참여하기 편합니다.',
+    '책을 읽고 이야기 나누는 시간이 가족 소통에 좋을 것 같아요.',
+  ],
+  actionPoints: [
+    '가족이 함께 참여하는 활동 구조를 중심으로 구성 유지',
+    '주말 오후 시간대 운영을 우선 고려',
+    '독서 후 공감 나누기와 작품 전시를 연결하는 흐름 강화',
+  ],
+},
+content: `기획 배경
 주말에 도서관을 찾는 가족 단위 이용자는 많지만, 부모와 자녀가 함께 책을 읽고 대화하는 정기 프로그램은 부족하다. 가족 독서 활동은 책을 매개로 세대 간 대화를 만들고, 도서관을 주말 여가와 학습이 만나는 생활 공간으로 인식하게 하는 데 효과적이다.
 
 프로그램 목적
@@ -118,7 +143,28 @@ const historyDocuments: StudioDocument[] = [
     title: '우리 동네 기억 수집 워크숍',
     stage: '수요조사 완료',
     updatedAt: '지난주',
-    content: `기획 배경
+surveyResult: {
+  respondents: 72,
+  totalTarget: 90,
+  satisfaction: 88,
+  topChoices: [
+    { label: '지역 이야기 기록하기', ratio: 39, count: 28 },
+    { label: '시니어·청년 협업', ratio: 31, count: 22 },
+    { label: '사진과 인터뷰 결합', ratio: 27, count: 19 },
+    { label: '마을 전시 공유회', ratio: 21, count: 15 },
+  ],
+  comments: [
+    '마을 이야기를 모으는 활동이 의미 있어 보여요.',
+    '어르신과 청년이 함께 만들면 더 풍부한 결과물이 나올 것 같아요.',
+    '사진과 인터뷰를 같이 담으면 더 오래 남을 것 같습니다.',
+  ],
+  actionPoints: [
+    '주민 서사 수집과 기록 활동을 프로그램의 핵심으로 유지',
+    '세대 간 협업형 구성 유지',
+    '전시와 발표를 통해 참여와 기록을 연결',
+  ],
+},
+content: `기획 배경
 지역의 오래된 장소, 생활사, 주민의 경험은 시간이 지나면 쉽게 사라진다. 작은도서관은 지역 주민이 가진 기억을 기록하고 공유할 수 있는 가까운 문화 거점이므로, 주민 참여형 아카이브 프로그램을 통해 지역 이야기를 보존한다.
 
 프로그램 목적
@@ -204,6 +250,10 @@ type StudioDocumentEditorViewProps = {
  * 그러면 hydration이 어긋난다.
  */
 function readStoredDraft(documentId: string): StudioDraft | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   const storedDraftText = window.sessionStorage.getItem(studioDraftStorageKey);
 
   if (!storedDraftText) {
@@ -259,6 +309,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
   /** 문서 조회에 실패했을 때 이것으로 대신 보여준다. 화면에 그리지는 않아 상태가 아니라 참조로 둔다. */
   const storedDraftRef = useRef<StudioDraft | null>(null);
+  const storedDraft = useMemo(() => readStoredDraft(document.id), [document.id]);
   /**
    * 생성 화면이 남겨 둔 항목 구조. 이것이 있어야 항목 하나만 고칠 수 있다.
    * 이미 저장된 기획서는 글만 있어 항목 구분이 없으므로 예전 편집 방식으로 보여준다.
@@ -266,17 +317,37 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
    * 첫 렌더에서 읽지 않고 마운트 뒤에 읽는다. 서버에는 세션 저장소가 없어
    * 첫 렌더에서 읽으면 서버가 그린 것과 화면이 달라져 hydration이 어긋난다.
    */
-  const [plan, setPlan] = useState<StudioPlan | null>(null);
+  const [plan, setPlan] = useState<StudioPlan | null>(() => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    try {
+      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
+      if (!raw) {
+        return null;
+      }
+      const stored = JSON.parse(raw) as { documentId?: string; plan?: unknown };
+      if (stored.documentId !== document.id) {
+        return null;
+      }
+      return toStudioPlan(stored.plan);
+    } catch (error) {
+      console.error('Failed to load studio plan from sessionStorage:', error);
+      return null;
+    }
+  });
   /** 기획서에서 지금 고르고 있는 곳. 오른쪽 수정 패널이 이것을 보고 무엇을 고칠지 정한다. */
   const [planSelection, setPlanSelection] = useState<PlanSelection | null>(null);
   /** 어디를 고쳤는지. 화면에 표시해 주지 않으면 사서가 바뀐 줄을 모른다. */
   const [revisedFields, setRevisedFields] = useState<Set<StudioPlanFieldKey>>(new Set());
   const [revisedSessions, setRevisedSessions] = useState<Set<number>>(new Set());
-  const [title, setTitle] = useState(document.title);
+  const [title, setTitle] = useState(storedDraft?.title ?? document.title);
   const [stage, setStage] = useState<StudioDocumentStage>(document.stage);
+  const [surveyResult, setSurveyResult] = useState<StudioSurveyResult | undefined>(document.surveyResult ?? defaultSurveyResult);
   const [stageSaveState, setStageSaveState] = useState<StageSaveState>('idle');
   const [stageMessage, setStageMessage] = useState('');
-  const [content, setContent] = useState(document.content);
+  const [content, setContent] = useState(storedDraft?.content ?? document.content);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
   /**
@@ -285,7 +356,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
    */
   const [agenda, setAgenda] = useState<StudioAgendaInput | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('saved');
-  const [lastSavedAt, setLastSavedAt] = useState(document.updatedAt);
+  const [lastSavedAt, setLastSavedAt] = useState(storedDraft ? '방금 전' : document.updatedAt);
   const [saveErrorMessage, setSaveErrorMessage] = useState('');
   const [selectedText, setSelectedText] = useState('');
   const [selectedRange, setSelectedRange] = useState<TextSelectionRange | null>(null);
@@ -313,28 +384,9 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     : '';
   const activeSelectionRange = aiRevisionSource?.range ?? selectedRange;
 
-  /**
-   * 생성 화면이 남긴 것들을 마운트 뒤에 읽는다. 읽는 시점을 미루는 이유는 위 설명을 참고.
-   * 아래 문서 조회보다 먼저 놓아야 조회에 실패했을 때 임시 초안이 준비되어 있다.
-   */
   useEffect(() => {
-    const draft = readStoredDraft(document.id);
-    if (draft) {
-      storedDraftRef.current = draft;
-      setTitle(draft.title);
-      setContent(draft.content);
-      setLastSavedAt('방금 전');
-    }
-
-    try {
-      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
-      if (!raw) return;
-      const stored = JSON.parse(raw) as { documentId?: string; plan?: unknown };
-      if (stored.documentId === document.id) setPlan(toStudioPlan(stored.plan));
-    } catch (error) {
-      console.error('Failed to load studio plan from sessionStorage:', error);
-    }
-  }, [document.id]);
+    storedDraftRef.current = storedDraft;
+  }, [storedDraft]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -369,8 +421,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           return;
         }
 
+        const nextSurveyResult = normalizeSurveyResult(data.document.surveyResult) ?? defaultSurveyResult;
+
         setTitle(data.document.title);
         setStage(data.document.stage);
+        setSurveyResult(nextSurveyResult);
         setStageMessage('');
         setContent(data.document.content);
         /**
@@ -496,6 +551,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         },
         body: JSON.stringify({
           stage: nextStage,
+          surveyResult: surveyResult ?? defaultSurveyResult,
         }),
       });
       const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
@@ -504,7 +560,10 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         throw new Error(response.status === 401 ? '진행 단계를 변경하려면 로그인이 필요합니다.' : data.error || '진행 단계를 저장하지 못했습니다.');
       }
 
+      const nextSavedSurveyResult = normalizeSurveyResult(data.document.surveyResult) ?? defaultSurveyResult;
+
       setStage(data.document.stage);
+      setSurveyResult(nextSavedSurveyResult);
       setLastSavedAt(formatStudioDate(data.document.updatedAt));
       setStageSaveState('idle');
       setStageMessage(`진행 단계가 ${data.document.stage} 단계로 저장되었습니다.`);
@@ -872,6 +931,15 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                 <p>{agenda.content}</p>
               </div>
             ) : null}
+
+            <StudioSurveyResultsPanel
+              stage={stage}
+              stageSaveState={stageSaveState}
+              survey={surveyResult}
+              onMarkSurveyComplete={() => {
+                void handleStageChange('수요조사 완료');
+              }}
+            />
 
             {plan ? (
               /**

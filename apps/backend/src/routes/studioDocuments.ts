@@ -20,6 +20,7 @@ type StudioDocumentRow = {
    * 항목 하나만 고치려면 이 구조가 문서와 함께 남아 있어야 한다.
    */
   plan: Prisma.JsonValue | null;
+  surveyResult: Prisma.JsonValue | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -31,6 +32,7 @@ type CreateStudioDocumentBody = {
   conditions?: unknown;
   agenda?: unknown;
   plan?: unknown;
+  surveyResult?: unknown;
 };
 
 type UpdateStudioDocumentBody = {
@@ -38,6 +40,7 @@ type UpdateStudioDocumentBody = {
   content?: string;
   stage?: unknown;
   plan?: unknown;
+  surveyResult?: unknown;
 };
 
 const router = Router();
@@ -78,6 +81,10 @@ function ensureStudioDocumentTable() {
     await prisma.$executeRawUnsafe(`
       ALTER TABLE "StudioDocument"
       ADD COLUMN IF NOT EXISTS "plan" JSONB
+    `);
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "StudioDocument"
+      ADD COLUMN IF NOT EXISTS "surveyResult" JSONB
     `);
     await prisma.$executeRawUnsafe(`
       DO $$
@@ -156,6 +163,7 @@ function serializeStudioDocument(document: StudioDocumentRow) {
     conditions: document.conditions,
     agenda: document.agenda,
     plan: document.plan,
+    surveyResult: document.surveyResult,
     createdAt: document.createdAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
   };
@@ -163,7 +171,7 @@ function serializeStudioDocument(document: StudioDocumentRow) {
 
 async function findScopedDocument(documentId: string, scope: { ownerId: string | null; anonymousOwnerId: string | null }) {
   const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
     FROM "StudioDocument"
     WHERE id = ${documentId}
       AND (
@@ -191,7 +199,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
       FROM "StudioDocument"
       WHERE
         (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
@@ -218,6 +226,7 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
   const conditions = req.body.conditions ?? {};
   const agenda = req.body.agenda ?? null;
   const plan = req.body.plan ?? null;
+  const surveyResult = req.body.surveyResult ?? null;
 
   if (!title || !content) {
     return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
@@ -237,7 +246,7 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
     }
 
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan)
+      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult")
       VALUES (
         ${documentId},
         ${scope.ownerId},
@@ -247,9 +256,10 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
         ${stage},
         ${JSON.stringify(conditions)}::jsonb,
         ${agenda === null ? null : JSON.stringify(agenda)}::jsonb,
-        ${plan === null ? null : JSON.stringify(plan)}::jsonb
+        ${plan === null ? null : JSON.stringify(plan)}::jsonb,
+        ${surveyResult === null ? null : JSON.stringify(surveyResult)}::jsonb
       )
-      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
     `;
 
     return res.status(201).json({ document: serializeStudioDocument(documents[0]) });
@@ -286,6 +296,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
   const content = typeof req.body.content === 'string' ? req.body.content.trim() : undefined;
   const stage = req.body.stage;
   const plan = req.body.plan;
+  const surveyResult = req.body.surveyResult;
 
   if (title !== undefined && title.length === 0) {
     return res.status(400).json({ code: 'INVALID_TITLE', error: 'title cannot be empty.' });
@@ -335,6 +346,10 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
       updateFields.push(Prisma.sql`plan = ${plan === null ? null : JSON.stringify(plan)}::jsonb`);
     }
 
+    if (surveyResult !== undefined) {
+      updateFields.push(Prisma.sql`"surveyResult" = ${surveyResult === null ? null : JSON.stringify(surveyResult)}::jsonb`);
+    }
+
     if (updateFields.length === 0) {
       return res.status(200).json({ document: serializeStudioDocument(currentDocument) });
     }
@@ -354,7 +369,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
             AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
           )
         )
-      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
     `);
 
     return res.status(200).json({ document: serializeStudioDocument(documents[0]) });
