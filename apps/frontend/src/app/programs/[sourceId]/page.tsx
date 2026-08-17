@@ -25,6 +25,36 @@ export default async function ProgramDetailPage({ params }: PageProps) {
   if (!program) notFound();
 
   const occurrences = await getProgramOccurrences(program);
+
+  /**
+   * 회차 표에 실제로 채울 것이 있는 칸만 남긴다.
+   *
+   * 원본 계획서는 프로그램마다 칸이 다르다. 일자가 없는 것, 준비물이 없는 것이 섞여 있어
+   * 칸을 고정하면 「-」만 든 열이 표를 차지한다.
+   *
+   * 비고는 활동 내용과 같은 글이 들어 있는 경우가 있다. 원본 표에서 한 칸을 두 번 읽어
+   * 온 것이라, 그대로 두면 같은 문장이 나란히 두 번 보인다.
+   */
+  /** 비용은 원본에 없는 프로그램이 많다. 없으면 줄 자체를 만들지 않는다. */
+  const rawFeeLabel = programFeeLabel(program);
+  const feeLabel = rawFeeLabel === '비용 정보 없음' ? null : rawFeeLabel;
+
+  const compact = (value: string | null) => (value ?? '').replace(/\s+/g, '');
+  const curriculum = program.curriculum.map((row) => {
+    const note = row.materials ?? row.notes ?? row.materialsOrNotes;
+    return {
+      ...row,
+      note: note && compact(note) !== compact(row.activity) ? note : null,
+      method: row.teachingMethod && compact(row.teachingMethod) !== compact(row.activity)
+        ? row.teachingMethod
+        : null,
+    };
+  });
+  const curriculumColumns = {
+    date: curriculum.some((row) => row.date),
+    method: curriculum.some((row) => row.method || row.referenceImages.length),
+    note: curriculum.some((row) => row.note),
+  };
   const contentSection = program.board.sections.find((section) => section.id === 'content');
   const otherSections = program.board.sections.filter((section) => section.id !== 'content');
   const hasCapacityConflict = program.warnings.includes('CAPACITY_DETAIL_AMBIGUOUS');
@@ -75,7 +105,8 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               <div><dt>신청기간</dt><dd>{formatProgramPeriod(program.applyStartDate, program.applyEndDate)}</dd></div>
               <div className="isWide"><dt>교육시간</dt><dd>{program.scheduleText ?? '확인 필요'}</dd></div>
               <div className="isWide"><dt>온라인 접수 여부</dt><dd>{program.onlineApplicationStatus ?? '원사이트에서 확인'}</dd></div>
-              <div className="isWide"><dt>비용</dt><dd>{programFeeLabel(program)}</dd></div>
+              {/* 비용은 원본에 없는 프로그램이 많다. 「정보 없음」 줄을 만들지 않는다. */}
+              {feeLabel ? <div className="isWide"><dt>비용</dt><dd>{feeLabel}</dd></div> : null}
             </dl>
           </section>
 
@@ -87,7 +118,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               내용이고, 이 프로그램이 무엇을 하는지 가장 잘 말해 준다. 원본 이미지는
               아래에 참고로 남긴다.
             */}
-            {program.curriculum.length ? (
+            {curriculum.length ? (
               <section className="programTextSection is-content programCurriculumSection">
                 <h3>회차별 활동</h3>
                 <div className="programTableScroll">
@@ -95,19 +126,31 @@ export default async function ProgramDetailPage({ params }: PageProps) {
                     <thead>
                       <tr>
                         <th scope="col">회차</th>
-                        <th scope="col">일자</th>
-                        <th scope="col">활동 내용</th>
-                        <th scope="col">준비물·비고</th>
+                        {curriculumColumns.date ? <th scope="col">일자</th> : null}
+                        <th scope="col">세부 교육내용</th>
+                        {curriculumColumns.method ? <th scope="col">교수방법</th> : null}
+                        {curriculumColumns.note ? <th scope="col">준비물·비고</th> : null}
                       </tr>
                     </thead>
                     <tbody>
-                      {program.curriculum.map((row, index) => (
+                      {curriculum.map((row, index) => (
                         <tr key={`${row.session ?? index}-${index}`}>
                           <td>{row.session ?? '-'}</td>
-                          <td>{row.date || '-'}</td>
+                          {curriculumColumns.date ? <td>{row.date || '-'}</td> : null}
                           {/* 회차 내용에 줄바꿈이 들어 있다. 한 줄로 뭉치면 읽을 수 없다. */}
                           <td className="programCurriculumActivity">{row.activity || '-'}</td>
-                          <td>{row.materials || row.notes || row.materialsOrNotes || '-'}</td>
+                          {curriculumColumns.method ? (
+                            <td className="programCurriculumMethod">
+                              {row.method ? <span>{row.method}</span> : null}
+                              {/* 예시 도서는 그 회차 옆에 있어야 무엇을 쓰는지 안다. */}
+                              {row.referenceImages.map((image) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img key={image.url} src={image.url} alt={image.alt || '예시 도서'} />
+                              ))}
+                              {!row.method && !row.referenceImages.length ? '-' : null}
+                            </td>
+                          ) : null}
+                          {curriculumColumns.note ? <td>{row.note || '-'}</td> : null}
                         </tr>
                       ))}
                     </tbody>

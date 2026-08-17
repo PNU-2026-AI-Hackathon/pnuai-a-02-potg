@@ -38,6 +38,9 @@ export type ProgramCurriculumRow = {
   materials: string | null;
   notes: string | null;
   materialsOrNotes: string | null;
+  /** 원본 계획서의 「교수방법」 칸. 예시 도서 이미지가 이 자리에 붙어 있는 경우가 많다. */
+  teachingMethod: string | null;
+  referenceImages: Array<{ url: string; alt?: string }>;
 };
 
 export type ProgramPrototype = {
