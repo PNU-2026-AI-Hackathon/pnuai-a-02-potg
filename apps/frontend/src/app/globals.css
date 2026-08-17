@@ -15396,6 +15396,31 @@ html:has(.moiraPage) {
   letter-spacing: -0.04em;
 }
 
+.studioSurveyHeaderMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.studioSurveyRespondents {
+  color: #5f6f6b;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.studioSurveyRespondents strong {
+  margin-left: 3px;
+  color: #21694c;
+  font-size: 14px;
+}
+
+.studioSurveyBarLabelRow strong small {
+  margin-left: 3px;
+  color: #718079;
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .studioSurveyStateBadge {
   display: inline-flex;
   align-items: center;
@@ -16122,6 +16147,7 @@ html:has(.moiraPage) {
 .programDetailActions .uiButton {
   border-radius: 999px;
 }
+
 
 .studioVotingPage { min-height: 100vh; background: #f7f4ea; padding: 30px 0 96px; color: #1f2937; }
 .studioVotingShell { max-width: 1280px; }
