@@ -69,6 +69,43 @@ export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
 };
 
 export const communityPosts: CommunityPost[] = [
+  /**
+   * 의제 글. 스튜디오 의제 선택창이 이 게시판을 읽으므로, 백엔드가 멈췄을 때
+   * 선택창이 텅 비지 않도록 목 데이터에도 의제가 있어야 한다.
+   */
+  {
+    id: 'ideas-1',
+    boardSlug: 'ideas',
+    type: 'normal',
+    title: '시니어 대상 스마트폰 반복 교육이 필요합니다',
+    content:
+      '키오스크, 공공앱, 모바일 은행 사용을 여러 번 연습할 수 있는 소규모 프로그램을 제안합니다.',
+    author: '박이웃',
+    createdAt: '2026-07-09T02:00:00.000Z',
+    tags: ['생활', '시니어'],
+  },
+  {
+    id: 'ideas-2',
+    boardSlug: 'ideas',
+    type: 'normal',
+    title: '방과후 숙제 도움 프로그램을 운영하면 좋겠습니다',
+    content:
+      '맞벌이 가정 아이들이 도서관에서 안전하게 머물며 숙제를 도울 수 있는 시간이 있으면 좋겠습니다.',
+    author: '김돌봄',
+    createdAt: '2026-07-08T06:40:00.000Z',
+    tags: ['책·배움', '아동'],
+  },
+  {
+    id: 'ideas-3',
+    boardSlug: 'ideas',
+    type: 'normal',
+    title: '도서관 주변 분리배출 캠페인을 제안합니다',
+    content:
+      '작은도서관을 거점으로 어린이와 주민이 함께 참여하는 자원순환 캠페인을 열면 좋겠습니다.',
+    author: '이초록',
+    createdAt: '2026-07-06T08:15:00.000Z',
+    tags: ['환경', '캠페인'],
+  },
   {
     id: 'library-news-1',
     boardSlug: 'library-news',
@@ -187,6 +224,30 @@ function isCommunityPost(value: unknown): value is CommunityPost {
     Array.isArray(post.tags) &&
     post.tags.every((tag) => typeof tag === 'string')
   );
+}
+
+/**
+ * 글 하나만 가져온다. 스튜디오가 `?agenda=<글id>`로 넘어왔을 때 그 글을 되찾는 데 쓴다.
+ * 게시판에서 고른 글이 목록 상위에 없을 수도 있어, 목록과 별개로 읽을 길이 필요하다.
+ */
+export async function getCommunityPost(postId: string) {
+  try {
+    const response = await fetch(getBackendUrl(`/api/posts/${encodeURIComponent(postId)}`), {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: unknown = await response.json();
+    const post = (data as { post?: unknown } | null)?.post;
+
+    return isCommunityPost(post) ? post : null;
+  } catch (error) {
+    console.error('Community post request failed:', error);
+    return null;
+  }
 }
 
 export async function getCommunityPosts(slug: CommunityBoardSlug) {

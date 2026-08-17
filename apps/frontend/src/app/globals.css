@@ -10186,6 +10186,18 @@ html:has(.moiraPage) {
   line-height: 1.5;
 }
 
+.studioAgendaEmpty {
+  margin: 0;
+  border: 1px dashed #d8e5df;
+  border-radius: 14px;
+  background: #fff;
+  padding: 18px 14px;
+  color: var(--moira-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
 .studioSelectedAgenda {
   display: grid;
   gap: 4px;
@@ -10194,6 +10206,56 @@ html:has(.moiraPage) {
   background: #fff8ef;
   padding: 11px 13px;
 }
+
+/* --- 의제 게시판: 고르러 왔을 때 --------------------------------------------- */
+
+.ideaPickBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  /* 위 현황 줄과 아래 목록 사이에 자리를 둔다. 없으면 목록에 그대로 맞붙는다. */
+  margin: 0 0 26px;
+  border: 1px solid var(--moira-green, #2f7a52);
+  border-radius: 16px;
+  background: #f1faf5;
+  padding: 13px 16px;
+}
+
+.ideaPickBanner p {
+  margin: 0;
+  color: #2c4a3b;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.ideaPickBanner button {
+  border: 1px solid #cfe0d5;
+  border-radius: 999px;
+  background: #fff;
+  color: #55645f;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ideaPickBanner button:hover { background: #f6faf7; }
+
+.ideaPickButton {
+  border: 0;
+  border-radius: 999px;
+  background: var(--moira-green, #2f7a52);
+  color: #fff;
+  padding: 5px 13px;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ideaPickButton:hover { background: var(--moira-green-dark, #1f5e3d); }
 
 .studioSelectedAgenda span {
   color: #a85e12;
@@ -12721,43 +12783,90 @@ html:has(.moiraPage) {
 /* 회차 표: 칸을 그대로 고친다 */
 .studioPlanSessionTable tbody tr { cursor: default; }
 
-.studioPlanSessionTable td input {
+/* 칸은 여러 줄로 접히고 적은 만큼 세로로 늘어난다. 한 줄짜리면 긴 활동 내용을
+   옆으로 끌어 가며 읽고 고쳐야 한다. */
+.studioPlanSessionTable td textarea {
+  display: block;
+  box-sizing: border-box;
   width: 100%;
-  min-width: 60px;
+  height: auto;
+  min-height: 0;
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
   padding: 3px 5px;
   font: inherit;
   font-size: 13.5px;
+  line-height: 1.55;
   color: inherit;
+  overflow-y: hidden;
+  overflow-wrap: anywhere;
+  resize: none;
 }
 
-.studioPlanSessionTable td input:hover { border-color: #e2ece6; }
+.studioPlanSessionTable td textarea:hover { border-color: #e2ece6; }
 
-.studioPlanSessionTable td input:focus {
+.studioPlanSessionTable td textarea:focus {
   border-color: var(--moira-green, #2f7a52);
   background: #fff;
   outline: none;
 }
 
-.studioPlanSessionActions { white-space: nowrap; }
+.studioPlanSessionTable td { vertical-align: top; }
 
-.studioPlanSessionActions button {
-  border: 1px solid #cfe0d5;
-  border-radius: 999px;
-  background: #fff;
-  color: #2f7a52;
-  padding: 2px 8px;
-  font-size: 11.5px;
-  cursor: pointer;
+/* 칸이 여러 줄로 접히므로 표를 억지로 넓힐 이유가 없다. 옆으로 밀리지 않게 제 칸에 맞춘다.
+   (프로그램 게시판 표에서 물려받은 min-width 720px가 가로 스크롤을 만들고 있었다.) */
+.studioPlanSessionTable {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
 }
 
-.studioPlanSessionActions button + button { margin-left: 4px; }
-.studioPlanSessionActions button:hover { background: #f1f8f3; }
+/* 칸마다 폭을 정해 준다. 정하지 않으면 활동 내용이 좁아지고 「수정」 칸이 넓어진다. */
+.studioPlanSessionTable th:nth-child(1), .studioPlanSessionTable td:nth-child(1) { width: 8%; }
+.studioPlanSessionTable th:nth-child(2), .studioPlanSessionTable td:nth-child(2) { width: 13%; }
+.studioPlanSessionTable th:nth-child(3), .studioPlanSessionTable td:nth-child(3) { width: 37%; }
+.studioPlanSessionTable th:nth-child(4), .studioPlanSessionTable td:nth-child(4) { width: 18%; }
+.studioPlanSessionTable th:nth-child(5), .studioPlanSessionTable td:nth-child(5) { width: 18%; }
+.studioPlanSessionTable th:nth-child(6), .studioPlanSessionTable td:nth-child(6) { width: 6%; }
 
-.studioPlanSessionRemove { color: #a4553c; border-color: #e6cfc7 !important; }
-.studioPlanSessionRemove:hover { background: #fdf2ef !important; }
+/* 수정 단추는 내용이 아니라 도구다. 평소에는 물러나 있다가 그 줄에 손이 갔을 때 드러난다. */
+.studioPlanSessionActions {
+  white-space: nowrap;
+  text-align: center;
+}
+
+.studioPlanSessionActions button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #93a89c;
+  padding: 3px 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.studioPlanSessionTable tbody tr:hover .studioPlanSessionActions button { color: #5c7568; }
+
+.studioPlanSessionActions button:hover {
+  background: #eaf4ee;
+  color: var(--moira-green-dark, #1f5e3d);
+}
+
+.studioPlanSessionActions button.isChosen {
+  background: var(--moira-green, #2f7a52);
+  color: #fff;
+}
+
+.studioPlanSessionRemove { font-size: 15px; }
+
+.studioPlanSessionRemove:hover {
+  background: #fbeeea !important;
+  color: #a4553c !important;
+}
 
 .studioPlanSessionFoot {
   display: flex;

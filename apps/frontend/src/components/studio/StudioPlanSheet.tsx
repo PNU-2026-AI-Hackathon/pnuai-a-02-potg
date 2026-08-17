@@ -101,6 +101,8 @@ export default function StudioPlanSheet({
    * 입력칸 안의 선택은 window.getSelection으로 읽히지 않는다.
    */
   const inputRefs = useRef(new Map<StudioPlanFieldKey, HTMLTextAreaElement>());
+  /** 회차 칸도 높이를 다시 잡아야 해서 따로 모아 둔다. */
+  const cellRefs = useRef(new Set<HTMLTextAreaElement>());
 
   /**
    * 적은 만큼만 자리를 차지하게 한다. 줄 수를 고정해 두면 짧은 항목은 빈 칸이 남고
@@ -115,6 +117,7 @@ export default function StudioPlanSheet({
   /** 처음 그릴 때와 AI가 값을 바꿨을 때도 맞춘다. 타이핑만 따라가면 그때는 어긋난다. */
   useLayoutEffect(() => {
     for (const input of inputRefs.current.values()) fitHeight(input);
+    for (const cell of cellRefs.current) fitHeight(cell);
   }, [plan, fitHeight]);
 
   function setField(field: StudioPlanField, text: string) {
@@ -138,6 +141,39 @@ export default function StudioPlanSheet({
 
   function removeSession(session: number) {
     setSessions(renumber(plan.sessions.filter((row) => row.session !== session)));
+  }
+
+  /**
+   * 회차 표의 칸 하나.
+   *
+   * 한 줄짜리 입력칸이면 긴 활동 내용이 옆으로 흘러, 사서가 끌어 가며 읽고 고쳐야 한다.
+   * 여러 줄로 접히고 적은 만큼 세로로 늘어나게 둔다.
+   *
+   * 컴포넌트로 만들지 않고 JSX를 돌려주는 함수로 둔다. 렌더 안에서 컴포넌트를 정의하면
+   * 글자를 칠 때마다 다른 타입이 되어 칸이 새로 만들어지고, 그때 포커스가 튄다.
+   */
+  function sessionCell(
+    row: StudioPlanSession,
+    field: 'date' | 'activity' | 'materials' | 'notes',
+    label: string,
+    placeholder: string,
+  ) {
+    return (
+      <textarea
+        className="studioPlanSessionCell"
+        ref={(node) => {
+          if (node) { cellRefs.current.add(node); fitHeight(node); }
+        }}
+        rows={1}
+        value={row[field] ?? ''}
+        placeholder={placeholder}
+        aria-label={`${row.session}회차 ${label}`}
+        onChange={(event) => {
+          fitHeight(event.currentTarget);
+          setSessionCell(row.session, field, event.target.value);
+        }}
+      />
+    );
   }
 
   /** 항목 안에서 글을 끌면 그 문장만 고르되, 고른 범위는 그 항목을 벗어나지 않는다. */
@@ -196,41 +232,15 @@ export default function StudioPlanSheet({
                               className={`${rowChosen ? 'isChosen' : ''}${rowRevised ? ' isRevised' : ''}`.trim() || undefined}
                             >
                               <td>{row.session}</td>
-                              <td>
-                                <input
-                                  value={row.date ?? ''}
-                                  placeholder="-"
-                                  aria-label={`${row.session}회차 일자`}
-                                  onChange={(event) => setSessionCell(row.session, 'date', event.target.value)}
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  value={row.activity}
-                                  placeholder="활동 내용"
-                                  aria-label={`${row.session}회차 활동 내용`}
-                                  onChange={(event) => setSessionCell(row.session, 'activity', event.target.value)}
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  value={row.materials ?? ''}
-                                  placeholder="-"
-                                  aria-label={`${row.session}회차 준비물`}
-                                  onChange={(event) => setSessionCell(row.session, 'materials', event.target.value)}
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  value={row.notes ?? ''}
-                                  placeholder="-"
-                                  aria-label={`${row.session}회차 비고`}
-                                  onChange={(event) => setSessionCell(row.session, 'notes', event.target.value)}
-                                />
-                              </td>
+                              <td>{sessionCell(row, 'date', '일자', '-')}</td>
+                              <td>{sessionCell(row, 'activity', '활동 내용', '활동 내용')}</td>
+                              <td>{sessionCell(row, 'materials', '준비물', '-')}</td>
+                              <td>{sessionCell(row, 'notes', '비고', '-')}</td>
                               <td className="studioPlanSessionActions">
                                 <button
                                   type="button"
+                                  className={rowChosen ? 'isChosen' : undefined}
+                                  title={rowChosen ? '선택 해제' : '이 회차만 AI에게 맡기기'}
                                   onClick={() => onSelect(rowChosen ? null : { kind: 'session', field, session: row.session })}
                                 >
                                   {rowChosen ? '해제' : 'AI'}
@@ -238,10 +248,11 @@ export default function StudioPlanSheet({
                                 <button
                                   type="button"
                                   className="studioPlanSessionRemove"
+                                  title={`${row.session}회차 삭제`}
                                   aria-label={`${row.session}회차 삭제`}
                                   onClick={() => removeSession(row.session)}
                                 >
-                                  삭제
+                                  ×
                                 </button>
                               </td>
                             </tr>
