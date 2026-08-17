@@ -2709,6 +2709,48 @@ button {
   font-size: 12.5px;
 }
 
+/* 첨부·포스터에서 뽑아낸 회차가 있다는 표시. 목록에서 볼 값이 있는 카드를 가려 준다. */
+.programCurriculumChip {
+  align-self: flex-start;
+  margin: 0 0 12px;
+  border: 1px solid #cfe0d5;
+  border-radius: 999px;
+  background: #f1f8f4;
+  color: var(--moira-green-dark);
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* --- 프로그램 상세: 뽑아낸 회차 표 ------------------------------------------- */
+
+.programCurriculumSection .programCurriculumTable {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.programCurriculumSection th:nth-child(1),
+.programCurriculumSection td:nth-child(1) { width: 9%; }
+.programCurriculumSection th:nth-child(2),
+.programCurriculumSection td:nth-child(2) { width: 16%; }
+.programCurriculumSection th:nth-child(4),
+.programCurriculumSection td:nth-child(4) { width: 22%; }
+
+.programCurriculumSection td { vertical-align: top; }
+
+/* 뽑아낸 활동 내용에는 줄바꿈이 들어 있다. 한 줄로 뭉치면 읽히지 않는다. */
+.programCurriculumActivity {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.programCurriculumSource {
+  margin: 10px 0 0;
+  color: var(--moira-muted, #666);
+  font-size: 12.5px;
+}
+
 /* --- 프로그램 목록: 페이지 넘기기 -------------------------------------------- */
 
 .programPagination {

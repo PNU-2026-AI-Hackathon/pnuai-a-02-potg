@@ -82,6 +82,41 @@ export default async function ProgramDetailPage({ params }: PageProps) {
           <section className="programDescription" aria-labelledby="program-description-title">
             <h2 id="program-description-title">프로그램 내용</h2>
 
+            {/*
+              회차를 맨 앞에 둔다. 포스터나 첨부에서 뽑아낸 표라 원본에는 이미지로만 있던
+              내용이고, 이 프로그램이 무엇을 하는지 가장 잘 말해 준다. 원본 이미지는
+              아래에 참고로 남긴다.
+            */}
+            {program.curriculum.length ? (
+              <section className="programTextSection is-content programCurriculumSection">
+                <h3>회차별 활동</h3>
+                <div className="programTableScroll">
+                  <table className="programCurriculumTable">
+                    <thead>
+                      <tr>
+                        <th scope="col">회차</th>
+                        <th scope="col">일자</th>
+                        <th scope="col">활동 내용</th>
+                        <th scope="col">준비물·비고</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {program.curriculum.map((row, index) => (
+                        <tr key={`${row.session ?? index}-${index}`}>
+                          <td>{row.session ?? '-'}</td>
+                          <td>{row.date || '-'}</td>
+                          {/* 회차 내용에 줄바꿈이 들어 있다. 한 줄로 뭉치면 읽을 수 없다. */}
+                          <td className="programCurriculumActivity">{row.activity || '-'}</td>
+                          <td>{row.materials || row.notes || row.materialsOrNotes || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="programCurriculumSource">첨부파일과 안내 이미지에서 뽑아 정리한 내용입니다. 원본은 아래에서 확인할 수 있습니다.</p>
+              </section>
+            ) : null}
+
             {tables.length ? (
               <div className="programTableScroll">
                 {tables.map((table, tableIndex) => (
@@ -152,7 +187,7 @@ export default async function ProgramDetailPage({ params }: PageProps) {
               </section>
             ) : null}
 
-            {!tables.length && !program.board.sections.length && !program.board.intro.length && !program.programContent.images.length ? (
+            {!program.curriculum.length && !tables.length && !program.board.sections.length && !program.board.intro.length && !program.programContent.images.length ? (
               <p className="programEmptyText">
                 {program.attachments.length
                   ? '프로그램 내용이 첨부파일로 제공되었습니다. 아래 첨부파일을 확인해 주세요.'

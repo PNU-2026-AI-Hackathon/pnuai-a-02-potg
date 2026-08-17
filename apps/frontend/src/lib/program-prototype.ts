@@ -25,8 +25,24 @@ export type ProgramTableCell = {
   images: Array<{ url: string; alt: string }>;
 };
 
+/**
+ * 첨부·포스터에서 뽑아낸 회차 한 줄.
+ *
+ * 크롤 본문에는 없는 내용이다. 원본이 포스터 이미지나 첨부파일이라 사람이 열어 보기
+ * 전에는 알 수 없던 것을, 정제 배치가 표로 만들어 둔 것이다.
+ */
+export type ProgramCurriculumRow = {
+  session: number | null;
+  date: string | null;
+  activity: string | null;
+  materials: string | null;
+  notes: string | null;
+  materialsOrNotes: string | null;
+};
+
 export type ProgramPrototype = {
   sourceId: number;
+  curriculum: ProgramCurriculumRow[];
   sourceUrl: string;
   title: string;
   libraryName: string | null;
