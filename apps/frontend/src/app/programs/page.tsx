@@ -112,14 +112,24 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       <span className={`programStatusBadge is-${status}`}>{programRecruitLabel[status]}</span>
                       <span className="programCardTarget">{program.targetGroup ?? '대상 미정'}</span>
                     </div>
-                    <h3><Link href={`/programs/${program.sourceId}`}>{program.title}</Link></h3>
+                    {/*
+                      카드를 누르면 공공예약 포털의 그 프로그램으로 바로 간다. 신청도 안내도
+                      결국 그쪽에서 이뤄지므로, 우리 화면을 한 번 더 거치게 할 이유가 없다.
+                      새 탭으로 열어 목록에서 보던 자리를 잃지 않게 한다.
+                    */}
+                    <h3>
+                      <a href={program.sourceUrl} rel="noreferrer" target="_blank">{program.title}</a>
+                    </h3>
                     <p className="programLibrary">{program.libraryName ?? '운영 도서관 확인 필요'}</p>
                     <dl>
                       <div><dt>신청기간</dt><dd>{formatProgramPeriod(program.applyStartDate, program.applyEndDate)}</dd></div>
                       <div><dt>교육기간</dt><dd>{formatProgramPeriod(program.programStartDate, program.programEndDate)}</dd></div>
                       <div><dt>모집인원</dt><dd>{programCapacityLabel(program)}</dd></div>
                     </dl>
-                    <Link className="programCardLink" href={`/programs/${program.sourceId}`}>상세 정보 보기 <span aria-hidden="true">→</span></Link>
+                    <a className="programCardLink" href={program.sourceUrl} rel="noreferrer" target="_blank">
+                      공공예약에서 보기 <span aria-hidden="true">↗</span>
+                      <span className="uiSrOnly">새 탭에서 열립니다</span>
+                    </a>
                   </article>
                 );
               })}
