@@ -51,6 +51,61 @@ const serviceSteps = [
   },
 ];
 
+function FlowStepIcon({ index }: { index: number }) {
+  const commonProps = {
+    className: 'flowStepIcon',
+    viewBox: '0 0 28 28',
+    'aria-hidden': true,
+  } as const;
+
+  if (index === 0) {
+    return (
+      <svg {...commonProps}>
+        <path d="M10.2 18.2h7.6M11 21.4h6M9.2 15.5c-1.6-1.4-2.5-3.3-2.5-5.4a7.3 7.3 0 0 1 14.6 0c0 2.1-.9 4-2.5 5.4-1.1 1-1.5 1.5-1.5 2.7h-6.6c0-1.2-.4-1.7-1.5-2.7Z" />
+        <path d="M14 2V.8M4.8 5.1l-1-.8M23.2 5.1l1-.8" />
+      </svg>
+    );
+  }
+
+  if (index === 1) {
+    return (
+      <svg {...commonProps}>
+        <path d="M4.2 6.2h13.2v9.2H10l-4.2 3v-3H4.2V6.2Z" />
+        <path d="M11 17.8h6.8l4.2 3v-3h1.8V9.2h-4.1M7.8 10.7h6M7.8 13h3.8" />
+      </svg>
+    );
+  }
+
+  if (index === 2) {
+    return (
+      <svg {...commonProps}>
+        <rect x="5.2" y="5.2" width="17.6" height="17.6" rx="4" />
+        <path d="M10 14h8M14 10v8M8 2.2v3M20 2.2v3M8 22.8v3M20 22.8v3M2.2 8h3M22.8 8h3M2.2 20h3M22.8 20h3" />
+      </svg>
+    );
+  }
+
+  if (index === 3) {
+    return (
+      <svg {...commonProps}>
+        <path d="M5 22V11M11 22v-7M17 22V7M23 22V3" />
+        <path d="m4.5 7.5 5-3 5 2.5 8-5" />
+        <circle cx="5" cy="7" r="1.5" />
+        <circle cx="10" cy="4" r="1.5" />
+        <circle cx="15" cy="7" r="1.5" />
+        <circle cx="23" cy="2" r="1.5" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...commonProps}>
+      <path d="M3.5 6.5h6.8c1.9 0 3.2.7 3.7 1.8.5-1.1 1.8-1.8 3.7-1.8h6.8v15h-6.8c-1.9 0-3.2.6-3.7 1.7-.5-1.1-1.8-1.7-3.7-1.7H3.5v-15Z" />
+      <path d="M14 8.3v14.9M6.8 11h4.2M17 11h4.2M6.8 14.2h4.2M17 14.2h4.2" />
+    </svg>
+  );
+}
+
 const featureItems = [
   {
     icon: '📝',
@@ -133,7 +188,7 @@ export default async function AboutPage() {
     <div className="introPage">
       <AboutExperience />
       <SiteHeader user={user} activeMenu="about" />
-      <section className="introHero">
+      <section className="introHero" id="intro">
         <div className="uiContainer introHeroGrid">
           <div className="introHeroCopy">
             <p className="uiEyebrow">도서관 프로그램 특화 플랫폼</p>
@@ -167,6 +222,15 @@ export default async function AboutPage() {
           </div>
 
           <div className="introHeroVisual" aria-label="MOIRA Studio 목업">
+            <div className="introLibraryMark" aria-hidden="true">
+              <svg viewBox="0 0 120 76">
+                <path d="M12 18c18-3 34 1 48 12v38C46 57 30 53 12 56V18Z" />
+                <path d="M108 18c-18-3-34 1-48 12v38c14-11 30-15 48-12V18Z" />
+                <path d="M60 30v38" />
+                <path d="M24 30c10 0 18 2 25 7M24 40c10 0 18 2 25 7M96 30c-10 0-18 2-25 7M96 40c-10 0-18 2-25 7" />
+              </svg>
+              <span>IDEAS · BOOKS · CULTURE</span>
+            </div>
             <div className="studioMockupShell">
               <div className="studioMockupInner">
                 <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
@@ -211,16 +275,17 @@ export default async function AboutPage() {
                   </div>
                 </div>
 
-                <p className="studioMockupFootnote">
-                  기획 초안은 사서의 검토와 지역 상황에 맞춘 조정을 전제로 합니다.
-                </p>
               </div>
             </div>
           </div>
         </div>
+        <div className="introScrollCue" aria-hidden="true">
+          <span>SCROLL</span>
+          <i />
+        </div>
       </section>
 
-      <section className="homeSection valueSection">
+      <section className="homeSection valueSection" id="value">
         <div className="uiContainer">
           <SectionHeading
             eyebrow="MOIRA VALUE"
@@ -248,7 +313,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="homeSection flowSection">
+      <section className="homeSection flowSection" id="flow">
         <div className="uiContainer">
           <SectionHeading
             eyebrow="HOW MOIRA WORKS"
@@ -256,6 +321,7 @@ export default async function AboutPage() {
             description="주민이 제안한 아이디어는 AI 분석과 사서의 기획, 주민 수요조사를 거쳐 실제 도서관 문화·교육 프로그램으로 이어집니다."
           />
           <div className="pipeline" aria-label="모이라는 이렇게 작동합니다.">
+            <span className="pipelineProgress" aria-hidden="true" />
             {serviceSteps.map((step, index) => {
               const isStudio = step.title === 'MOIRA Studio';
 
@@ -263,7 +329,8 @@ export default async function AboutPage() {
                 <div key={step.number} className={`pipelineItem ${isStudio ? 'isStudioHighlight' : ''}`}>
                   <div className="pipelineStep">
                     <span className={`pipelineNumber ${isStudio ? 'isStudioNumber' : ''}`}>
-                      {step.number}
+                      <FlowStepIcon index={index} />
+                      <span className="flowStepNumber">{step.number}</span>
                     </span>
                     {index < serviceSteps.length - 1 && (
                       <span className="pipelineConnector" aria-hidden="true" />
@@ -287,9 +354,10 @@ export default async function AboutPage() {
             })}
           </div>
         </div>
+        <span className="introBoundaryFade" aria-hidden="true" />
       </section>
 
-      <section className="homeSection featureSection">
+      <section className="homeSection featureSection" id="features">
         <div className="uiContainer">
           <SectionHeading
             eyebrow="KEY FEATURES"
@@ -308,9 +376,10 @@ export default async function AboutPage() {
             ))}
           </div>
         </div>
+        <span className="introBoundaryFade" aria-hidden="true" />
       </section>
 
-      <section className="homeSection audienceSection">
+      <section className="homeSection audienceSection" id="audience">
         <div className="uiContainer">
           <SectionHeading
             eyebrow="WHO IT'S FOR"
@@ -342,7 +411,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="visionSection">
+      <section className="visionSection" id="vision">
         <div className="uiContainer visionInner">
           <p className="uiEyebrow">MOIRA VISION</p>
           <h2>더 나은 도서관은 주민의 목소리에서 시작됩니다.</h2>

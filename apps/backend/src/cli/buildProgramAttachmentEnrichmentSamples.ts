@@ -5,13 +5,13 @@ import { safeAttachmentError } from '../services/attachment/attachmentErrors';
 import { detectAttachmentFileType } from '../services/attachment/fileTypeDetector';
 import { extractHwpText } from '../services/attachment/hwpTextExtractor';
 import { extractPdfText } from '../services/attachment/pdfTextExtractor';
-import { matchDocumentSection, structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
+import { fileNameMatchesTitle, matchDocumentSection, splitHwpProgramSections, structureAttachmentText } from '../services/programAttachmentEnrichment/sectionMatcher';
 import { extractHwpEmbeddedContent } from '../services/programAttachmentEnrichment/hwpEmbeddedContentExtractor';
-import { extractDocumentStructure } from '../services/programAttachmentEnrichment/documentCurriculumExtractor';
+import { extractDocumentStructure, extractHwpProgramSections } from '../services/programAttachmentEnrichment/documentCurriculumExtractor';
 import { extractAlternativeHwpText } from '../services/programAttachmentEnrichment/hwpAlternativeExtractor';
 
-type InventoryAttachment = { name: string; url: string; route: string; source: string };
-type InventoryItem = { sourceId: number; sourceUrl: string; title: string; attachments: InventoryAttachment[] };
+export type InventoryAttachment = { name: string; url: string; route: string; source: string };
+export type InventoryItem = { sourceId: number; sourceUrl: string; title: string; attachments: InventoryAttachment[] };
 
 const DEFAULT_INVENTORY = path.resolve(process.cwd(), '.local', 'program-attachment-inventory', 'inventory.json');
 const DEFAULT_OUT = path.resolve(process.cwd(), '.local', 'program-attachment-enrichment', 'samples.json');
@@ -21,15 +21,21 @@ function argument(args: string[], name: string, fallback: string) {
   return index >= 0 ? path.resolve(args[index + 1]) : fallback;
 }
 
-function select(items: InventoryItem[], route: string, count: number) {
+export function select(items: InventoryItem[], route: string, count: number) {
   return items.flatMap((item) => item.attachments
     .filter((attachment) => attachment.route === route)
     .map((attachment) => ({ item, attachment })))
     .slice(0, count);
 }
 
-async function processSample(
-  candidate: ReturnType<typeof select>[number],
+/**
+ * 첨부 1건의 다운로드·형식 판별·구간 선택·구조화까지를 담당한다.
+ *
+ * 전체 351건 배치(`runProgramAttachmentBatch`)도 이 함수를 그대로 재사용한다.
+ * 대표 20건과 배치가 같은 코드 경로를 쓰지 않으면 회귀 비교가 성립하지 않는다.
+ */
+export async function processSample(
+  candidate: { item: InventoryItem; attachment: InventoryAttachment },
   knownProgramTitles: string[],
   embeddedImageRoot: string,
   alternateAttachmentUrls: string[] = [],
@@ -49,22 +55,63 @@ async function processSample(
     if (detected.detectedFileType === 'HWP') {
       const extraction = await extractHwpText(downloaded.tempFilePath);
       const embedded = await extractHwpEmbeddedContent(downloaded.tempFilePath, path.join(embeddedImageRoot, String(candidate.item.sourceId)));
-      const match = matchDocumentSection({
-        pages: [{ pageNumber: 1, text: extraction.cleanedText }],
+      // 표 셀 구조로 구간을 나눈다. 평탄화 텍스트는 셀 안 줄바꿈과 <도서명> 표기를 잃는다.
+      // 표 파싱이 실패하면 검증된 기존 텍스트 분할로 물러선다.
+      let tableSections: Awaited<ReturnType<typeof extractHwpProgramSections>> = [];
+      try { tableSections = await extractHwpProgramSections(downloaded.tempFilePath); } catch { /* 텍스트 경로 사용 */ }
+      const sections = tableSections.length
+        ? tableSections.map((section) => ({ pageNumber: section.index, text: section.text }))
+        : splitHwpProgramSections(extraction.cleanedText);
+      const sharedDocument = sections.length > 1;
+      let match = matchDocumentSection({
+        pages: sections,
         targetTitle: candidate.item.title,
         knownProgramTitles,
-        singleProgramDocument: true,
+        singleProgramDocument: !sharedDocument,
       });
+      // 본문에 제목 표기가 없는 단일 프로그램 문서는 파일명이 제목과 맞는지로 판단한다.
+      if (match.status === 'NOT_FOUND' && !sharedDocument
+        && fileNameMatchesTitle(path.parse(candidate.attachment.name).name, candidate.item.title)) {
+        match = {
+          status: 'WHOLE_DOCUMENT',
+          selectedText: extraction.cleanedText,
+          selectedPages: [1],
+          score: 1,
+          reason: '본문에 제목 표기가 없으나 단일 프로그램 문서이고 첨부 파일명이 제목과 일치',
+        };
+      }
       const structured = structureAttachmentText(match.selectedText);
-      try {
-        const alternative = structureAttachmentText(extractAlternativeHwpText(downloaded.tempFilePath).replace(/\t/g, ' | '));
-        if (alternative.curriculum.length === structured.curriculum.length) {
-          structured.curriculum = structured.curriculum.map((row) => {
-            const candidate = alternative.curriculum.find((item) => item.session === row.session);
-            return candidate && candidate.content.length > row.content.length ? candidate : row;
-          });
+      // 표 셀에서 직접 읽은 결과가 있으면 그것을 신뢰한다. 줄바꿈·열 경계·<도서명>이 보존된다.
+      const selected = tableSections.filter((section) => match.selectedPages.includes(section.index));
+      if (selected.length) {
+        const tableCurriculum = selected.flatMap((section) => section.curriculum);
+        if (tableCurriculum.length) structured.curriculum = tableCurriculum;
+        // 표 IR은 라벨의 공백을 제거해 오므로(`학습자준비물`) 텍스트 경로의 `학습자 준비물`과
+        // 같은 항목으로 보고 합친다. 그렇지 않으면 같은 값이 두 번 게시된다.
+        const sameLabel = (left: string, right: string) => left.replace(/\s+/g, '') === right.replace(/\s+/g, '');
+        for (const labeled of selected.flatMap((section) => section.labeled)) {
+          const existing = structured.labeled.findIndex((item) => sameLabel(item.label, labeled.label));
+          if (existing >= 0) structured.labeled[existing] = { label: structured.labeled[existing].label, value: labeled.value };
+          else structured.labeled.push(labeled);
         }
-      } catch { /* 보조 파서 실패 시 검증된 기본 추출 결과 유지 */ }
+        structured.notices = [...new Set([
+          ...(structured.notices ?? []),
+          ...selected.flatMap((section) => section.notices),
+        ])];
+      }
+      // 보조 파서와 임베디드 이미지 추출은 파일 전체를 대상으로 한다.
+      // 여러 프로그램이 든 문서에서는 어느 구간의 값인지 확정할 수 없으므로 쓰지 않는다.
+      if (!sharedDocument && !selected.length) {
+        try {
+          const alternative = structureAttachmentText(extractAlternativeHwpText(downloaded.tempFilePath).replace(/\t/g, ' | '));
+          if (alternative.curriculum.length === structured.curriculum.length) {
+            structured.curriculum = structured.curriculum.map((row) => {
+              const candidate = alternative.curriculum.find((item) => item.session === row.session);
+              return candidate && candidate.content.length > row.content.length ? candidate : row;
+            });
+          }
+        } catch { /* 보조 파서 실패 시 검증된 기본 추출 결과 유지 */ }
+      }
       return {
         sourceId: candidate.item.sourceId,
         title: candidate.item.title,
@@ -72,10 +119,12 @@ async function processSample(
         attachment: candidate.attachment,
         checksumSha256: downloaded.checksumSha256,
         detectedType: detected.detectedFileType,
+        sharedDocument,
         extraction: { characterCount: extraction.cleanedText.length, tableCount: extraction.metadata.tableCount },
         match: { ...match, selectedText: match.selectedText.slice(0, 10_000) },
-        structured: { ...structured, embedded: embedded.curriculumReferences },
-        reviewStatus: match.status === 'WHOLE_DOCUMENT' ? 'AUTO_REVIEW_CANDIDATE' : 'MANUAL_REVIEW_REQUIRED',
+        structured: { ...structured, embedded: sharedDocument ? [] : embedded.curriculumReferences },
+        reviewStatus: ['WHOLE_DOCUMENT', 'SECTION_MATCHED'].includes(match.status)
+          ? 'AUTO_REVIEW_CANDIDATE' : 'MANUAL_REVIEW_REQUIRED',
       };
     }
     if (detected.detectedFileType === 'PDF') {

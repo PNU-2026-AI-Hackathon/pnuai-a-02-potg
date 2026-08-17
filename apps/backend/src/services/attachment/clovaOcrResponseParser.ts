@@ -9,6 +9,23 @@ type ParsedField = {
   lineBreak?: boolean;
   top: number;
   left: number;
+  right: number;
+  bottom: number;
+};
+
+/**
+ * 인식된 글자 조각과 그 위치.
+ *
+ * 포스터의 회차표는 평탄한 텍스트로는 열이 뒤섞여 복원할 수 없다.
+ * 좌표가 있어야 같은 행·같은 열을 묶을 수 있으므로 결과에 남긴다.
+ */
+export type OcrTextBox = {
+  text: string;
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+  confidence: number;
 };
 
 export type ClovaOcrParsedResult = {
@@ -18,6 +35,7 @@ export type ClovaOcrParsedResult = {
   isEmpty: boolean;
   averageConfidence: number | undefined;
   readingOrderStrategy: 'LINE_BREAK' | 'COORDINATE';
+  boxes: OcrTextBox[];
 };
 
 function invalidResponse(): never {
@@ -52,6 +70,8 @@ function parseField(value: unknown, index: number): ParsedField {
     lineBreak: field.lineBreak as boolean | undefined,
     top: Math.min(...points.map((point) => point.y)),
     left: Math.min(...points.map((point) => point.x)),
+    right: Math.max(...points.map((point) => point.x)),
+    bottom: Math.max(...points.map((point) => point.y)),
   };
 }
 
@@ -99,5 +119,15 @@ export function parseClovaOcrResponse(value: unknown): ClovaOcrParsedResult {
     isEmpty: cleanedText.length === 0,
     averageConfidence: fields.length > 0 ? confidenceTotal / fields.length : undefined,
     readingOrderStrategy: usesLineBreak ? 'LINE_BREAK' : 'COORDINATE',
+    boxes: fields
+      .filter((field) => field.inferText.trim())
+      .map((field) => ({
+        text: field.inferText.trim(),
+        top: field.top,
+        left: field.left,
+        right: field.right,
+        bottom: field.bottom,
+        confidence: field.inferConfidence,
+      })),
   };
 }

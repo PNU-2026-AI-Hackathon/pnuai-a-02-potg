@@ -1,55 +1,71 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildSearchDocuments, SearchProfileKind } from '../services/programBoardSemanticSearch/profileBuilder';
+import { buildCorpusSources, type CrawlRecord, type NormalizedProgram } from '../services/programBoardSemanticSearch/corpusAdapter';
+import { groupSimilarPrograms } from '../services/programBoardSemanticSearch/programGrouping';
 
-const profiles: SearchProfileKind[] = ['title', 'title+intro', 'title+intro+target'];
+const profiles: SearchProfileKind[] = ['title', 'title+intro', 'title+intro+target', 'title+intro+target+curriculum'];
+
+function readJson<T>(file: string): T {
+  return JSON.parse(fs.readFileSync(file, 'utf8')) as T;
+}
 
 function main() {
   const backendDirectory = path.resolve(__dirname, '../..');
-  const inputPath = process.env.PROGRAM_BOARD_DATA_PATH
-    ? path.resolve(process.env.PROGRAM_BOARD_DATA_PATH)
-    : path.join(backendDirectory, '.local', 'program-board', 'programs.json');
+  /** 전체 정제 결과. 텍스트 정제 17건도 여기에 들어 있어 따로 읽지 않는다. */
+  const programsPath = process.env.PROGRAM_SEARCH_PROGRAMS_PATH
+    ? path.resolve(process.env.PROGRAM_SEARCH_PROGRAMS_PATH)
+    : path.join(backendDirectory, '.local', 'program-attachment-batch', 'full.json');
+  /** 크롤 원본. 정제가 항목을 못 뽑은 건의 소개를 본문 원문에서 살리는 데 쓴다. */
+  const crawlPath = process.env.PROGRAM_BOARD_CRAWL
+    ? path.resolve(process.env.PROGRAM_BOARD_CRAWL)
+    : '';
   const outputDirectory = process.env.PROGRAM_BOARD_SEARCH_DIR
     ? path.resolve(process.env.PROGRAM_BOARD_SEARCH_DIR)
     : path.join(backendDirectory, '.local', 'program-board-search');
-  const input = JSON.parse(fs.readFileSync(inputPath, 'utf8')) as {
-    count: number;
-    items: Array<{ normalized: Parameters<typeof buildSearchDocuments>[0][number] }>;
-  };
-  const attachmentPath = process.env.PROGRAM_ATTACHMENT_SAMPLES_PATH
-    ? path.resolve(process.env.PROGRAM_ATTACHMENT_SAMPLES_PATH)
-    : path.join(backendDirectory, '.local', 'program-attachment-enrichment', 'merged-samples.json');
-  const attachmentInput = JSON.parse(fs.readFileSync(attachmentPath, 'utf8')) as { items: Array<Record<string, any>> };
-  const baseSources = input.items.map((item) => ({ ...item.normalized, sourceType: 'text' as const }));
-  const attachmentSources = attachmentInput.items.map((item) => {
-    const basic = Object.fromEntries((item.basicInfo || []).map((entry: { label: string; value: string }) => [entry.label, entry.value]));
-    return {
-      sourceId: item.sourceId,
-      sourceUrl: `https://www.geumjeong.go.kr/booking/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=${item.sourceId}`,
-      title: item.title,
-      targetGroup: null,
-      targetDetail: basic['대상'] || null,
-      libraryName: basic['운영 도서관'] || null,
-      description: null,
-      board: { intro: item.board?.intro || [], sections: item.board?.sections || [] },
-      curriculum: item.curriculum || [],
-      sourceType: 'attachment' as const,
-    };
-  });
-  const sources = [...baseSources, ...attachmentSources];
-  if (!sources.length || new Set(sources.map((source) => source.sourceId)).size !== sources.length) {
-    throw new Error('unified semantic search corpus is empty or contains duplicate sourceId');
-  }
+
+  const programs = readJson<{ items: NormalizedProgram[] }>(programsPath).items;
+  const crawlRecords = crawlPath ? readJson<{ records: CrawlRecord[] }>(crawlPath).records : [];
+  const sources = buildCorpusSources(programs, crawlRecords);
+
+  // 교육기간은 기본정보에 있으므로 정제 결과에서 찾아 쓴다.
+  const periodById = new Map(programs.map((program) => [
+    program.sourceId,
+    program.basicInfo?.find((entry) => entry.label === '교육기간')?.value ?? '',
+  ]));
+  const groups = groupSimilarPrograms(sources, (source) => periodById.get(source.sourceId) ?? '');
+  const variantsById = new Map(groups.map((group) => [group.representative.sourceId, group.variants]));
+  const representatives = groups.map((group) => group.representative);
+
   fs.mkdirSync(outputDirectory, { recursive: true });
   for (const profile of profiles) {
-    const documents = buildSearchDocuments(sources, profile);
+    const documents = buildSearchDocuments(representatives, profile).map((document) => {
+      const variants = variantsById.get(document.sourceId) ?? [];
+      return variants.length ? { ...document, variants } : document;
+    });
     fs.writeFileSync(
       path.join(outputDirectory, `documents.${profile}.json`),
       `${JSON.stringify({ schemaVersion: 'program-board-search/v1', profile, count: documents.length, documents }, null, 2)}\n`,
       'utf8',
     );
   }
-  console.log(JSON.stringify({ inputPath, attachmentPath, outputDirectory, baseCount: baseSources.length, attachmentCount: attachmentSources.length, count: sources.length, profiles }, null, 2));
+
+  const byDetail = representatives.reduce<Record<string, number>>((counts, source) => {
+    const detail = buildSearchDocuments([source], 'title+intro+target')[0].detailLevel;
+    counts[detail] = (counts[detail] ?? 0) + 1;
+    return counts;
+  }, {});
+  console.log(JSON.stringify({
+    programsPath,
+    crawlPath: crawlPath || null,
+    outputDirectory,
+    programCount: sources.length,
+    searchableCount: representatives.length,
+    foldedCount: sources.length - representatives.length,
+    crawlMatched: sources.filter((source) => source.description).length,
+    detailLevels: byDetail,
+    profiles,
+  }, null, 2));
 }
 
 main();

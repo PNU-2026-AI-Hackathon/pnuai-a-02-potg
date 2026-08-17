@@ -298,6 +298,9 @@ model StudioDocument {
   stage            String   @default("기획 중")
   conditions       Json?
   agenda           Json?
+  // 기획서의 항목 구조. 본문은 사람이 읽는 글이라 다시 항목으로 쪼갤 수 없어,
+  // 항목 하나만 고치려면 이 구조가 문서와 함께 남아 있어야 한다.
+  plan             Json?
   owner            User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

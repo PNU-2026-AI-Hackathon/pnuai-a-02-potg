@@ -1,9 +1,56 @@
-import { execFile } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import path from 'node:path';
-import { promisify } from 'node:util';
 import type { SearchProfileKind } from './profileBuilder';
 
-const execFileAsync = promisify(execFile);
+function pythonPath(backendDirectory: string) {
+  return process.platform === 'win32'
+    ? path.join(backendDirectory, '.venv', 'Scripts', 'python.exe')
+    : path.join(backendDirectory, '.venv', 'bin', 'python');
+}
+
+function pythonEnv(backendDirectory: string) {
+  return {
+    ...process.env,
+    KURE_MODEL_CACHE_DIR: process.env.KURE_MODEL_CACHE_DIR || path.join(backendDirectory, '.model-cache'),
+    PYTHONIOENCODING: 'utf-8',
+    PYTHONUTF8: '1',
+    HF_HUB_OFFLINE: '1',
+    TRANSFORMERS_OFFLINE: '1',
+  };
+}
+
+/**
+ * 검색 스크립트를 부르고 결과를 읽는다. 질의는 표준입력으로 넘긴다.
+ *
+ * 윈도우에서는 명령줄 인자가 UTF-8로 전달되지 않아 한글 질의가 CP949로 깨진다.
+ * 깨진 질의는 오류를 내지 않고 엉뚱한 결과로 나타나 알아채기 어렵다.
+ * 표준입력은 인코딩을 우리가 정할 수 있으므로 질의만 이쪽으로 보낸다.
+ */
+function runSearchScript<T>(backendDirectory: string, args: string[], query: string): Promise<T> {
+  const script = path.join(backendDirectory, 'python', 'program_board_semantic_search.py');
+  return new Promise((resolve, reject) => {
+    const child = spawn(pythonPath(backendDirectory), [script, ...args], {
+      cwd: path.join(backendDirectory, 'python'),
+      env: pythonEnv(backendDirectory),
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8');
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) return reject(new Error(`program board search script failed (${code}): ${stderr.slice(0, 500)}`));
+      try {
+        resolve(JSON.parse(stdout) as T);
+      } catch (reason) {
+        reject(new Error(`program board search script returned invalid JSON: ${String(reason)}`));
+      }
+    });
+    child.stdin.end(Buffer.from(query, 'utf8'));
+  });
+}
 
 export type ProgramBoardSearchResponse = {
   query: string;
@@ -11,6 +58,8 @@ export type ProgramBoardSearchResponse = {
   model: string;
   profile: SearchProfileKind;
   requestedAudience: string | null;
+  requestedAudienceFilter: string | null;
+  filteredOutByAudience: number;
   reranking: 'audience-compatibility-v1';
   candidateCount: number;
   eligibleCount: number;
@@ -41,45 +90,21 @@ export async function searchProgramBoard(
   query: string,
   limit: number,
   profile: SearchProfileKind,
+  audience?: string,
 ): Promise<ProgramBoardSearchResponse> {
   const backendDirectory = path.resolve(__dirname, '../../..');
-  const python = process.platform === 'win32'
-    ? path.join(backendDirectory, '.venv', 'Scripts', 'python.exe')
-    : path.join(backendDirectory, '.venv', 'bin', 'python');
-  const script = path.join(backendDirectory, 'python', 'program_board_semantic_search.py');
-  const { stdout } = await execFileAsync(
-    python,
-    [script, 'search', '--query', query, '--limit', String(limit), '--profile', profile],
-    {
-      cwd: path.join(backendDirectory, 'python'),
-      env: {
-        ...process.env,
-        KURE_MODEL_CACHE_DIR: process.env.KURE_MODEL_CACHE_DIR || path.join(backendDirectory, '.model-cache'),
-        PYTHONIOENCODING: 'utf-8',
-        PYTHONUTF8: '1',
-        HF_HUB_OFFLINE: '1',
-        TRANSFORMERS_OFFLINE: '1',
-      },
-      encoding: 'utf8',
-      maxBuffer: 2 * 1024 * 1024,
-    },
+  return runSearchScript<ProgramBoardSearchResponse>(
+    backendDirectory,
+    ['search', '--limit', String(limit), '--profile', profile, ...(audience ? ['--audience', audience] : [])],
+    query,
   );
-  return JSON.parse(stdout) as ProgramBoardSearchResponse;
 }
 
-export async function buildProgramBoardContext(query: string, limit: number) {
+export async function buildProgramBoardContext(query: string, limit: number, audience?: string) {
   const backendDirectory = path.resolve(__dirname, '../../..');
-  const python = process.platform === 'win32'
-    ? path.join(backendDirectory, '.venv', 'Scripts', 'python.exe')
-    : path.join(backendDirectory, '.venv', 'bin', 'python');
-  const { stdout } = await execFileAsync(
-    python,
-    [path.join(backendDirectory, 'python', 'program_board_semantic_search.py'), 'context', '--query', query, '--limit', String(limit)],
-    {
-      cwd: path.join(backendDirectory, 'python'),
-      env: { ...process.env, KURE_MODEL_CACHE_DIR: process.env.KURE_MODEL_CACHE_DIR || path.join(backendDirectory, '.model-cache'), PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', HF_HUB_OFFLINE: '1', TRANSFORMERS_OFFLINE: '1' },
-      encoding: 'utf8', maxBuffer: 4 * 1024 * 1024,
-    },
+  return runSearchScript<{ query: string; resultCount: number; markdown: string }>(
+    backendDirectory,
+    ['context', '--limit', String(limit), ...(audience ? ['--audience', audience] : [])],
+    query,
   );
-  return JSON.parse(stdout) as { query: string; resultCount: number; markdown: string };
 }
