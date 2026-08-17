@@ -3,7 +3,12 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-type ApiPost = { id: string; boardSlug: string; title: string; content: string; author: string; createdAt: string; tags: string[] };
+/**
+ * tags 를 옵셔널로 둔 것은 백엔드가 늘 준다고 믿을 수 없기 때문이다. 예전 판의 백엔드가
+ * 붙어 있으면 이 자리에 아무것도 오지 않았고, 그때 `tags[0]` 하나가 터지면서 글 목록이
+ * 통째로 비었다. 값 하나가 비는 것과 게시판이 열리지 않는 것은 무게가 다르다.
+ */
+type ApiPost = { id: string; boardSlug: string; title: string; content: string; author: string; createdAt: string; tags?: string[] };
 type ApiComment = { id: string; postId: string; parentId: string | null; content: string; author: string; createdAt: string };
 type Topic = { id: string; title: string; body: string; author: string; role: string; category: string; votes: number; createdAt: string };
 type Reply = { id: string; author: string; role: string; createdAt: string; body: string; votes: number; depth: number; parentId: string | null; parentAuthor?: string };
@@ -23,7 +28,8 @@ function formatRelativeTime(value: string) {
 }
 
 function mapPost(post: ApiPost): Topic {
-  return { id: post.id, title: post.title, body: post.content, author: post.author, role: '동네 주민', category: post.tags[0] || '생활', votes: 0, createdAt: post.createdAt };
+  const category = Array.isArray(post.tags) ? post.tags[0] : undefined;
+  return { id: post.id, title: post.title, body: post.content, author: post.author, role: '동네 주민', category: category || '생활', votes: 0, createdAt: post.createdAt };
 }
 
 function mapComments(comments: ApiComment[]) {
