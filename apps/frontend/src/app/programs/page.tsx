@@ -172,17 +172,6 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             <span>총 {programs.length}건 · {page}/{lastPage} 페이지</span>
           </div>
 
-          {/*
-            모집 중이 하나도 없을 때 아무 말이 없으면 회색 카드만 늘어놓은 화면이 되어,
-            무엇이 잘못된 것인지 알 수 없다. 수집 시점 탓이라는 것을 알려 준다.
-            조건을 걸어 없는 것은 사용자가 아는 일이라 굳이 말하지 않는다.
-          */}
-          {programs.length > 0 && openCount === 0 && !filters.status ? (
-            <p className="programBoardNotice" role="status">
-              지금 모집 중인 프로그램이 없습니다. 지난 프로그램을 최신순으로 보여드립니다.
-            </p>
-          ) : null}
-
           {programs.length === 0 ? (
             <p className="programBoardNotice" role="status">
               {hasFilters
