@@ -66,6 +66,7 @@
     "verify:program-case-documents-limited": "npm run build && node scripts/verify-program-case-documents-limited.js",
     "postinstall": "prisma generate",
     "program-board:build": "npm run build && node dist/cli/buildProgramBoardData.js",
+    "program-board:publish": "npm run build && node dist/cli/publishProgramBoard.js",
     "program-board:coverage": "npm run build && node dist/cli/programDictionaryCoverage.js",
     "program-board-search:profiles": "node -r ts-node/register src/cli/buildProgramBoardSearchProfiles.ts",
     "program-board-search:embeddings": "node scripts/run-program-board-semantic-search.js build --profile title+intro+target",

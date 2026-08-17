@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   formatProgramPeriod,
-  getProgramPrototypes,
+  getProgramSummaries,
   programCapacityLabel,
   programRecruitLabel,
   programRecruitStatus,
-  type ProgramPrototype,
+  type ProgramSummary,
 } from '@/lib/program-prototype';
 
 export const dynamic = 'force-dynamic';
@@ -51,7 +51,7 @@ const statusOptions = [
   { value: 'closed', label: '모집 마감' },
 ];
 
-function matchesFilters(program: ProgramPrototype, filters: ProgramFilters, today: Date) {
+function matchesFilters(program: ProgramSummary, filters: ProgramFilters, today: Date) {
   if (filters.status && programRecruitStatus(program, today) !== filters.status) return false;
   if (filters.target && program.targetGroup !== filters.target) return false;
   if (filters.library && program.libraryName !== filters.library) return false;
@@ -71,7 +71,7 @@ type ProgramsPageProps = {
 };
 
 export default async function ProgramsPage({ searchParams }: ProgramsPageProps) {
-  const [params, allPrograms] = await Promise.all([searchParams, getProgramPrototypes()]);
+  const [params, allPrograms] = await Promise.all([searchParams, getProgramSummaries()]);
 
   const filters: ProgramFilters = {
     q: (params.q ?? '').trim(),
@@ -176,7 +176,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             <p className="programBoardNotice" role="status">
               {hasFilters
                 ? '조건에 맞는 프로그램이 없습니다. 조건을 바꾸거나 지워 보세요.'
-                : <>프로그램 데이터가 아직 준비되지 않았습니다. 백엔드에서 <code>npm run program-board:build -- --profile all</code>을 실행해 주세요.</>}
+                : <>프로그램 데이터가 아직 준비되지 않았습니다. 백엔드에서 <code>npm run program-board:build -- --profile all</code> 뒤에 <code>npm run program-board:publish</code>를 실행해 주세요.</>}
             </p>
           ) : (
             <div className="programCardGrid">

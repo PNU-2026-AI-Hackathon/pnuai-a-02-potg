@@ -493,6 +493,25 @@ BACKEND_URL=http://localhost:4000
 
 ---
 
+### 14.6. 프로그램 게시판 데이터 올리기
+
+프로그램 게시판은 크롤·정제 배치가 만든 결과를 보여 줍니다. 그 결과는 `apps/backend/.local/` 아래에 생기고 저장소에는 없으므로, **DB에 올려야 화면에 나옵니다.** 프런트는 파일을 직접 읽지 않고 백엔드 API(`/api/program-board/programs`)로만 봅니다.
+
+```bash
+npm run program-board:build -- --profile all
+npm run program-board:publish
+```
+
+두 명령 모두 `apps/backend`에서 실행합니다. 앞이 파일을 만들고, 뒤가 그 파일을 `ProgramBoardEntry` 표에 올립니다. 배치는 매번 전체를 다시 만들므로 `publish`도 전체를 기준으로 맞춥니다 — 새 결과에 없는 건은 표에서 지웁니다.
+
+`publish`는 `DATABASE_URL`만 있으면 되니 배포 서버가 아니라 배치를 돌린 기계에서 실행해도 됩니다. 프런트와 백엔드를 따로 배포할 때는 다음 순서를 지켜 주세요.
+
+1. 백엔드 배포 후 `npx prisma migrate deploy`
+2. `npm run program-board:publish`
+3. 프런트의 `BACKEND_URL`이 배포된 백엔드를 가리키는지 확인
+
+---
+
 ## 15. 소개 및 시연 영상
 
 * 소개 영상: TODO
