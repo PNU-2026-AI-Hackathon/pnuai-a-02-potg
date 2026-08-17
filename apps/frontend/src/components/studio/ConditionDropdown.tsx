@@ -9,6 +9,7 @@ type ConditionDropdownProps = {
   options: StudioOption[];
   value: string[];
   multiple?: boolean;
+  showDescriptions?: boolean;
   onChange: (value: string[]) => void;
 };
 
@@ -18,6 +19,7 @@ export default function ConditionDropdown({
   options,
   value,
   multiple,
+  showDescriptions = true,
   onChange,
 }: ConditionDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -108,7 +110,7 @@ export default function ConditionDropdown({
               >
                 <span aria-hidden="true">{isSelected ? '✓' : ''}</span>
                 <strong>{option.label}</strong>
-                {option.description ? <em>{option.description}</em> : null}
+                {showDescriptions && option.description ? <em>{option.description}</em> : null}
               </button>
             );
           })}

@@ -4,7 +4,7 @@ export const studioFeatures = [
   {
     number: '01',
     title: '주민 의견 또는 수요조사 선택',
-    description: '기획에 반영할 지역 의제와 주민 수요를 선택합니다.',
+    description: '기획에 반영할 주민 아이디어와 주민 수요를 선택합니다.',
   },
   {
     number: '02',
@@ -38,7 +38,7 @@ export function StudioPreview({ className = '' }: ReusableStudioBlockProps) {
         </span>
       </div>
       <div className="studioAgenda">
-        <span>선택된 주민 의제</span>
+        <span>선택된 주민 아이디어</span>
         <strong>아이들의 안전한 방과 후 돌봄</strong>
       </div>
       <div className="studioDocument">

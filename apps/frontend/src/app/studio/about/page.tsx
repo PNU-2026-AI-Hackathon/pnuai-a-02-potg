@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import SiteHeader from '@/components/layout/SiteHeader';
 import {
   StudioFeatureList,
   StudioPreview,
@@ -97,7 +96,6 @@ export default async function StudioAboutPage() {
   return (
     <div className="studioLandingPage">
       <StudioLandingExperience />
-      <SiteHeader user={user} activeMenu="studio" />
       <main>
         <section className="studioLandingHero" aria-labelledby="studio-landing-title">
           <div className="uiContainer studioLandingHeroInner">
@@ -127,7 +125,7 @@ export default async function StudioAboutPage() {
         <section className="studioLandingValue" aria-labelledby="studio-value-title">
           <div className="uiContainer">
             <div className="studioLandingSectionHeading">
-              <p className="uiEyebrow">WHY MOIRA STUDIO</p>
+              <p className="uiEyebrow">WHY MOIRA Studio</p>
               <h2 id="studio-value-title">프로그램 기획의 부담은 줄이고, 지역의 필요는 더 가까이</h2>
               <p>AI는 기획을 대신하는 것이 아니라, 주민의 목소리를 읽고 사서의 판단을 돕습니다.</p>
             </div>

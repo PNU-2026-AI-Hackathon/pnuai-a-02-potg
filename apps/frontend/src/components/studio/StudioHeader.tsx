@@ -24,11 +24,11 @@ export default function StudioHeader({
             priority
           />
           <span>
-            <strong>MOIRA STUDIO</strong>
+            <strong>MOIRA Studio</strong>
             <small>사서를 위한 AI 프로그램 기획 도구</small>
           </span>
         </Link>
-        <nav className="studioHeaderActions" aria-label="MOIRA STUDIO 도움말">
+        <nav className="studioHeaderActions" aria-label="MOIRA Studio 도움말">
           <button type="button" onClick={onTutorialOpen}>
             기능 설명
           </button>

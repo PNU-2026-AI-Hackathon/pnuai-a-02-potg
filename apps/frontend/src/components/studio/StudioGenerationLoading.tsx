@@ -56,7 +56,7 @@ const conditionLabels: Record<string, string> = {
   capacity: '모집 인원',
   budget: '예산 범위',
   location: '운영 장소',
-  agenda: '참고한 지역 의제',
+  agenda: '참고한 주민 아이디어',
   example: '참고 사례',
 };
 
@@ -125,14 +125,14 @@ function summarizeConditions(request: StudioGenerateRequest | null) {
     ...conditionEntries,
     request.agenda
       ? {
-          label: '참고한 지역 의제',
+          label: '참고한 주민 아이디어',
           value: request.agenda.title,
         }
       : null,
     // 의제만 골라도 생성되므로 메모가 비어 있을 수 있다. 빈 줄을 보여 주지 않는다.
     request.prompt.trim()
       ? {
-          label: '기획 메모',
+          label: '프로그램 아이디어',
           value: request.prompt,
         }
       : null,
@@ -182,7 +182,7 @@ export default function StudioGenerationLoading() {
         headers: {
           'Content-Type': 'application/json',
         },
-        // 새 경로는 기획 메모를 `memo`로 받는다. 참고 자료와 조건, 의제는 그대로 넘긴다.
+        // 새 경로는 프로그램 아이디어를 `memo`로 받는다. 참고 자료와 조건, 주민 아이디어는 그대로 넘긴다.
         body: JSON.stringify({
           memo: nextRequest.prompt,
           conditions: nextRequest.conditions,
@@ -304,12 +304,12 @@ export default function StudioGenerationLoading() {
       : generationState === 'failed'
         ? errorMessage || '잠시 후 다시 시도하거나 조건 선택 화면에서 입력값을 수정해 주세요.'
         : generationState === 'missing-request'
-          ? '조건 입력 화면에서 기획 메모를 작성한 뒤 다시 생성해 주세요.'
+          ? '조건 입력 화면에서 프로그램 아이디어를 작성한 뒤 다시 생성해 주세요.'
           : '선택한 조건을 바탕으로 기획 배경, 운영 내용, 기대 효과를 정리하는 중입니다.';
 
   return (
     <div className="studioPage studioGeneratingLayout">
-      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
+      <aside className="studioSideRail" aria-label="MOIRA Studio 메뉴">
         <Link className="studioRailLogo" href="/" aria-label="홈으로 이동" title="홈으로 이동">
           <svg className="studioHomeIcon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 11.2 12 4l8 7.2" />
@@ -330,11 +330,11 @@ export default function StudioGenerationLoading() {
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
+      <aside className="studioHistoryPanel" aria-label="MOIRA Studio 작업 내역">
         <div className="studioHistoryHeader">
           <div>
             <strong>생성 작업</strong>
-            <small>MOIRA STUDIO</small>
+            <small>MOIRA Studio</small>
           </div>
         </div>
         <div className="studioHistoryList" aria-live="polite">
@@ -374,7 +374,7 @@ export default function StudioGenerationLoading() {
             <div>
               <p className="uiEyebrow">
                 <span className="studioBrandSpark" aria-hidden="true">✦</span>
-                MOIRA STUDIO
+                MOIRA Studio
               </p>
               <h1 id="studio-generating-title">{statusTitle}</h1>
               <p>{statusDescription}</p>

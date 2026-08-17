@@ -72,7 +72,7 @@ export default function StudioAccessCta({
             tabIndex={-1}
           >
             <span className="studioAccessModalIcon" aria-hidden="true">✦</span>
-            <p className="uiEyebrow">MOIRA STUDIO</p>
+            <p className="uiEyebrow">MOIRA Studio</p>
             <h2 id="studio-access-modal-title">
               {isLoggedOut ? '로그인이 필요합니다' : 'MOIRA Studio 이용 안내'}
             </h2>

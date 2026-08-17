@@ -21,7 +21,7 @@ export type StudioAgendaOption = {
 /**
  * 게시판에 다녀오는 동안 적어 둔 것을 맡아 두는 자리.
  *
- * 「의제 게시판 둘러보기」를 누르면 화면이 통째로 바뀌므로, 담아 두지 않으면
+ * 「아이디어 게시판 둘러보기」를 누르면 화면이 통째로 바뀌므로, 담아 두지 않으면
  * 돌아왔을 때 메모와 고른 조건이 사라진다.
  */
 const draftStorageKey = 'moira-studio-condition-draft';
@@ -97,6 +97,7 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
   }, [isTutorialOpen]);
 
   const selectedAgenda = agendaOptions.find((post) => post.id === selectedAgendaId) || null;
+  const activeAgenda = activeMode === 'agenda' ? selectedAgenda : null;
 
   /** 게시판으로 떠나기 전에 적어 둔 것을 맡긴다. 돌아오면 위 effect가 되살린다. */
   function keepDraftBeforeLeaving() {
@@ -107,7 +108,7 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
    * 메모와 의제 중 하나만 있으면 생성한다. 의제를 고르는 것 자체가 「이걸로 기획해 달라」는
    * 요청이라, 같은 말을 메모에 한 번 더 적게 할 이유가 없다.
    */
-  const canGenerate = prompt.trim().length > 0 || selectedAgenda !== null;
+  const canGenerate = prompt.trim().length > 0 || activeAgenda !== null;
 
   function updateCondition(key: StudioConditionKey, value: string[]) {
     setConditions((current) => ({
@@ -117,8 +118,8 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
   }
 
   return (
-    <div className="studioPage">
-      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
+    <div className="studioPage studioPlanningPage">
+      <aside className="studioSideRail" aria-label="MOIRA Studio 메뉴">
         <Link className="studioRailLogo" href="/" aria-label="MOIRA 홈으로 이동">
           <span>MO</span>
         </Link>
@@ -138,11 +139,11 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
+      <aside className="studioHistoryPanel" aria-label="MOIRA Studio 작업 내역">
         <div className="studioHistoryHeader">
           <div>
             <strong>작업 내역</strong>
-            <small>MOIRA STUDIO</small>
+            <small>MOIRA Studio</small>
           </div>
           <button type="button" aria-label="작업 내역 고정">◆</button>
         </div>
@@ -187,14 +188,17 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
         <section className="uiContainer studioStartSection" aria-labelledby="studio-workspace-title">
           <div className="studioStartCopy">
             <p className="uiEyebrow">LIBRARIAN PLANNING TOOL</p>
-            <h1 id="studio-workspace-title">MOIRA STUDIO</h1>
+            <h1 id="studio-workspace-title">
+              <span className="studioTitleSpark" aria-hidden="true">✦</span>
+              MOIRA Studio
+            </h1>
             <p>
-              주민의 이야기에서 시작하는 도서관 프로그램 기획을 짧은 메모로 시작하세요.
+              주민의 이야기에서 시작하는 도서관 프로그램 기획을 간단한 아이디어로 시작하세요.
             </p>
           </div>
 
           <div className="studioStartBoard">
-            <div className="studioPromptCard">
+            <div className={`studioPromptCard ${activeMode === 'planning' ? 'isPlanningMode' : 'isAgendaMode'}`}>
               <div className="studioModeTabs" role="list" aria-label="기획 모드">
                 <button
                   className={activeMode === 'planning' ? 'isActive' : ''}
@@ -208,13 +212,13 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
                   type="button"
                   onClick={() => setActiveMode('agenda')}
                 >
-                  지역 의제
+                  주민 아이디어
                 </button>
               </div>
               {activeMode === 'agenda' ? (
-                <section className="studioAgendaPicker" aria-label="지역 의제 제안 글 선택">
+                <section className="studioAgendaPicker" aria-label="주민 아이디어 선택">
                   <div className="studioAgendaPickerHeader">
-                    <strong>지역 의제 제안 글</strong>
+                    <strong><span className="studioAccentSpark" aria-hidden="true">✦</span> 주민 아이디어</strong>
                     {/*
                       의제가 올라오는 곳은 아이디어 게시판이다. 자유 게시판이 아니다.
                       `pick=studio`를 달고 가면 게시판이 「고르는 화면」으로 열려, 거기서 고른
@@ -222,7 +226,7 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
                       아래 목록에 없는 글은 아예 고를 수가 없다.
                     */}
                     <Link href="/community/ideas?pick=studio" onClick={keepDraftBeforeLeaving}>
-                      의제 게시판 둘러보기
+                      아이디어 게시판 둘러보기
                     </Link>
                   </div>
                   {agendaOptions.length > 0 ? (
@@ -242,27 +246,32 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
                     </div>
                   ) : (
                     <p className="studioAgendaEmpty">
-                      아직 올라온 의제가 없습니다. 게시판에서 주민 제안이 올라오면 여기에 보입니다.
+                      아직 올라온 주민 아이디어가 없습니다. 게시판에 주민 제안이 올라오면 여기에 보입니다.
                     </p>
                   )}
                 </section>
               ) : null}
-              {selectedAgenda ? (
+              {activeAgenda ? (
                 <div className="studioSelectedAgenda" aria-live="polite">
-                  <span>선택한 의제</span>
-                  <strong>{selectedAgenda.title}</strong>
+                  <span>선택한 주민 아이디어</span>
+                  <strong>{activeAgenda.title}</strong>
                 </div>
               ) : null}
               <label className="studioPromptBox">
-                <span>기획 메모{selectedAgenda ? ' (선택)' : ''}</span>
+                <span>프로그램 아이디어{activeAgenda ? ' (선택)' : ''}</span>
                 <textarea
                   aria-label="기획 요청 입력"
-                  placeholder={selectedAgenda
-                    ? '고른 의제에 덧붙일 것이 있으면 적어 주세요. 비워 두어도 됩니다.'
+                  placeholder={activeAgenda
+                    ? '고른 주민 아이디어에 덧붙일 내용을 적어 주세요. 비워 두어도 됩니다.'
                     : '예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램'}
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
                 />
+                {prompt.length > 0 || !activeAgenda ? (
+                  <span className="studioPromptMeta">
+                    {prompt.length > 0 ? `${prompt.length}자` : '키워드나 한두 문장만 입력해도 괜찮아요.'}
+                  </span>
+                ) : null}
               </label>
               <div className="studioInlineConditions">
                 {planningFields.map((field) => (
@@ -270,6 +279,7 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
                     key={field.key}
                     label={field.label}
                     multiple={field.multiple}
+                    showDescriptions={field.key !== 'category'}
                     options={field.options}
                     placeholder={field.label}
                     value={conditions[field.key]}
@@ -277,30 +287,17 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
                   />
                 ))}
               </div>
-              <div className="studioPromptMeta">
-                {/* 의제를 골랐으면 메모가 없어도 된다는 것을 여기서 알려 준다. */}
-                <span>
-                  {prompt.length > 0
-                    ? `${prompt.length}자`
-                    : selectedAgenda
-                      ? '의제만으로도 만들 수 있어요. 메모를 더하면 더 잘 맞습니다.'
-                      : '짧게 적어도 괜찮아요'}
-                </span>
-              </div>
               <GenerateButton
                 canGenerate={canGenerate}
                 prompt={prompt}
                 conditions={conditions}
-                selectedAgenda={selectedAgenda}
+                selectedAgenda={activeAgenda}
               />
             </div>
           </div>
 
         </section>
 
-        <footer className="studioFootnote">
-          기획 초안은 사서의 검토와 지역 상황에 맞춘 조정을 전제로 합니다.
-        </footer>
       </main>
 
       {isTutorialOpen ? <StudioTutorialModal onClose={() => setIsTutorialOpen(false)} /> : null}

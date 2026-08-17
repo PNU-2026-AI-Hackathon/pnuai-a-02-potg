@@ -47,7 +47,7 @@ export async function POST(request: Request) {
      * 요청이라, 같은 말을 메모에 한 번 더 적게 할 이유가 없다.
      */
     if (!memo && !agenda) {
-      return NextResponse.json({ error: '기획 메모를 적거나 지역 의제를 골라 주세요.' }, { status: 400 });
+      return NextResponse.json({ error: '프로그램 아이디어를 적거나 주민 아이디어를 골라 주세요.' }, { status: 400 });
     }
 
     const prompt = buildStudioPlanPrompt({

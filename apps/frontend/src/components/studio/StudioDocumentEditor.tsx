@@ -356,7 +356,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
   /**
-   * 이 기획서가 어느 지역 의제에서 나왔는지. 표시가 없으면 사서가 의제를 골랐다는 사실이
+   * 이 기획서가 어느 주민 아이디어에서 나왔는지. 표시가 없으면 사서가 아이디어를 골랐다는 사실이
    * 결과에 남지 않아, 반영됐는지 확인할 방법이 없다.
    */
   const [agenda, setAgenda] = useState<StudioAgendaInput | null>(null);
@@ -805,7 +805,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
 
   return (
     <div className="studioPage studioDocumentPage">
-      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
+      <aside className="studioSideRail" aria-label="MOIRA Studio 메뉴">
         <Link className="studioRailLogo" href="/" aria-label="홈으로 이동" title="홈으로 이동">
           <svg className="studioHomeIcon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 11.2 12 4l8 7.2" />
@@ -826,11 +826,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
+      <aside className="studioHistoryPanel" aria-label="MOIRA Studio 작업 내역">
         <div className="studioHistoryHeader">
           <div>
             <strong>작업 내역</strong>
-            <small>MOIRA STUDIO</small>
+            <small>MOIRA Studio</small>
           </div>
         </div>
 
@@ -863,7 +863,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           <div>
             <p className="uiEyebrow">
               <span className="studioBrandSpark" aria-hidden="true">✦</span>
-              MOIRA STUDIO
+              MOIRA Studio
             </p>
             <h1>프로그램 기획서 편집</h1>
           </div>
@@ -969,7 +969,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             {/* 어느 의제에서 나온 기획서인지 남긴다. 사서가 반영 여부를 눈으로 확인할 수 있어야 한다. */}
             {agenda ? (
               <div className="studioDocumentAgenda">
-                <span>반영한 지역 의제</span>
+                <span>반영한 주민 아이디어</span>
                 <strong>{agenda.title}</strong>
                 <p>{agenda.content}</p>
               </div>

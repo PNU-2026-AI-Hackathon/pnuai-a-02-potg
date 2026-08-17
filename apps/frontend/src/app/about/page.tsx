@@ -234,9 +234,9 @@ export default async function AboutPage() {
             <div className="studioMockupShell">
               <div className="studioMockupInner">
                 <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
-                <h2 className="studioMockupTitle">MOIRA STUDIO</h2>
+                <h2 className="studioMockupTitle">MOIRA Studio</h2>
                 <p className="studioMockupSubtitle">
-                  주민의 이야기에서 시작하는 도서관 프로그램 기획을 짧은 메모로 시작하세요.
+                  주민의 이야기에서 시작하는 도서관 프로그램 기획을 간단한 아이디어로 시작하세요.
                 </p>
 
                 <div className="studioMockupCard">
@@ -244,11 +244,11 @@ export default async function AboutPage() {
                     <button type="button" className="isActive">
                       프로그램 기획
                     </button>
-                    <button type="button">지역 의제</button>
+                    <button type="button">주민 아이디어</button>
                   </div>
 
                   <div className="studioFieldGroup">
-                    <label className="studioFieldLabel">기획 메모</label>
+                    <label className="studioFieldLabel">프로그램 아이디어</label>
                     <div className="studioTextBlock">
                       예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램
                     </div>
