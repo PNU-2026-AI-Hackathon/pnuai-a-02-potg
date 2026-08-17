@@ -162,20 +162,8 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             <span>프로그램 검색</span>
             <input defaultValue={filters.q} name="q" placeholder="프로그램명 또는 도서관명" type="search" />
           </label>
-          <div className="programFilterActions">
-            <button className="uiButton uiButtonPrimary" type="submit">검색</button>
-            {/*
-              조건이 걸렸을 때만 나타나면 검색 순간에 단추가 하나 생겨 자리가 밀린다.
-              늘 자리에 두고, 지울 것이 없을 때는 눌리지 않게만 한다.
-            */}
-            <Link
-              aria-disabled={!hasFilters}
-              className={`uiButton uiButtonSecondary${hasFilters ? '' : ' isDisabled'}`}
-              href="/programs"
-            >
-              초기화
-            </Link>
-          </div>
+          {/* 조건을 풀 때도 「전체」로 되돌려 검색을 누르면 된다. 되돌리기 단추를 따로 두지 않는다. */}
+          <button className="uiButton uiButtonPrimary" type="submit">검색</button>
         </form>
 
         <section className="programListSection" aria-labelledby="program-list-title">
