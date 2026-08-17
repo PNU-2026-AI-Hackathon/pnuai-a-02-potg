@@ -2577,17 +2577,74 @@ button {
   width: min(100% - 32px, 1180px);
 }
 
-.programBoardHeader {
-  margin-bottom: 16px;
+/* --- 프로그램 게시판 배너 ----------------------------------------------------
+   같은 사이트의 게시판이니 「우리동네 이야기」와 같은 결로 맞춘다. 짙은 초록 바탕에
+   큰 글씨 하나. 예전의 연회색 바탕에 파란 세로줄은 이 사이트의 다른 화면과 따로 놀았다. */
+
+.programBoardHero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 24px;
+  border-radius: 32px;
+  background: var(--moira-green-dark);
+  color: #fff;
+  padding: 42px 46px;
+  box-shadow: 0 22px 60px rgba(15, 58, 49, 0.16);
+}
+
+.programBoardEyebrow {
+  margin: 0 0 14px;
+  color: var(--moira-mint);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.programBoardHero h1 {
+  margin: 0;
+  max-width: 720px;
+  color: #fff;
+  font-size: clamp(32px, 4.2vw, 58px);
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+}
+
+.programBoardHero h1::after {
+  content: none;
+}
+
+.programBoardHero > div > p:last-child {
+  margin: 20px 0 0;
+  max-width: 610px;
+  color: #d6e7e1;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+@media (max-width: 980px) {
+  .programBoardHero {
+    align-items: flex-start;
+    flex-direction: column;
+    border-radius: 24px;
+    padding: 32px 26px;
+  }
 }
 
 .programSummary {
   display: grid;
-  grid-template-columns: repeat(3, 150px) minmax(0, 1fr);
+  /* 안내 문구를 목록 쪽으로 옮겨, 여기는 숫자 셋만 남는다. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
   border: 1px solid #dfe5ec;
   background: #f8fafc;
   padding: 18px 22px;
+}
+
+.programSummary > div:last-child {
+  border-right: 0;
+  margin-right: 0;
 }
 
 .programSummary > div {
@@ -2683,6 +2740,138 @@ button {
   margin-top: 20px;
 }
 
+/* 데이터가 없거나 모집 중이 하나도 없을 때, 왜 그런지 한 줄로 알려 준다. */
+.programBoardNotice {
+  margin: 18px 0 0;
+  border: 1px solid #dfe5ec;
+  border-left: 3px solid var(--moira-green);
+  border-radius: 0 10px 10px 0;
+  background: #f8fafc;
+  padding: 12px 16px;
+  color: #4a5b66;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.programBoardNotice code {
+  border-radius: 6px;
+  background: #eef2f6;
+  padding: 2px 6px;
+  font-size: 12.5px;
+}
+
+/* 첨부·포스터에서 뽑아낸 회차가 있다는 표시. 목록에서 볼 값이 있는 카드를 가려 준다. */
+.programCurriculumChip {
+  align-self: flex-start;
+  margin: 0 0 12px;
+  border: 1px solid #cfe0d5;
+  border-radius: 999px;
+  background: #f1f8f4;
+  color: var(--moira-green-dark);
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* --- 프로그램 상세: 뽑아낸 회차 표 ------------------------------------------- */
+
+.programCurriculumSection .programCurriculumTable {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.programCurriculumSection th:nth-child(1),
+.programCurriculumSection td:nth-child(1) { width: 9%; }
+.programCurriculumSection th:nth-child(2),
+.programCurriculumSection td:nth-child(2) { width: 16%; }
+.programCurriculumSection th:nth-child(4),
+.programCurriculumSection td:nth-child(4) { width: 22%; }
+
+.programCurriculumSection td { vertical-align: top; }
+
+/* 뽑아낸 활동 내용에는 줄바꿈이 들어 있다. 한 줄로 뭉치면 읽히지 않는다. */
+.programCurriculumActivity {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* 교수방법 칸: 글과 예시 도서 이미지가 함께 들어간다. 원본 계획서와 같은 자리다. */
+.programCurriculumMethod {
+  display: table-cell;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.programCurriculumMethod span {
+  display: block;
+  margin-bottom: 6px;
+  white-space: pre-line;
+}
+
+.programCurriculumMethod img {
+  display: block;
+  width: 100%;
+  max-width: 88px;
+  height: auto;
+  border: 1px solid #e3e9ee;
+  border-radius: 6px;
+}
+
+.programCurriculumMethod img + img { margin-top: 6px; }
+
+.programCurriculumSource {
+  margin: 10px 0 0;
+  color: var(--moira-muted, #666);
+  font-size: 12.5px;
+}
+
+/* --- 프로그램 목록: 페이지 넘기기 -------------------------------------------- */
+
+.programPagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+.programPagination a {
+  display: grid;
+  min-width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #dfe4ea;
+  border-radius: 10px;
+  background: #fff;
+  color: #48607d;
+  padding: 0 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.programPagination a:hover {
+  border-color: var(--moira-green);
+  color: var(--moira-green-dark);
+}
+
+.programPagination a.isCurrent {
+  border-color: var(--moira-green);
+  background: var(--moira-green);
+  color: #fff;
+}
+
+/* 처음·끝에서는 눌러도 갈 곳이 없다. 눌리는 것처럼 보이지 않게 둔다. */
+.programPagination a.isDisabled {
+  border-color: #eceff2;
+  color: #b6bfc6;
+  pointer-events: none;
+}
+
+
+
 .programCard {
   display: flex;
   flex-direction: column;
@@ -2731,6 +2920,65 @@ button {
   border-color: #d7dde1;
   background: #f4f6f8;
   color: #5a6a75;
+}
+
+/* --- 프로그램 카드: 모집 상태 ------------------------------------------------
+   이 화면을 보는 사람이 먼저 찾는 것은 지금 신청할 수 있는 프로그램이다.
+   카드 한 장만 봐도 모집 중인지 아닌지 갈려 보여야 한다. */
+
+.programStatusBadge {
+  border: 1px solid transparent !important;
+  border-radius: 999px;
+  padding: 4px 10px !important;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.programStatusBadge.is-open {
+  border-color: var(--moira-green) !important;
+  background: var(--moira-green) !important;
+  color: #fff !important;
+}
+
+.programStatusBadge.is-upcoming {
+  border-color: var(--moira-warm) !important;
+  background: #fff6ec !important;
+  color: #92590f !important;
+}
+
+.programStatusBadge.is-closed,
+.programStatusBadge.is-unknown {
+  border-color: #dbe1e6 !important;
+  background: #f2f4f6 !important;
+  color: #6b7780 !important;
+}
+
+.programCardTarget {
+  border-radius: 999px;
+  padding: 4px 10px !important;
+}
+
+/* 모집 중인 카드는 위쪽 띠까지 브랜드색으로 바꿔, 목록에서 먼저 눈에 들어오게 한다. */
+.programCard.is-open {
+  border-top-color: var(--moira-green);
+}
+
+.programCard.is-open:hover {
+  border-color: var(--moira-green);
+  box-shadow: 0 8px 22px rgba(22, 116, 95, 0.16);
+}
+
+/* 마감은 읽을 수는 있되 뒤로 물러나 있게. 지운 것처럼 보이면 안 된다. */
+.programCard.is-closed,
+.programCard.is-unknown {
+  border-top-color: #c9d2da;
+  background: #fcfdfd;
+}
+
+.programCard.is-closed h3 a,
+.programCard.is-unknown h3 a {
+  color: #48607d;
 }
 
 .programCard h3 {
@@ -14236,4 +14484,445 @@ html:has(.moiraPage) {
   }
 
   @page { size: A4; margin: 18mm 16mm; }
+}
+
+/* --- 프로그램 게시판: 다른 게시판과 같은 결로 ---------------------------------
+   각진 상자와 파란 계열은 이 사이트의 다른 화면과 따로 놀았다. 「우리동네 이야기」가
+   쓰는 언어로 맞춘다 — 둥근 모서리, 옅은 그림자, 초록 계열. */
+
+/* 현황은 상자 대신 알약으로. 숫자 셋을 읽는 데 테두리 상자가 필요하지 않다. */
+.programSummary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin-bottom: 22px;
+}
+
+.programSummary > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  border: 1px solid #dce6df;
+  border-right: 1px solid #dce6df;
+  border-radius: 999px;
+  background: #fff;
+  margin: 0;
+  padding: 10px 18px;
+}
+
+.programSummary strong {
+  color: var(--moira-green);
+  font-size: 16px;
+}
+
+.programSummary span {
+  color: #6a7772;
+  font-size: 13px;
+}
+
+/* --- 검색·필터 줄 ------------------------------------------------------------
+   공공예약 화면처럼 한 줄에 늘어놓되, 모서리와 색은 이 사이트 것으로. */
+
+.programFilterBar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 1px solid #dce5df;
+  border-radius: 24px;
+  background: #fff;
+  margin-bottom: 22px;
+  padding: 18px 22px;
+  box-shadow: 0 14px 36px rgba(25, 58, 49, 0.06);
+}
+
+.programFilterBar label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.programFilterBar label > span {
+  color: var(--moira-ink);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.programFilterBar select,
+.programFilterBar input {
+  min-height: 40px;
+  border: 1px solid #dbe5df;
+  border-radius: 999px;
+  background: #fff;
+  padding: 0 14px;
+  color: var(--moira-ink);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.programFilterBar select:focus,
+.programFilterBar input:focus {
+  border-color: var(--moira-green);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.12);
+}
+
+/* 검색어 칸만 남는 자리를 차지한다. 고르는 칸은 내용만큼만 있으면 된다. */
+.programFilterSearch {
+  flex: 1 1 220px;
+}
+
+.programFilterBar .uiButton {
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 0 22px;
+}
+
+
+@media (max-width: 720px) {
+  .programFilterBar label,
+  .programFilterBar .uiButton {
+    flex: 1 1 100%;
+  }
+}
+
+.programListHeading h2 {
+  color: var(--moira-ink);
+  letter-spacing: -0.02em;
+}
+
+.programListSection .programListHeading {
+  border-bottom: 0;
+}
+
+/* 카드: 위쪽 굵은 띠를 걷고 둥글게. 상태는 배지와 테두리 색으로 충분히 갈린다. */
+.programCard {
+  min-height: 0;
+  border: 1px solid #e0e7e3;
+  border-top: 1px solid #e0e7e3;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 10px 26px rgba(25, 58, 49, 0.05);
+}
+
+.programCard:hover {
+  border-color: #63a995;
+  background: #f8fcfa;
+  box-shadow: 0 16px 34px rgba(25, 58, 49, 0.09);
+  transform: translateY(-2px);
+}
+
+.programCard.is-open {
+  border-color: #9fd0bd;
+  border-top-color: #9fd0bd;
+}
+
+.programCard.is-open:hover {
+  border-color: var(--moira-green);
+}
+
+.programCard.is-closed,
+.programCard.is-unknown {
+  border-top-color: #e0e7e3;
+  background: #fff;
+}
+
+.programCard h3 a {
+  color: var(--moira-ink);
+  letter-spacing: -0.02em;
+}
+
+.programCard.is-closed h3 a,
+.programCard.is-unknown h3 a {
+  color: var(--moira-ink);
+}
+
+.programLibrary {
+  color: var(--moira-green);
+}
+
+.programCardFlags span {
+  border: 0;
+  border-radius: 999px;
+  background: #eef5f1;
+  color: #4f6a5f;
+}
+
+.programCardFlags .programCardTarget {
+  background: #f2f5f3;
+  color: #6a7772;
+}
+
+.programCardLink {
+  color: var(--moira-green-dark);
+}
+
+/* 페이지 단추도 알약으로. 위 카드와 아래 단추의 모서리가 따로 놀지 않게. */
+.programPagination a {
+  border-color: #dce6df;
+  border-radius: 999px;
+}
+
+/* --- 프로그램 상세: 목록과 같은 결로 -----------------------------------------
+   옅은 회색 테두리와 연한 파랑뿐이라 어디가 제목이고 어디가 값인지 눈에 안 들어왔다.
+   제목 자리는 확실히 진하게, 묶음은 둥근 판으로 갈라 준다. */
+
+/* 공고 상세는 문서처럼 읽힌다. 제목은 바탕색 없이 크게, 그 아래 얇은 선으로 끊는다. */
+.programDetailHeader {
+  border: 0;
+  border-bottom: 2px solid var(--moira-ink);
+  border-radius: 0;
+  background: transparent;
+  margin-bottom: 22px;
+  padding: 4px 0 20px;
+  box-shadow: none;
+}
+
+.programDetailStatusLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+
+.programDetailLibrary {
+  color: var(--moira-green);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.programDetailHeader h1 {
+  margin: 0;
+  color: var(--moira-ink);
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.programDetailSubtitle {
+  margin: 10px 0 0;
+  color: var(--moira-muted, #666);
+  font-size: 14px;
+}
+
+/* 요약 상자: 신청에 필요한 것만 세 줄기로 나눠 담는다. 공고 화면들이 쓰는 모양이다. */
+.programSummaryBox {
+  border: 1px solid #dce5df;
+  border-radius: 16px;
+  background: #f8faf9;
+  margin-bottom: 30px;
+  padding: 24px 26px;
+}
+
+.programSummaryBox > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 32px;
+}
+
+.programSummaryBox dl {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  margin: 0;
+}
+
+.programSummaryBox dl + dl {
+  border-left: 1px solid #e2eae5;
+  padding-left: 32px;
+}
+
+.programSummaryBox dl > div {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+
+.programSummaryBox dt {
+  color: var(--moira-ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* 라벨 앞의 점. 표 선을 긋지 않고도 항목이 나뉜다. */
+.programSummaryBox dt::before {
+  content: "·";
+  margin-right: 5px;
+  color: var(--moira-green);
+  font-weight: 900;
+}
+
+.programSummaryBox dd {
+  margin: 0;
+  color: #46545c;
+  font-size: 13.5px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 860px) {
+  .programSummaryBox > div {
+    grid-template-columns: 1fr;
+  }
+
+  .programSummaryBox dl + dl {
+    border-left: 0;
+    border-top: 1px solid #e2eae5;
+    padding-left: 0;
+    padding-top: 12px;
+  }
+}
+
+/* --- 본문은 판이 아니라 글로 -------------------------------------------------
+   내용마다 판을 두르니 화면이 상자로 가득 찼다. 공고 화면들은 본문을 글로 흘려 쓰고
+   제목만 굵게 둔다. 읽는 사람에게 필요한 것은 테두리가 아니라 글의 차례다. */
+
+.programTextSection,
+.programNoticeGroup,
+.programMediaSection {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* 소제목은 굵은 한 줄로. 바탕색을 깔면 그게 또 상자가 된다. */
+.programTextSection h3,
+.programNoticeGroup h3 {
+  margin: 0 0 8px;
+  background: transparent;
+  padding: 0;
+  color: var(--moira-ink);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.programTextSection h3::before,
+.programNoticeGroup h3::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 13px;
+  margin-right: 8px;
+  border-radius: 2px;
+  background: var(--moira-green);
+  vertical-align: -1px;
+}
+
+/* 라벨과 값을 한 줄로. 표 칸처럼 바탕을 깔지 않는다. */
+.programTextSection dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.programTextSection dl > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  border: 0;
+  padding: 0;
+}
+
+.programTextSection dt {
+  background: transparent;
+  padding: 0;
+  color: #55645f;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.programTextSection dd {
+  margin: 0;
+  padding: 0;
+  color: #3d4a52;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.programTextSection .programStructuredContent p {
+  margin: 6px 0 0;
+  color: #3d4a52;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.programNoticeGroup ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.programNoticeGroup li {
+  color: #3d4a52;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* 구획 사이는 여백으로만 나눈다. */
+.programTextSections,
+.programNoticeGrid {
+  gap: 26px 40px;
+}
+
+.programTextSection + .programTextSection,
+.programNoticeGroup + .programNoticeGroup {
+  margin-top: 0;
+}
+
+/* 구획 제목 아래에 선을 긋는다. 공고 화면들이 쓰는 방식이고, 판을 겹겹이 쌓는 것보다
+   글이 앞으로 나온다. */
+.programDetailArticle h2 {
+  border-bottom: 1px solid var(--moira-ink);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  color: var(--moira-ink);
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+/* 요약 상자는 제목 없이 상자만 둔다. 읽는 사람에게 「기본 정보」라는 말이 필요하지 않다. */
+.uiSrOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* 소제목 바탕색은 걷어냈다. 위 「본문은 판이 아니라 글로」에서 굵은 한 줄로 다시 잡는다. */
+
+/* 표: 머리줄을 진하게. 옅은 회색이라 값과 구분이 안 됐다. */
+.programCurriculumTable th {
+  background: #eef5f1;
+  color: var(--moira-green-dark);
+}
+
+.programCurriculumTable th,
+.programCurriculumTable td {
+  border-color: #e2eae5;
+}
+
+.programInfoPanel dt {
+  color: var(--moira-green-dark);
+}
+
+.programPosterList {
+  border-color: #e2eae5;
+  border-radius: 16px;
+  background: #f7faf8;
+}
+
+.programDetailActions .uiButton {
+  border-radius: 999px;
 }

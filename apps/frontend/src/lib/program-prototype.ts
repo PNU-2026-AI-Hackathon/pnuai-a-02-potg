@@ -25,8 +25,27 @@ export type ProgramTableCell = {
   images: Array<{ url: string; alt: string }>;
 };
 
+/**
+ * 첨부·포스터에서 뽑아낸 회차 한 줄.
+ *
+ * 크롤 본문에는 없는 내용이다. 원본이 포스터 이미지나 첨부파일이라 사람이 열어 보기
+ * 전에는 알 수 없던 것을, 정제 배치가 표로 만들어 둔 것이다.
+ */
+export type ProgramCurriculumRow = {
+  session: number | null;
+  date: string | null;
+  activity: string | null;
+  materials: string | null;
+  notes: string | null;
+  materialsOrNotes: string | null;
+  /** 원본 계획서의 「교수방법」 칸. 예시 도서 이미지가 이 자리에 붙어 있는 경우가 많다. */
+  teachingMethod: string | null;
+  referenceImages: Array<{ url: string; alt?: string }>;
+};
+
 export type ProgramPrototype = {
   sourceId: number;
+  curriculum: ProgramCurriculumRow[];
   sourceUrl: string;
   title: string;
   libraryName: string | null;
@@ -75,27 +94,76 @@ function boardFileCandidates() {
   ];
 }
 
+/**
+ * 350건이 5MB가 넘어, 요청마다 다시 읽고 파싱하면 화면이 눈에 띄게 느려진다.
+ * 파일은 배치로 만들어 두는 산출물이라 프로세스가 사는 동안 바뀌지 않는다.
+ */
+let boardFilePromise: Promise<BoardFile | null> | null = null;
+
 async function readBoardFile() {
-  let lastError: unknown;
-  for (const candidate of boardFileCandidates()) {
-    try {
-      return JSON.parse(await readFile(candidate, 'utf8')) as BoardFile;
-    } catch (error) {
-      lastError = error;
+  boardFilePromise ??= (async () => {
+    for (const candidate of boardFileCandidates()) {
+      try {
+        return JSON.parse(await readFile(candidate, 'utf8')) as BoardFile;
+      } catch {
+        // 다음 후보를 본다.
+      }
     }
-  }
-  throw lastError;
+    /**
+     * 데이터 파일은 `.local` 아래라 저장소에 없다. 내려받자마자 연 사람에게는 파일이 없다.
+     * 그때 화면이 죽지 않고 빈 목록으로 열려야, 무엇을 해야 하는지 안내라도 할 수 있다.
+     */
+    console.warn('프로그램 게시판 데이터 파일을 찾지 못했습니다. `npm run program-board:build -- --profile all`로 만들 수 있습니다.');
+    return null;
+  })();
+
+  return boardFilePromise;
+}
+
+/** 신청기간과 오늘로 가른 모집 상태. */
+export type ProgramRecruitStatus = 'open' | 'upcoming' | 'closed' | 'unknown';
+
+export function programRecruitStatus(program: ProgramPrototype, today = new Date()): ProgramRecruitStatus {
+  const { applyStartDate: start, applyEndDate: end } = program;
+  if (!start && !end) return 'unknown';
+  const now = today.toISOString().slice(0, 10);
+  if (start && start > now) return 'upcoming';
+  if (end && end < now) return 'closed';
+  return 'open';
+}
+
+export const programRecruitLabel: Record<ProgramRecruitStatus, string> = {
+  open: '모집중',
+  upcoming: '모집 예정',
+  closed: '모집 마감',
+  unknown: '기간 확인 필요',
+};
+
+/**
+ * 모집 중인 것을 앞에 두고, 각 묶음 안에서는 신청 시작일 최신순.
+ *
+ * 이 화면을 보는 사람이 먼저 궁금한 것은 지금 신청할 수 있는 프로그램이다. 그다음은
+ * 새로 올라온 것 순서다. 모집 예정은 따로 올리지 않는다. 신청 시작일이 아직 오지 않아
+ * 날짜가 가장 뒤라, 나머지를 최신순으로 세우면 자연히 맨 앞에 선다.
+ */
+export function sortProgramsForBoard(programs: ProgramPrototype[], today = new Date()) {
+  return [...programs].sort((left, right) => {
+    const leftOpen = programRecruitStatus(left, today) === 'open';
+    const rightOpen = programRecruitStatus(right, today) === 'open';
+    if (leftOpen !== rightOpen) return leftOpen ? -1 : 1;
+
+    // 신청 시작일이 없는 건은 뒤로. 날짜를 모르는 것이 새 것처럼 앞에 서면 안 된다.
+    const leftDate = left.applyStartDate ?? '';
+    const rightDate = right.applyStartDate ?? '';
+    if (leftDate !== rightDate) return rightDate.localeCompare(leftDate);
+    return right.sourceId - left.sourceId;
+  });
 }
 
 export async function getProgramPrototypes() {
   const board = await readBoardFile();
-  return board.items
-    .map((item) => item.normalized)
-    .sort((left, right) => {
-      const leftDate = left.programStartDate ?? '';
-      const rightDate = right.programStartDate ?? '';
-      return rightDate.localeCompare(leftDate) || right.sourceId - left.sourceId;
-    });
+  if (!board) return [];
+  return sortProgramsForBoard(board.items.map((item) => item.normalized));
 }
 
 export async function getProgramPrototype(sourceId: number) {

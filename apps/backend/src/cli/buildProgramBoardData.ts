@@ -13,6 +13,46 @@ import type { NormalizedProgram, RawProgram } from '../services/programDataNorma
 
 const DEFAULT_CRAWL_DIR = path.resolve(process.cwd(), '.local', 'geumjeong-small-library-crawl');
 const DEFAULT_OUT_DIR = path.resolve(process.cwd(), '.local', 'program-board');
+/** 첨부·포스터에서 회차를 뽑아 둔 결과. 크롤 본문에는 없는 내용이라 여기서 가져와 붙인다. */
+const DEFAULT_ENRICHED_FILE = path.resolve(process.cwd(), '.local', 'program-attachment-batch', 'full.json');
+
+/** 정제 결과의 회차 한 줄. 화면이 표로 그린다. */
+export type EnrichedCurriculumRow = {
+  session: number | null;
+  date: string | null;
+  activity: string | null;
+  materials: string | null;
+  notes: string | null;
+  materialsOrNotes: string | null;
+};
+
+type EnrichedFile = {
+  /** 정제 결과에서 `curriculum`은 회차 배열 그 자체다. 감싸는 객체가 없다. */
+  items: Array<{ sourceId: number; curriculum?: EnrichedCurriculumRow[] | null }>;
+};
+
+/**
+ * 첨부·포스터에서 뽑은 회차를 sourceId로 찾아 쓸 수 있게 모은다.
+ *
+ * 이 파일이 없으면 회차 없이 만든다. 게시판은 크롤 본문만으로도 열려야 하고,
+ * 정제 배치를 아직 안 돌린 사람도 화면은 볼 수 있어야 한다.
+ */
+function readEnrichedCurriculum(file: string) {
+  const bySourceId = new Map<number, EnrichedCurriculumRow[]>();
+
+  if (!fs.existsSync(file)) {
+    console.warn(`정제 결과를 찾지 못해 회차 없이 만듭니다: ${file}`);
+    return bySourceId;
+  }
+
+  const payload = JSON.parse(fs.readFileSync(file, 'utf8')) as EnrichedFile;
+  for (const item of payload.items ?? []) {
+    const rows = Array.isArray(item.curriculum) ? item.curriculum : [];
+    if (rows.length) bySourceId.set(item.sourceId, rows);
+  }
+
+  return bySourceId;
+}
 
 function latestCrawlFile(dir: string) {
   const files = fs.readdirSync(dir)
@@ -60,7 +100,11 @@ function countBy<T>(rows: T[], pick: (row: T) => string | null) {
   return map;
 }
 
-export function buildBoardData(records: RawProgram[], profile: keyof typeof PROFILE_FILTERS = 'text-only') {
+export function buildBoardData(
+  records: RawProgram[],
+  profile: keyof typeof PROFILE_FILTERS = 'text-only',
+  curriculumBySourceId = new Map<number, EnrichedCurriculumRow[]>(),
+) {
   const keep = PROFILE_FILTERS[profile];
   if (!keep) throw new Error(`알 수 없는 프로파일: ${profile} (text-only | text-first | all)`);
 
@@ -74,7 +118,12 @@ export function buildBoardData(records: RawProgram[], profile: keyof typeof PROF
     normalized: {
       ...item.normalized,
       seriesSize: seriesCounts.get(item.normalized.seriesKey) ?? 1,
-    } as NormalizedProgram & { seriesSize: number },
+      /**
+       * 첨부·포스터에서 뽑아낸 회차. 크롤 본문에는 없어서 이걸 붙이지 않으면
+       * 화면에 원본 포스터 이미지만 남고, 뽑아 둔 표가 어디에도 안 보인다.
+       */
+      curriculum: curriculumBySourceId.get(item.normalized.sourceId) ?? [],
+    } as NormalizedProgram & { seriesSize: number; curriculum: EnrichedCurriculumRow[] },
   }));
 
   const fieldFill = (pick: (n: NormalizedProgram) => unknown) => items.filter((item) => {
@@ -103,6 +152,9 @@ export function buildBoardData(records: RawProgram[], profile: keyof typeof PROF
         feeText: fieldFill((n) => n.feeText),
       },
       content: {
+        /** 첨부·포스터에서 뽑은 회차가 실제로 몇 건에 붙었는지. 0이면 정제 결과를 못 찾은 것이다. */
+        withCurriculum: items.filter(({ normalized }) => normalized.curriculum.length).length,
+        curriculumRows: items.reduce((sum, { normalized }) => sum + normalized.curriculum.length, 0),
         withSections: items.filter(({ normalized }) => normalized.board.sections.length).length,
         withNotices: items.filter(({ normalized }) => normalized.board.notices.length).length,
         withTables: items.filter(({ raw }) => raw.programContent?.tables?.length).length,
@@ -125,12 +177,19 @@ export async function main(args = process.argv.slice(2)) {
   const inputIndex = args.indexOf('--input');
   const outIndex = args.indexOf('--out');
   const profileIndex = args.indexOf('--profile');
+  const enrichedIndex = args.indexOf('--enriched');
   const inputFile = inputIndex >= 0 ? path.resolve(args[inputIndex + 1]) : latestCrawlFile(DEFAULT_CRAWL_DIR);
   const outDir = outIndex >= 0 ? path.resolve(args[outIndex + 1]) : DEFAULT_OUT_DIR;
   const profile = profileIndex >= 0 ? args[profileIndex + 1] : 'text-only';
+  const enrichedFile = enrichedIndex >= 0 ? path.resolve(args[enrichedIndex + 1]) : DEFAULT_ENRICHED_FILE;
 
   const payload = JSON.parse(fs.readFileSync(inputFile, 'utf8')) as { records: RawProgram[] };
-  const result = { ...buildBoardData(payload.records, profile), input: path.basename(inputFile) };
+  const curriculumBySourceId = readEnrichedCurriculum(enrichedFile);
+  const result = {
+    ...buildBoardData(payload.records, profile, curriculumBySourceId),
+    input: path.basename(inputFile),
+    enrichedInput: path.basename(enrichedFile),
+  };
 
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'programs.json'), `${JSON.stringify(result, null, 2)}\n`, 'utf8');
