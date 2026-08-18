@@ -83,7 +83,9 @@ export default function SignupPage() {
 
   const isStepOneValid = Boolean(accountType);
   const isUserIdFormatInvalid = userId.trim().length > 0 && !userIdPattern.test(userId.trim());
-  const isStepTwoValid = userIdPattern.test(userId.trim()) && password.length >= 8 && password === confirmPassword;
+  const isPasswordTooShort = password.length > 0 && password.length < 8;
+  const isPasswordValid = password.length >= 8;
+  const isStepTwoValid = userIdPattern.test(userId.trim()) && isPasswordValid && password === confirmPassword;
   const isStepThreeValid = name.trim().length > 0;
   const isPasswordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
   const availableMonths =
@@ -129,7 +131,9 @@ export default function SignupPage() {
           ? '비밀번호와 비밀번호 확인이 다릅니다.'
           : isUserIdFormatInvalid
             ? '회원 아이디는 한글, 영문, 숫자, 밑줄, 하이픈을 사용해 4~30자로 입력해 주세요.'
-            : '회원 아이디와 비밀번호를 모두 입력해 주세요.',
+            : isPasswordTooShort
+              ? '비밀번호는 8자 이상입니다.'
+              : '회원 아이디와 비밀번호를 모두 입력해 주세요.',
       );
       return;
     }
@@ -304,9 +308,19 @@ export default function SignupPage() {
                     id="signup-password"
                     type="password"
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setStatusMessage('');
+                    }}
                     placeholder="비밀번호를 입력하세요"
+                    aria-invalid={isPasswordTooShort}
+                    aria-describedby={isPasswordTooShort ? 'signup-password-length-error' : undefined}
                   />
+                  {isPasswordTooShort ? (
+                    <small id="signup-password-length-error" className="signupFieldError" role="alert">
+                      비밀번호는 8자 이상입니다.
+                    </small>
+                  ) : null}
                 </label>
 
                 <label className="signupField signupFieldWide" htmlFor="signup-password-confirm">
