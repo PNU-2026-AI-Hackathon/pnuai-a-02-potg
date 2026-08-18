@@ -323,7 +323,7 @@ export default function SignupPage() {
                   ) : null}
                 </label>
 
-                <label className="signupField signupFieldWide" htmlFor="signup-password-confirm">
+                <label className="signupField" htmlFor="signup-password-confirm">
                   <span>비밀번호 확인</span>
                   <input
                     id="signup-password-confirm"
