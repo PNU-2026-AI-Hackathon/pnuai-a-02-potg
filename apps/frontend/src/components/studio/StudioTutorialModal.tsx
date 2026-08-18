@@ -27,7 +27,7 @@ export default function StudioTutorialModal({
           ×
         </button>
         <p className="uiEyebrow">QUICK GUIDE</p>
-        <h2 id="studio-tutorial-title">MOIRA Studio 사용 흐름</h2>
+        <h2 id="studio-tutorial-title">MOIRA STUDIO 사용 흐름</h2>
         <ol className="studioTutorialSteps">
           {tutorialSteps.map((step, index) => (
             <li key={step}>

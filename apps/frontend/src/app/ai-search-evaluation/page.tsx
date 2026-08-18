@@ -6,7 +6,7 @@ type Query={queryId:string;queryText:string};
 type PoolItem={queryId:string;resultKey:string;groupId:string;canonicalTitle:string;retrievalMethods:string[];ranks:Record<string,number>;scores:Record<string,unknown>;target:string|null;description:string;operationInfo:Record<string,unknown>;memberCount:number;corpusAvailability:{core:boolean;safe:boolean}};
 type Evaluation={queryId:string;resultKey:string;relevance:number;reviewerNote:string};
 const methods=['CHUNK_P0','BM25','DENSE','HYBRID','HYBRID_TARGETED'];
-const criteria=['3: 매우 적합하며 MOIRA Studio 참고 사례로 바로 추천 가능','2: 핵심 조건 대부분이 일치해 참고 사례로 활용 가능','1: 일부 관련되지만 추천하기에는 부족','0: 질의와 사실상 무관'];
+const criteria=['3: 매우 적합하며 MOIRA STUDIO 참고 사례로 바로 추천 가능','2: 핵심 조건 대부분이 일치해 참고 사례로 활용 가능','1: 일부 관련되지만 추천하기에는 부족','0: 질의와 사실상 무관'];
 export default function Page(){
  const[q,setQ]=useState('초등학생 환경 체험 프로그램'),[method,setMethod]=useState('HYBRID'),[corpus,setCorpus]=useState('SAFE'),[results,setResults]=useState<Result[]>([]),[queries,setQueries]=useState<Query[]>([]),[selected,setSelected]=useState<Query|null>(null),[pool,setPool]=useState<PoolItem[]>([]),[evaluations,setEvaluations]=useState<Evaluation[]>([]),[metrics,setMetrics]=useState<any>(null),[blind,setBlind]=useState(true),[draftScores,setDraftScores]=useState<Record<string,number>>({}),[draftNotes,setDraftNotes]=useState<Record<string,string>>({}),[error,setError]=useState('');
  async function reloadEvaluation(){const[e,m]=await Promise.all([fetch('/api/program-case-search/evaluations').then(r=>r.json()),fetch('/api/program-case-search/metrics').then(r=>r.json())]);setEvaluations(e.items);setMetrics(m)}

@@ -309,7 +309,7 @@ export default function StudioGenerationLoading() {
 
   return (
     <div className="studioPage studioGeneratingLayout">
-      <aside className="studioSideRail" aria-label="MOIRA Studio 메뉴">
+      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
         <Link className="studioRailLogo" href="/" aria-label="홈으로 이동" title="홈으로 이동">
           <svg className="studioHomeIcon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 11.2 12 4l8 7.2" />
@@ -330,11 +330,11 @@ export default function StudioGenerationLoading() {
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA Studio 작업 내역">
+      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
         <div className="studioHistoryHeader">
           <div>
             <strong>생성 작업</strong>
-            <small>MOIRA Studio</small>
+            <small>MOIRA STUDIO</small>
           </div>
         </div>
         <div className="studioHistoryList" aria-live="polite">
@@ -374,7 +374,7 @@ export default function StudioGenerationLoading() {
             <div>
               <p className="uiEyebrow">
                 <span className="studioBrandSpark" aria-hidden="true">✦</span>
-                MOIRA Studio
+                MOIRA STUDIO
               </p>
               <h1 id="studio-generating-title">{statusTitle}</h1>
               <p>{statusDescription}</p>

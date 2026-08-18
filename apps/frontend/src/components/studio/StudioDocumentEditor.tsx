@@ -805,7 +805,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
 
   return (
     <div className="studioPage studioDocumentPage">
-      <aside className="studioSideRail" aria-label="MOIRA Studio 메뉴">
+      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
         <Link className="studioRailLogo" href="/" aria-label="홈으로 이동" title="홈으로 이동">
           <svg className="studioHomeIcon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 11.2 12 4l8 7.2" />
@@ -826,11 +826,11 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA Studio 작업 내역">
+      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
         <div className="studioHistoryHeader">
           <div>
             <strong>작업 내역</strong>
-            <small>MOIRA Studio</small>
+            <small>MOIRA STUDIO</small>
           </div>
         </div>
 
@@ -863,7 +863,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           <div>
             <p className="uiEyebrow">
               <span className="studioBrandSpark" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </p>
             <h1>프로그램 기획서 편집</h1>
           </div>

@@ -5576,7 +5576,7 @@ html:has(.moiraPage) {
 }
 
 .studioLandingHero::after {
-  content: 'MOIRA Studio';
+  content: 'MOIRA STUDIO';
   position: absolute;
   right: -0.04em;
   bottom: -0.18em;

@@ -32,7 +32,7 @@ export function StudioPreview({ className = '' }: ReusableStudioBlockProps) {
   return (
     <div className={`studioPreview studioShowcasePreview ${className}`.trim()} aria-label="모이라 스튜디오 화면 미리보기">
       <div className="studioPreviewTop">
-        <span className="uiTag uiTagAccent">MOIRA Studio</span>
+        <span className="uiTag uiTagAccent">MOIRA STUDIO</span>
         <span className="studioStatus">
           <i aria-hidden="true" /> AI 의견 분석 완료
         </span>
@@ -103,7 +103,7 @@ export default function StudioSection() {
             <p className="uiEyebrow">LIBRARIAN PLANNING TOOL</p>
             <h2>
               <span className="studioTitleIcon" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </h2>
             <p className="studioSectionClaim">
               주민의 의견을 작은도서관 프로그램 기획안으로
@@ -117,7 +117,7 @@ export default function StudioSection() {
             <strong>AI 프로그램 기획을 시작해보세요.</strong>
             <Link className="uiButton studioBrandButton" href="/studio/about">
               <span className="studioBrandButtonIcon" aria-hidden="true">✦</span>
-              MOIRA Studio 시작하기
+              MOIRA STUDIO 시작하기
               <span className="studioBrandButtonArrow" aria-hidden="true">→</span>
             </Link>
           </aside>

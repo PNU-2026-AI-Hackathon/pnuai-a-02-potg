@@ -51,7 +51,7 @@ export default function HeroSection() {
             <li className="isStudio">
               <span aria-hidden="true">02</span>
               <div>
-                <strong>MOIRA Studio 기획</strong>
+                <strong>MOIRA STUDIO 기획</strong>
                 <p>사서가 주민 의견을 실행 가능한 프로그램으로 구체화합니다.</p>
               </div>
             </li>

@@ -120,7 +120,7 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
 
   return (
     <div className="studioPage studioPlanningPage">
-      <aside className="studioSideRail" aria-label="MOIRA Studio 메뉴">
+      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
         <Link className="studioRailLogo" href="/" aria-label="MOIRA 홈으로 이동">
           <span>MO</span>
         </Link>
@@ -140,11 +140,11 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA Studio 작업 내역">
+      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
         <div className="studioHistoryHeader">
           <div>
             <strong>작업 내역</strong>
-            <small>MOIRA Studio</small>
+            <small>MOIRA STUDIO</small>
           </div>
           <button type="button" aria-label="작업 내역 고정">◆</button>
         </div>
@@ -191,7 +191,7 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
             <p className="uiEyebrow">LIBRARIAN PLANNING TOOL</p>
             <h1 id="studio-workspace-title">
               <span className="studioTitleSpark" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </h1>
             <p>
               주민의 이야기에서 시작하는 도서관 프로그램 기획을 간단한 아이디어로 시작하세요.

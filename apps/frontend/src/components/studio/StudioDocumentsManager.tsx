@@ -161,7 +161,7 @@ export default function StudioDocumentsManager() {
 
   return (
     <div className="studioPage studioDocumentsPage">
-      <aside className="studioSideRail" aria-label="MOIRA Studio 메뉴">
+      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
         <Link className="studioRailLogo" href="/" aria-label="홈으로 이동" title="홈으로 이동">
           <svg className="studioHomeIcon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 11.2 12 4l8 7.2" />
@@ -182,11 +182,11 @@ export default function StudioDocumentsManager() {
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA Studio 문서 관리 메뉴">
+      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 문서 관리 메뉴">
         <div className="studioHistoryHeader">
           <div>
             <strong>문서 관리</strong>
-            <small>MOIRA Studio</small>
+            <small>MOIRA STUDIO</small>
           </div>
         </div>
 

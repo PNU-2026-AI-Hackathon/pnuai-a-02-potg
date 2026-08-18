@@ -63,7 +63,7 @@ export default function SiteHeader({
               href="/studio/about"
             >
               <span className="siteStudioIcon" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </Link>
           </div>
           <AuthActions initialUser={user} />

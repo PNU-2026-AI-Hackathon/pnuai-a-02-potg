@@ -19,10 +19,10 @@ export default function StudioIntroductionModal({
         <button className="studioModalClose" type="button" aria-label="소개 닫기" onClick={onClose}>
           ×
         </button>
-        <p className="uiEyebrow">ABOUT MOIRA Studio</p>
+        <p className="uiEyebrow">ABOUT MOIRA STUDIO</p>
         <h2 id="studio-intro-title">주민의 목소리를 실행 가능한 도서관 프로그램으로</h2>
         <p>
-          MOIRA Studio는 주민 아이디어, 수요조사, 참고 프로그램을 바탕으로 사서가 빠르게
+          MOIRA STUDIO는 주민 아이디어, 수요조사, 참고 프로그램을 바탕으로 사서가 빠르게
           프로그램 기획 초안을 만들 수 있도록 돕는 작업 화면입니다.
         </p>
         <div className="studioModalGrid">

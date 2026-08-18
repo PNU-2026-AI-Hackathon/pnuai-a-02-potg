@@ -36,7 +36,7 @@ const serviceSteps = [
   },
   {
     number: '03',
-    title: 'MOIRA Studio',
+    title: 'MOIRA STUDIO',
     description: '사서가 주민 의견과 기존 프로그램 사례를 바탕으로 AI 기획안 초안을 만들고 검토·보완합니다.',
   },
   {
@@ -114,7 +114,7 @@ const featureItems = [
   },
   {
     icon: '⚙️',
-    title: 'AI 기반 프로그램 기획 (MOIRA Studio)',
+    title: 'AI 기반 프로그램 기획 (MOIRA STUDIO)',
     description: '주민 의견과 기존 프로그램 사례를 바탕으로 AI가 문화·교육 프로그램 기획안을 생성하고 사서의 기획을 지원합니다.',
   },
   {
@@ -164,7 +164,7 @@ const audienceList = [
     items: [
       {
         icon: 'AI',
-        label: 'MOIRA Studio',
+        label: 'MOIRA STUDIO',
         description: '주민 의견과 기존 프로그램 사례를 분석하여 AI가 프로그램 기획 초안을 생성합니다.',
       },
       {
@@ -216,12 +216,12 @@ export default async function AboutPage() {
             <div className="introHeroPills" aria-label="모이라 핵심 키워드">
               <span># 주민 아이디어</span>
               <span># AI 기획 지원</span>
-              <span># MOIRA Studio</span>
+              <span># MOIRA STUDIO</span>
               <span># 프로그램 수요 조사</span>
             </div>
           </div>
 
-          <div className="introHeroVisual" aria-label="MOIRA Studio 목업">
+          <div className="introHeroVisual" aria-label="MOIRA STUDIO 목업">
             <div className="introLibraryMark" aria-hidden="true">
               <svg viewBox="0 0 120 76">
                 <path d="M12 18c18-3 34 1 48 12v38C46 57 30 53 12 56V18Z" />
@@ -234,7 +234,7 @@ export default async function AboutPage() {
             <div className="studioMockupShell">
               <div className="studioMockupInner">
                 <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
-                <h2 className="studioMockupTitle">MOIRA Studio</h2>
+                <h2 className="studioMockupTitle">MOIRA STUDIO</h2>
                 <p className="studioMockupSubtitle">
                   주민의 이야기에서 시작하는 도서관 프로그램 기획을 간단한 아이디어로 시작하세요.
                 </p>
@@ -323,7 +323,7 @@ export default async function AboutPage() {
           <div className="pipeline" aria-label="모이라는 이렇게 작동합니다.">
             <span className="pipelineProgress" aria-hidden="true" />
             {serviceSteps.map((step, index) => {
-              const isStudio = step.title === 'MOIRA Studio';
+              const isStudio = step.title === 'MOIRA STUDIO';
 
               return (
                 <div key={step.number} className={`pipelineItem ${isStudio ? 'isStudioHighlight' : ''}`}>
@@ -341,7 +341,7 @@ export default async function AboutPage() {
                     <h3 className={isStudio ? 'studioHighlightTitle' : ''}>
                       {isStudio ? (
                         <>
-                          <span className="flowStudioBrand">MOIRA Studio</span>
+                          <span className="flowStudioBrand">MOIRA STUDIO</span>
                         </>
                       ) : (
                         step.title

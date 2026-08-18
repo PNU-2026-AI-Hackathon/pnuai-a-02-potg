@@ -5,8 +5,8 @@ import type { StudioAgendaOption } from '@/components/studio/ProgramConditionFor
 import { requireStudioStaff } from '@/lib/studio-access';
 
 export const metadata: Metadata = {
-  title: 'MOIRA Studio | 프로그램 기획 조건 선택',
-  description: 'MOIRA Studio에서 도서관 프로그램 기획 조건을 선택합니다.',
+  title: 'MOIRA STUDIO | 프로그램 기획 조건 선택',
+  description: 'MOIRA STUDIO에서 도서관 프로그램 기획 조건을 선택합니다.',
 };
 
 /**
