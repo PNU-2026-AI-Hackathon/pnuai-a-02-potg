@@ -13253,6 +13253,23 @@ html:has(.moiraPage) {
   font-weight: 850;
 }
 
+.studioDocumentActions .studioAiToolbarButton {
+  border-color: #9bc5b1;
+  background: #edf7f1;
+  color: var(--moira-green-dark);
+  box-shadow: 0 5px 14px rgba(47, 122, 82, 0.1);
+}
+
+.studioDocumentActions .studioAiToolbarButton > span {
+  color: var(--moira-warm);
+}
+
+.studioDocumentActions .studioAiToolbarButton:hover,
+.studioDocumentActions .studioAiToolbarButton:focus-visible {
+  border-color: var(--moira-green);
+  background: #e4f2e9;
+}
+
 .studioDocumentsHeaderActions .uiButton {
   min-height: 38px;
   border-radius: 999px;
@@ -13808,7 +13825,7 @@ html:has(.moiraPage) {
 }
 
 .studioAiEditPanelHeader h2 {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--moira-ink);
   font-size: 23px;
   line-height: 1.25;
@@ -13894,9 +13911,11 @@ html:has(.moiraPage) {
   border-radius: 999px;
   background: #fff;
   color: #52635e;
-  padding: 0 12px;
+  padding: 6px 12px;
   font-size: 13px;
   font-weight: 800;
+  line-height: 1.45;
+  text-align: left;
   cursor: pointer;
 }
 
@@ -15311,7 +15330,7 @@ html:has(.moiraPage) {
 
 /* Header utilities and responsive navigation */
 .siteHeaderInner {
-  min-height: 72px;
+  min-height: 88px;
 }
 
 .siteNavUtility {
@@ -15327,7 +15346,7 @@ html:has(.moiraPage) {
 @media (min-width: 1101px) {
   .siteNavPrimary > a,
   .siteNavDropdown > a {
-    min-height: 72px;
+    min-height: 88px;
   }
 
   .siteNavUtility {
@@ -15446,8 +15465,9 @@ html:has(.moiraPage) {
 .studioPlanFieldHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .studioPlanFieldHead h3 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .studioPlanFieldHead em { font-style: normal; font-size: 11px; color: #8a6d3b; background: #fdf3dc; border-radius: 999px; padding: 2px 8px; }
-.studioPlanFieldHead button { border: 1px solid #cfe0d5; background: #fff; color: #2f7a52; border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
-.studioPlanFieldHead button:hover { background: #f1f8f3; }
+.studioPlanFieldHead button { border: 1px solid #b9d5c7; background: #edf7f1; color: #245f45; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 750; cursor: pointer; }
+.studioPlanFieldHead button:hover { border-color: #8dbba5; background: #e2f2e8; }
+.studioPlanFieldHead button.isChosen { border-color: var(--moira-green); background: var(--moira-green); color: #fff; }
 
 .studioPlanValue { margin: 8px 0 0; white-space: pre-wrap; line-height: 1.65; }
 .studioPlanManualInput { margin-top: 8px; width: 100%; border: 1px solid #cfe0d5; border-radius: 10px; padding: 9px 12px; font: inherit; }
@@ -15673,57 +15693,124 @@ html:has(.moiraPage) {
   table-layout: fixed;
 }
 
-/* 칸마다 폭을 정해 준다. 정하지 않으면 활동 내용이 좁아지고 「수정」 칸이 넓어진다. */
+/* 내용과 hover 액션이 겹치지 않도록 오른쪽에 제목 없는 작은 작업 칸을 둔다. */
 .studioPlanSessionTable th:nth-child(1), .studioPlanSessionTable td:nth-child(1) { width: 7%; }
 .studioPlanSessionTable th:nth-child(2), .studioPlanSessionTable td:nth-child(2) { width: 12%; }
-.studioPlanSessionTable th:nth-child(3), .studioPlanSessionTable td:nth-child(3) { width: 34%; }
-.studioPlanSessionTable th:nth-child(4), .studioPlanSessionTable td:nth-child(4) { width: 16%; }
-.studioPlanSessionTable th:nth-child(5), .studioPlanSessionTable td:nth-child(5) { width: 16%; }
-/* 「수정」 칸. 좁으면 머리글이 「수/정」으로 쪼개지고 단추도 위아래로 쌓인다. */
-.studioPlanSessionTable th:nth-child(6), .studioPlanSessionTable td:nth-child(6) { width: 15%; }
+.studioPlanSessionTable th:nth-child(3), .studioPlanSessionTable td:nth-child(3) { width: 33%; }
+.studioPlanSessionTable th:nth-child(4), .studioPlanSessionTable td:nth-child(4) { width: 15%; }
+.studioPlanSessionTable th:nth-child(5), .studioPlanSessionTable td:nth-child(5) { width: 15%; }
+.studioPlanSessionTable th:nth-child(6), .studioPlanSessionTable td:nth-child(6) { width: 18%; }
 .studioPlanSessionTable th { white-space: nowrap; }
 
-/* 수정 단추는 내용이 아니라 도구다. 평소에는 물러나 있다가 그 줄에 손이 갔을 때 드러난다. */
-/*
-  두 단추를 한 줄로. 세로로 쌓이면 줄 높이가 늘어 표가 성글어진다.
-  칸 자체를 flex로 만들면 안 된다. td가 표 레이아웃에서 빠져 나와 칸 너비가 무너진다.
-  줄바꿈만 막고 칸 너비로 자리를 준다.
-*/
-.studioPlanSessionActions {
-  white-space: nowrap;
-  text-align: center;
+/* 화면에는 열 제목을 표시하지 않되 스크린 리더에는 aria-label로 용도를 알린다. */
+.studioPlanSessionActionHead { padding-inline: 6px !important; }
+
+.studioPlanSessionActionsCell {
+  position: relative;
+  padding: 8px 8px 8px 14px !important;
+  vertical-align: middle !important;
 }
 
-.studioPlanSessionActions button {
-  border: 0;
-  border-radius: 7px;
+.studioPlanSessionActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.studioPlanSessionTable tbody tr:hover .studioPlanSessionActions,
+.studioPlanSessionTable tbody tr:focus-within .studioPlanSessionActions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.studioPlanSessionActions > button,
+.studioPlanSessionMore > summary {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
   background: transparent;
-  color: #93a89c;
-  padding: 3px 6px;
-  font-size: 11.5px;
-  font-weight: 700;
+  color: #526b5e;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 750;
   line-height: 1.2;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.studioPlanSessionTable tbody tr:hover .studioPlanSessionActions button { color: #5c7568; }
-
-.studioPlanSessionActions button:hover {
+.studioPlanSessionActions > button:hover,
+.studioPlanSessionActions > button:focus-visible,
+.studioPlanSessionMore > summary:hover,
+.studioPlanSessionMore > summary:focus-visible {
   background: #eaf4ee;
   color: var(--moira-green-dark, #1f5e3d);
 }
 
-.studioPlanSessionActions button.isChosen {
+.studioPlanSessionActions > button {
+  border-color: #bdd8ca;
+  background: #edf7f1;
+  color: #245f45;
+}
+
+.studioPlanSessionActions > button.isChosen {
   background: var(--moira-green, #2f7a52);
   color: #fff;
 }
 
-.studioPlanSessionRemove { font-size: 15px; }
+.studioPlanSessionMore { position: relative; }
+
+.studioPlanSessionMore > summary {
+  width: 28px;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+}
+
+.studioPlanSessionMore > summary::-webkit-details-marker { display: none; }
+
+.studioPlanSessionMore > div {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  min-width: 76px;
+  border: 1px solid #e4e9e6;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 9px 22px rgba(33, 70, 61, 0.14);
+  padding: 4px;
+}
+
+.studioPlanSessionRemove {
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #8e5a49;
+  padding: 6px 9px;
+  font-size: 11.5px;
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+}
 
 .studioPlanSessionRemove:hover {
-  background: #fbeeea !important;
-  color: #a4553c !important;
+  background: #fbeeea;
+  color: #a4553c;
+}
+
+@media (hover: none) {
+  .studioPlanSessionActions {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .studioPlanSessionFoot {
@@ -15735,6 +15822,40 @@ html:has(.moiraPage) {
 }
 
 .studioPlanSessionFoot .studioPlanHint { margin: 0; }
+
+.studioPlanSessionUndoToast {
+  position: fixed;
+  z-index: 240;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: #183f35;
+  box-shadow: 0 14px 34px rgba(19, 57, 47, 0.24);
+  color: #fff;
+  padding: 11px 12px 11px 16px;
+  font-size: 13px;
+}
+
+.studioPlanSessionUndoToast button {
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--moira-green-dark);
+  padding: 4px 11px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.studioPlanSessionUndoToast button:hover,
+.studioPlanSessionUndoToast button:focus-visible {
+  background: #e8f4ed;
+}
 
 .studioPlanSessionAdd {
   border: 1px dashed #b9d2c3;
@@ -15748,6 +15869,42 @@ html:has(.moiraPage) {
 }
 
 .studioPlanSessionAdd:hover { background: #f1f8f3; border-style: solid; }
+
+/* AI 수정 대상은 레이아웃을 밀지 않는 색상과 inset 선으로 분명하게 표시한다. */
+.studioPlanSessionTable tbody tr:not(.isChosen):hover {
+  background: #f8fbf9;
+}
+
+.studioPlanField.isChosen {
+  background: #edf7f1;
+  padding: 12px 14px 12px 18px;
+  box-shadow: inset 3px 0 0 var(--moira-green), 0 0 0 1px rgba(47, 122, 82, 0.16);
+}
+
+.studioPlanSessionTable tbody tr.isChosen {
+  background: #e7f4ec;
+  box-shadow: inset 3px 0 0 var(--moira-green);
+}
+
+.studioPlanSessionTable tbody tr.isRevised.isChosen {
+  background: #e7f4ec;
+  box-shadow: inset 3px 0 0 var(--moira-green);
+}
+
+.studioAiSelectedSource {
+  border-color: rgba(47, 122, 82, 0.38);
+  background: #f3f8f5;
+  box-shadow: inset 3px 0 0 rgba(47, 122, 82, 0.55);
+}
+
+@media (max-width: 720px) {
+  .studioPlanSessionUndoToast {
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    justify-content: space-between;
+  }
+}
 
 /* --- 기획서 PDF 내보내기 --------------------------------------------------- */
 

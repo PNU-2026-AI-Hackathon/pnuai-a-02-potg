@@ -236,8 +236,8 @@ const stageClassName: Record<StudioDocumentStage, string> = {
 
 const aiStateLabel: Record<AiRequestState, string> = {
   idle: '요청 전',
-  submitting: '수정 요청 중',
-  ready: '수정안 준비됨',
+  submitting: '다듬기 요청 중',
+  ready: '다듬기 결과 준비됨',
   failed: '요청 실패',
 };
 
@@ -370,7 +370,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [aiRequestState, setAiRequestState] = useState<AiRequestState>('idle');
   const [aiRevisedText, setAiRevisedText] = useState('');
   const [aiRevisionSource, setAiRevisionSource] = useState<AiRevisionSource | null>(null);
-  const [aiReviewMessage, setAiReviewMessage] = useState('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+  const [aiReviewMessage, setAiReviewMessage] = useState('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
 
   // 세션 저장소는 서버 초기 HTML과 달라지므로 하이드레이션 전에는 읽지 않는다.
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -636,7 +636,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setAiRequestState('idle');
     setAiRevisedText('');
     setAiRevisionSource(null);
-    setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+    setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
   }
 
   function closeAiPanel() {
@@ -650,7 +650,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
      * 「선택 해제」가 떠 있는데 수정할 자리는 사라진 상태가 된다.
      */
     setPlanSelection(null);
-    setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+    setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
   }
 
   /**
@@ -661,7 +661,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   async function handlePlanRevision() {
     if (!plan || !planSelection || !aiRequest.trim()) return;
     setAiRequestState('submitting');
-    setAiReviewMessage('AI 수정안을 생성하고 있습니다.');
+    setAiReviewMessage('AI 다듬기 결과를 생성하고 있습니다.');
     try {
       const response = await fetch('/api/studio/revise-field', {
         method: 'POST',
@@ -677,7 +677,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       });
       const data = (await response.json()) as { value?: unknown; error?: string };
       if (!response.ok || data.value === undefined) {
-        throw new Error(data.error || 'AI 수정안을 생성하지 못했습니다.');
+        throw new Error(data.error || 'AI 다듬기 결과를 생성하지 못했습니다.');
       }
       const next = applyPlanRevision(plan, planSelection, data.value);
       setPlan(next);
@@ -691,10 +691,10 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       setAiRequest('');
       setPlanSelection(null);
       setIsAiPanelOpen(false);
-      setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+      setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
     } catch (error) {
       setAiRequestState('failed');
-      setAiReviewMessage(error instanceof Error ? error.message : 'AI 수정안을 생성하지 못했습니다.');
+      setAiReviewMessage(error instanceof Error ? error.message : 'AI 다듬기 결과를 생성하지 못했습니다.');
     }
   }
 
@@ -715,7 +715,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setAiRequestState('submitting');
     setAiRevisedText('');
     setAiRevisionSource(revisionSource);
-    setAiReviewMessage('AI 수정안을 생성하고 있습니다.');
+    setAiReviewMessage('AI 다듬기 결과를 생성하고 있습니다.');
 
     const contextSize = 260;
     const requestBody: StudioReviseRequest = {
@@ -740,21 +740,21 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       const data = (await response.json()) as { revisedText?: string; error?: string };
 
       if (!response.ok || !data.revisedText) {
-        throw new Error(data.error || 'AI 수정안을 생성하지 못했습니다.');
+        throw new Error(data.error || 'AI 다듬기 결과를 생성하지 못했습니다.');
       }
 
       setAiRevisedText(data.revisedText);
       setAiRequestState('ready');
-      setAiReviewMessage('수정안 준비 완료');
+      setAiReviewMessage('다듬기 결과 준비 완료');
     } catch (error) {
       setAiRequestState('failed');
-      setAiReviewMessage(error instanceof Error ? error.message : 'AI 수정안을 생성하지 못했습니다.');
+      setAiReviewMessage(error instanceof Error ? error.message : 'AI 다듬기 결과를 생성하지 못했습니다.');
     }
   }
 
   function handleAiRevisionApply() {
     if (!aiRevisedText || !aiRevisionSource) {
-      setAiReviewMessage('적용할 AI 수정안을 찾지 못했습니다.');
+      setAiReviewMessage('적용할 AI 다듬기 결과를 찾지 못했습니다.');
       return;
     }
 
@@ -768,7 +768,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     const currentSourceText = content.slice(range.start, range.end);
 
     if (currentSourceText !== text) {
-      setAiReviewMessage('AI 수정 요청 이후 원문이 변경되어 적용할 수 없습니다. 다시 요청해 주세요.');
+      setAiReviewMessage('AI 다듬기 요청 이후 원문이 변경되어 적용할 수 없습니다. 다시 요청해 주세요.');
       return;
     }
 
@@ -788,7 +788,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
     setAiRequestState('idle');
     setAiRevisedText('');
     setAiRevisionSource(null);
-    setAiReviewMessage('AI 수정안이 적용되었습니다. 저장 버튼으로 변경 사항을 저장해 주세요.');
+    setAiReviewMessage('AI 다듬기 결과가 적용되었습니다. 저장 버튼으로 변경 사항을 저장해 주세요.');
 
     window.requestAnimationFrame(() => {
       bodyTextareaRef.current?.focus();
@@ -897,8 +897,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             <button className="uiButton uiButtonPrimary" type="button" disabled={!canSave} onClick={handleSave}>
               저장
             </button>
-            <button className="uiButton uiButtonSecondary" type="button" onClick={openAiPanel}>
-              AI 수정
+            <button className="uiButton uiButtonSecondary studioAiToolbarButton" type="button" onClick={openAiPanel}>
+              <span aria-hidden="true">✦</span> 선택한 내용 AI로 다듬기
             </button>
             {plan && hasMounted ? (
               /**
@@ -1016,7 +1016,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                   disabled={!hasSelectedText}
                   onClick={openAiPanel}
                 >
-                  AI 수정
+                  ✦ 선택한 내용 AI로 다듬기
                 </button>
               </div>
               {isAiPanelOpen && activeSelectionRange ? (
@@ -1044,11 +1044,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
           {isAiPanelOpen ? (
             <aside className="studioAiEditPanel" aria-labelledby="studio-ai-edit-title">
               <div className="studioAiEditPanelHeader">
-                <div>
-                  <p className="uiEyebrow">SELECTED TEXT AI EDIT</p>
-                  <h2 id="studio-ai-edit-title">AI 수정 요청</h2>
-                </div>
-                <button type="button" aria-label="AI 수정 패널 닫기" onClick={closeAiPanel}>
+                <h2 id="studio-ai-edit-title">✦ AI로 다듬기</h2>
+                <button type="button" aria-label="AI로 다듬기 패널 닫기" onClick={closeAiPanel}>
                   ×
                 </button>
               </div>
@@ -1057,8 +1054,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                 <StudioAiRevisionCompare originalText={aiRevisionSource?.text || selectedText} revisedText={aiRevisedText} />
               ) : (
                 <>
-                  <section className="studioAiSelectedSource" aria-label="선택한 원문">
-                    <strong>{planSelection ? '고칠 곳' : '선택한 원문'}</strong>
+                  <section className="studioAiSelectedSource" aria-label="수정할 내용">
+                    <strong>수정할 내용</strong>
                     {planSelection ? (
                       <>
                         <p className="studioAiSelectedTarget">{planSelectionLabel(planSelection)}</p>
@@ -1068,13 +1065,13 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                       <p>{selectedText}</p>
                     ) : (
                       <p className="studioAiEmptySource">
-                        {plan ? '고칠 항목이나 회차를 먼저 눌러 주세요.' : '수정할 문장을 먼저 선택해 주세요.'}
+                        기획서에서 다듬고 싶은 내용을 선택해 주세요.
                       </p>
                     )}
                   </section>
 
                   <label className="studioAiRequestField">
-                    <span>수정 요청</span>
+                    <span>다듬기 요청</span>
                     <textarea
                       placeholder="더 공공기관 문서답게 다듬어 주세요."
                       value={aiRequest}
@@ -1083,7 +1080,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                         setAiRequestState('idle');
                         setAiRevisedText('');
                         setAiRevisionSource(null);
-                        setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+                        setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
                       }}
                     />
                   </label>
@@ -1099,10 +1096,10 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                           setAiRequestState('idle');
                           setAiRevisedText('');
                           setAiRevisionSource(null);
-                          setAiReviewMessage('선택한 문장을 검토한 뒤 수정 요청을 보낼 수 있습니다.');
+                          setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
                         }}
                       >
-                        {request.replace(' 주세요.', '')}
+                        {request}
                       </button>
                     ))}
                   </div>
@@ -1138,7 +1135,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
                       disabled={plan && planSelection ? !canRequestPlanEdit : !canRequestAiEdit}
                       onClick={handleAiRequest}
                     >
-                      {aiRequestState === 'submitting' ? '요청 중' : aiRequestState === 'failed' ? '다시 요청' : '수정 요청'}
+                      {aiRequestState === 'submitting' ? '요청 중' : aiRequestState === 'failed' ? '다시 요청' : '다듬기 요청'}
                     </button>
                   </>
                 )}
@@ -1192,7 +1189,7 @@ function StudioAiRevisionCompare({ originalText, revisedText }: StudioAiRevision
     <section className="studioAiRevisionCompare" aria-labelledby="studio-ai-revision-compare-title">
       <div className="studioAiRevisionCompareHeader">
         <h3 id="studio-ai-revision-compare-title">수정 결과 비교</h3>
-        <p>수정안을 적용하기 전에 기존 원문과 나란히 검토합니다.</p>
+        <p>다듬기 결과를 적용하기 전에 기존 원문과 나란히 검토합니다.</p>
       </div>
 
       <div className="studioAiRevisionCompareGrid">
@@ -1201,7 +1198,7 @@ function StudioAiRevisionCompare({ originalText, revisedText }: StudioAiRevision
           <p>{originalText}</p>
         </section>
         <section className="studioAiRevisionPane isRevised" aria-labelledby="studio-ai-revised-title">
-          <h4 id="studio-ai-revised-title">AI 수정안</h4>
+          <h4 id="studio-ai-revised-title">AI 다듬기 결과</h4>
           <p>
             <mark>{revisedText}</mark>
           </p>
