@@ -319,13 +319,13 @@ export default function StudioGenerationLoading() {
           <small>홈</small>
         </Link>
         <nav className="studioRailNav" aria-label="작업 메뉴">
-          <Link href="/studio">
+          <Link className="isActive" href="/studio">
             <span aria-hidden="true">+</span>
             새 기획
           </Link>
           <Link href="/studio/documents">
             <span aria-hidden="true">≡</span>
-            작업내역
+            내 기획서
           </Link>
         </nav>
       </aside>

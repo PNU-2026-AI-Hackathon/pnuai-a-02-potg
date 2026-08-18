@@ -12073,21 +12073,32 @@ html:has(.moiraPage) {
 
 .studioRailNav button:hover,
 .studioRailNav button:focus-visible,
-.studioRailNav button.isActive,
 .studioRailNav a:hover,
-.studioRailNav a:focus-visible,
-.studioRailNav a.isActive {
-  color: #9a520b;
+.studioRailNav a:focus-visible {
+  background: transparent;
+  color: #356f59;
 }
 
 .studioRailNav button:hover span,
 .studioRailNav button:focus-visible span,
-.studioRailNav button.isActive span,
 .studioRailNav a:hover span,
-.studioRailNav a:focus-visible span,
+.studioRailNav a:focus-visible span {
+  background: #eef7f2;
+  color: #356f59;
+}
+
+.studioRailNav button.isActive,
+.studioRailNav a.isActive {
+  background: transparent;
+  color: var(--moira-green-dark);
+  font-weight: 850;
+}
+
+.studioRailNav button.isActive span,
 .studioRailNav a.isActive span {
-  background: #fff4e6;
-  color: #9a520b;
+  background: #dff0e7;
+  color: var(--moira-green-dark);
+  box-shadow: none;
 }
 
 .studioPage .studioHistoryPanel {
@@ -12129,9 +12140,15 @@ html:has(.moiraPage) {
 
 .studioHistoryHeader small {
   color: var(--moira-green);
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.studioHistoryPinIcon {
+  color: var(--moira-warm);
+  font-size: 12px;
+  line-height: 1;
 }
 
 .studioPage .studioHistoryHeader button {
@@ -12228,6 +12245,106 @@ html:has(.moiraPage) {
   box-shadow: none;
 }
 
+.studioDocumentsSidebarBody {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 24px;
+  min-height: 0;
+  margin-top: 24px;
+}
+
+.studioDocumentsPage .studioHistoryPanel,
+.studioPlanningPage .studioHistoryPanel,
+.studioDocumentPage .studioHistoryPanel {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.studioDocumentsNewButton {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 12px;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.studioDocumentsNewButton > span {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.studioDocumentsRecentSection {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+}
+
+.studioDocumentsSidebarLabel {
+  display: block;
+  margin: 0 8px 9px;
+  color: #71817b;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.studioDocumentsRecentList {
+  display: grid;
+  align-content: start;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.studioDocumentsRecentItem {
+  display: grid;
+  gap: 4px;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid #edf2ef;
+  padding: 11px 10px 11px 12px;
+}
+
+.studioDocumentsRecentItem:hover,
+.studioDocumentsRecentItem:focus-visible {
+  border-left-color: #b8d7c7;
+  background: #f7fbf8;
+  outline: none;
+}
+
+.studioDocumentsRecentItem.isCurrent {
+  border-left-color: var(--moira-green);
+  background: #edf7f1;
+  outline: none;
+}
+
+.studioDocumentsRecentItem strong {
+  overflow: hidden;
+  color: var(--moira-ink);
+  font-size: 13px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studioDocumentsRecentItem small {
+  overflow: hidden;
+  color: #84918d;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studioDocumentsRecentEmpty {
+  margin: 0;
+  border: 1px dashed #d5e1db;
+  border-radius: 10px;
+  color: #84918d;
+  padding: 18px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: center;
+}
+
 .studioPage .studioMain {
   margin-left: 340px;
   padding-inline: 28px;
@@ -12296,23 +12413,6 @@ html:has(.moiraPage) {
 .studioHomeIcon::before,
 .studioHomeIcon::after {
   content: none;
-}
-
-.studioRailNav button:hover,
-.studioRailNav button:focus-visible,
-.studioRailNav button.isActive,
-.studioRailNav a:hover,
-.studioRailNav a:focus-visible {
-  color: var(--moira-green-dark);
-}
-
-.studioRailNav button:hover span,
-.studioRailNav button:focus-visible span,
-.studioRailNav button.isActive span,
-.studioRailNav a:hover span,
-.studioRailNav a:focus-visible span {
-  background: var(--moira-mint);
-  color: var(--moira-green-dark);
 }
 
 .studioHistoryItem:hover,
@@ -12584,9 +12684,12 @@ html:has(.moiraPage) {
   font-weight: 700;
 }
 
-.studioSelectedAgenda span,
-.studioHistoryItem.isCurrent span {
+.studioSelectedAgenda span {
   color: #a85e12;
+}
+
+.studioHistoryItem.isCurrent span {
+  color: var(--moira-green-dark);
 }
 
 .studioSelectedAgenda {
@@ -13084,6 +13187,32 @@ html:has(.moiraPage) {
   line-height: 1.2;
 }
 
+.studioDocumentTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.studioDocumentTitleRow h1 {
+  margin: 0;
+}
+
+.studioDocumentTitleRow .studioDocumentStageBadge {
+  min-height: 28px;
+  padding-inline: 10px;
+  font-size: 11px;
+}
+
+.studioDocumentUpdatedMeta {
+  display: block;
+  margin-top: 6px;
+  color: #84918d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .studioDocumentsHeader {
   position: sticky;
   top: 0;
@@ -13121,7 +13250,21 @@ html:has(.moiraPage) {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 14px;
+}
+
+.studioDocumentStatusActions,
+.studioDocumentWorkActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.studioDocumentWorkActions {
+  margin-left: 2px;
+  border-left: 1px solid #dce7e1;
+  padding-left: 16px;
 }
 
 .studioDocumentsHeaderActions {
@@ -13145,98 +13288,78 @@ html:has(.moiraPage) {
   font-weight: 850;
 }
 
-.studioSaveBadge {
-  display: inline-flex;
-  min-height: 34px;
-  align-items: center;
-  border: 1px solid #cfe0d8;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--moira-green-dark);
-  padding: 0 12px;
-  font-size: 12px;
-  font-weight: 850;
-}
-
-.studioSaveBadge.is-dirty {
-  border-color: #f1c895;
-  background: #fff8ef;
-  color: #9a520b;
-}
-
-.studioSaveBadge.is-saving {
-  border-color: #cfe0d8;
-  background: var(--moira-mint);
-}
-
-.studioSaveBadge.is-failed {
-  border-color: #fecaca;
-  background: #fff5f5;
-  color: #b42318;
-}
-
 /*
   캡션을 셀렉트 위에 얹으면 이 항목만 54px이 되어, 38px짜리 단추들과 가운데가 어긋난다.
   캡션을 옆으로 눕혀 한 줄로 만들면 툴바의 모든 항목이 같은 높이로 선다.
 */
-.studioDocumentStageControl {
+.studioSurveyWorkflowControls {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
 }
 
-.studioDocumentStageControl span {
-  color: #7a8b85;
-  font-size: 11px;
-  font-weight: 850;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.studioDocumentStageControl select {
+.studioDocumentStageBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   min-height: 38px;
   border: 1px solid #cfe0d8;
   border-radius: 999px;
   background: #fff;
   color: var(--moira-green-dark);
-  outline: none;
-  padding: 0 36px 0 14px;
+  padding: 0 14px;
   font-size: 12px;
   font-weight: 850;
-  cursor: pointer;
+  white-space: nowrap;
 }
 
-.studioDocumentStageControl select:focus-visible {
-  border-color: var(--moira-green);
-  box-shadow: 0 0 0 4px rgba(22, 116, 95, 0.1);
+.studioDocumentStageBadge > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px rgba(22, 116, 95, 0.1);
 }
 
-.studioDocumentStageControl select:disabled {
-  cursor: wait;
-  opacity: 0.58;
-}
-
-.studioDocumentStageControl select.isDraft {
+.studioDocumentStageBadge.isDraft {
   border-color: #f1c895;
   background: #fff8ef;
   color: #9a520b;
 }
 
-.studioDocumentStageControl select.isSurvey {
+.studioDocumentStageBadge.isDraft > span {
+  box-shadow: 0 0 0 3px rgba(194, 112, 27, 0.1);
+}
+
+.studioDocumentStageBadge.isSurvey {
   background: #f0faf5;
 }
 
-.studioDocumentStageControl select.isSurveyDone {
+.studioDocumentStageBadge.isSurveyDone {
   border-color: #cfd8e3;
   background: #f8fafc;
   color: #475569;
 }
 
-.studioDocumentStageControl select.isConfirmed {
-  border-color: #c6d6cd;
-  background: #eef7f2;
-  color: var(--moira-green-dark);
+.studioDocumentStageBadge.isSurveyDone > span {
+  box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+}
+
+.studioDocumentActions .studioSurveyStageAction {
+  padding-inline: 18px;
+}
+
+.studioDocumentActions .studioSurveyStageAction.isEnd {
+  border-color: #d9c9be;
+  background: #fffaf6;
+  color: #875236;
+}
+
+.studioDocumentActions .studioSurveyStageAction.isEnd:hover,
+.studioDocumentActions .studioSurveyStageAction.isEnd:focus-visible {
+  border-color: #c9a58d;
+  background: #fff5ed;
 }
 
 .studioSavedMeta {
@@ -13253,6 +13376,36 @@ html:has(.moiraPage) {
   font-weight: 850;
 }
 
+.studioDocumentsHeaderActions > .studioDocumentsTotal {
+  min-height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #71817b;
+  padding: 0 4px;
+  font-size: 13px;
+}
+
+.studioDocumentActions .studioAiToolbarButton {
+  border-color: #cf7628;
+  background: #fff4e8;
+  color: #a85612;
+  box-shadow: none;
+}
+
+.studioDocumentActions .studioAiToolbarButton > span {
+  color: #d77f27;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.studioDocumentActions .studioAiToolbarButton:hover,
+.studioDocumentActions .studioAiToolbarButton:focus-visible {
+  border-color: #bd651d;
+  background: #ffecd9;
+  color: #93480d;
+}
+
 .studioDocumentsHeaderActions .uiButton {
   min-height: 38px;
   border-radius: 999px;
@@ -13265,6 +13418,18 @@ html:has(.moiraPage) {
   cursor: not-allowed;
   opacity: 0.48;
   transform: none;
+}
+
+.studioDocumentActions .studioDocumentSaveButton {
+  border-color: #b9d2c5;
+  background: #fff;
+  color: var(--moira-green-dark);
+}
+
+.studioDocumentActions .studioDocumentSaveButton:hover:not(:disabled),
+.studioDocumentActions .studioDocumentSaveButton:focus-visible:not(:disabled) {
+  border-color: var(--moira-green);
+  background: #edf7f1;
 }
 
 .studioDocumentsNotice {
@@ -13300,23 +13465,42 @@ html:has(.moiraPage) {
 .studioDocumentsListHead,
 .studioDocumentRow {
   display: grid;
-  grid-template-columns: minmax(360px, 1.6fr) minmax(250px, 0.95fr) minmax(120px, 0.38fr) minmax(190px, 0.55fr);
+  grid-template-columns: minmax(340px, 1.55fr) minmax(300px, 1fr) minmax(120px, 0.4fr) 190px;
   gap: 20px;
   align-items: center;
 }
 
 .studioDocumentsListHead {
   border-bottom: 1px solid #dfe8e3;
-  background: #f8fbf9;
+  background: #f3f8f5;
   padding: 13px 22px;
   color: #7a8b85;
   font-size: 12px;
   font-weight: 900;
 }
 
+.studioDocumentsListHead > *,
+.studioDocumentRow > * {
+  min-width: 0;
+  padding-inline: 8px;
+}
+
+.studioDocumentsListHead > * + *,
+.studioDocumentRow > * + * {
+  border-left: 1px solid rgba(216, 229, 223, 0.58);
+}
+
+.studioDocumentsListHead > span:last-child {
+  text-align: center;
+}
+
 .studioDocumentRow {
   min-height: 132px;
   padding: 24px 22px;
+}
+
+.studioDocumentRow > * {
+  align-self: center;
 }
 
 .studioDocumentRow + .studioDocumentRow {
@@ -13328,10 +13512,18 @@ html:has(.moiraPage) {
 }
 
 .studioDocumentRowTitle h2 {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
   color: var(--moira-ink);
   font-size: 20px;
   line-height: 1.35;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  word-break: keep-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .studioDocumentRowTitle p {
@@ -13341,8 +13533,11 @@ html:has(.moiraPage) {
   color: #52635e;
   font-size: 14px;
   line-height: 1.6;
+  overflow-wrap: break-word;
+  word-break: keep-all;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .studioDocumentRowTitle small {
@@ -13355,32 +13550,33 @@ html:has(.moiraPage) {
 
 .studioDocumentConditionSummary {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: 100%;
   margin: 0;
 }
 
-.studioDocumentConditionSummary div {
-  display: grid;
-  gap: 3px;
-  min-width: 68px;
+.studioDocumentConditionTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   border: 1px solid #dfe8e3;
-  border-radius: 8px;
+  border-radius: 999px;
   background: #f8fbf9;
-  padding: 9px 10px;
-}
-
-.studioDocumentConditionSummary dt {
-  color: #7a8b85;
-  font-size: 11px;
-  font-weight: 850;
-}
-
-.studioDocumentConditionSummary dd {
-  margin: 0;
+  padding: 6px 9px;
   color: #33483f;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studioDocumentConditionTag.isAllEmpty {
+  color: #7a8b85;
 }
 
 .studioDocumentStatusBadge {
@@ -13421,8 +13617,9 @@ html:has(.moiraPage) {
 
 .studioDocumentRowActions {
   display: flex;
+  width: 100%;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 8px;
 }
 
@@ -13808,7 +14005,7 @@ html:has(.moiraPage) {
 }
 
 .studioAiEditPanelHeader h2 {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--moira-ink);
   font-size: 23px;
   line-height: 1.25;
@@ -13894,9 +14091,11 @@ html:has(.moiraPage) {
   border-radius: 999px;
   background: #fff;
   color: #52635e;
-  padding: 0 12px;
+  padding: 6px 12px;
   font-size: 13px;
   font-weight: 800;
+  line-height: 1.45;
+  text-align: left;
   cursor: pointer;
 }
 
@@ -14140,6 +14339,19 @@ html:has(.moiraPage) {
     justify-content: flex-start;
   }
 
+  .studioDocumentStatusActions,
+  .studioDocumentWorkActions {
+    width: 100%;
+  }
+
+  .studioDocumentWorkActions {
+    margin-left: 0;
+    border-top: 1px solid #dce7e1;
+    border-left: 0;
+    padding-top: 10px;
+    padding-left: 0;
+  }
+
   .studioDocumentsHeaderActions {
     width: 100%;
     justify-content: flex-start;
@@ -14149,6 +14361,10 @@ html:has(.moiraPage) {
     width: 100%;
   }
 
+  .studioDocumentStatusActions .studioSavedMeta {
+    width: auto;
+  }
+
   .studioDocumentActions .uiButton {
     flex: 1 1 132px;
   }
@@ -14156,6 +14372,10 @@ html:has(.moiraPage) {
   .studioDocumentsHeaderActions .uiButton,
   .studioDocumentsHeaderActions > span {
     flex: 1 1 132px;
+  }
+
+  .studioDocumentsHeaderActions > .studioDocumentsTotal {
+    flex: 0 0 auto;
   }
 
   .studioDocumentsListHead,
@@ -14170,10 +14390,6 @@ html:has(.moiraPage) {
   .studioDocumentRow {
     gap: 14px;
     min-height: 0;
-  }
-
-  .studioDocumentConditionSummary div {
-    flex: 1 1 92px;
   }
 
   .studioDocumentRowActions {
@@ -15311,7 +15527,7 @@ html:has(.moiraPage) {
 
 /* Header utilities and responsive navigation */
 .siteHeaderInner {
-  min-height: 72px;
+  min-height: 88px;
 }
 
 .siteNavUtility {
@@ -15327,7 +15543,7 @@ html:has(.moiraPage) {
 @media (min-width: 1101px) {
   .siteNavPrimary > a,
   .siteNavDropdown > a {
-    min-height: 72px;
+    min-height: 88px;
   }
 
   .siteNavUtility {
@@ -15446,8 +15662,9 @@ html:has(.moiraPage) {
 .studioPlanFieldHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .studioPlanFieldHead h3 { margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .studioPlanFieldHead em { font-style: normal; font-size: 11px; color: #8a6d3b; background: #fdf3dc; border-radius: 999px; padding: 2px 8px; }
-.studioPlanFieldHead button { border: 1px solid #cfe0d5; background: #fff; color: #2f7a52; border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; }
-.studioPlanFieldHead button:hover { background: #f1f8f3; }
+.studioPlanFieldHead button { border: 1px solid #b9d5c7; background: #edf7f1; color: #245f45; border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 750; cursor: pointer; }
+.studioPlanFieldHead button:hover { border-color: #8dbba5; background: #e2f2e8; }
+.studioPlanFieldHead button.isChosen { border-color: var(--moira-green); background: var(--moira-green); color: #fff; }
 
 .studioPlanValue { margin: 8px 0 0; white-space: pre-wrap; line-height: 1.65; }
 .studioPlanManualInput { margin-top: 8px; width: 100%; border: 1px solid #cfe0d5; border-radius: 10px; padding: 9px 12px; font: inherit; }
@@ -15673,57 +15890,124 @@ html:has(.moiraPage) {
   table-layout: fixed;
 }
 
-/* 칸마다 폭을 정해 준다. 정하지 않으면 활동 내용이 좁아지고 「수정」 칸이 넓어진다. */
+/* 내용과 hover 액션이 겹치지 않도록 오른쪽에 제목 없는 작은 작업 칸을 둔다. */
 .studioPlanSessionTable th:nth-child(1), .studioPlanSessionTable td:nth-child(1) { width: 7%; }
 .studioPlanSessionTable th:nth-child(2), .studioPlanSessionTable td:nth-child(2) { width: 12%; }
-.studioPlanSessionTable th:nth-child(3), .studioPlanSessionTable td:nth-child(3) { width: 34%; }
-.studioPlanSessionTable th:nth-child(4), .studioPlanSessionTable td:nth-child(4) { width: 16%; }
-.studioPlanSessionTable th:nth-child(5), .studioPlanSessionTable td:nth-child(5) { width: 16%; }
-/* 「수정」 칸. 좁으면 머리글이 「수/정」으로 쪼개지고 단추도 위아래로 쌓인다. */
-.studioPlanSessionTable th:nth-child(6), .studioPlanSessionTable td:nth-child(6) { width: 15%; }
+.studioPlanSessionTable th:nth-child(3), .studioPlanSessionTable td:nth-child(3) { width: 33%; }
+.studioPlanSessionTable th:nth-child(4), .studioPlanSessionTable td:nth-child(4) { width: 15%; }
+.studioPlanSessionTable th:nth-child(5), .studioPlanSessionTable td:nth-child(5) { width: 15%; }
+.studioPlanSessionTable th:nth-child(6), .studioPlanSessionTable td:nth-child(6) { width: 18%; }
 .studioPlanSessionTable th { white-space: nowrap; }
 
-/* 수정 단추는 내용이 아니라 도구다. 평소에는 물러나 있다가 그 줄에 손이 갔을 때 드러난다. */
-/*
-  두 단추를 한 줄로. 세로로 쌓이면 줄 높이가 늘어 표가 성글어진다.
-  칸 자체를 flex로 만들면 안 된다. td가 표 레이아웃에서 빠져 나와 칸 너비가 무너진다.
-  줄바꿈만 막고 칸 너비로 자리를 준다.
-*/
-.studioPlanSessionActions {
-  white-space: nowrap;
-  text-align: center;
+/* 화면에는 열 제목을 표시하지 않되 스크린 리더에는 aria-label로 용도를 알린다. */
+.studioPlanSessionActionHead { padding-inline: 6px !important; }
+
+.studioPlanSessionActionsCell {
+  position: relative;
+  padding: 8px 8px 8px 14px !important;
+  vertical-align: middle !important;
 }
 
-.studioPlanSessionActions button {
-  border: 0;
-  border-radius: 7px;
+.studioPlanSessionActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.studioPlanSessionTable tbody tr:hover .studioPlanSessionActions,
+.studioPlanSessionTable tbody tr:focus-within .studioPlanSessionActions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.studioPlanSessionActions > button,
+.studioPlanSessionMore > summary {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
   background: transparent;
-  color: #93a89c;
-  padding: 3px 6px;
-  font-size: 11.5px;
-  font-weight: 700;
+  color: #526b5e;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 750;
   line-height: 1.2;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.studioPlanSessionTable tbody tr:hover .studioPlanSessionActions button { color: #5c7568; }
-
-.studioPlanSessionActions button:hover {
+.studioPlanSessionActions > button:hover,
+.studioPlanSessionActions > button:focus-visible,
+.studioPlanSessionMore > summary:hover,
+.studioPlanSessionMore > summary:focus-visible {
   background: #eaf4ee;
   color: var(--moira-green-dark, #1f5e3d);
 }
 
-.studioPlanSessionActions button.isChosen {
+.studioPlanSessionActions > button {
+  border-color: #bdd8ca;
+  background: #edf7f1;
+  color: #245f45;
+}
+
+.studioPlanSessionActions > button.isChosen {
   background: var(--moira-green, #2f7a52);
   color: #fff;
 }
 
-.studioPlanSessionRemove { font-size: 15px; }
+.studioPlanSessionMore { position: relative; }
+
+.studioPlanSessionMore > summary {
+  width: 28px;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+}
+
+.studioPlanSessionMore > summary::-webkit-details-marker { display: none; }
+
+.studioPlanSessionMore > div {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  min-width: 76px;
+  border: 1px solid #e4e9e6;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 9px 22px rgba(33, 70, 61, 0.14);
+  padding: 4px;
+}
+
+.studioPlanSessionRemove {
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #8e5a49;
+  padding: 6px 9px;
+  font-size: 11.5px;
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+}
 
 .studioPlanSessionRemove:hover {
-  background: #fbeeea !important;
-  color: #a4553c !important;
+  background: #fbeeea;
+  color: #a4553c;
+}
+
+@media (hover: none) {
+  .studioPlanSessionActions {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .studioPlanSessionFoot {
@@ -15735,6 +16019,40 @@ html:has(.moiraPage) {
 }
 
 .studioPlanSessionFoot .studioPlanHint { margin: 0; }
+
+.studioPlanSessionUndoToast {
+  position: fixed;
+  z-index: 240;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: #183f35;
+  box-shadow: 0 14px 34px rgba(19, 57, 47, 0.24);
+  color: #fff;
+  padding: 11px 12px 11px 16px;
+  font-size: 13px;
+}
+
+.studioPlanSessionUndoToast button {
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--moira-green-dark);
+  padding: 4px 11px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.studioPlanSessionUndoToast button:hover,
+.studioPlanSessionUndoToast button:focus-visible {
+  background: #e8f4ed;
+}
 
 .studioPlanSessionAdd {
   border: 1px dashed #b9d2c3;
@@ -15748,6 +16066,42 @@ html:has(.moiraPage) {
 }
 
 .studioPlanSessionAdd:hover { background: #f1f8f3; border-style: solid; }
+
+/* AI 수정 대상은 레이아웃을 밀지 않는 색상과 inset 선으로 분명하게 표시한다. */
+.studioPlanSessionTable tbody tr:not(.isChosen):hover {
+  background: #f8fbf9;
+}
+
+.studioPlanField.isChosen {
+  background: #edf7f1;
+  padding: 12px 14px 12px 18px;
+  box-shadow: inset 3px 0 0 var(--moira-green), 0 0 0 1px rgba(47, 122, 82, 0.16);
+}
+
+.studioPlanSessionTable tbody tr.isChosen {
+  background: #e7f4ec;
+  box-shadow: inset 3px 0 0 var(--moira-green);
+}
+
+.studioPlanSessionTable tbody tr.isRevised.isChosen {
+  background: #e7f4ec;
+  box-shadow: inset 3px 0 0 var(--moira-green);
+}
+
+.studioAiSelectedSource {
+  border-color: rgba(47, 122, 82, 0.38);
+  background: #f3f8f5;
+  box-shadow: inset 3px 0 0 rgba(47, 122, 82, 0.55);
+}
+
+@media (max-width: 720px) {
+  .studioPlanSessionUndoToast {
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    justify-content: space-between;
+  }
+}
 
 /* --- 기획서 PDF 내보내기 --------------------------------------------------- */
 
@@ -15765,14 +16119,90 @@ html:has(.moiraPage) {
 
 .studioSurveyResultsPanel {
   display: grid;
-  gap: 20px;
   border: 1px solid #dae5dc;
-  border-radius: 24px;
+  border-radius: 18px;
   background:
     radial-gradient(circle at top left, rgba(151, 201, 170, 0.18), transparent 32%),
     linear-gradient(180deg, #f8faf7 0%, #ffffff 100%);
-  padding: 24px 22px 20px;
-  box-shadow: 0 16px 32px rgba(24, 47, 35, 0.06);
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(24, 47, 35, 0.05);
+}
+
+.studioSurveySummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 62px;
+  padding: 12px 18px;
+}
+
+.studioSurveySummaryText {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #52635e;
+  font-size: 13px;
+}
+
+.studioSurveySummaryText strong {
+  color: #185f46;
+  font-size: 14px;
+}
+
+.studioSurveyLiveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2f8a63;
+  box-shadow: 0 0 0 4px rgba(47, 138, 99, 0.12);
+}
+
+.studioSurveyLiveDot.isComplete {
+  background: #64748b;
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.1);
+}
+
+.studioSurveyResultsToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  border: 1px solid #bcd7c8;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--moira-green-dark);
+  padding: 0 13px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.studioSurveyResultsToggle:hover,
+.studioSurveyResultsToggle:focus-visible {
+  border-color: var(--moira-green);
+  background: #edf7f1;
+  outline: none;
+}
+
+.studioSurveyResultsToggle > svg {
+  width: 15px;
+  height: 15px;
+  color: #6c837a;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.studioSurveyResultsDetails {
+  display: grid;
+  gap: 20px;
+  border-top: 1px solid #e0e9e3;
+  padding: 22px;
 }
 
 .studioSurveyResultsHeader {
@@ -15946,6 +16376,64 @@ html:has(.moiraPage) {
   line-height: 1.6;
 }
 
+.studioSurveyConfirmBackdrop {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(12, 29, 24, 0.42);
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+
+.studioSurveyConfirmDialog {
+  width: min(100%, 440px);
+  border: 1px solid #d6e3dc;
+  border-radius: 22px;
+  background: #fff;
+  padding: 28px;
+  box-shadow: 0 24px 70px rgba(13, 38, 29, 0.22);
+}
+
+.studioSurveyConfirmIcon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff3e5;
+  color: var(--moira-warm);
+  font-size: 18px;
+}
+
+.studioSurveyConfirmDialog h2 {
+  margin: 18px 0 0;
+  color: var(--moira-ink);
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+.studioSurveyConfirmDialog p {
+  margin: 10px 0 0;
+  color: var(--moira-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.studioSurveyConfirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.studioSurveyConfirmActions .uiButton {
+  min-height: 42px;
+  border-radius: 999px;
+  padding-inline: 20px;
+}
+
 @media (max-width: 980px) {
   .studioSurveyStatsGrid,
   .studioSurveyChartGrid {
@@ -15954,6 +16442,14 @@ html:has(.moiraPage) {
 }
 
 @media (max-width: 760px) {
+  .studioSurveySummary {
+    align-items: flex-start;
+  }
+
+  .studioSurveySummaryText {
+    flex-wrap: wrap;
+  }
+
   .studioSurveyResultsHeader {
     flex-direction: column;
     align-items: flex-start;
