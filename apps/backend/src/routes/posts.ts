@@ -373,7 +373,7 @@ async function updatePost(
         title,
         content,
         ...(post.boardSlug === 'library-news' && requestedType ? { type: requestedType } : {}),
-        ...(post.boardSlug === 'library-news' && requestedTags ? { tags: requestedTags } : {}),
+        ...(requestedTags ? { tags: requestedTags } : {}),
       },
     });
     return res.status(200).json({ post: serializePost(updatedPost, req.user?.id, req.user?.accountType) });
