@@ -13,6 +13,8 @@ type CommunityPostResponse = {
   author: string;
   createdAt: string;
   tags: string[];
+  isOwner: boolean;
+  canDelete: boolean;
 };
 
 type CreateCommunityPostBody = {
@@ -82,7 +84,7 @@ function serializePost(post: {
   createdAt: Date;
   tags: string[];
   authorId?: string | null;
-}, viewerId?: string, viewerRole?: string): CommunityPostResponse & { isOwner: boolean } {
+}, viewerId?: string, viewerRole?: string): CommunityPostResponse {
   return {
     id: post.id,
     boardSlug: post.boardSlug,
@@ -93,11 +95,16 @@ function serializePost(post: {
     createdAt: post.createdAt.toISOString(),
     tags: post.tags,
     isOwner: Boolean(viewerId && (post.authorId === viewerId || canManageLibraryNews(post.boardSlug, viewerRole))),
+    canDelete: Boolean(viewerId && (post.authorId === viewerId || canModeratePosts(viewerRole))),
   };
 }
 
 function canManageLibraryNews(boardSlug: string, accountType?: string) {
   return boardSlug === 'library-news' && (accountType === 'LIBRARIAN' || accountType === 'ADMIN');
+}
+
+function canModeratePosts(accountType?: string) {
+  return accountType === 'LIBRARIAN' || accountType === 'ADMIN';
 }
 
 async function verifyPostPassword(passwordHash: string | null, password: unknown) {
@@ -392,9 +399,9 @@ router.delete(
     try {
       const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
       if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-      const canDelete = req.user?.id === post.authorId || canManageLibraryNews(post.boardSlug, req.user?.accountType) || await verifyPostPassword(post.passwordHash, req.body?.password);
+      const canDelete = req.user?.id === post.authorId || canModeratePosts(req.user?.accountType) || await verifyPostPassword(post.passwordHash, req.body?.password);
       if (!canDelete) {
-        return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
+        return res.status(403).json({ code: 'POST_DELETE_FORBIDDEN', error: 'You do not have permission to delete this post.' });
       }
 
       await prisma.communityPost.delete({ where: { id: post.id } });

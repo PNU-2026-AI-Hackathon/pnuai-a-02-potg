@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import RichPostContent from '@/components/community/RichPostContent';
 
-type Post = { id: string; boardSlug: string; type: string; title: string; content: string; author: string; createdAt: string; updatedAt?: string; tags: string[]; isOwner: boolean };
+type Post = { id: string; boardSlug: string; type: string; title: string; content: string; author: string; createdAt: string; updatedAt?: string; tags: string[]; isOwner: boolean; canDelete: boolean };
 type Comment = { id: string; content: string; author: string; createdAt: string; updatedAt?: string; isOwner: boolean };
 type Activity = { likeCount: number; saveCount: number; liked: boolean; saved: boolean };
 
@@ -45,8 +45,8 @@ export default function CommunityPostDetail({ postId }: { postId: string }) {
 
   async function deletePost() {
     if (!window.confirm('게시글을 삭제할까요? 삭제한 글은 복구할 수 없습니다.')) return;
-    const password = post?.isOwner ? undefined : window.prompt('작성할 때 사용한 게시글 비밀번호를 입력해 주세요.');
-    if (!post?.isOwner && !password) return;
+    const password = post?.canDelete ? undefined : window.prompt('작성할 때 사용한 게시글 비밀번호를 입력해 주세요.');
+    if (!post?.canDelete && !password) return;
     const response = await fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
     if (response.ok) { window.location.href = `/community/${post?.boardSlug ?? 'ideas'}`; return; }
     setMessage((await response.json()).error || '게시글을 삭제하지 못했습니다.');
@@ -91,7 +91,7 @@ export default function CommunityPostDetail({ postId }: { postId: string }) {
   return <main className="communityDetailPage"><div className="uiContainer communityDetailShell">
     <nav className="communityBreadcrumb"><Link href="/">홈</Link><span>/</span><Link href={`/community/${post.boardSlug}`}>{boardNames[post.boardSlug] || '커뮤니티'}</Link><span>/</span><strong>게시글 상세</strong></nav>
     <article className="communityDetailCard">
-      <header className="communityDetailHeader"><div className="communityDetailBackRow"><Link className="communityDetailBackLink" href={`/community/${post.boardSlug}`}><span aria-hidden="true">←</span> 목록으로</Link></div><div className="communityDetailTags"><span className="uiTag">{boardNames[post.boardSlug] || post.boardSlug}</span>{post.tags.map((tag) => <span className="uiTag" key={tag}>{tag}</span>)}</div><h1>{post.title}</h1><p>{post.author} · {dateFormatter.format(new Date(post.createdAt))}</p></header><RichPostContent content={post.content} /><div className="communityDetailToolbar"><button className={activity.liked ? 'isActive' : ''} type="button" onClick={() => toggleActivity('like')}>♥ 좋아요 {activity.likeCount}</button><button className={activity.saved ? 'isActive' : ''} type="button" onClick={() => toggleActivity('save')}>☆ 관심글 {activity.saveCount}</button><span className="communityOwnerActions"><Link className="communityDetailActionLink" href={`/community/posts/${encodeURIComponent(post.id)}/edit`}>수정</Link><button type="button" onClick={deletePost}>삭제</button></span></div>
+      <header className="communityDetailHeader"><div className="communityDetailBackRow"><Link className="communityDetailBackLink" href={`/community/${post.boardSlug}`}><span aria-hidden="true">←</span> 목록으로</Link></div><div className="communityDetailTags"><span className="uiTag">{boardNames[post.boardSlug] || post.boardSlug}</span>{post.tags.map((tag) => <span className="uiTag" key={tag}>{tag}</span>)}</div><h1>{post.title}</h1><p>{post.author} · {dateFormatter.format(new Date(post.createdAt))}</p></header><RichPostContent content={post.content} /><div className="communityDetailToolbar"><button className={activity.liked ? 'isActive' : ''} type="button" onClick={() => toggleActivity('like')}>♥ 좋아요 {activity.likeCount}</button><button className={activity.saved ? 'isActive' : ''} type="button" onClick={() => toggleActivity('save')}>☆ 관심글 {activity.saveCount}</button>{post.isOwner || post.canDelete ? <span className="communityOwnerActions">{post.isOwner ? <Link className="communityDetailActionLink" href={`/community/posts/${encodeURIComponent(post.id)}/edit`}>수정</Link> : null}{post.canDelete ? <button type="button" onClick={deletePost}>삭제</button> : null}</span> : null}</div>
     </article>
     {message ? <p className="communityDetailMessage" role="alert">{message}</p> : null}
     <section className="communityCommentSection"><div><p className="uiEyebrow">COMMENTS</p><h2>댓글 {comments.length}</h2></div><form onSubmit={createComment}><label htmlFor="detail-comment">댓글 작성</label><textarea id="detail-comment" value={commentContent} onChange={(event) => setCommentContent(event.target.value)} rows={4} maxLength={2000} placeholder="의견을 남겨 주세요" required /><button className="uiButton uiButtonPrimary" type="submit">댓글 등록</button></form><div className="communityCommentList">{comments.length ? comments.map((comment) => <article key={comment.id}><p>{comment.content}</p><footer><span>{comment.author} · {dateFormatter.format(new Date(comment.createdAt))}</span>{comment.isOwner ? <span><button type="button" onClick={() => updateComment(comment.id, comment.content)}>수정</button><button type="button" onClick={() => deleteComment(comment.id)}>삭제</button></span> : null}</footer></article>) : <p className="communityDetailState">첫 댓글을 남겨 보세요.</p>}</div></section>

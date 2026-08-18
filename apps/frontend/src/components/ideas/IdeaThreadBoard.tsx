@@ -18,6 +18,7 @@ type ApiPost = {
   createdAt: string;
   tags?: string[];
   isOwner: boolean;
+  canDelete: boolean;
 };
 type ApiComment = {
   id: string;
@@ -37,6 +38,7 @@ type Topic = {
   votes: number;
   createdAt: string;
   isOwner: boolean;
+  canDelete: boolean;
 };
 type Reply = {
   id: string;
@@ -160,6 +162,7 @@ function mapPost(post: ApiPost): Topic {
     votes: 0,
     createdAt: post.createdAt,
     isOwner: post.isOwner,
+    canDelete: post.canDelete,
   };
 }
 
@@ -842,10 +845,10 @@ export default function IdeaThreadBoard() {
                       이 의제로 기획서 만들기
                     </button>
                   )}
-                  {active.isOwner && (
+                  {(active.isOwner || active.canDelete) && (
                     <div className="threadOwnerActions" aria-label="내 아이디어 관리">
-                      <button type="button" onClick={() => openEditTopic(active)}>수정</button>
-                      <button type="button" className="isDanger" disabled={isSubmitting} onClick={() => { setActionError(""); setDeletingTopic(active); }}>삭제</button>
+                      {active.isOwner && <button type="button" onClick={() => openEditTopic(active)}>수정</button>}
+                      {active.canDelete && <button type="button" className="isDanger" disabled={isSubmitting} onClick={() => { setActionError(""); setDeletingTopic(active); }}>삭제</button>}
                     </div>
                   )}
                 </div>
