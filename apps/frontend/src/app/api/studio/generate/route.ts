@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     const geminiModels = requestedModel ? [requestedModel] : defaultGeminiModels;
 
     if (!prompt) {
-      return NextResponse.json({ error: '기획 메모를 입력해 주세요.' }, { status: 400 });
+      return NextResponse.json({ error: '프로그램 아이디어를 입력해 주세요.' }, { status: 400 });
     }
 
     let lastErrorMessage = 'Gemini API 호출에 실패했습니다.';

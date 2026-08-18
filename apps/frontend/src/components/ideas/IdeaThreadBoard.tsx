@@ -196,7 +196,7 @@ export default function IdeaThreadBoard() {
     <section className="ideaHero"><div><p className="ideaEyebrow">MOIRA IDEA LAB · THREAD</p><h1>같이 말할수록<br />아이디어는 선명해져요.</h1><p>동네에 필요한 행사를 제안하고, 댓글로 가능성을 더해 함께 완성해 보세요.</p></div></section>
     <section className="threadStats" aria-label="아이디어 게시판 현황"><span><strong>{topics.length}</strong> 열린 아이디어</span><span><strong>{totalReplies}</strong> 시민의 의견</span><span><strong>{Math.max(0, categories.length - 1)}</strong> 아이디어 주제</span></section>
     {/* 고르러 온 상태임을 알려 준다. 버튼만 늘어나 있으면 왜 생겼는지 알 수 없다. */}
-    {isPicking && <div className="ideaPickBanner" role="status"><p><strong>기획서에 참고할 의제를 고르는 중입니다.</strong> 마음에 드는 글에서 「이 의제 선택하기」를 누르면 MOIRA STUDIO로 돌아갑니다.</p><button onClick={() => router.push('/studio')} type="button">고르지 않고 돌아가기</button></div>}
+    {isPicking && <div className="ideaPickBanner" role="status"><p><strong>기획서에 참고할 주민 아이디어를 고르는 중입니다.</strong> 마음에 드는 글의 선택 버튼을 누르면 MOIRA STUDIO로 돌아갑니다.</p><button onClick={() => router.push('/studio')} type="button">고르지 않고 돌아가기</button></div>}
     {loadError && <div className="threadLoadState" role="alert"><p>{loadError}</p><button onClick={() => void loadIdeas()} type="button">다시 시도</button></div>}
     {isLoading ? <p className="threadLoadState" role="status">아이디어를 불러오는 중입니다…</p> : <div className={`threadWorkspace ${active ? '' : 'isDetailClosed'} ${isDetailClosing ? 'isClosing' : ''}`}>
       <section className="threadFeed" aria-label="아이디어 목록">

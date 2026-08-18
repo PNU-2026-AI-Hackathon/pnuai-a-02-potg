@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import SiteHeader from '@/components/layout/SiteHeader';
 import {
   StudioFeatureList,
   StudioPreview,
@@ -9,9 +8,9 @@ import StudioLandingExperience from '@/components/studio/StudioLandingExperience
 import { getCurrentUser } from '@/lib/server-auth';
 
 export const metadata: Metadata = {
-  title: 'MOIRA Studio 소개 | 사서를 위한 AI 프로그램 기획 도구',
+  title: 'MOIRA STUDIO 소개 | 사서를 위한 AI 프로그램 기획 도구',
   description:
-    '주민 의견과 수요조사를 분석해 사서의 도서관 문화·교육 프로그램 기획을 돕는 MOIRA Studio를 소개합니다.',
+    '주민 의견과 수요조사를 분석해 사서의 도서관 문화·교육 프로그램 기획을 돕는 MOIRA STUDIO를 소개합니다.',
 };
 
 const studioValues = [
@@ -97,7 +96,6 @@ export default async function StudioAboutPage() {
   return (
     <div className="studioLandingPage">
       <StudioLandingExperience />
-      <SiteHeader user={user} activeMenu="studio" />
       <main>
         <section className="studioLandingHero" aria-labelledby="studio-landing-title">
           <div className="uiContainer studioLandingHeroInner">
@@ -107,9 +105,9 @@ export default async function StudioAboutPage() {
                 사서의 도서관 프로그램 기획을
                 <span>더 빠르고 간편하게</span>
               </h1>
-              <p className="studioLandingClaim">주민 의견을 기획으로 연결하는 AI 도구, MOIRA Studio</p>
+              <p className="studioLandingClaim">주민 의견을 기획으로 연결하는 AI 도구, MOIRA STUDIO</p>
               <p className="studioLandingLead">
-                MOIRA Studio는 주민 의견과 수요조사 결과를 분석하여 사서와 도서관 프로그램
+                MOIRA STUDIO는 주민 의견과 수요조사 결과를 분석하여 사서와 도서관 프로그램
                 기획 담당자가 지역에 필요한 문화·교육 프로그램의 기획 초안을 빠르게 작성할 수
                 있도록 돕습니다.
               </p>
@@ -166,7 +164,7 @@ export default async function StudioAboutPage() {
             <span className="studioTitleIcon" aria-hidden="true">✦</span>
             <p className="uiEyebrow">START WITH MOIRA</p>
             <h2 id="studio-final-title">
-              MOIRA Studio와 함께<br />
+              MOIRA STUDIO와 함께<br />
               프로그램 기획을 시작해보세요
             </h2>
             <p>주민 의견과 수요조사를 바탕으로 지역에 필요한 문화·교육 프로그램의 기획 초안을 만들어보세요.</p>

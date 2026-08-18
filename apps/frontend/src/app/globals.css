@@ -10351,6 +10351,17 @@ html:has(.moiraPage) {
   white-space: nowrap;
 }
 
+.studioDropdownChevron {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  transition: transform 0.2s ease;
+}
+
+.studioDropdownButton[aria-expanded='true'] .studioDropdownChevron {
+  transform: rotate(180deg);
+}
+
 .studioDropdownButton.hasValue {
   color: var(--moira-ink);
   font-weight: 800;
@@ -12309,6 +12320,389 @@ html:has(.moiraPage) {
 .studioHistoryItem.isCurrent {
   border-color: var(--moira-green);
   background: #f0faf5;
+}
+
+/* Studio workspace: keep the global MOIRA navigation and use warm color as an accent. */
+.studioAppShell {
+  --studio-global-nav-height: var(--site-header-height);
+  min-height: 100vh;
+  background: #fff;
+}
+
+.studioAppShell > .siteHeader {
+  z-index: 100;
+}
+
+.studioPlanningPage {
+  display: grid;
+  grid-template-columns: 72px 268px minmax(0, 1fr);
+}
+
+.studioPage.studioPlanningPage .studioMain {
+  grid-column: 3;
+  width: 100%;
+  min-width: 0;
+  margin-left: 0;
+}
+
+@media (min-width: 1440px) {
+  .studioPlanningPage {
+    grid-template-columns: clamp(150px, 10.42vw, 160px) minmax(0, 1fr);
+  }
+
+  .studioPage.studioPlanningPage .studioMain {
+    grid-column: 2;
+  }
+}
+
+.studioAppShell .studioPage .studioSideRail {
+  inset: var(--studio-global-nav-height) auto 0 0;
+  padding-top: 16px;
+}
+
+.studioAppShell .studioPage .studioHistoryPanel {
+  inset: var(--studio-global-nav-height) auto 0 72px;
+  padding-top: 20px;
+}
+
+.studioAppShell .studioPage,
+.studioAppShell .studioPage .studioMain {
+  min-height: calc(100vh - var(--studio-global-nav-height));
+}
+
+.studioPage .studioMain {
+  padding-top: clamp(22px, 4vh, 38px);
+}
+
+.studioPage .studioStartSection {
+  gap: 26px;
+}
+
+.studioPage .studioStartCopy h1 {
+  margin-top: 4px;
+}
+
+.studioPage .studioStartCopy p:not(.uiEyebrow) {
+  margin-top: 8px;
+}
+
+.studioTitleSpark,
+.studioAccentSpark,
+.studioGenerateSpark {
+  color: var(--moira-warm);
+}
+
+.studioTitleSpark {
+  display: inline-block;
+  margin-right: 15px;
+  font-size: 0.56em;
+  vertical-align: 0.3em;
+}
+
+.studioAccentSpark {
+  margin-right: 3px;
+  font-size: 12px;
+}
+
+.studioModeTabs {
+  background: #edf5f0;
+}
+
+.studioPromptCard {
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.studioPromptCard.isPlanningMode {
+  border-color: rgba(74, 145, 116, 0.34);
+  background: rgba(249, 252, 250, 0.98);
+  box-shadow: 0 18px 46px rgba(33, 90, 67, 0.09);
+}
+
+.studioPromptCard.isAgendaMode {
+  border-color: rgba(225, 155, 76, 0.42);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 46px rgba(45, 65, 56, 0.08);
+}
+
+.studioPromptCard.isPlanningMode .studioModeTabs {
+  background: #eaf5ef;
+}
+
+.studioPromptCard.isAgendaMode .studioModeTabs {
+  background: #fff2df;
+}
+
+.studioPromptCard.isPlanningMode .studioModeTabs button.isActive {
+  border-color: var(--moira-green);
+  background: #fff;
+  color: var(--moira-green-dark);
+}
+
+.studioPromptCard.isAgendaMode .studioModeTabs button.isActive {
+  border-color: var(--moira-warm);
+  background: #fff;
+  color: #9a520b;
+}
+
+.studioModeContent {
+  height: 170px;
+  min-height: 170px;
+}
+
+.studioModeContent > section {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.studioPlanningGuide {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  border: 1px solid #d8e5df;
+  border-radius: 18px;
+  background: #f8fbf9;
+  padding: 18px;
+}
+
+.studioPlanningGuideCopy {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.studioPlanningGuideCopy strong {
+  color: var(--moira-ink);
+  font-size: 14px;
+}
+
+.studioPlanningGuideSpark {
+  margin-right: 6px;
+  color: var(--moira-warm);
+}
+
+.studioPlanningGuideCopy p {
+  margin: 0;
+  color: var(--moira-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.studioPlanningGuideChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.studioPlanningGuideChips button {
+  min-height: 32px;
+  border: 1px solid #d4e3dc;
+  border-radius: 999px;
+  background: #fff;
+  color: #52645e;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.studioPlanningGuideChips button:hover,
+.studioPlanningGuideChips button:focus-visible {
+  border-color: var(--moira-green);
+  color: var(--moira-green-dark);
+}
+
+.studioModeContent .studioAgendaPickerHeader a {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  border: 1px solid #cfded7;
+  border-radius: 999px;
+  background: transparent;
+  padding: 4px 10px;
+  color: #587067;
+  text-decoration: none;
+}
+
+.studioModeContent .studioAgendaPickerHeader a:hover,
+.studioModeContent .studioAgendaPickerHeader a:focus-visible {
+  border-color: var(--moira-green);
+  background: #fff;
+  color: var(--moira-green-dark);
+}
+
+.studioAgendaList {
+  max-height: 120px;
+  padding-right: 3px;
+}
+
+.studioAgendaPicker {
+  gap: 8px;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 10px;
+  overflow: hidden;
+}
+
+.studioModeContent .studioAgendaList {
+  min-height: 0;
+  max-height: none;
+  gap: 6px;
+}
+
+.studioAgendaList button {
+  gap: 3px;
+  padding: 8px 10px;
+}
+
+.studioAgendaList p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.studioAgendaList button:hover,
+.studioAgendaList button:focus-visible,
+.studioAgendaList button.isSelected {
+  border-color: var(--moira-warm);
+  background: #fffaf3;
+}
+
+.studioAgendaList button.isSelected {
+  border-color: #e5c8aa;
+  background: #fff8f2;
+  box-shadow: inset 3px 0 0 rgba(201, 151, 105, 0.34);
+}
+
+.studioAgendaList span {
+  color: #80918a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.studioSelectedAgenda span,
+.studioHistoryItem.isCurrent span {
+  color: #a85e12;
+}
+
+.studioSelectedAgenda {
+  border-left-color: var(--moira-warm);
+  background: #fffaf3;
+  gap: 2px;
+  padding: 7px 10px;
+}
+
+.studioPromptBox {
+  gap: 5px;
+  padding-block: 11px;
+}
+
+.studioPage .studioPromptBox textarea {
+  min-height: 54px;
+}
+
+.studioPromptBox .studioPromptMeta {
+  display: block;
+  min-height: 16px;
+  color: #7c8b86;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.studioPromptCard .studioGeneratePanel {
+  justify-content: flex-end;
+  border: 0;
+  background: transparent;
+  color: var(--moira-ink);
+  padding: 0;
+}
+
+.studioPromptCard .studioGeneratePanel p {
+  color: var(--moira-muted);
+}
+
+.studioPromptCard .studioGenerateButton {
+  border: 1px solid #4f846d;
+  background: #4f846d;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(52, 105, 82, 0.17);
+}
+
+.studioPromptCard .studioGenerateButton:hover:not(:disabled),
+.studioPromptCard .studioGenerateButton:focus-visible:not(:disabled) {
+  border-color: #3f735d;
+  background: #3f735d;
+  color: #fff;
+}
+
+.studioGenerateSpark {
+  margin-right: 5px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.studioPromptCard .studioGenerateButton > span {
+  color: #fff;
+}
+
+.studioPage .studioPromptCard {
+  gap: 9px;
+  padding: 16px;
+}
+
+.studioInlineConditions .studioDropdownButton {
+  min-height: 40px;
+}
+
+.studioInlineConditions .studioDropdownMenu {
+  max-height: 286px;
+  padding: 6px;
+}
+
+.studioInlineConditions .studioDropdownOption {
+  gap: 4px 8px;
+  padding: 8px;
+}
+
+.studioInlineConditions .studioDropdownOption > span {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 720px) {
+  .studioPage .studioMain {
+    padding-top: 22px;
+  }
+
+  .studioAgendaList {
+    max-height: 112px;
+  }
+}
+
+@media (max-width: 980px) {
+  .studioPlanningPage {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .studioPage.studioPlanningPage .studioMain {
+    grid-column: 2;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .studioPlanningPage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .studioPage.studioPlanningPage .studioMain {
+    grid-column: 1;
+  }
 }
 
 .studioGeneratingLayout .studioMain {

@@ -356,7 +356,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [loadErrorMessage, setLoadErrorMessage] = useState('');
   /**
-   * 이 기획서가 어느 지역 의제에서 나왔는지. 표시가 없으면 사서가 의제를 골랐다는 사실이
+   * 이 기획서가 어느 주민 아이디어에서 나왔는지. 표시가 없으면 사서가 아이디어를 골랐다는 사실이
    * 결과에 남지 않아, 반영됐는지 확인할 방법이 없다.
    */
   const [agenda, setAgenda] = useState<StudioAgendaInput | null>(null);
@@ -969,7 +969,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             {/* 어느 의제에서 나온 기획서인지 남긴다. 사서가 반영 여부를 눈으로 확인할 수 있어야 한다. */}
             {agenda ? (
               <div className="studioDocumentAgenda">
-                <span>반영한 지역 의제</span>
+                <span>반영한 주민 아이디어</span>
                 <strong>{agenda.title}</strong>
                 <p>{agenda.content}</p>
               </div>
