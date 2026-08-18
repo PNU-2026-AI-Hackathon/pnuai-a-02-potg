@@ -302,7 +302,7 @@ export default function SignupPage() {
                   ) : null}
                 </label>
 
-                <label className="signupField" htmlFor="signup-password">
+                <label className="signupField signupFieldWide" htmlFor="signup-password">
                   <span>비밀번호</span>
                   <input
                     id="signup-password"
@@ -323,7 +323,7 @@ export default function SignupPage() {
                   ) : null}
                 </label>
 
-                <label className="signupField signupFieldNewRow" htmlFor="signup-password-confirm">
+                <label className="signupField signupFieldWide" htmlFor="signup-password-confirm">
                   <span>비밀번호 확인</span>
                   <input
                     id="signup-password-confirm"
