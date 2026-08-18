@@ -256,6 +256,7 @@ export default function IdeaThreadBoard() {
   } | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+  const [deletingTopic, setDeletingTopic] = useState<Topic | null>(null);
   const [draft, setDraft] = useState({
     title: "",
     body: "",
@@ -496,7 +497,7 @@ export default function IdeaThreadBoard() {
   };
 
   const deleteTopic = async (topic: Topic) => {
-    if (isSubmitting || !window.confirm("이 아이디어를 삭제할까요? 삭제한 글은 복구할 수 없습니다.")) return;
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setActionError("");
     try {
@@ -512,6 +513,7 @@ export default function IdeaThreadBoard() {
         return next;
       });
       setSelected(null);
+      setDeletingTopic(null);
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "아이디어를 삭제하지 못했습니다.");
     } finally {
@@ -843,7 +845,7 @@ export default function IdeaThreadBoard() {
                   {active.isOwner && (
                     <div className="threadOwnerActions" aria-label="내 아이디어 관리">
                       <button type="button" onClick={() => openEditTopic(active)}>수정</button>
-                      <button type="button" className="isDanger" disabled={isSubmitting} onClick={() => void deleteTopic(active)}>삭제</button>
+                      <button type="button" className="isDanger" disabled={isSubmitting} onClick={() => { setActionError(""); setDeletingTopic(active); }}>삭제</button>
                     </div>
                   )}
                 </div>
@@ -1104,6 +1106,22 @@ export default function IdeaThreadBoard() {
                 <button disabled={!editDraft.title.trim() || !editDraft.body.trim() || isSubmitting} type="submit">{isSubmitting ? "수정 중…" : "수정 완료"}</button>
               </div>
             </form>
+          </div>
+        )}
+        {deletingTopic && (
+          <div className="ideaDeleteModal" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSubmitting) setDeletingTopic(null); }}>
+            <section role="alertdialog" aria-modal="true" aria-labelledby="idea-delete-title" aria-describedby="idea-delete-description">
+              <span className="ideaDeleteIcon" aria-hidden="true">!</span>
+              <p>DELETE IDEA</p>
+              <h2 id="idea-delete-title">이 아이디어를 삭제하시겠어요?</h2>
+              <strong>{deletingTopic.title}</strong>
+              <p id="idea-delete-description">삭제한 아이디어와 댓글은 다시 복구할 수 없습니다.</p>
+              {actionError && <p className="threadActionError" role="alert">{actionError}</p>}
+              <div>
+                <button type="button" disabled={isSubmitting} onClick={() => setDeletingTopic(null)}>취소</button>
+                <button type="button" className="isDanger" disabled={isSubmitting} onClick={() => void deleteTopic(deletingTopic)}>{isSubmitting ? "삭제 중…" : "삭제하기"}</button>
+              </div>
+            </section>
           </div>
         )}
       </div>
