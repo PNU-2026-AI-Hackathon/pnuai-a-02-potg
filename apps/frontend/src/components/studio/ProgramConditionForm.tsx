@@ -10,6 +10,7 @@ import { studioFields, type StudioConditionKey } from './studio-options';
 const storageKey = 'moira-studio-tutorial-seen';
 const conditionKeys: StudioConditionKey[] = ['category', 'audience', 'period'];
 const planningFields = studioFields.filter((field) => conditionKeys.includes(field.key));
+const planningExamples = ['초등학생 독서 토론', '시니어 디지털 교육', '가족 주말 프로그램'];
 /** 선택창에 실리는 의제 하나. 의제 게시판 글에서 필요한 것만 뽑아 온다. */
 export type StudioAgendaOption = {
   id: string;
@@ -215,63 +216,75 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
                   주민 아이디어
                 </button>
               </div>
-              {activeMode === 'agenda' ? (
-                <section className="studioAgendaPicker" aria-label="주민 아이디어 선택">
-                  <div className="studioAgendaPickerHeader">
-                    <strong><span className="studioAccentSpark" aria-hidden="true">✦</span> 주민 아이디어</strong>
-                    {/*
-                      의제가 올라오는 곳은 아이디어 게시판이다. 자유 게시판이 아니다.
-                      `pick=studio`를 달고 가면 게시판이 「고르는 화면」으로 열려, 거기서 고른
-                      의제를 들고 이 화면으로 돌아온다. 단순 링크면 읽고 와서 다시 찾아야 하고,
-                      아래 목록에 없는 글은 아예 고를 수가 없다.
-                    */}
-                    <Link href="/community/ideas?pick=studio" onClick={keepDraftBeforeLeaving}>
-                      아이디어 게시판 둘러보기
-                    </Link>
-                  </div>
-                  {agendaOptions.length > 0 ? (
-                    <div className="studioAgendaList">
-                      {agendaOptions.map((post) => (
-                        <button
-                          className={post.id === selectedAgendaId ? 'isSelected' : ''}
-                          key={post.id}
-                          type="button"
-                          onClick={() => setSelectedAgendaId((currentId) => (currentId === post.id ? null : post.id))}
-                        >
-                          <span>{post.tags.join(' · ')}</span>
-                          <strong>{post.title}</strong>
-                          <p>{post.content}</p>
+              <div className="studioModeContent">
+                {activeMode === 'planning' ? (
+                  <section className="studioPlanningGuide" aria-labelledby="studio-planning-guide-title">
+                    <div className="studioPlanningGuideCopy">
+                      <strong id="studio-planning-guide-title">
+                        <span className="studioPlanningGuideSpark" aria-hidden="true">✦</span>
+                        어떤 프로그램을 기획하고 싶나요?
+                      </strong>
+                      <p>예시를 선택하거나 직접 아이디어를 입력해보세요.</p>
+                    </div>
+                    <div className="studioPlanningGuideChips" aria-label="프로그램 아이디어 예시">
+                      {planningExamples.map((example) => (
+                        <button key={example} type="button" onClick={() => setPrompt(example)}>
+                          {example}
                         </button>
                       ))}
                     </div>
-                  ) : (
-                    <p className="studioAgendaEmpty">
-                      아직 올라온 주민 아이디어가 없습니다. 게시판에 주민 제안이 올라오면 여기에 보입니다.
-                    </p>
-                  )}
-                </section>
-              ) : null}
-              {activeAgenda ? (
-                <div className="studioSelectedAgenda" aria-live="polite">
-                  <span>선택한 주민 아이디어</span>
-                  <strong>{activeAgenda.title}</strong>
-                </div>
-              ) : null}
+                  </section>
+                ) : (
+                  <section className="studioAgendaPicker" aria-label="주민 아이디어 선택">
+                    <div className="studioAgendaPickerHeader">
+                      <strong><span className="studioAccentSpark" aria-hidden="true">✦</span> 주민 아이디어</strong>
+                      {/*
+                        의제가 올라오는 곳은 아이디어 게시판이다. 자유 게시판이 아니다.
+                        `pick=studio`를 달고 가면 게시판이 「고르는 화면」으로 열려, 거기서 고른
+                        의제를 들고 이 화면으로 돌아온다. 단순 링크면 읽고 와서 다시 찾아야 하고,
+                        아래 목록에 없는 글은 아예 고를 수가 없다.
+                      */}
+                      <Link href="/community/ideas?pick=studio" onClick={keepDraftBeforeLeaving}>
+                        아이디어 게시판 둘러보기 <span aria-hidden="true">→</span>
+                      </Link>
+                    </div>
+                    {agendaOptions.length > 0 ? (
+                      <div className="studioAgendaList">
+                        {agendaOptions.map((post) => (
+                          <button
+                            aria-pressed={post.id === selectedAgendaId}
+                            className={post.id === selectedAgendaId ? 'isSelected' : ''}
+                            key={post.id}
+                            type="button"
+                            onClick={() => setSelectedAgendaId((currentId) => (currentId === post.id ? null : post.id))}
+                          >
+                            <span>{post.tags.join(' · ')}</span>
+                            <strong>{post.title}</strong>
+                            <p>{post.content}</p>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="studioAgendaEmpty">
+                        아직 올라온 주민 아이디어가 없습니다. 게시판에 주민 제안이 올라오면 여기에 보입니다.
+                      </p>
+                    )}
+                  </section>
+                )}
+              </div>
               <label className="studioPromptBox">
-                <span>프로그램 아이디어{activeAgenda ? ' (선택)' : ''}</span>
+                <span>{activeAgenda ? '추가 요청 (선택)' : '프로그램 아이디어'}</span>
                 <textarea
                   aria-label="기획 요청 입력"
                   placeholder={activeAgenda
-                    ? '고른 주민 아이디어에 덧붙일 내용을 적어 주세요. 비워 두어도 됩니다.'
+                    ? '추가하고 싶은 내용이 있다면 입력해 주세요.'
                     : '예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램'}
                   value={prompt}
                   onChange={(event) => setPrompt(event.target.value)}
                 />
-                {prompt.length > 0 || !activeAgenda ? (
-                  <span className="studioPromptMeta">
-                    {prompt.length > 0 ? `${prompt.length}자` : '키워드나 한두 문장만 입력해도 괜찮아요.'}
-                  </span>
-                ) : null}
+                <span className="studioPromptMeta">
+                  {prompt.length > 0 ? `${prompt.length}자` : null}
+                </span>
               </label>
               <div className="studioInlineConditions">
                 {planningFields.map((field) => (

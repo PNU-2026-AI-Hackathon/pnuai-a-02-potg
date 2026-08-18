@@ -92,7 +92,14 @@ export default function ConditionDropdown({
         onClick={() => setIsOpen((current) => !current)}
       >
         <span>{buttonText}</span>
-        <span aria-hidden="true">v</span>
+        <svg
+          className="studioDropdownChevron"
+          aria-hidden="true"
+          viewBox="0 0 20 20"
+          fill="none"
+        >
+          <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        </svg>
       </button>
       {isOpen ? (
         <div className="studioDropdownMenu" id={listId} role="listbox" aria-multiselectable={multiple || undefined}>
