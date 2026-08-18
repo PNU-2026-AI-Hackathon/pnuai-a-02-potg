@@ -55,98 +55,8 @@ export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
   },
 };
 
-export const communityPosts: CommunityPost[] = [
-  /**
-   * 의제 글. 스튜디오 의제 선택창이 이 게시판을 읽으므로, 백엔드가 멈췄을 때
-   * 선택창이 텅 비지 않도록 목 데이터에도 의제가 있어야 한다.
-   */
-  {
-    id: 'ideas-1',
-    boardSlug: 'ideas',
-    type: 'normal',
-    title: '시니어 대상 스마트폰 반복 교육이 필요합니다',
-    content:
-      '키오스크, 공공앱, 모바일 은행 사용을 여러 번 연습할 수 있는 소규모 프로그램을 제안합니다.',
-    author: '박이웃',
-    createdAt: '2026-07-09T02:00:00.000Z',
-    tags: ['생활', '시니어'],
-  },
-  {
-    id: 'ideas-2',
-    boardSlug: 'ideas',
-    type: 'normal',
-    title: '방과후 숙제 도움 프로그램을 운영하면 좋겠습니다',
-    content:
-      '맞벌이 가정 아이들이 도서관에서 안전하게 머물며 숙제를 도울 수 있는 시간이 있으면 좋겠습니다.',
-    author: '김돌봄',
-    createdAt: '2026-07-08T06:40:00.000Z',
-    tags: ['책·배움', '아동'],
-  },
-  {
-    id: 'ideas-3',
-    boardSlug: 'ideas',
-    type: 'normal',
-    title: '도서관 주변 분리배출 캠페인을 제안합니다',
-    content:
-      '작은도서관을 거점으로 어린이와 주민이 함께 참여하는 자원순환 캠페인을 열면 좋겠습니다.',
-    author: '이초록',
-    createdAt: '2026-07-06T08:15:00.000Z',
-    tags: ['환경', '캠페인'],
-  },
-  {
-    id: 'library-news-1',
-    boardSlug: 'library-news',
-    type: 'notice',
-    title: '7월 작은도서관 운영 시간 변경 안내',
-    content:
-      '여름 프로그램 운영으로 7월 한 달간 평일 운영 시간이 오후 8시까지 연장됩니다.',
-    author: '모이라 운영팀',
-    createdAt: '2026-07-08T09:00:00.000Z',
-    tags: ['운영 안내', '7월'],
-  },
-  {
-    id: 'library-news-2',
-    boardSlug: 'library-news',
-    type: 'notice',
-    title: '장전책마을 작은도서관 내부 공사 안내',
-    content:
-      '자료실 조명 교체 공사로 7월 15일부터 17일까지 일부 공간 이용이 제한됩니다.',
-    author: '장전책마을 작은도서관',
-    createdAt: '2026-07-06T02:30:00.000Z',
-    tags: ['공사', '이용 제한'],
-  },
-  {
-    id: 'library-news-3',
-    boardSlug: 'library-news',
-    type: 'normal',
-    title: '금샘마을 작은도서관 주말 독서 모임 참가자 모집',
-    content:
-      '초등 고학년과 보호자가 함께 읽고 이야기하는 주말 독서 모임을 운영합니다.',
-    author: '금샘마을 작은도서관',
-    createdAt: '2026-07-04T05:20:00.000Z',
-    tags: ['독서 모임', '모집'],
-  },
-  {
-    id: 'library-news-4',
-    boardSlug: 'library-news',
-    type: 'normal',
-    title: '부곡꿈 작은도서관 그림책 원화 전시 소식',
-    content:
-      '지역 아동이 함께 감상할 수 있는 그림책 원화 전시가 2층 열린공간에서 진행됩니다.',
-    author: '부곡꿈 작은도서관',
-    createdAt: '2026-07-02T01:10:00.000Z',
-    tags: ['전시', '그림책'],
-  },
-];
-
 export function getCommunityBoard(slug: CommunityBoardSlug) {
   return communityBoards[slug];
-}
-
-function getMockCommunityPosts(slug: CommunityBoardSlug) {
-  return communityPosts
-    .filter((post) => post.boardSlug === slug)
-    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
 }
 
 function isCommunityPost(value: unknown): value is CommunityPost {
@@ -201,22 +111,22 @@ export async function getCommunityPosts(slug: CommunityBoardSlug) {
     });
 
     if (!response.ok) {
-      return getMockCommunityPosts(slug);
+      return [];
     }
 
     const data: unknown = await response.json();
 
     if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).posts)) {
-      return getMockCommunityPosts(slug);
+      return [];
     }
 
     const posts = (data as { posts: unknown[] }).posts.filter(
       (post): post is CommunityPost => isCommunityPost(post) && post.boardSlug === slug,
     );
 
-    return posts.length > 0 ? posts : getMockCommunityPosts(slug);
+    return posts;
   } catch (error) {
     console.error('Community posts request failed:', error);
-    return getMockCommunityPosts(slug);
+    return [];
   }
 }
