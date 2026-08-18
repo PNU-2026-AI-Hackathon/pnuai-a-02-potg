@@ -6,6 +6,7 @@ import GenerateButton from './GenerateButton';
 import ConditionDropdown from './ConditionDropdown';
 import StudioTutorialModal from './StudioTutorialModal';
 import { studioFields, type StudioConditionKey } from './studio-options';
+import { formatStudioDate, type StudioSavedDocument } from '@/lib/studio-draft';
 
 const storageKey = 'moira-studio-tutorial-seen';
 const conditionKeys: StudioConditionKey[] = ['category', 'audience', 'period'];
@@ -49,6 +50,7 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
     period: [],
   });
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [savedDocuments, setSavedDocuments] = useState<Pick<StudioSavedDocument, 'id' | 'title' | 'updatedAt'>[]>([]);
 
   /**
    * 게시판에 다녀오기 전에 적어 둔 것을 되살린다.
@@ -63,7 +65,10 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
 
     try {
       const draft = JSON.parse(stored) as Partial<ConditionDraft>;
-      if (typeof draft.prompt === 'string') setPrompt(draft.prompt);
+      if (typeof draft.prompt === 'string') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPrompt(draft.prompt);
+      }
       if (draft.conditions && typeof draft.conditions === 'object') {
         setConditions((current) => ({ ...current, ...draft.conditions }));
       }
@@ -77,6 +82,29 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
       window.localStorage.setItem(storageKey, 'true');
       queueMicrotask(() => setIsTutorialOpen(true));
     }
+  }, []);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadSavedDocuments() {
+      try {
+        const response = await fetch('/api/studio/documents', { cache: 'no-store' });
+        const data = (await response.json()) as { documents?: StudioSavedDocument[] };
+
+        if (!isCancelled && response.ok && data.documents) {
+          setSavedDocuments(data.documents.map(({ id, title, updatedAt }) => ({ id, title, updatedAt })));
+        }
+      } catch {
+        // 저장 문서 목록은 보조 탐색 UI이므로 실패해도 새 기획 기능은 그대로 유지한다.
+      }
+    }
+
+    void loadSavedDocuments();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -121,17 +149,22 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
   return (
     <div className="studioPage studioPlanningPage">
       <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
-        <Link className="studioRailLogo" href="/" aria-label="MOIRA 홈으로 이동">
-          <span>MO</span>
+        <Link className="studioRailLogo" href="/" aria-label="홈으로 이동" title="홈으로 이동">
+          <svg className="studioHomeIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 11.2 12 4l8 7.2" />
+            <path d="M6.5 10.5V20h11v-9.5" />
+            <path d="M10 20v-5h4v5" />
+          </svg>
+          <small>홈</small>
         </Link>
         <nav className="studioRailNav" aria-label="작업 메뉴">
-          <button className="isActive" type="button">
+          <Link className="isActive" href="/studio" aria-current="page">
             <span aria-hidden="true">+</span>
             새 기획
-          </button>
+          </Link>
           <Link href="/studio/documents">
             <span aria-hidden="true">≡</span>
-            작업내역
+            내 기획서
           </Link>
           <button type="button" onClick={() => setIsTutorialOpen(true)}>
             <span aria-hidden="true">?</span>
@@ -140,48 +173,35 @@ export default function ProgramConditionForm({ agendaOptions, initialAgendaId }:
         </nav>
       </aside>
 
-      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 작업 내역">
+      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 문서 메뉴">
         <div className="studioHistoryHeader">
           <div>
-            <strong>작업 내역</strong>
             <small>MOIRA STUDIO</small>
           </div>
-          <button type="button" aria-label="작업 내역 고정">◆</button>
+          <span className="studioHistoryPinIcon" aria-hidden="true">◆</span>
         </div>
 
-        <div className="studioHistoryList" aria-live="polite">
-          {prompt.trim().length > 0 ? (
-            <button className="studioHistoryItem isCurrent" type="button">
-              <span>작성 중</span>
-              <strong>{prompt.trim()}</strong>
-              <small>방금 전</small>
-            </button>
-          ) : (
-            <div className="studioEmptyHistory">
-              <span aria-hidden="true">□</span>
-              <p>작성 중인 기획이 여기에 표시돼요.</p>
-            </div>
-          )}
+        <div className="studioDocumentsSidebarBody">
+          <Link className="uiButton uiButtonPrimary studioDocumentsNewButton" href="/studio" aria-current="page">
+            <span aria-hidden="true">＋</span>
+            새 기획서
+          </Link>
 
-          <button className="studioHistoryItem" type="button">
-            <span>초안</span>
-            <strong>시니어 디지털 생활 교실</strong>
-            <small>어제</small>
-          </button>
-          <button className="studioHistoryItem" type="button">
-            <span>검토</span>
-            <strong>가족 독서 주말 프로그램</strong>
-            <small>3일 전</small>
-          </button>
-        </div>
-
-        <div className="studioQuickGuide">
-          <strong>빠른 시작</strong>
-          <ol>
-            <li>만들고 싶은 프로그램을 한 줄로 적습니다.</li>
-            <li>관련 의제나 사례를 참고합니다.</li>
-            <li>기획안 만들기로 초안 흐름을 시작합니다.</li>
-          </ol>
+          <div className="studioDocumentsRecentSection">
+            <strong className="studioDocumentsSidebarLabel">최근 기획서</strong>
+            {savedDocuments.length > 0 ? (
+              <nav className="studioDocumentsRecentList" aria-label="최근 기획서">
+                {savedDocuments.map((document) => (
+                  <Link className="studioDocumentsRecentItem" href={`/studio/document/${document.id}`} key={document.id}>
+                    <strong>{document.title}</strong>
+                    <small>{formatStudioDate(document.updatedAt)} 수정</small>
+                  </Link>
+                ))}
+              </nav>
+            ) : (
+              <p className="studioDocumentsRecentEmpty">아직 저장된 기획서가 없습니다.</p>
+            )}
+          </div>
         </div>
       </aside>
 
