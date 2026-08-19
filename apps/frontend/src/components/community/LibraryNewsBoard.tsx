@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { AuthUser } from '@/lib/auth-config';
 import { postContentExcerpt, postContentText } from '@/lib/rich-post-content';
 import type { CommunityBoard, CommunityPost } from '@/lib/community-boards';
+import CommunitySectionBreadcrumb from '@/components/community/CommunitySectionBreadcrumb';
 
 type FilterKey = 'all' | 'notice' | 'recruiting' | 'event' | 'program';
 type SortKey = 'latest' | 'popular';
@@ -32,10 +33,8 @@ function categoryLabel(category: ReturnType<typeof categoryOf>) {
   return ({ notice: '공지', recruiting: '모집', event: '행사', program: '프로그램', general: '일반' })[category];
 }
 
-function Icon({ name }: { name: 'home' | 'chevron' | 'megaphone' | 'pin' | 'calendar' | 'search' | 'pen' | 'heart' | 'bookmark' | 'more' | 'arrow' }) {
+function Icon({ name }: { name: 'megaphone' | 'pin' | 'calendar' | 'search' | 'pen' | 'heart' | 'bookmark' | 'more' | 'arrow' }) {
   const paths = {
-    home: <><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10" /><path d="M9 20v-6h6v6" /></>,
-    chevron: <path d="m9 18 6-6-6-6" />,
     megaphone: <><path d="m3 11 15-6v14L3 13z" /><path d="M11.6 16.4 13 21H8l-1.6-6.4" /></>,
     pin: <><path d="m12 17 5-5-2-2 1-5-7 7-4-1-2 2 5 5" /><path d="m7 17-4 4" /></>,
     calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
@@ -47,18 +46,6 @@ function Icon({ name }: { name: 'home' | 'chevron' | 'megaphone' | 'pin' | 'cale
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
   };
   return <svg className="libraryNewsIcon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
-}
-
-function LibraryNewsBreadcrumb() {
-  return (
-    <nav className="libraryNewsBreadcrumb" aria-label="현재 위치">
-      <Link href="/"><Icon name="home" /><span>홈</span></Link>
-      <Icon name="chevron" />
-      <Link href="/community">지역 커뮤니티</Link>
-      <Icon name="chevron" />
-      <strong>도서관 소식</strong>
-    </nav>
-  );
 }
 
 function LibraryIllustration() {
@@ -257,7 +244,7 @@ export default function LibraryNewsBoard({ board, posts, user }: { board: Commun
   return (
     <main className="libraryNewsPage">
       <div className="libraryNewsContainer">
-        <LibraryNewsBreadcrumb />
+        <CommunitySectionBreadcrumb current="도서관 행사 및 소식" />
         <LibraryNewsHero board={board} />
         <LibraryNewsControls counts={counts} filter={filter} onFilter={resetPage(setFilter)} query={query} onQuery={resetPage(setQuery)} sort={sort} onSort={resetPage(setSort)} canWrite={canWrite} />
         <section className="libraryNewsResults" aria-live="polite" aria-label="도서관 소식 게시글 목록">

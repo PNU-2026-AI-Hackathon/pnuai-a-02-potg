@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import CommunitySectionBreadcrumb from "@/components/community/CommunitySectionBreadcrumb";
 
 /**
  * tags 를 옵셔널로 둔 것은 백엔드가 늘 준다고 믿을 수 없기 때문이다. 예전 판의 백엔드가
@@ -464,16 +464,7 @@ export default function IdeaThreadBoard() {
   return (
     <main className="ideaThreadPage">
       <div className="ideaThreadShell">
-        <nav className="ideaBreadcrumb" aria-label="현재 위치">
-          <Link href="/">
-            <IdeaIcon name="home" />
-            <span>홈</span>
-          </Link>
-          <IdeaIcon name="chevron" />
-          <Link href="/community">우리동네 이야기</Link>
-          <IdeaIcon name="chevron" />
-          <span aria-current="page">우리동네 아이디어</span>
-        </nav>
+        <CommunitySectionBreadcrumb current="우리동네 아이디어" />
         <section className="ideaHero">
           <div className="ideaHeroCopy">
             <p className="ideaEyebrow">MOIRA IDEA LAB · THREAD</p>

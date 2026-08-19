@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import CommunitySectionBreadcrumb from '@/components/community/CommunitySectionBreadcrumb';
 
 type VotingDocument = {
   id: string; title: string; content: string; voteCount: number; hasVoted: boolean;
@@ -18,9 +19,8 @@ function fieldValue(content: string, label: string) {
   return content.match(new RegExp(`(?:^|\\n)${label}\\n([^\\n]+)`))?.[1]?.trim() ?? '';
 }
 
-function Icon({ name }: { name: 'home' | 'search' | 'book' | 'users' | 'check' | 'empty' }) {
+function Icon({ name }: { name: 'search' | 'book' | 'users' | 'check' | 'empty' }) {
   const paths = {
-    home: <><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/></>,
     search: <><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></>,
     book: <><path d="M4 5a3 3 0 0 1 3-3h5v18H7a3 3 0 0 0-3 3Z"/><path d="M20 5a3 3 0 0 0-3-3h-5v18h5a3 3 0 0 1 3 3Z"/></>,
     users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>,
@@ -102,7 +102,7 @@ export default function StudioVotingBoard() {
   const selectedDocument = documents.find((document) => document.id === selectedId);
 
   return <main className="studioVotingPage"><section className="uiContainer studioVotingShell">
-    <nav className="studioVotingBreadcrumb" aria-label="현재 위치"><Link href="/"><Icon name="home" /><span className="uiSrOnly">홈</span></Link><span>›</span><Link href="/community">우리동네 이야기</Link><span>›</span><Link href="/studio/about">MOIRA Studio</Link><span>›</span><span>프로그램 투표</span></nav>
+    <CommunitySectionBreadcrumb current="프로그램 투표" />
     <section className="studioVotingHero" aria-labelledby="studio-voting-title"><div><p>MOIRA STUDIO</p><h1 id="studio-voting-title">우리 동네 프로그램 투표</h1><span>도서관에서 만나고 싶은 프로그램을 살펴보고<br />마음에 드는 프로그램에 투표해주세요.</span></div><div className="studioVotingHeroArt" aria-hidden="true"><div className="studioVotingBallot"><i /><i /><Icon name="check" /></div><div className="studioVotingBooks"><i /><i /><i /></div></div></section>
 
     {!loading && !error && documents.length > 0 ? <section className="studioVotingControls" aria-label="프로그램 탐색"><p>프로그램 <strong>{filtered.length}</strong></p><div><label className="studioVotingSearch"><Icon name="search" /><span className="uiSrOnly">프로그램 검색</span><input type="search" placeholder="프로그램명으로 검색" value={query} onChange={(event) => setQuery(event.target.value)} /></label><label className="studioVotingSort"><span className="uiSrOnly">정렬</span><select value={sort} onChange={(event) => setSort(event.target.value as Sort)}><option value="popular">인기순</option><option value="latest">최신순</option></select></label></div></section> : null}
