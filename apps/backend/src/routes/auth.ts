@@ -45,7 +45,7 @@ const genderMap: Record<string, Gender | null> = {
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const userIdPattern = /^[a-zA-Z0-9_-]{4,30}$/;
+const userIdPattern = /^[a-zA-Z0-9가-힣_-]{4,30}$/;
 const birthDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 function readString(value: unknown) {
@@ -53,7 +53,8 @@ function readString(value: unknown) {
 }
 
 router.post('/login', async (req: Request<{}, {}, LoginRequestBody>, res: Response) => {
-  const { email, password } = req.body;
+  const email = readString(req.body.email).toLowerCase();
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
 
   if (!email || !password) {
     return res.status(400).json({ code: 'MISSING_CREDENTIALS', error: 'email and password are required' });
@@ -135,7 +136,7 @@ router.post('/register', async (req: Request<{}, {}, RegisterRequestBody>, res: 
   if (!userIdPattern.test(userId)) {
     return res.status(400).json({
       code: 'INVALID_USER_ID',
-      error: '회원 아이디는 영문, 숫자, 밑줄, 하이픈을 사용해 4~30자로 입력해 주세요.',
+      error: '회원 아이디는 한글, 영문, 숫자, 밑줄, 하이픈을 사용해 4~30자로 입력해 주세요.',
     });
   }
   if (!emailPattern.test(email)) {

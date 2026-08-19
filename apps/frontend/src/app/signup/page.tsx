@@ -45,6 +45,7 @@ const stepTitles = [
 ] as const;
 const regions = ['금정구', '부산진구', '동래구', '해운대구', '북구', '남구'];
 const genders = ['선택 안 함', '여성', '남성', '기타'];
+const userIdPattern = /^[a-zA-Z0-9가-힣_-]{4,30}$/;
 const today = new Date();
 const currentYear = today.getFullYear();
 const currentMonth = today.getMonth() + 1;
@@ -81,7 +82,10 @@ export default function SignupPage() {
   const stepTitle = useMemo(() => stepTitles[step - 1] ?? '회원가입', [step]);
 
   const isStepOneValid = Boolean(accountType);
-  const isStepTwoValid = /^[a-zA-Z0-9_-]{4,30}$/.test(userId.trim()) && password.length >= 8 && password === confirmPassword;
+  const isUserIdFormatInvalid = userId.trim().length > 0 && !userIdPattern.test(userId.trim());
+  const isPasswordTooShort = password.length > 0 && password.length < 8;
+  const isPasswordValid = password.length >= 8;
+  const isStepTwoValid = userIdPattern.test(userId.trim()) && isPasswordValid && password === confirmPassword;
   const isStepThreeValid = name.trim().length > 0;
   const isPasswordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
   const availableMonths =
@@ -123,7 +127,13 @@ export default function SignupPage() {
 
     if (step === 2 && !isStepTwoValid) {
       setStatusMessage(
-        isPasswordMismatch ? '비밀번호와 비밀번호 확인이 다릅니다.' : '회원 아이디와 비밀번호를 모두 입력해 주세요.',
+        isPasswordMismatch
+          ? '비밀번호와 비밀번호 확인이 다릅니다.'
+          : isUserIdFormatInvalid
+            ? '회원 아이디는 한글, 영문, 숫자, 밑줄, 하이픈을 사용해 4~30자로 입력해 주세요.'
+            : isPasswordTooShort
+              ? '비밀번호는 8자 이상입니다.'
+              : '회원 아이디와 비밀번호를 모두 입력해 주세요.',
       );
       return;
     }
@@ -277,20 +287,40 @@ export default function SignupPage() {
                     id="signup-userid"
                     type="text"
                     value={userId}
-                    onChange={(event) => setUserId(event.target.value)}
-                    placeholder="모이라에서 사용할 아이디"
+                    onChange={(event) => {
+                      setUserId(event.target.value);
+                      setStatusMessage('');
+                    }}
+                    placeholder="한글, 영문, 숫자 4~30자"
+                    aria-invalid={isUserIdFormatInvalid}
+                    aria-describedby={isUserIdFormatInvalid ? 'signup-userid-error' : undefined}
                   />
+                  {isUserIdFormatInvalid ? (
+                    <small id="signup-userid-error" className="signupFieldError" role="alert">
+                      한글, 영문, 숫자, 밑줄, 하이픈만 4~30자로 사용할 수 있습니다.
+                    </small>
+                  ) : null}
                 </label>
 
-                <label className="signupField" htmlFor="signup-password">
+                <label className="signupField signupFieldWide" htmlFor="signup-password">
                   <span>비밀번호</span>
                   <input
                     id="signup-password"
                     type="password"
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setStatusMessage('');
+                    }}
                     placeholder="비밀번호를 입력하세요"
+                    aria-invalid={isPasswordTooShort}
+                    aria-describedby={isPasswordTooShort ? 'signup-password-length-error' : undefined}
                   />
+                  {isPasswordTooShort ? (
+                    <small id="signup-password-length-error" className="signupFieldError" role="alert">
+                      비밀번호는 8자 이상입니다.
+                    </small>
+                  ) : null}
                 </label>
 
                 <label className="signupField signupFieldWide" htmlFor="signup-password-confirm">
