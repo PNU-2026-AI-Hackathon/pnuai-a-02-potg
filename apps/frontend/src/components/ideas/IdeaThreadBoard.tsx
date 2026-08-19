@@ -17,6 +17,8 @@ type ApiPost = {
   author: string;
   createdAt: string;
   tags?: string[];
+  isOwner: boolean;
+  canDelete: boolean;
 };
 type ApiComment = {
   id: string;
@@ -35,6 +37,8 @@ type Topic = {
   category: string;
   votes: number;
   createdAt: string;
+  isOwner: boolean;
+  canDelete: boolean;
 };
 type Reply = {
   id: string;
@@ -157,6 +161,8 @@ function mapPost(post: ApiPost): Topic {
     category: category || "주제 없음",
     votes: 0,
     createdAt: post.createdAt,
+    isOwner: post.isOwner,
+    canDelete: post.canDelete,
   };
 }
 
@@ -241,7 +247,7 @@ export default function IdeaThreadBoard() {
   const [category, setCategory] = useState("전체 주제");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
-  const [detailWidth, setDetailWidth] = useState(360);
+  const [detailWidth, setDetailWidth] = useState(460);
   const [isDetailClosing, setIsDetailClosing] = useState(false);
   const [likedTopics, setLikedTopics] = useState<string[]>([]);
   const [scrappedTopics, setScrappedTopics] = useState<string[]>([]);
@@ -252,15 +258,19 @@ export default function IdeaThreadBoard() {
     author: string;
   } | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+  const [deletingTopic, setDeletingTopic] = useState<Topic | null>(null);
   const [draft, setDraft] = useState({
     title: "",
     body: "",
     category: topicCategories[0],
   });
+  const [editDraft, setEditDraft] = useState({ title: "", body: "", category: topicCategories[0] });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [editError, setEditError] = useState("");
   const closeTimer = useRef<number | null>(null);
 
   const loadIdeas = useCallback(async () => {
@@ -379,9 +389,9 @@ export default function IdeaThreadBoard() {
     const workspace = element.closest<HTMLElement>(".threadWorkspace");
     if (!workspace) return;
     const bounds = workspace.getBoundingClientRect();
-    const maximum = Math.max(320, Math.min(720, bounds.width - 440));
+    const maximum = Math.max(440, Math.min(720, bounds.width - 440));
     setDetailWidth(
-      Math.round(Math.max(320, Math.min(maximum, bounds.right - clientX))),
+      Math.round(Math.max(440, Math.min(maximum, bounds.right - clientX))),
     );
   };
 
@@ -461,6 +471,59 @@ export default function IdeaThreadBoard() {
     }
   };
 
+  const openEditTopic = (topic: Topic) => {
+    setEditError("");
+    setEditDraft({ title: topic.title, body: topic.body, category: topic.category });
+    setEditingTopicId(topic.id);
+  };
+
+  const submitEditTopic = async () => {
+    if (!editingTopicId || !editDraft.title.trim() || !editDraft.body.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    setEditError("");
+    try {
+      const response = await fetch(`/api/posts/${encodeURIComponent(editingTopicId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editDraft.title.trim(), content: editDraft.body.trim(), tags: [editDraft.category] }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || "아이디어를 수정하지 못했습니다.");
+      const updated = mapPost(data.post as ApiPost);
+      setTopics((items) => items.map((item) => item.id === updated.id ? updated : item));
+      setEditingTopicId(null);
+    } catch (error) {
+      setEditError(error instanceof Error ? error.message : "아이디어를 수정하지 못했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const deleteTopic = async (topic: Topic) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setActionError("");
+    try {
+      const response = await fetch(`/api/posts/${encodeURIComponent(topic.id)}`, { method: "DELETE" });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data?.error || "아이디어를 삭제하지 못했습니다.");
+      }
+      setTopics((items) => items.filter((item) => item.id !== topic.id));
+      setRepliesByTopic((current) => {
+        const next = { ...current };
+        delete next[topic.id];
+        return next;
+      });
+      setSelected(null);
+      setDeletingTopic(null);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "아이디어를 삭제하지 못했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="ideaThreadPage">
       <div className="ideaThreadShell">
@@ -529,7 +592,7 @@ export default function IdeaThreadBoard() {
             style={
               active
                 ? {
-                    gridTemplateColumns: `minmax(0, 1fr) 12px minmax(320px, ${detailWidth}px)`,
+                    gridTemplateColumns: `minmax(0, 1fr) 12px minmax(440px, ${detailWidth}px)`,
                   }
                 : undefined
             }
@@ -682,7 +745,7 @@ export default function IdeaThreadBoard() {
                 role="separator"
                 aria-label="아이디어 목록과 본문 너비 조절"
                 aria-orientation="vertical"
-                aria-valuemin={320}
+                aria-valuemin={440}
                 aria-valuemax={720}
                 aria-valuenow={detailWidth}
                 tabIndex={0}
@@ -738,6 +801,7 @@ export default function IdeaThreadBoard() {
                 </div>
                 <h2>{active.title}</h2>
                 <p>{active.body}</p>
+                {actionError && <p className="threadActionError" role="alert">{actionError}</p>}
                 <div className="threadTopicActions">
                   <button
                     aria-pressed={likedTopics.includes(active.id)}
@@ -771,6 +835,12 @@ export default function IdeaThreadBoard() {
                     >
                       이 의제로 기획서 만들기
                     </button>
+                  )}
+                  {(active.isOwner || active.canDelete) && (
+                    <div className="threadOwnerActions" aria-label="내 아이디어 관리">
+                      {active.isOwner && <button type="button" onClick={() => openEditTopic(active)}>수정</button>}
+                      {active.canDelete && <button type="button" className="isDanger" disabled={isSubmitting} onClick={() => { setActionError(""); setDeletingTopic(active); }}>삭제</button>}
+                    </div>
                   )}
                 </div>
                 <div className="threadAuthor">
@@ -1013,6 +1083,39 @@ export default function IdeaThreadBoard() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+        {editingTopicId && (
+          <div className="ideaCreateModal" role="dialog" aria-modal="true" aria-labelledby="idea-edit-title">
+            <form onSubmit={(event) => { event.preventDefault(); void submitEditTopic(); }}>
+              <button aria-label="수정 창 닫기" className="ideaCreateClose" onClick={() => setEditingTopicId(null)} type="button">×</button>
+              <p>EDIT IDEA</p>
+              <h2 id="idea-edit-title">아이디어를 수정해 주세요.</h2>
+              <label>주제<select value={editDraft.category} onChange={(event) => setEditDraft((value) => ({ ...value, category: event.target.value }))}>{topicCategories.map((item) => <option key={item}>{item}</option>)}</select></label>
+              <label>제목<input maxLength={100} value={editDraft.title} onChange={(event) => setEditDraft((value) => ({ ...value, title: event.target.value }))} /></label>
+              <label>내용<textarea maxLength={5000} value={editDraft.body} onChange={(event) => setEditDraft((value) => ({ ...value, body: event.target.value }))} /></label>
+              {editError && <p className="threadActionError" role="alert">{editError}</p>}
+              <div>
+                <button disabled={isSubmitting} onClick={() => setEditingTopicId(null)} type="button">취소</button>
+                <button disabled={!editDraft.title.trim() || !editDraft.body.trim() || isSubmitting} type="submit">{isSubmitting ? "수정 중…" : "수정 완료"}</button>
+              </div>
+            </form>
+          </div>
+        )}
+        {deletingTopic && (
+          <div className="ideaDeleteModal" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !isSubmitting) setDeletingTopic(null); }}>
+            <section role="alertdialog" aria-modal="true" aria-labelledby="idea-delete-title" aria-describedby="idea-delete-description">
+              <span className="ideaDeleteIcon" aria-hidden="true">!</span>
+              <p>DELETE IDEA</p>
+              <h2 id="idea-delete-title">이 아이디어를 삭제하시겠어요?</h2>
+              <strong>{deletingTopic.title}</strong>
+              <p id="idea-delete-description">삭제한 아이디어와 댓글은 다시 복구할 수 없습니다.</p>
+              {actionError && <p className="threadActionError" role="alert">{actionError}</p>}
+              <div>
+                <button type="button" disabled={isSubmitting} onClick={() => setDeletingTopic(null)}>취소</button>
+                <button type="button" className="isDanger" disabled={isSubmitting} onClick={() => void deleteTopic(deletingTopic)}>{isSubmitting ? "삭제 중…" : "삭제하기"}</button>
+              </div>
+            </section>
           </div>
         )}
       </div>
