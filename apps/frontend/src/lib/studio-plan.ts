@@ -68,8 +68,8 @@ export type StudioPlanField = {
   /**
    * 사서가 직접 적는 항목. 생성에도 수정에도 넘기지 않는다.
    *
-   * 강사는 도서관이 섭외로 정하는 값이라 참고 사례에서 이름을 가져오면 실제 사람을
-   * 엉뚱한 프로그램에 붙이게 된다. 빈칸으로 두고 사서가 채운다.
+   * 강사와 운영 장소는 도서관이 섭외와 내부 일정으로 정하는 값이라 참고 사례에서
+   * 가져오면 엉뚱한 사람이나 공간을 붙이게 된다. 빈칸으로 두고 사서가 채운다.
    */
   manualOnly?: boolean;
   /**
@@ -100,7 +100,7 @@ export const studioPlanFields: StudioPlanField[] = [
   { key: 'applicationPeriod', label: '신청 기간', group: '개요', kind: 'text', hint: '접수를 받는 기간과 방법', manualOnly: true, control: 'dateRange' },
   { key: 'sessionCount', label: '운영 횟수', group: '개요', kind: 'text', hint: '총 몇 회차인지', control: 'number', unit: '회' },
   { key: 'capacity', label: '모집 인원', group: '개요', kind: 'text', hint: '몇 명을 모집할지', factual: true, control: 'number', unit: '명' },
-  { key: 'location', label: '운영 장소', group: '개요', kind: 'text', hint: '어디에서 진행할지', factual: true },
+  { key: 'location', label: '운영 장소', group: '개요', kind: 'text', hint: '어디에서 진행할지', manualOnly: true },
   { key: 'instructor', label: '강사', group: '개요', kind: 'text', hint: '수업을 맡을 강사', manualOnly: true },
 
   { key: 'goal', label: '목표', group: '내용', kind: 'text', hint: '참여자가 무엇을 얻어 가는지' },
