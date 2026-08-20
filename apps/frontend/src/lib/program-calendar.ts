@@ -65,6 +65,11 @@ export type ProgramCalendarMonth = {
   segmentsByWeek: CalendarSegment[][];
   /** weeks[i][j]에 대응. MAX_VISIBLE_LANES를 넘겨 접힌 일정 수. */
   overflowByWeek: number[][];
+  /**
+   * 격자에 보이는 42일 각각의 전체 일정(ISO 날짜 → 그날 신청기간이 걸치는 프로그램 전부).
+   * 막대는 한 주에 5개까지만 그리지만, 하루를 확대해서 볼 때는 접힌 것까지 다 보여줘야 한다.
+   */
+  entriesByDate: Record<string, ProgramAgendaEntry[]>;
 };
 
 function toIsoDate(date: Date) {
@@ -196,7 +201,18 @@ export function buildProgramCalendarMonth(
     }
   });
 
-  return { year, month, weeks, segmentsByWeek, overflowByWeek };
+  // 하루 확대 보기(더보기)용. 막대는 한 주 기준으로 자르지만, 이건 날짜 하나 기준으로
+  // 그날 신청기간이 걸치는 프로그램을 전부 모은다. 우선순위는 막대 자리 배정과 같다.
+  const entriesByDate: Record<string, ProgramAgendaEntry[]> = {};
+  for (const week of weeks) {
+    for (const day of week) {
+      entriesByDate[day.iso] = ranges
+        .filter((range) => range.start <= day.date && day.date <= range.end)
+        .map(({ program, status }) => ({ program, status }));
+    }
+  }
+
+  return { year, month, weeks, segmentsByWeek, overflowByWeek, entriesByDate };
 }
 
 /** 이전/다음 달 링크를 만들 때 쓰는 정규화. 1월의 이전 달은 작년 12월, 12월의 다음 달은 내년 1월. */

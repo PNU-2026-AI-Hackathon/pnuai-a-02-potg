@@ -111,7 +111,13 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
               >
                 {week.map((day, col) => (
                   <div
-                    className={`calendarDayFrame ${day.inMonth ? '' : 'isOutside'} ${col === 6 ? 'isLastCol' : ''}`}
+                    className={[
+                      'calendarDayFrame',
+                      day.inMonth ? '' : 'isOutside',
+                      col === 0 ? 'isFirstCol' : '',
+                      col === 6 ? 'isLastCol' : '',
+                      weekIndex === calendar.weeks.length - 1 ? 'isLastRow' : '',
+                    ].filter(Boolean).join(' ')}
                     key={`frame-${day.iso}`}
                     style={{ gridColumn: col + 1, gridRow: '1 / -1' }}
                   />
@@ -150,14 +156,36 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
                 {week.map((day, col) => {
                   const overflowCount = calendar.overflowByWeek[weekIndex][col];
                   if (overflowCount === 0) return null;
+                  const dayEntries = calendar.entriesByDate[day.iso] ?? [];
                   return (
-                    <span
-                      className="calendarDayOverflow"
+                    <details
+                      className={`calendarDayMore ${col >= 5 ? 'isRightAligned' : ''}`}
                       key={`overflow-${day.iso}`}
                       style={{ gridColumn: col + 1, gridRow: CALENDAR_MAX_VISIBLE_LANES + 2 }}
                     >
-                      <span>+{overflowCount}</span>
-                    </span>
+                      {/*
+                        네이티브 <details>라 자바스크립트 없이 열고 닫힌다. 요약(summary)이
+                        "더보기" 단추, 본문이 그날 하루를 확대한 목록 — 제목과 상태 색만
+                        보여주는 캘린더 확대 보기다.
+                      */}
+                      <summary className="calendarDayMoreButton">+{overflowCount} 더보기</summary>
+                      <div className="calendarDayMorePanel">
+                        <p className="calendarDayMorePanelDate">{day.dayOfMonth}일 일정 {dayEntries.length}건</p>
+                        <ol>
+                          {dayEntries.map(({ program, status }) => (
+                            <li key={program.sourceId}>
+                              <a href={program.sourceUrl} rel="noreferrer" target="_blank">
+                                <i aria-hidden="true" className={`calendarDayMoreDot is-${status}`} />
+                                <span className="calendarDayMoreTitle">{program.title}</span>
+                                <span className="uiSrOnly">
+                                  {' '}· {programRecruitLabel[status]} · 공공예약 서비스에서 보기 · 새 탭에서 열립니다
+                                </span>
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    </details>
                   );
                 })}
               </div>
