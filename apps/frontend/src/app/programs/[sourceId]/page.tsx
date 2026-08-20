@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import ProgramFavoriteButton from '@/components/programs/ProgramFavoriteButton';
 import {
   formatProgramPeriod,
   getProgramOccurrences,
@@ -109,6 +110,9 @@ export default async function ProgramDetailPage({ params }: PageProps) {
             <p className="programDetailSubtitle">
               {program.targetDetail ?? program.targetGroup ?? '대상 정보 확인 필요'}
             </p>
+            <div className="programDetailFavorite">
+              <ProgramFavoriteButton sourceId={program.sourceId} />
+            </div>
           </header>
 
           {hasCapacityConflict ? (

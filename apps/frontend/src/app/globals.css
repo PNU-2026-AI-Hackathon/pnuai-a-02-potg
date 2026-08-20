@@ -3582,6 +3582,21 @@ button {
   gap: 14px;
 }
 
+.programCardActions {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.programCardActions .programFavoriteControl,
+.programCardActions .programCardLink {
+  margin-top: 0;
+  padding-top: 0;
+}
+
 .programApplyAction span {
   color: #6b7280;
   font-size: 12px;
@@ -3656,6 +3671,7 @@ button {
   .programDetailActions .uiButton {
     width: 100%;
   }
+
 }
 
 .communityWriteButton {
@@ -9804,6 +9820,31 @@ html:has(.moiraPage) {
   box-shadow: 0 12px 32px rgba(33, 70, 61, 0.06);
   overflow: hidden;
 }
+
+.mypageFavoritePrograms { grid-column: 1 / -1; }
+
+.mypageFavoritePrograms .mypagePostList {
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.mypageFavoritePrograms .mypagePostList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mypageFavoritePrograms .mypagePostList::-webkit-scrollbar-thumb {
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #b9c9c3;
+}
+
+.programFavoriteControl { display: grid; gap: 5px; margin-top: 14px; }
+.programFavoriteControl button { display: inline-flex; width: fit-content; align-items: center; gap: 6px; border: 1px solid var(--moira-border); border-radius: 999px; background: #fff; color: var(--moira-green-dark); padding: 7px 11px; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.programFavoriteControl button.isFavorited { border-color: #d6aa3b; background: #fff8dd; color: #795a08; }
+.programFavoriteControl button:disabled { cursor: wait; opacity: .65; }
+.programFavoriteControl small { color: var(--moira-muted); font-size: 11px; }
 
 .mypageSectionHeading {
   display: grid;
@@ -16321,6 +16362,16 @@ html:has(.moiraPage) {
   margin: 10px 0 0;
   color: var(--moira-muted, #666);
   font-size: 14px;
+}
+
+.programDetailFavorite {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.programDetailFavorite .programFavoriteControl {
+  margin-top: 0;
 }
 
 /* 요약 상자: 신청에 필요한 것만 세 줄기로 나눠 담는다. 공고 화면들이 쓰는 모양이다. */

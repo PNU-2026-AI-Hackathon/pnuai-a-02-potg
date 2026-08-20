@@ -54,6 +54,7 @@ model User {
   comments    CommunityComment[]
   postLikes   CommunityPostLike[]
   savedPosts  CommunityPostSave[]
+  favoritePrograms UserFavoriteProgram[]
   studioDocuments StudioDocument[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -354,7 +355,20 @@ model ProgramBoardEntry {
   payload          Json
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  favoritedBy      UserFavoriteProgram[]
 
   @@index([seriesKey])
   @@index([applyStartDate])
+}
+
+model UserFavoriteProgram {
+  userId          String
+  programSourceId Int
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program          ProgramBoardEntry @relation(fields: [programSourceId], references: [sourceId], onDelete: Cascade)
+  createdAt        DateTime           @default(now())
+
+  @@id([userId, programSourceId])
+  @@index([programSourceId])
+  @@index([userId, createdAt])
 }
