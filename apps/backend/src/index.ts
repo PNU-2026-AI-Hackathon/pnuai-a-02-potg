@@ -20,6 +20,7 @@ import studioDocumentsRouter from './routes/studioDocuments';
 import studioVotesRouter from './routes/studioVotes';
 import programBoardSemanticSearchRouter from './routes/programBoardSemanticSearch';
 import programBoardEntriesRouter from './routes/programBoardEntries';
+import programFavoritesRouter from './routes/programFavorites';
 import { announcements, libraries, programs, volunteers, agendaItems } from './data/mockData';
 import { prisma } from './lib/prisma';
 
@@ -88,6 +89,7 @@ app.use('/api/me', meRouter);
 app.use('/api/libraries', librariesRouter);
 app.use('/api/programs', programsRouter);
 app.use('/api/posts', postsRouter);
+app.use('/api/program-favorites', programFavoritesRouter);
 app.use('/api/volunteers', volunteersRouter);
 app.use('/api/agenda', agendaRouter);
 app.use('/api/search', searchRouter);

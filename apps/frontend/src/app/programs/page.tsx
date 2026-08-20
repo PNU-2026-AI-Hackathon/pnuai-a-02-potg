@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import ProgramFavoriteButton from '@/components/programs/ProgramFavoriteButton';
 import {
   formatProgramPeriod,
   getProgramSummaries,
@@ -210,10 +211,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       <div><dt>교육기간</dt><dd>{formatProgramPeriod(program.programStartDate, program.programEndDate)}</dd></div>
                       <div><dt>모집인원</dt><dd>{programCapacityLabel(program)}</dd></div>
                     </dl>
-                    <a className="programCardLink" href={program.sourceUrl} rel="noreferrer" target="_blank">
-                      공공예약 서비스에서 보기 <span aria-hidden="true">↗</span>
-                      <span className="uiSrOnly">새 탭에서 열립니다</span>
-                    </a>
+                    <div className="programCardActions">
+                      <ProgramFavoriteButton sourceId={program.sourceId} />
+                      <a className="programCardLink" href={program.sourceUrl} rel="noreferrer" target="_blank">
+                        공공예약 서비스에서 보기 <span aria-hidden="true">↗</span>
+                        <span className="uiSrOnly">새 탭에서 열립니다</span>
+                      </a>
+                    </div>
                   </article>
                 );
               })}
