@@ -161,12 +161,15 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
                     <details
                       className={`calendarDayMore ${col >= 5 ? 'isRightAligned' : ''}`}
                       key={`overflow-${day.iso}`}
+                      name="calendar-day-more"
                       style={{ gridColumn: col + 1, gridRow: CALENDAR_MAX_VISIBLE_LANES + 2 }}
                     >
                       {/*
                         네이티브 <details>라 자바스크립트 없이 열고 닫힌다. 요약(summary)이
                         "더보기" 단추, 본문이 그날 하루를 확대한 목록 — 제목과 상태 색만
-                        보여주는 캘린더 확대 보기다.
+                        보여주는 캘린더 확대 보기다. 같은 name을 공유하는 <details>는 하나만
+                        열리는 아코디언으로 묶여서(HTML 표준), 다른 날짜의 더보기를 열면
+                        이전에 열어 둔 것이 자동으로 닫힌다.
                       */}
                       <summary className="calendarDayMoreButton">+{overflowCount} 더보기</summary>
                       <div className="calendarDayMorePanel">
