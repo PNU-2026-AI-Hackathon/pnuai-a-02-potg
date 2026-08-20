@@ -15,6 +15,19 @@ type Profile = AuthUser & {
 
 type Interest = { id: string; name: string };
 
+type FavoriteProgram = {
+  sourceId: number;
+  title: string;
+  libraryName: string | null;
+  targetGroup: string | null;
+  sourceUrl: string;
+  programStartDate: string | null;
+  programEndDate: string | null;
+  applyStartDate: string | null;
+  applyEndDate: string | null;
+  favoritedAt: string;
+};
+
 type ActivityPost = {
   id: string;
   boardSlug: string;
@@ -73,24 +86,28 @@ function postHref(postId: string) {
 }
 
 async function fetchDashboardData() {
-  const [profileResponse, activityResponse, interestsResponse] = await Promise.all([
+  const [profileResponse, activityResponse, interestsResponse, favoriteProgramsResponse] = await Promise.all([
     fetch('/api/me/profile', { cache: 'no-store' }),
     fetch('/api/me/activity', { cache: 'no-store' }),
     fetch('/api/interests', { cache: 'no-store' }),
+    fetch('/api/program-favorites', { cache: 'no-store' }),
   ]);
   const profileData = await profileResponse.json();
   const activityData = await activityResponse.json();
   const interestsData = await interestsResponse.json();
+  const favoriteProgramsData = await favoriteProgramsResponse.json();
   if (!profileResponse.ok) throw new Error(profileData.error || '계정 정보를 불러오지 못했습니다.');
   if (!activityResponse.ok) throw new Error(activityData.error || '활동 내역을 불러오지 못했습니다.');
   if (!interestsResponse.ok) throw new Error(interestsData.error || '관심분야를 불러오지 못했습니다.');
-  return { profile: profileData.profile as Profile, activity: activityData.activity as Activity, interests: interestsData.interests as Interest[] };
+  if (!favoriteProgramsResponse.ok) throw new Error(favoriteProgramsData.error || '관심 프로그램을 불러오지 못했습니다.');
+  return { profile: profileData.profile as Profile, activity: activityData.activity as Activity, interests: interestsData.interests as Interest[], favoritePrograms: favoriteProgramsData.programs as FavoriteProgram[] };
 }
 
 export default function MyPageDashboard({ initialUser }: { initialUser: AuthUser }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [activity, setActivity] = useState<Activity>(emptyActivity);
   const [availableInterests, setAvailableInterests] = useState<Interest[]>([]);
+  const [favoritePrograms, setFavoritePrograms] = useState<FavoriteProgram[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState('');
@@ -101,6 +118,7 @@ export default function MyPageDashboard({ initialUser }: { initialUser: AuthUser
       setProfile(data.profile);
       setActivity(data.activity);
       setAvailableInterests(data.interests);
+      setFavoritePrograms(data.favoritePrograms);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '마이페이지를 불러오지 못했습니다.');
     } finally {
@@ -110,7 +128,7 @@ export default function MyPageDashboard({ initialUser }: { initialUser: AuthUser
 
   useEffect(() => {
     fetchDashboardData()
-      .then((data) => { setProfile(data.profile); setActivity(data.activity); setAvailableInterests(data.interests); })
+      .then((data) => { setProfile(data.profile); setActivity(data.activity); setAvailableInterests(data.interests); setFavoritePrograms(data.favoritePrograms); })
       .catch((error) => setMessage(error instanceof Error ? error.message : '마이페이지를 불러오지 못했습니다.'))
       .finally(() => setIsLoading(false));
   }, []);
@@ -119,6 +137,12 @@ export default function MyPageDashboard({ initialUser }: { initialUser: AuthUser
     const response = await fetch(`/api/posts/${encodeURIComponent(postId)}/${kind}`, { method: 'DELETE' });
     if (response.ok) await loadDashboard();
     else setMessage((await response.json()).error || '활동을 변경하지 못했습니다.');
+  }
+
+  async function removeFavoriteProgram(sourceId: number) {
+    const response = await fetch(`/api/program-favorites/${sourceId}`, { method: 'DELETE' });
+    if (response.ok) setFavoritePrograms((current) => current.filter((program) => program.sourceId !== sourceId));
+    else setMessage((await response.json()).error || '관심 프로그램을 해제하지 못했습니다.');
   }
 
   const displayName = profile?.name ?? initialUser.name;
@@ -144,6 +168,7 @@ export default function MyPageDashboard({ initialUser }: { initialUser: AuthUser
         {message ? <p className="mypageDataMessage" role="alert">{message}</p> : null}
         {isLoading ? <p className="mypageDataMessage" role="status">활동 내역을 불러오는 중입니다.</p> : null}
         {!isLoading ? <div className="mypageActivityGrid">
+          <FavoriteProgramSection items={favoritePrograms} onRemove={removeFavoriteProgram} />
           <PostSection title="내가 작성한 글" eyebrow="MY POSTS" icon="✎" items={activity.posts} empty="작성한 글이 없습니다." />
           <CommentSection items={activity.comments} />
           <PostSection title="관심글" eyebrow="BOOKMARKS" icon="☆" items={activity.savedPosts} empty="관심글이 없습니다." actionLabel="관심 해제" onAction={(id) => removeActivity(id, 'save')} />
@@ -152,6 +177,10 @@ export default function MyPageDashboard({ initialUser }: { initialUser: AuthUser
       </div>
     </main>
   );
+}
+
+function FavoriteProgramSection({ items, onRemove }: { items: FavoriteProgram[]; onRemove: (sourceId: number) => void }) {
+  return <section className="mypageActivityCard mypageFavoritePrograms"><div className="mypageSectionHeading"><span className="mypageSectionIcon" aria-hidden="true">★</span><div><p className="uiEyebrow">FAVORITE PROGRAMS</p><h2>관심 프로그램</h2></div><Link className="mypageMoreButton" href="/programs">프로그램 찾기</Link></div><div className="mypagePostList">{items.length ? items.map((program) => <article className="mypagePostItem" key={program.sourceId}><span className="uiTag">{program.targetGroup ?? '대상 전체'}</span><div className="mypagePostCopy"><Link href={`/programs/${program.sourceId}`}><h3>{program.title}</h3></Link><p>{program.libraryName ?? '운영 도서관 확인 필요'}</p><div className="mypagePostMeta"><span>관심 등록 {dateFormatter.format(new Date(program.favoritedAt))}</span>{program.applyEndDate ? <span>신청 마감 {program.applyEndDate}</span> : null}</div></div><button className="mypageInlineAction" type="button" onClick={() => onRemove(program.sourceId)}>관심 해제</button></article>) : <p className="mypageEmptyState">관심 프로그램이 없습니다. 프로그램 게시판에서 별표를 눌러 저장해 보세요.</p>}</div></section>;
 }
 
 function PostSection({ title, eyebrow, icon, items, empty, actionLabel, onAction }: { title: string; eyebrow: string; icon: string; items: ActivityPost[]; empty: string; actionLabel?: string; onAction?: (id: string) => void }) {
