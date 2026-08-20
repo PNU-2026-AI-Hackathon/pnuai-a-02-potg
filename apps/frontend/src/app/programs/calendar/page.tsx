@@ -49,10 +49,6 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
   const { year: nextYear, month: nextMonth } = shiftMonth(year, month, 1);
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth() + 1;
 
-  const eventsThisMonth = new Set(
-    calendar.segmentsByWeek.flat().map((segment) => segment.program.sourceId),
-  ).size;
-
   return (
     <main className="programPage">
       <section className="uiContainer programShell" aria-labelledby="program-calendar-title">
@@ -88,14 +84,6 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
           </div>
         </div>
 
-        {eventsThisMonth === 0 ? (
-          <p className="programBoardNotice" role="status">
-            이번 달에는 신청기간이 표시된 프로그램이 없습니다. 다른 달을 확인하거나 <code>/programs</code>에서 전체 목록을 살펴보세요.
-          </p>
-        ) : (
-          <p className="calendarMonthSummary">이번 달 신청기간이 겹치는 프로그램 <strong>{eventsThisMonth}</strong>건</p>
-        )}
-
         <div className="calendarGrid">
           <div className="calendarWeekdayHeader">
             {CALENDAR_WEEKDAY_LABELS.map((label, index) => (
@@ -116,7 +104,7 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
             >
               {week.map((day, col) => (
                 <div
-                  className={`calendarDayFrame ${day.inMonth ? '' : 'isOutside'} ${day.isToday ? 'isToday' : ''}`}
+                  className={`calendarDayFrame ${day.inMonth ? '' : 'isOutside'} ${day.isToday ? 'isToday' : ''} ${col === 6 ? 'isLastCol' : ''}`}
                   key={`frame-${day.iso}`}
                   style={{ gridColumn: col + 1, gridRow: '1 / -1' }}
                 />
@@ -168,10 +156,6 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
             </div>
           ))}
         </div>
-
-        <p className="calendarFootnote">
-          막대를 누르면 공공예약 포털의 신청 페이지로 이동합니다. 신청기간이 여러 날에 걸치는 프로그램은 시작일부터 종료일까지 이어진 막대로 표시됩니다.
-        </p>
       </section>
     </main>
   );

@@ -3142,7 +3142,12 @@ button {
 /* --- 프로그램 게시판: 캘린더 --------------------------------------------------
    신청기간이 여러 날에 걸치는 경우가 대부분이라, 날짜마다 같은 이름을 반복하는 대신
    시작일부터 종료일까지 이어진 막대 하나로 그린다. 주(週)마다 하나의 CSS grid를 두고,
-   1행엔 날짜 숫자, 가운데 행들엔 막대, 마지막 행엔 다 못 그린 건수를 놓는다. */
+   1행엔 날짜 숫자, 가운데 행들엔 막대, 마지막 행엔 다 못 그린 건수를 놓는다.
+
+   색과 둥근 정도는 사이트 전반의 톤(브랜드 초록 · --moira-radius · --moira-shadow)을
+   그대로 따른다. 아래 .programCard 계열이 쓰는 파란 「공공예약 포털」 느낌은 크롤링해
+   온 원본 데이터를 그대로 보여주는 카드에만 남겨 두고, 캘린더는 우리가 만든 화면이므로
+   홈·커뮤니티와 같은 결로 맞춘다. */
 
 .calendarToolbar {
   display: flex;
@@ -3155,62 +3160,64 @@ button {
 .calendarMonthNav {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 6px;
 }
 
 .calendarMonthNav a {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   place-items: center;
-  border: 1px solid #dfe4ea;
-  border-radius: 8px;
-  color: #48607d;
-  font-size: 15px;
+  border-radius: 50%;
+  color: var(--moira-muted);
+  font-size: 16px;
   font-weight: 700;
-  transition: border-color 160ms ease, color 160ms ease;
+  transition: background-color 160ms ease, color 160ms ease;
 }
 
 .calendarMonthNav a:hover,
 .calendarMonthNav a:focus-visible {
-  border-color: var(--moira-green);
+  background: var(--moira-mint);
   color: var(--moira-green-dark);
 }
 
 .calendarMonthNav strong {
-  min-width: 96px;
-  color: #1f3f69;
-  font-size: 19px;
+  min-width: 108px;
+  color: var(--moira-ink);
+  font-size: 20px;
+  letter-spacing: -0.02em;
   text-align: center;
 }
 
 .calendarTodayLink {
-  border: 1px solid #dfe4ea;
+  border: 1px solid var(--moira-border);
   border-radius: 999px;
-  padding: 6px 12px;
-  color: #48607d;
+  padding: 7px 14px;
+  color: var(--moira-muted);
   font-size: 12.5px;
   font-weight: 700;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
 }
 
 .calendarTodayLink:hover,
 .calendarTodayLink:focus-visible {
   border-color: var(--moira-green);
+  background: var(--moira-mint);
   color: var(--moira-green-dark);
 }
 
 .calendarLegend {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 16px;
   margin-left: auto;
 }
 
 .calendarLegendItem {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  color: #606b78;
+  gap: 7px;
+  color: var(--moira-muted);
   font-size: 12.5px;
   font-weight: 700;
 }
@@ -3223,100 +3230,97 @@ button {
 
 .calendarLegendItem.is-open i { background: var(--moira-green); }
 .calendarLegendItem.is-upcoming i { background: var(--moira-warm); }
-.calendarLegendItem.is-closed i { background: #9aa5ad; }
+.calendarLegendItem.is-closed i { background: #b7c0ba; }
 
-.calendarMonthSummary {
-  margin: 14px 0 0;
-  color: #606b78;
-  font-size: 13px;
-}
-
-.calendarMonthSummary strong {
-  color: #0b5cab;
-}
-
+/* 달력 전체를 카드 하나로 감싼다. 홈의 인기 의제·설문 카드처럼 흰 배경에 둥근
+   모서리와 옅은 그림자를 준다. */
 .calendarGrid {
-  margin-top: 14px;
-  border: 1px solid #dfe4ea;
-  border-bottom: 0;
+  margin-top: 20px;
+  border-radius: var(--moira-radius-md);
+  background: #fff;
+  box-shadow: var(--moira-shadow);
+  overflow: hidden;
 }
 
 .calendarWeekdayHeader {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  border-bottom: 1px solid #dfe4ea;
-  background: #f8fafc;
+  background: var(--moira-mint);
 }
 
 .calendarWeekdayHeader span {
-  padding: 9px 10px;
-  color: #606b78;
-  font-size: 12px;
-  font-weight: 700;
+  padding: 12px 10px;
+  color: var(--moira-green-dark);
+  font-size: 12.5px;
+  font-weight: 800;
   text-align: center;
 }
 
-.calendarWeekdayHeader span.isSunday { color: #c34848; }
-.calendarWeekdayHeader span.isSaturday { color: #2f5fa8; }
+.calendarWeekdayHeader span.isSunday { color: #c05a5a; }
+.calendarWeekdayHeader span.isSaturday { color: #3d6fa8; }
 
 .calendarWeekGrid {
   position: relative;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  column-gap: 1px;
 }
 
 .calendarDayFrame {
-  border-right: 1px solid #eef1f4;
-  border-bottom: 1px solid #dfe4ea;
+  border-right: 1px solid #eef1ee;
+  border-bottom: 1px solid #eef1ee;
   background: #fff;
 }
 
+.calendarDayFrame.isLastCol {
+  border-right: 0;
+}
+
 .calendarDayFrame.isOutside {
-  background: #fbfcfd;
+  background: #fbfbf9;
 }
 
 .calendarDayFrame.isToday {
-  background: #f0f8f4;
-  box-shadow: inset 0 0 0 1px var(--moira-green);
+  background: var(--moira-mint);
 }
 
 .calendarDayNumber {
-  padding: 5px 8px 0;
-  color: #33423c;
+  padding: 6px 0 0;
+  color: var(--moira-ink);
   font-size: 12px;
   font-weight: 700;
+  text-align: center;
   pointer-events: none;
 }
 
 .calendarDayNumber.isOutside {
-  color: #b6bfc6;
+  color: #c3cac5;
 }
 
 .calendarEventBar {
   display: block;
   overflow: hidden;
   align-self: center;
-  margin: 0 2px;
-  border-radius: 5px;
-  padding: 2px 7px;
+  margin: 0 3px;
+  border-radius: 7px;
+  padding: 2px 8px;
   color: #fff;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
-  transition: filter 140ms ease;
+  transition: filter 140ms ease, transform 140ms ease;
 }
 
 .calendarEventBar:hover,
 .calendarEventBar:focus-visible {
-  filter: brightness(0.94);
+  filter: brightness(0.95);
+  transform: translateY(-1px);
 }
 
 .calendarEventBar.is-open { background: var(--moira-green); }
 .calendarEventBar.is-upcoming { background: var(--moira-warm); color: #4a2f08; }
 .calendarEventBar.is-closed,
-.calendarEventBar.is-unknown { background: #9aa5ad; }
+.calendarEventBar.is-unknown { background: #b7c0ba; color: #3f4a45; }
 
 /* 주 경계에서 잘려 다음 줄로 이어지는 막대는 그 방향의 모서리를 각지게 두어
    "계속됨"을 표시한다. */
@@ -3334,22 +3338,21 @@ button {
 
 .calendarDayOverflow {
   align-self: end;
-  padding: 0 8px 3px;
-  color: #6b7280;
+  padding: 0 8px 4px;
+  color: var(--moira-muted);
   font-size: 10.5px;
   font-weight: 700;
-}
-
-.calendarFootnote {
-  margin: 14px 0 0;
-  color: #8a96a3;
-  font-size: 12px;
-  line-height: 1.6;
+  text-align: center;
 }
 
 @media (max-width: 720px) {
   .calendarLegend {
     margin-left: 0;
+  }
+
+  .calendarMonthNav strong {
+    min-width: 84px;
+    font-size: 17px;
   }
 
   .calendarDayNumber {
