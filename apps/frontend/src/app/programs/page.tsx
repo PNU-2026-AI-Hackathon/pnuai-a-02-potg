@@ -211,7 +211,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       <div><dt>모집인원</dt><dd>{programCapacityLabel(program)}</dd></div>
                     </dl>
                     <a className="programCardLink" href={program.sourceUrl} rel="noreferrer" target="_blank">
-                      공공예약에서 보기 <span aria-hidden="true">↗</span>
+                      공공예약 서비스에서 보기 <span aria-hidden="true">↗</span>
                       <span className="uiSrOnly">새 탭에서 열립니다</span>
                     </a>
                   </article>

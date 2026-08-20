@@ -122,7 +122,7 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
 
               {calendar.segmentsByWeek[weekIndex].map((segment) => (
                 <a
-                  aria-label={`${segment.program.title} · ${segment.program.libraryName ?? '운영 도서관 확인 필요'} · 신청기간 ${formatProgramPeriod(segment.program.applyStartDate, segment.program.applyEndDate)} · ${programRecruitLabel[segment.status]}`}
+                  aria-label={`${segment.program.title} · ${segment.program.libraryName ?? '운영 도서관 확인 필요'} · 신청기간 ${formatProgramPeriod(segment.program.applyStartDate, segment.program.applyEndDate)} · ${programRecruitLabel[segment.status]} · 공공예약 서비스에서 보기 · 새 탭에서 열립니다`}
                   className={[
                     'calendarEventBar',
                     `is-${segment.status}`,
