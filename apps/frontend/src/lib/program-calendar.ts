@@ -14,7 +14,21 @@ import { programRecruitStatus } from './program-prototype';
 export const CALENDAR_WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
 /** 한 주에 동시에 그릴 막대 줄 수. 이보다 많이 겹치면 "+N건"으로 접는다. 화면 쪽 grid-template-rows 계산에도 쓴다. */
-export const CALENDAR_MAX_VISIBLE_LANES = 4;
+export const CALENDAR_MAX_VISIBLE_LANES = 5;
+
+/**
+ * 막대 자리를 먼저 차지할 순서. 모집중·모집예정이 마감보다 항상 앞선다.
+ *
+ * 프로그램이 350건을 넘어가면 바쁜 주는 5줄로도 다 못 그린다. 시작일 순서로만 자리를
+ * 배정하면 이미 끝난 모집이 자리를 차지하고 정작 지금 신청할 수 있거나 곧 열리는
+ * 프로그램이 "+N건"에 묻혀 버린다. 접히더라도 덜 급한 것부터 접혀야 한다.
+ */
+const STATUS_LANE_PRIORITY: Record<ProgramRecruitStatus, number> = {
+  open: 0,
+  upcoming: 1,
+  closed: 2,
+  unknown: 3,
+};
 
 export type CalendarDay = {
   date: Date;
@@ -38,6 +52,11 @@ export type CalendarSegment = {
   isRangeEnd: boolean;
 };
 
+export type CalendarMonthEntry = {
+  program: ProgramSummary;
+  status: ProgramRecruitStatus;
+};
+
 export type ProgramCalendarMonth = {
   year: number;
   month: number;
@@ -46,6 +65,12 @@ export type ProgramCalendarMonth = {
   segmentsByWeek: CalendarSegment[][];
   /** weeks[i][j]에 대응. MAX_VISIBLE_LANES를 넘겨 접힌 일정 수. */
   overflowByWeek: number[][];
+  /**
+   * 이번 달 화면에 신청기간이 걸치는 프로그램 전부(모집중·모집예정 우선순).
+   * 격자는 자리가 모자라면 접지만, 이 목록은 접지 않는다. 밑에 목록으로 함께 보여줘
+   * "+N건"에 묻힌 모집예정 프로그램도 놓치지 않게 한다.
+   */
+  entries: CalendarMonthEntry[];
 };
 
 function toIsoDate(date: Date) {
@@ -128,6 +153,8 @@ export function buildProgramCalendarMonth(
   }
 
   ranges.sort((a, b) => {
+    const priorityDiff = STATUS_LANE_PRIORITY[a.status] - STATUS_LANE_PRIORITY[b.status];
+    if (priorityDiff !== 0) return priorityDiff;
     if (a.start.getTime() !== b.start.getTime()) return a.start.getTime() - b.start.getTime();
     return (b.end.getTime() - b.start.getTime()) - (a.end.getTime() - a.start.getTime());
   });
@@ -175,7 +202,9 @@ export function buildProgramCalendarMonth(
     }
   });
 
-  return { year, month, weeks, segmentsByWeek, overflowByWeek };
+  const entries: CalendarMonthEntry[] = ranges.map(({ program, status }) => ({ program, status }));
+
+  return { year, month, weeks, segmentsByWeek, overflowByWeek, entries };
 }
 
 /** 이전/다음 달 링크를 만들 때 쓰는 정규화. 1월의 이전 달은 작년 12월, 12월의 다음 달은 내년 1월. */

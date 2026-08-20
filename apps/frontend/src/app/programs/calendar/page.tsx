@@ -5,6 +5,7 @@ import {
   CALENDAR_WEEKDAY_LABELS,
   buildProgramCalendarMonth,
   shiftMonth,
+  type CalendarMonthEntry,
 } from '@/lib/program-calendar';
 import {
   formatProgramPeriod,
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 /** 달력 행의 grid-template-rows. 요일 숫자용 1줄 + 막대 줄 + 넘친 건수용 1줄. */
-const CALENDAR_ROW_TEMPLATE = `26px repeat(${CALENDAR_MAX_VISIBLE_LANES}, 22px) 16px`;
+const CALENDAR_ROW_TEMPLATE = `30px repeat(${CALENDAR_MAX_VISIBLE_LANES}, 24px) 18px`;
 
 type CalendarPageProps = {
   searchParams: Promise<{ year?: string; month?: string }>;
@@ -39,6 +40,15 @@ function monthHref(year: number, month: number) {
   return `/programs/calendar?year=${year}&month=${month}`;
 }
 
+/**
+ * 격자는 자리가 모자라면 「+N건」으로 접는다. 그래서 지금 신청할 수 있거나 곧 열리는
+ * 프로그램만 따로 목록으로 한 번 더 보여준다. 마감은 격자의 막대로도 충분히 보이므로
+ * 여기엔 넣지 않는다 — 이 목록의 역할은 "지금 놓치면 안 되는 것"만 빠짐없이 보여주는 것.
+ */
+function actionableEntries(entries: CalendarMonthEntry[]) {
+  return entries.filter((entry) => entry.status === 'open' || entry.status === 'upcoming');
+}
+
 export default async function ProgramCalendarPage({ searchParams }: CalendarPageProps) {
   const [params, allPrograms] = await Promise.all([searchParams, getProgramSummaries()]);
 
@@ -48,6 +58,7 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
   const { year: prevYear, month: prevMonth } = shiftMonth(year, month, -1);
   const { year: nextYear, month: nextMonth } = shiftMonth(year, month, 1);
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth() + 1;
+  const agenda = actionableEntries(calendar.entries);
 
   return (
     <main className="programPage">
@@ -84,77 +95,107 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
           </div>
         </div>
 
-        <div className="calendarGrid">
-          <div className="calendarWeekdayHeader">
-            {CALENDAR_WEEKDAY_LABELS.map((label, index) => (
-              <span
-                className={index === 0 ? 'isSunday' : index === 6 ? 'isSaturday' : ''}
-                key={label}
+        <div className="calendarLayout">
+          <div className="calendarGrid">
+            <div className="calendarWeekdayHeader">
+              {CALENDAR_WEEKDAY_LABELS.map((label, index) => (
+                <span
+                  className={index === 0 ? 'isSunday' : index === 6 ? 'isSaturday' : ''}
+                  key={label}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+
+            {calendar.weeks.map((week, weekIndex) => (
+              <div
+                className="calendarWeekGrid"
+                key={week[0].iso}
+                style={{ gridTemplateRows: CALENDAR_ROW_TEMPLATE }}
               >
-                {label}
-              </span>
+                {week.map((day, col) => (
+                  <div
+                    className={`calendarDayFrame ${day.inMonth ? '' : 'isOutside'} ${col === 6 ? 'isLastCol' : ''}`}
+                    key={`frame-${day.iso}`}
+                    style={{ gridColumn: col + 1, gridRow: '1 / -1' }}
+                  />
+                ))}
+
+                {week.map((day, col) => (
+                  <span
+                    className={`calendarDayNumber ${day.inMonth ? '' : 'isOutside'} ${day.isToday ? 'isToday' : ''}`}
+                    key={`number-${day.iso}`}
+                    style={{ gridColumn: col + 1, gridRow: 1 }}
+                  >
+                    <span>{day.dayOfMonth}</span>
+                  </span>
+                ))}
+
+                {calendar.segmentsByWeek[weekIndex].map((segment) => (
+                  <a
+                    aria-label={`${segment.program.title} · ${segment.program.libraryName ?? '운영 도서관 확인 필요'} · 신청기간 ${formatProgramPeriod(segment.program.applyStartDate, segment.program.applyEndDate)} · ${programRecruitLabel[segment.status]} · 공공예약 서비스에서 보기 · 새 탭에서 열립니다`}
+                    className={[
+                      'calendarEventBar',
+                      `is-${segment.status}`,
+                      segment.isRangeStart ? '' : 'isContinuedStart',
+                      segment.isRangeEnd ? '' : 'isContinuedEnd',
+                    ].filter(Boolean).join(' ')}
+                    href={segment.program.sourceUrl}
+                    key={segment.key}
+                    rel="noreferrer"
+                    style={{ gridColumn: `${segment.startCol + 1} / ${segment.endCol + 2}`, gridRow: segment.lane + 2 }}
+                    target="_blank"
+                    title={segment.program.title}
+                  >
+                    {segment.program.title}
+                  </a>
+                ))}
+
+                {week.map((day, col) => {
+                  const overflowCount = calendar.overflowByWeek[weekIndex][col];
+                  if (overflowCount === 0) return null;
+                  return (
+                    <span
+                      className="calendarDayOverflow"
+                      key={`overflow-${day.iso}`}
+                      style={{ gridColumn: col + 1, gridRow: CALENDAR_MAX_VISIBLE_LANES + 2 }}
+                    >
+                      <span>+{overflowCount}</span>
+                    </span>
+                  );
+                })}
+              </div>
             ))}
           </div>
 
-          {calendar.weeks.map((week, weekIndex) => (
-            <div
-              className="calendarWeekGrid"
-              key={week[0].iso}
-              style={{ gridTemplateRows: CALENDAR_ROW_TEMPLATE }}
-            >
-              {week.map((day, col) => (
-                <div
-                  className={`calendarDayFrame ${day.inMonth ? '' : 'isOutside'} ${day.isToday ? 'isToday' : ''} ${col === 6 ? 'isLastCol' : ''}`}
-                  key={`frame-${day.iso}`}
-                  style={{ gridColumn: col + 1, gridRow: '1 / -1' }}
-                />
-              ))}
-
-              {week.map((day, col) => (
-                <span
-                  className={`calendarDayNumber ${day.inMonth ? '' : 'isOutside'}`}
-                  key={`number-${day.iso}`}
-                  style={{ gridColumn: col + 1, gridRow: 1 }}
-                >
-                  {day.dayOfMonth}
-                </span>
-              ))}
-
-              {calendar.segmentsByWeek[weekIndex].map((segment) => (
-                <a
-                  aria-label={`${segment.program.title} · ${segment.program.libraryName ?? '운영 도서관 확인 필요'} · 신청기간 ${formatProgramPeriod(segment.program.applyStartDate, segment.program.applyEndDate)} · ${programRecruitLabel[segment.status]} · 공공예약 서비스에서 보기 · 새 탭에서 열립니다`}
-                  className={[
-                    'calendarEventBar',
-                    `is-${segment.status}`,
-                    segment.isRangeStart ? '' : 'isContinuedStart',
-                    segment.isRangeEnd ? '' : 'isContinuedEnd',
-                  ].filter(Boolean).join(' ')}
-                  href={segment.program.sourceUrl}
-                  key={segment.key}
-                  rel="noreferrer"
-                  style={{ gridColumn: `${segment.startCol + 1} / ${segment.endCol + 2}`, gridRow: segment.lane + 2 }}
-                  target="_blank"
-                  title={segment.program.title}
-                >
-                  {segment.program.title}
-                </a>
-              ))}
-
-              {week.map((day, col) => {
-                const overflowCount = calendar.overflowByWeek[weekIndex][col];
-                if (overflowCount === 0) return null;
-                return (
-                  <span
-                    className="calendarDayOverflow"
-                    key={`overflow-${day.iso}`}
-                    style={{ gridColumn: col + 1, gridRow: CALENDAR_MAX_VISIBLE_LANES + 2 }}
-                  >
-                    +{overflowCount}건
-                  </span>
-                );
-              })}
+          <aside aria-labelledby="calendar-agenda-title" className="calendarAgenda">
+            <div className="calendarAgendaHeading">
+              <h2 id="calendar-agenda-title">신청 가능한 프로그램</h2>
+              <span>{agenda.length}건</span>
             </div>
-          ))}
+            {/*
+              격자 막대는 바쁜 주엔 5개까지만 그리고 나머지는 "+N"으로 접힌다. 접힌 것 중에
+              모집중·모집예정이 섞여 있으면 놓치기 쉬우니, 접히지 않는 목록으로 한 번 더 둔다.
+            */}
+            {agenda.length === 0 ? (
+              <p className="calendarAgendaEmpty">이번 달엔 모집중이거나 예정된 프로그램이 없습니다.</p>
+            ) : (
+              <ol className="calendarAgendaList">
+                {agenda.map(({ program, status }) => (
+                  <li key={program.sourceId}>
+                    <a href={program.sourceUrl} rel="noreferrer" target="_blank">
+                      <span className={`calendarAgendaStatus is-${status}`}>{programRecruitLabel[status]}</span>
+                      <span className="calendarAgendaTitle">{program.title}</span>
+                      <span className="calendarAgendaMeta">
+                        {program.libraryName ?? '운영 도서관 확인 필요'} · {formatProgramPeriod(program.applyStartDate, program.applyEndDate)}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </aside>
         </div>
       </section>
     </main>
