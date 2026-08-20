@@ -120,7 +120,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         <header className="programBoardHero">
           <div>
             <p className="programBoardEyebrow">MOIRA LIBRARY · PROGRAM</p>
-            <h1 id="program-board-title">우리 동네에서<br />열리는 프로그램들.</h1>
+            <h1 id="program-board-title">우리 동네에서<br />열리는 프로그램들</h1>
             <p>금정구 도서관이 운영한 문화·교육 프로그램을 한곳에서 확인해 보세요.</p>
           </div>
         </header>
@@ -214,7 +214,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                     <div className="programCardActions">
                       <ProgramFavoriteButton sourceId={program.sourceId} />
                       <a className="programCardLink" href={program.sourceUrl} rel="noreferrer" target="_blank">
-                        공공예약에서 보기 <span aria-hidden="true">↗</span>
+                        공공예약 서비스에서 보기 <span aria-hidden="true">↗</span>
                         <span className="uiSrOnly">새 탭에서 열립니다</span>
                       </a>
                     </div>

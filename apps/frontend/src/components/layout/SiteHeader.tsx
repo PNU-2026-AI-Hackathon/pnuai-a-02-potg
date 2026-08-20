@@ -36,9 +36,25 @@ export default function SiteHeader({
               모이라 소개
             </Link>
             <Link href="/#library-finder">우리동네 도서관</Link>
-            <Link className={activeMenu === 'programs' ? 'isActive' : ''} href="/programs">
-              프로그램 게시판
-            </Link>
+            <div className="siteNavDropdown">
+              <Link
+                className={activeMenu === 'programs' ? 'isActive' : ''}
+                href="/programs"
+              >
+                프로그램 게시판
+                <svg
+                  className="siteNavChevron"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path d="m5 7.5 5 5 5-5" />
+                </svg>
+              </Link>
+              <div className="siteNavSubmenu">
+                <Link href="/programs">전체 프로그램</Link>
+                <Link href="/programs/calendar">캘린더</Link>
+              </div>
+            </div>
             <div className="siteNavDropdown">
               <Link
                 className={activeMenu === 'community' ? 'isActive' : ''}
@@ -80,7 +96,8 @@ export default function SiteHeader({
             <nav aria-label="모바일 주요 메뉴">
               <Link href="/about">모이라 소개</Link>
               <Link href="/#library-finder">우리동네 도서관</Link>
-              <Link href="/programs">프로그램 게시판</Link>
+              <Link className={activeMenu === 'programs' ? 'isActive' : ''} href="/programs">프로그램 게시판</Link>
+              <Link className="siteMobileSubLink" href="/programs/calendar">캘린더</Link>
               <Link className={activeMenu === 'community' ? 'isActive' : ''} href="/community">우리동네 이야기</Link>
               <Link href="/survey">프로그램 투표</Link>
               <Link className="siteStudioLink" href="/studio">✦ MOIRA Studio</Link>

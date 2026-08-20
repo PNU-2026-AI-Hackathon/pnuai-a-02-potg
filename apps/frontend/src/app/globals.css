@@ -3139,6 +3139,405 @@ button {
   font-weight: 800;
 }
 
+/* --- 프로그램 게시판: 캘린더 --------------------------------------------------
+   신청기간이 여러 날에 걸치는 경우가 대부분이라, 날짜마다 같은 이름을 반복하는 대신
+   시작일부터 종료일까지 이어진 막대 하나로 그린다. 주(週)마다 하나의 CSS grid를 두고,
+   1행엔 날짜 숫자, 가운데 행들엔 막대, 마지막 행엔 다 못 그린 건수를 놓는다.
+
+   막대는 한 주에 5줄까지만 그리고 나머지는 배지로 접는다. 프로그램이 350건을 넘는
+   달에서는 그래도 다 못 그리는 날이 생기므로, 옆(모바일에서는 아래)에 "신청 가능한
+   프로그램" 목록을 따로 둬 모집중·모집예정이 배지 뒤에 묻히지 않게 한다.
+
+   색과 둥근 정도는 사이트 전반의 톤(브랜드 초록 · --moira-radius · --moira-shadow)을
+   그대로 따른다. 아래 .programCard 계열이 쓰는 파란 「공공예약 포털」 느낌은 크롤링해
+   온 원본 데이터를 그대로 보여주는 카드에만 남겨 두고, 캘린더는 우리가 만든 화면이므로
+   홈·커뮤니티와 같은 결로 맞춘다. */
+
+.calendarToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.calendarMonthNav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.calendarMonthNav a {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--moira-muted);
+  font-size: 17px;
+  font-weight: 700;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.calendarMonthNav a:hover,
+.calendarMonthNav a:focus-visible {
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.calendarMonthNav strong {
+  min-width: 118px;
+  color: var(--moira-ink);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.calendarTodayLink {
+  border: 1px solid var(--moira-border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: var(--moira-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.calendarTodayLink:hover,
+.calendarTodayLink:focus-visible {
+  border-color: var(--moira-green);
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.calendarLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.calendarLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--moira-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.calendarLegendItem i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.calendarLegendItem.is-open i { background: var(--moira-green); }
+.calendarLegendItem.is-upcoming i { background: var(--moira-warm); }
+.calendarLegendItem.is-closed i { background: #c1c9c3; }
+
+/*
+  달력 전체를 카드 하나로 감싼다. 홈의 인기 의제·설문 카드처럼 흰 배경에 둥근 모서리와
+  옅은 그림자를 준다. 옆에 목록을 두지 않고 컨테이너 너비(최대 1180px)를 그대로 써서
+  가로로 넓게 — 한 주 7칸이 좁아지지 않아야 막대 제목이 잘리지 않는다.
+
+  overflow: hidden을 안 쓴다. 「더보기」를 누르면 뜨는 하루 팝오버가 이 카드 밖으로
+  튀어나가야 하는데, hidden이면 카드 경계에서 잘려 버린다. 대신 모서리를 둥글게 보이도록
+  머리글과 마지막 줄 모서리 칸에 각각 radius를 직접 준다.
+*/
+.calendarGrid {
+  margin-top: 20px;
+  border: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-md);
+  background: #fff;
+  box-shadow: var(--moira-shadow);
+}
+
+.calendarWeekdayHeader {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-md) var(--moira-radius-md) 0 0;
+}
+
+.calendarWeekdayHeader span {
+  padding: 14px 10px 12px;
+  color: var(--moira-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendarWeekdayHeader span.isSunday { color: #c0615f; }
+.calendarWeekdayHeader span.isSaturday { color: #3d6fa8; }
+
+.calendarWeekGrid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendarDayFrame {
+  border-right: 1px solid #f0f1ee;
+  border-bottom: 1px solid #f0f1ee;
+  background: #fff;
+}
+
+.calendarDayFrame.isLastCol {
+  border-right: 0;
+}
+
+.calendarDayFrame.isOutside {
+  background: #fbfbfa;
+}
+
+.calendarDayFrame.isLastRow {
+  border-bottom: 0;
+}
+
+.calendarDayFrame.isLastRow.isFirstCol {
+  border-bottom-left-radius: var(--moira-radius-md);
+}
+
+.calendarDayFrame.isLastRow.isLastCol {
+  border-bottom-right-radius: var(--moira-radius-md);
+}
+
+.calendarDayNumber {
+  display: flex;
+  padding: 6px 7px 0;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.calendarDayNumber span {
+  display: grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--moira-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.calendarDayNumber.isOutside span {
+  color: #c3cac5;
+}
+
+/* 오늘 날짜는 칸 전체가 아니라 숫자 하나만 초록 원으로. 캘린더 앱에서 익숙한 표시라
+   칸을 통째로 물들이는 것보다 눈에 잘 띄면서도 차분하다. */
+.calendarDayNumber.isToday span {
+  background: var(--moira-green);
+  color: #fff;
+}
+
+.calendarEventBar {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  align-self: center;
+  margin: 0 3px;
+  border-left: 3px solid transparent;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.calendarEventBar:hover,
+.calendarEventBar:focus-visible {
+  transform: translateY(-1px);
+}
+
+/* 꽉 찬 색 블록 대신 옅게 톤을 깐 칩 + 왼쪽 강조선. 한 주에 여러 막대가 쌓여도
+   눈이 덜 피로하고, 배지 톤(programStatusBadge)과도 같은 색 언어를 쓴다. */
+.calendarEventBar.is-open {
+  border-left-color: var(--moira-green);
+  background: rgba(22, 116, 95, 0.13);
+  color: var(--moira-green-dark);
+}
+
+.calendarEventBar.is-open:hover,
+.calendarEventBar.is-open:focus-visible {
+  background: rgba(22, 116, 95, 0.2);
+}
+
+.calendarEventBar.is-upcoming {
+  border-left-color: var(--moira-warm);
+  background: rgba(241, 168, 91, 0.18);
+  color: #8a5417;
+}
+
+.calendarEventBar.is-upcoming:hover,
+.calendarEventBar.is-upcoming:focus-visible {
+  background: rgba(241, 168, 91, 0.28);
+}
+
+.calendarEventBar.is-closed,
+.calendarEventBar.is-unknown {
+  border-left-color: #c1c9c3;
+  background: #f1f3f1;
+  color: #6b756f;
+}
+
+.calendarEventBar.is-closed:hover,
+.calendarEventBar.is-unknown:hover {
+  background: #e7eae7;
+}
+
+/* 주 경계에서 잘려 다음 줄로 이어지는 막대는 그 방향의 모서리를 각지게 두어
+   "계속됨"을 표시한다. */
+.calendarEventBar.isContinuedStart {
+  margin-left: 0;
+  border-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.calendarEventBar.isContinuedEnd {
+  margin-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/*
+  「더보기」— 네이티브 <details>. 자바스크립트 없이 열고 닫히고, 요약을 다시 누르면
+  닫힌다(모바일 메뉴 .siteMobileMenu와 같은 패턴). summary가 격자 칸의 배지 자리를
+  대신하고, 열리면 본문이 그 칸 위로 뜨는 팝오버가 된다.
+*/
+.calendarDayMore {
+  position: relative;
+  display: flex;
+  align-self: center;
+  justify-content: center;
+}
+
+.calendarDayMoreButton {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  border-radius: 999px;
+  background: #eef0ed;
+  padding: 1px 8px;
+  color: var(--moira-muted);
+  font-size: 10px;
+  font-weight: 800;
+  list-style: none;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.calendarDayMoreButton::-webkit-details-marker {
+  display: none;
+}
+
+.calendarDayMoreButton:hover,
+.calendarDayMoreButton:focus-visible {
+  background: var(--moira-mint);
+  color: var(--moira-green-dark);
+}
+
+.calendarDayMore[open] > .calendarDayMoreButton {
+  background: var(--moira-green);
+  color: #fff;
+}
+
+.calendarDayMorePanel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  width: max(200px, 220%);
+  max-width: 280px;
+  border: 1px solid var(--moira-border);
+  border-radius: var(--moira-radius-sm);
+  background: #fff;
+  box-shadow: 0 20px 44px rgba(20, 40, 34, 0.18);
+  padding: 12px;
+  text-align: left;
+}
+
+.calendarDayMore.isRightAligned .calendarDayMorePanel {
+  right: 0;
+  left: auto;
+}
+
+.calendarDayMorePanelDate {
+  margin: 0 0 8px;
+  color: var(--moira-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.calendarDayMorePanel ol {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+/* 하루 확대 보기도 "제목-색상" 식으로 — 막대와 같은 색 언어를 점 하나로 축약해서 쓴다. */
+.calendarDayMorePanel a {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  border-radius: 7px;
+  padding: 6px 6px;
+  transition: background-color 140ms ease;
+}
+
+.calendarDayMorePanel a:hover,
+.calendarDayMorePanel a:focus-visible {
+  background: #f6f8f6;
+}
+
+.calendarDayMoreDot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.calendarDayMoreDot.is-open { background: var(--moira-green); }
+.calendarDayMoreDot.is-upcoming { background: var(--moira-warm); }
+.calendarDayMoreDot.is-closed,
+.calendarDayMoreDot.is-unknown { background: #c1c9c3; }
+
+.calendarDayMoreTitle {
+  color: var(--moira-ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+@media (max-width: 720px) {
+  .calendarLegend {
+    margin-left: 0;
+  }
+
+  .calendarMonthNav strong {
+    min-width: 90px;
+    font-size: 18px;
+  }
+
+  .calendarDayNumber span {
+    font-size: 10.5px;
+  }
+
+  .calendarEventBar {
+    font-size: 9.5px;
+  }
+}
+
 .programDetailArticle {
   border-top: 3px solid #1f3f69;
 }
@@ -15673,6 +16072,15 @@ html:has(.moiraPage) {
   .siteMobileMenuPanel nav > a:focus-visible,
   .siteMobileMenuPanel nav > a.isActive {
     color: #136f63;
+  }
+
+  /* 프로그램 게시판 아래에 딸린 하위 링크(캘린더 등). 들여써서 상위 메뉴와 묶여 보이게 한다. */
+  .siteMobileMenuPanel nav > a.siteMobileSubLink {
+    min-height: 38px;
+    padding-left: 16px;
+    color: #6b7a74;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .siteMobileMenuPanel .authActions {
