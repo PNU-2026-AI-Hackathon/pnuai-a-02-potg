@@ -3,9 +3,9 @@ import Link from 'next/link';
 import {
   CALENDAR_MAX_VISIBLE_LANES,
   CALENDAR_WEEKDAY_LABELS,
+  buildActionableAgenda,
   buildProgramCalendarMonth,
   shiftMonth,
-  type CalendarMonthEntry,
 } from '@/lib/program-calendar';
 import {
   formatProgramPeriod,
@@ -40,15 +40,6 @@ function monthHref(year: number, month: number) {
   return `/programs/calendar?year=${year}&month=${month}`;
 }
 
-/**
- * 격자는 자리가 모자라면 「+N건」으로 접는다. 그래서 지금 신청할 수 있거나 곧 열리는
- * 프로그램만 따로 목록으로 한 번 더 보여준다. 마감은 격자의 막대로도 충분히 보이므로
- * 여기엔 넣지 않는다 — 이 목록의 역할은 "지금 놓치면 안 되는 것"만 빠짐없이 보여주는 것.
- */
-function actionableEntries(entries: CalendarMonthEntry[]) {
-  return entries.filter((entry) => entry.status === 'open' || entry.status === 'upcoming');
-}
-
 export default async function ProgramCalendarPage({ searchParams }: CalendarPageProps) {
   const [params, allPrograms] = await Promise.all([searchParams, getProgramSummaries()]);
 
@@ -58,7 +49,11 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
   const { year: prevYear, month: prevMonth } = shiftMonth(year, month, -1);
   const { year: nextYear, month: nextMonth } = shiftMonth(year, month, 1);
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth() + 1;
-  const agenda = actionableEntries(calendar.entries);
+  /**
+   * 격자는 보고 있는 달을 따라가지만, 이 목록은 항상 "오늘" 기준이다. 다른 달을
+   * 넘겨보는 중에도 지금 신청 가능한 프로그램을 놓치지 않도록 달과 무관하게 고정한다.
+   */
+  const agenda = buildActionableAgenda(allPrograms, today);
 
   return (
     <main className="programPage">

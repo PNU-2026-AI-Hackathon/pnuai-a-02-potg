@@ -52,7 +52,7 @@ export type CalendarSegment = {
   isRangeEnd: boolean;
 };
 
-export type CalendarMonthEntry = {
+export type ProgramAgendaEntry = {
   program: ProgramSummary;
   status: ProgramRecruitStatus;
 };
@@ -65,12 +65,6 @@ export type ProgramCalendarMonth = {
   segmentsByWeek: CalendarSegment[][];
   /** weeks[i][j]에 대응. MAX_VISIBLE_LANES를 넘겨 접힌 일정 수. */
   overflowByWeek: number[][];
-  /**
-   * 이번 달 화면에 신청기간이 걸치는 프로그램 전부(모집중·모집예정 우선순).
-   * 격자는 자리가 모자라면 접지만, 이 목록은 접지 않는다. 밑에 목록으로 함께 보여줘
-   * "+N건"에 묻힌 모집예정 프로그램도 놓치지 않게 한다.
-   */
-  entries: CalendarMonthEntry[];
 };
 
 function toIsoDate(date: Date) {
@@ -202,13 +196,33 @@ export function buildProgramCalendarMonth(
     }
   });
 
-  const entries: CalendarMonthEntry[] = ranges.map(({ program, status }) => ({ program, status }));
-
-  return { year, month, weeks, segmentsByWeek, overflowByWeek, entries };
+  return { year, month, weeks, segmentsByWeek, overflowByWeek };
 }
 
 /** 이전/다음 달 링크를 만들 때 쓰는 정규화. 1월의 이전 달은 작년 12월, 12월의 다음 달은 내년 1월. */
 export function shiftMonth(year: number, month: number, delta: number) {
   const base = new Date(year, month - 1 + delta, 1);
   return { year: base.getFullYear(), month: base.getMonth() + 1 };
+}
+
+/**
+ * 지금(오늘) 기준으로 신청 가능한(모집중·모집예정) 프로그램 목록.
+ *
+ * 달력 격자와 달리 보고 있는 달에 얽매이지 않는다. 6월이든 12월이든, 옆 목록은 항상
+ * "오늘 기준으로 지금 신청할 수 있거나 곧 열리는 것"을 보여줘야 한다 — 다른 달을
+ * 넘겨보다가 정작 지금 신청 가능한 목록을 놓치면 안 되기 때문이다.
+ * 모집중을 앞에 두고, 각 묶음 안에서는 신청 시작일이 빠른(곧 열리는) 순으로 정렬한다.
+ */
+export function buildActionableAgenda(programs: ProgramSummary[], today: Date): ProgramAgendaEntry[] {
+  return programs
+    .map((program) => ({ program, status: programRecruitStatus(program, today) }))
+    .filter((entry): entry is ProgramAgendaEntry & { status: 'open' | 'upcoming' } =>
+      entry.status === 'open' || entry.status === 'upcoming')
+    .sort((a, b) => {
+      const priorityDiff = STATUS_LANE_PRIORITY[a.status] - STATUS_LANE_PRIORITY[b.status];
+      if (priorityDiff !== 0) return priorityDiff;
+      const leftStart = a.program.applyStartDate ?? '';
+      const rightStart = b.program.applyStartDate ?? '';
+      return leftStart.localeCompare(rightStart);
+    });
 }
