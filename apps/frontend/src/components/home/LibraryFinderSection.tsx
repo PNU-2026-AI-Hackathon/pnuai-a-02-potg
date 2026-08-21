@@ -45,7 +45,7 @@ type LibrariesApiResponse = {
 
 type KakaoStatus = 'OK' | 'ZERO_RESULT' | 'ERROR';
 type KakaoLatLng = { getLat(): number; getLng(): number };
-type KakaoMap = { setCenter(position: KakaoLatLng): void };
+type KakaoMap = { setCenter(position: KakaoLatLng): void; setZoomable(zoomable: boolean): void };
 type KakaoMarker = { setMap(map: KakaoMap | null): void };
 type KakaoGeocoderResult = { x: string; y: string };
 type KakaoPlacesResult = { x: string; y: string };
@@ -216,6 +216,7 @@ export default function LibraryFinderSection() {
   const [errorMessage, setErrorMessage] = useState('');
   const [mapStatus, setMapStatus] = useState('지도를 준비하는 중입니다.');
   const [markerLocations, setMarkerLocations] = useState<Record<string, MarkerLocation>>({});
+  const mapPanelRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<KakaoMap | null>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
@@ -225,6 +226,20 @@ export default function LibraryFinderSection() {
     () => libraries.find((library) => library.id === selectedId) ?? libraries[0] ?? null,
     [libraries, selectedId],
   );
+
+  useEffect(() => {
+    const panel = mapPanelRef.current;
+    if (!panel) return;
+
+    const keepWheelInsideMap = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    panel.addEventListener('wheel', keepWheelInsideMap, { passive: false });
+
+    return () => panel.removeEventListener('wheel', keepWheelInsideMap);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -286,6 +301,7 @@ export default function LibraryFinderSection() {
       const center = new kakao.maps.LatLng(GEUMJEONG_CENTER.lat, GEUMJEONG_CENTER.lng);
       const map = mapRef.current ?? new kakao.maps.Map(mapContainerRef.current, { center, level: 7 });
       mapRef.current = map;
+      map.setZoomable(false);
 
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
@@ -376,10 +392,7 @@ export default function LibraryFinderSection() {
               </button>
             </div>
           </form>
-        </div>
-
-        <div className="libraryFinderExplorer">
-          <div className="libraryMapPanel">
+          <div ref={mapPanelRef} className="libraryMapPanel">
             <div ref={mapContainerRef} className="libraryMap" role="img" aria-label="금정구 도서관 위치 지도" />
             <p className="libraryMapStatus">{mapStatus}</p>
             {selectedLibrary ? (
@@ -390,7 +403,9 @@ export default function LibraryFinderSection() {
               </div>
             ) : null}
           </div>
+        </div>
 
+        <div className="libraryFinderExplorer">
           <div className="libraryResultsHeader">
             <strong>{isLoading ? '검색 중' : `${libraries.length}곳`}</strong>
             {submittedQuery ? <span>&quot;{submittedQuery}&quot; 검색 결과</span> : <span>금정구 도서관</span>}
