@@ -216,7 +216,6 @@ export default function LibraryFinderSection() {
   const [errorMessage, setErrorMessage] = useState('');
   const [mapStatus, setMapStatus] = useState('지도를 준비하는 중입니다.');
   const [markerLocations, setMarkerLocations] = useState<Record<string, MarkerLocation>>({});
-  const mapPanelRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<KakaoMap | null>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
@@ -226,20 +225,6 @@ export default function LibraryFinderSection() {
     () => libraries.find((library) => library.id === selectedId) ?? libraries[0] ?? null,
     [libraries, selectedId],
   );
-
-  useEffect(() => {
-    const panel = mapPanelRef.current;
-    if (!panel) return;
-
-    const keepWheelInsideMap = (event: WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
-    panel.addEventListener('wheel', keepWheelInsideMap, { passive: false });
-
-    return () => panel.removeEventListener('wheel', keepWheelInsideMap);
-  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -299,9 +284,9 @@ export default function LibraryFinderSection() {
       if (cancelled || !mapContainerRef.current) return;
 
       const center = new kakao.maps.LatLng(GEUMJEONG_CENTER.lat, GEUMJEONG_CENTER.lng);
-      const map = mapRef.current ?? new kakao.maps.Map(mapContainerRef.current, { center, level: 7 });
+      const map = mapRef.current ?? new kakao.maps.Map(mapContainerRef.current, { center, level: 6 });
       mapRef.current = map;
-      map.setZoomable(false);
+      map.setZoomable(true);
 
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
@@ -392,7 +377,7 @@ export default function LibraryFinderSection() {
               </button>
             </div>
           </form>
-          <div ref={mapPanelRef} className="libraryMapPanel">
+          <div className="libraryMapPanel">
             <div ref={mapContainerRef} className="libraryMap" role="img" aria-label="금정구 도서관 위치 지도" />
             <p className="libraryMapStatus">{mapStatus}</p>
             {selectedLibrary ? (
