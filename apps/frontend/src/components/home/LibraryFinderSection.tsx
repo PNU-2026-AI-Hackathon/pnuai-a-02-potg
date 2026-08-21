@@ -45,7 +45,12 @@ type LibrariesApiResponse = {
 
 type KakaoStatus = 'OK' | 'ZERO_RESULT' | 'ERROR';
 type KakaoLatLng = { getLat(): number; getLng(): number };
-type KakaoMap = { setCenter(position: KakaoLatLng): void; setZoomable(zoomable: boolean): void };
+type KakaoMap = {
+  getLevel(): number;
+  setCenter(position: KakaoLatLng): void;
+  setLevel(level: number): void;
+  setZoomable(zoomable: boolean): void;
+};
 type KakaoMarker = { setMap(map: KakaoMap | null): void };
 type KakaoGeocoderResult = { x: string; y: string };
 type KakaoPlacesResult = { x: string; y: string };
@@ -88,6 +93,8 @@ type MarkerLocation = {
 
 const KAKAO_SDK_ID = 'kakao-map-sdk';
 const GEUMJEONG_CENTER = { lat: 35.243, lng: 129.092 };
+const MAP_MIN_LEVEL = 1;
+const MAP_MAX_LEVEL = 12;
 
 function getKakaoMapApiKey() {
   return process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY?.trim() ?? '';
@@ -233,11 +240,23 @@ export default function LibraryFinderSection() {
 
     const keepWheelOnMap = (event: WheelEvent) => {
       event.preventDefault();
+      event.stopPropagation();
+
+      const map = mapRef.current;
+      if (!map) return;
+
+      const currentLevel = map.getLevel();
+      const nextLevel = Math.min(
+        MAP_MAX_LEVEL,
+        Math.max(MAP_MIN_LEVEL, currentLevel + (event.deltaY > 0 ? 1 : -1)),
+      );
+
+      if (nextLevel !== currentLevel) map.setLevel(nextLevel);
     };
 
-    panel.addEventListener('wheel', keepWheelOnMap, { passive: false });
+    panel.addEventListener('wheel', keepWheelOnMap, { capture: true, passive: false });
 
-    return () => panel.removeEventListener('wheel', keepWheelOnMap);
+    return () => panel.removeEventListener('wheel', keepWheelOnMap, { capture: true });
   }, []);
 
   useEffect(() => {
@@ -300,7 +319,7 @@ export default function LibraryFinderSection() {
       const center = new kakao.maps.LatLng(GEUMJEONG_CENTER.lat, GEUMJEONG_CENTER.lng);
       const map = mapRef.current ?? new kakao.maps.Map(mapContainerRef.current, { center, level: 6 });
       mapRef.current = map;
-      map.setZoomable(true);
+      map.setZoomable(false);
 
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
