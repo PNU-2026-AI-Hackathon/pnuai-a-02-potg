@@ -51,7 +51,13 @@ type KakaoMap = {
   setLevel(level: number): void;
   setZoomable(zoomable: boolean): void;
 };
-type KakaoMarker = { setMap(map: KakaoMap | null): void };
+type KakaoMarkerImage = object;
+type KakaoSize = object;
+type KakaoPoint = object;
+type KakaoMarker = {
+  setImage(image: KakaoMarkerImage): void;
+  setMap(map: KakaoMap | null): void;
+};
 type KakaoInfoWindow = {
   close(): void;
   open(map: KakaoMap, marker: KakaoMarker): void;
@@ -73,8 +79,15 @@ type KakaoNamespace = {
     load(callback: () => void): void;
     LatLng: new (lat: number, lng: number) => KakaoLatLng;
     Map: new (container: HTMLElement, options: { center: KakaoLatLng; level: number }) => KakaoMap;
-    Marker: new (options: { map: KakaoMap; position: KakaoLatLng }) => KakaoMarker;
+    Marker: new (options: { image?: KakaoMarkerImage; map: KakaoMap; position: KakaoLatLng }) => KakaoMarker;
+    MarkerImage: new (
+      src: string,
+      size: KakaoSize,
+      options?: { offset?: KakaoPoint },
+    ) => KakaoMarkerImage;
     InfoWindow: new (options: { content: string }) => KakaoInfoWindow;
+    Point: new (x: number, y: number) => KakaoPoint;
+    Size: new (width: number, height: number) => KakaoSize;
     services: {
       Status: { OK: 'OK'; ZERO_RESULT: 'ZERO_RESULT'; ERROR: 'ERROR' };
       Geocoder: new () => KakaoGeocoder;
@@ -94,6 +107,11 @@ declare global {
 type MarkerLocation = {
   lat: number;
   lng: number;
+};
+
+type LibraryMarkerImages = {
+  default: KakaoMarkerImage;
+  selected: KakaoMarkerImage;
 };
 
 const KAKAO_SDK_ID = 'kakao-map-sdk';
@@ -229,6 +247,31 @@ function escapeHtml(value: string) {
     .replaceAll("'", '&#39;');
 }
 
+function buildMarkerSvg(fill: string) {
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">
+      <path d="M18 1.5C9.2 1.5 2.2 8.5 2.2 17.3c0 11.9 15.8 29.2 15.8 29.2s15.8-17.3 15.8-29.2C33.8 8.5 26.8 1.5 18 1.5Z" fill="${fill}" stroke="white" stroke-width="2.2"/>
+      <circle cx="18" cy="17.6" r="6.4" fill="white"/>
+      <circle cx="18" cy="17.6" r="2.3" fill="${fill}"/>
+    </svg>
+  `.trim();
+}
+
+function buildMarkerImageDataUri(fill: string) {
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(buildMarkerSvg(fill))}`;
+}
+
+function createLibraryMarkerImages(kakao: KakaoNamespace): LibraryMarkerImages {
+  const size = new kakao.maps.Size(36, 48);
+  const offset = new kakao.maps.Point(18, 46);
+  const options = { offset };
+
+  return {
+    default: new kakao.maps.MarkerImage(buildMarkerImageDataUri('#2d8cff'), size, options),
+    selected: new kakao.maps.MarkerImage(buildMarkerImageDataUri('#e53935'), size, options),
+  };
+}
+
 export default function LibraryFinderSection() {
   const [query, setQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
@@ -241,13 +284,20 @@ export default function LibraryFinderSection() {
   const mapPanelRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<KakaoMap | null>(null);
+  const markerByLibraryIdRef = useRef<Record<string, KakaoMarker>>({});
+  const markerImagesRef = useRef<LibraryMarkerImages | null>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
+  const selectedIdRef = useRef<string | null>(null);
   const kakaoMapApiKey = getKakaoMapApiKey();
 
   const selectedLibrary = useMemo(
     () => libraries.find((library) => library.id === selectedId) ?? libraries[0] ?? null,
     [libraries, selectedId],
   );
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
 
   useEffect(() => {
     const panel = mapPanelRef.current;
@@ -320,6 +370,7 @@ export default function LibraryFinderSection() {
       setMarkerLocations({});
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
+      markerByLibraryIdRef.current = {};
       return;
     }
 
@@ -338,6 +389,7 @@ export default function LibraryFinderSection() {
 
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
+      markerByLibraryIdRef.current = {};
 
       if (!libraries.length) {
         setMarkerLocations({});
@@ -346,6 +398,8 @@ export default function LibraryFinderSection() {
 
       const geocoder = new kakao.maps.services.Geocoder();
       const places = new kakao.maps.services.Places();
+      const markerImages = createLibraryMarkerImages(kakao);
+      markerImagesRef.current = markerImages;
       const locations = await Promise.all(
         libraries.map(async (library) => ({
           library,
@@ -363,7 +417,11 @@ export default function LibraryFinderSection() {
 
         nextMarkerLocations[library.id] = { lat: position.getLat(), lng: position.getLng() };
 
-        const marker = new kakao.maps.Marker({ map, position });
+        const marker = new kakao.maps.Marker({
+          image: library.id === selectedIdRef.current ? markerImages.selected : markerImages.default,
+          map,
+          position,
+        });
         const infoWindow = new kakao.maps.InfoWindow({
           content: `<div class="libraryMarkerTooltip">${escapeHtml(library.name)}</div>`,
         });
@@ -374,6 +432,7 @@ export default function LibraryFinderSection() {
           setSelectedId(library.id);
           map.setCenter(position);
         });
+        markerByLibraryIdRef.current[library.id] = marker;
         markersRef.current.push(marker);
       });
 
@@ -390,6 +449,15 @@ export default function LibraryFinderSection() {
       cancelled = true;
     };
   }, [kakaoMapApiKey, libraries]);
+
+  useEffect(() => {
+    const markerImages = markerImagesRef.current;
+    if (!markerImages) return;
+
+    Object.entries(markerByLibraryIdRef.current).forEach(([libraryId, marker]) => {
+      marker.setImage(libraryId === selectedId ? markerImages.selected : markerImages.default);
+    });
+  }, [markerLocations, selectedId]);
 
   useEffect(() => {
     const location = selectedId ? markerLocations[selectedId] : null;
