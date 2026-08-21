@@ -281,6 +281,7 @@ export default function LibraryFinderSection() {
   const [errorMessage, setErrorMessage] = useState('');
   const [mapStatus, setMapStatus] = useState('지도를 준비하는 중입니다.');
   const [markerLocations, setMarkerLocations] = useState<Record<string, MarkerLocation>>({});
+  const libraryGridRef = useRef<HTMLDivElement | null>(null);
   const mapPanelRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<KakaoMap | null>(null);
@@ -298,6 +299,30 @@ export default function LibraryFinderSection() {
   useEffect(() => {
     selectedIdRef.current = selectedId;
   }, [selectedId]);
+
+  useEffect(() => {
+    const grid = libraryGridRef.current;
+    const mapPanel = mapPanelRef.current;
+    if (!grid || !mapPanel) return;
+
+    const syncExplorerHeight = () => {
+      const gridTop = grid.getBoundingClientRect().top;
+      const mapBottom = mapPanel.getBoundingClientRect().bottom;
+      grid.style.setProperty('--library-explorer-height', `${Math.max(0, mapBottom - gridTop)}px`);
+    };
+
+    syncExplorerHeight();
+
+    const resizeObserver = new ResizeObserver(syncExplorerHeight);
+    resizeObserver.observe(grid);
+    resizeObserver.observe(mapPanel);
+    window.addEventListener('resize', syncExplorerHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', syncExplorerHeight);
+    };
+  }, []);
 
   useEffect(() => {
     const panel = mapPanelRef.current;
@@ -471,7 +496,7 @@ export default function LibraryFinderSection() {
 
   return (
     <section className="homeSection libraryFinderSection" id="library-finder">
-      <div className="uiContainer libraryFinderGrid">
+      <div ref={libraryGridRef} className="uiContainer libraryFinderGrid">
         <div className="libraryFinderContent">
           <SectionHeading
             eyebrow="LIBRARY NEAR YOU"

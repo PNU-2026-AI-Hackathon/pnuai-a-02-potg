@@ -8644,6 +8644,7 @@ html:has(.moiraPage) {
 
 .libraryFinderGrid {
   --library-map-height: clamp(500px, 58vh, 640px);
+  --library-explorer-height: calc(var(--library-map-height) + 280px);
   display: grid;
   grid-template-columns: minmax(560px, 1.35fr) minmax(360px, 0.65fr);
   gap: clamp(24px, 3vw, 42px);
@@ -8700,7 +8701,7 @@ html:has(.moiraPage) {
 .libraryFinderExplorer {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  height: var(--library-map-height);
+  height: var(--library-explorer-height);
   min-width: 0;
   gap: 18px;
   align-content: start;
