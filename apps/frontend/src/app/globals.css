@@ -8775,6 +8775,16 @@ html:has(.moiraPage) {
   line-height: 1.55;
 }
 
+.libraryMarkerTooltip {
+  min-width: max-content;
+  padding: 7px 10px;
+  color: var(--moira-ink);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .libraryResultsHeader {
   display: flex;
   align-items: center;

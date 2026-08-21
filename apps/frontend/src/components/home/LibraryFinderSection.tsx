@@ -52,6 +52,10 @@ type KakaoMap = {
   setZoomable(zoomable: boolean): void;
 };
 type KakaoMarker = { setMap(map: KakaoMap | null): void };
+type KakaoInfoWindow = {
+  close(): void;
+  open(map: KakaoMap, marker: KakaoMarker): void;
+};
 type KakaoGeocoderResult = { x: string; y: string };
 type KakaoPlacesResult = { x: string; y: string };
 type KakaoGeocoder = {
@@ -70,6 +74,7 @@ type KakaoNamespace = {
     LatLng: new (lat: number, lng: number) => KakaoLatLng;
     Map: new (container: HTMLElement, options: { center: KakaoLatLng; level: number }) => KakaoMap;
     Marker: new (options: { map: KakaoMap; position: KakaoLatLng }) => KakaoMarker;
+    InfoWindow: new (options: { content: string }) => KakaoInfoWindow;
     services: {
       Status: { OK: 'OK'; ZERO_RESULT: 'ZERO_RESULT'; ERROR: 'ERROR' };
       Geocoder: new () => KakaoGeocoder;
@@ -93,6 +98,7 @@ type MarkerLocation = {
 
 const KAKAO_SDK_ID = 'kakao-map-sdk';
 const GEUMJEONG_CENTER = { lat: 35.243, lng: 129.092 };
+const INITIAL_MAP_LEVEL = 5;
 const MAP_MIN_LEVEL = 1;
 const MAP_MAX_LEVEL = 12;
 
@@ -214,6 +220,15 @@ function buildLibraryQueryUrl(query: string) {
   return search ? `/api/libraries?${search}` : '/api/libraries';
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 export default function LibraryFinderSection() {
   const [query, setQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
@@ -317,7 +332,7 @@ export default function LibraryFinderSection() {
       if (cancelled || !mapContainerRef.current) return;
 
       const center = new kakao.maps.LatLng(GEUMJEONG_CENTER.lat, GEUMJEONG_CENTER.lng);
-      const map = mapRef.current ?? new kakao.maps.Map(mapContainerRef.current, { center, level: 6 });
+      const map = mapRef.current ?? new kakao.maps.Map(mapContainerRef.current, { center, level: INITIAL_MAP_LEVEL });
       mapRef.current = map;
       map.setZoomable(false);
 
@@ -349,6 +364,12 @@ export default function LibraryFinderSection() {
         nextMarkerLocations[library.id] = { lat: position.getLat(), lng: position.getLng() };
 
         const marker = new kakao.maps.Marker({ map, position });
+        const infoWindow = new kakao.maps.InfoWindow({
+          content: `<div class="libraryMarkerTooltip">${escapeHtml(library.name)}</div>`,
+        });
+
+        kakao.maps.event.addListener(marker, 'mouseover', () => infoWindow.open(map, marker));
+        kakao.maps.event.addListener(marker, 'mouseout', () => infoWindow.close());
         kakao.maps.event.addListener(marker, 'click', () => {
           setSelectedId(library.id);
           map.setCenter(position);
