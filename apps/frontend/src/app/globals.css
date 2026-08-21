@@ -5149,6 +5149,7 @@ html:has(.moiraPage) {
   font-weight: 650;
   letter-spacing: 0.055em;
   line-height: 1.25;
+  white-space: nowrap;
 }
 
 .siteBrandLogo {
