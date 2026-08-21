@@ -21,7 +21,8 @@ import studioVotesRouter from './routes/studioVotes';
 import programBoardSemanticSearchRouter from './routes/programBoardSemanticSearch';
 import programBoardEntriesRouter from './routes/programBoardEntries';
 import programFavoritesRouter from './routes/programFavorites';
-import { announcements, libraries, programs, volunteers, agendaItems } from './data/mockData';
+import { announcements, programs, volunteers, agendaItems } from './data/mockData';
+import { geumjeongLibraries } from './data/geumjeongLibraries';
 import { prisma } from './lib/prisma';
 
 const app = express();
@@ -75,7 +76,7 @@ app.get('/api/health/db', async (_req: Request, res: Response) => {
 
 app.get('/api/summary', (_req: Request, res: Response) => {
   res.json({
-    libraries: libraries.length,
+    libraries: geumjeongLibraries.length,
     programs: programs.length,
     agendaItems: agendaItems.length,
     volunteerMatches: volunteers.length,
