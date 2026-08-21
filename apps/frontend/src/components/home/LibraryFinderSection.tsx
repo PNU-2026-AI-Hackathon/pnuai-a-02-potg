@@ -475,7 +475,7 @@ export default function LibraryFinderSection() {
         <div className="libraryFinderContent">
           <SectionHeading
             eyebrow="LIBRARY NEAR YOU"
-            title="우리 동네 작은도서관 찾기"
+            title="우리 동네 도서관 찾기"
             description="부산 금정구 도서관을 검색하고 위치와 최근 프로그램을 함께 확인해 보세요."
           />
           <form
