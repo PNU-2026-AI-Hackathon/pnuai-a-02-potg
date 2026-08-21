@@ -216,6 +216,7 @@ export default function LibraryFinderSection() {
   const [errorMessage, setErrorMessage] = useState('');
   const [mapStatus, setMapStatus] = useState('지도를 준비하는 중입니다.');
   const [markerLocations, setMarkerLocations] = useState<Record<string, MarkerLocation>>({});
+  const mapPanelRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<KakaoMap | null>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
@@ -225,6 +226,19 @@ export default function LibraryFinderSection() {
     () => libraries.find((library) => library.id === selectedId) ?? libraries[0] ?? null,
     [libraries, selectedId],
   );
+
+  useEffect(() => {
+    const panel = mapPanelRef.current;
+    if (!panel) return;
+
+    const keepWheelOnMap = (event: WheelEvent) => {
+      event.preventDefault();
+    };
+
+    panel.addEventListener('wheel', keepWheelOnMap, { passive: false });
+
+    return () => panel.removeEventListener('wheel', keepWheelOnMap);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -377,7 +391,7 @@ export default function LibraryFinderSection() {
               </button>
             </div>
           </form>
-          <div className="libraryMapPanel">
+          <div ref={mapPanelRef} className="libraryMapPanel">
             <div ref={mapContainerRef} className="libraryMap" role="img" aria-label="금정구 도서관 위치 지도" />
             <p className="libraryMapStatus">{mapStatus}</p>
             {selectedLibrary ? (
