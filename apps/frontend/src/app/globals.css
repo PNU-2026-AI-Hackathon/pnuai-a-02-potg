@@ -8643,6 +8643,7 @@ html:has(.moiraPage) {
 }
 
 .libraryFinderGrid {
+  --library-map-height: clamp(500px, 58vh, 640px);
   display: grid;
   grid-template-columns: minmax(560px, 1.35fr) minmax(360px, 0.65fr);
   gap: clamp(24px, 3vw, 42px);
@@ -8698,6 +8699,8 @@ html:has(.moiraPage) {
 
 .libraryFinderExplorer {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: var(--library-map-height);
   min-width: 0;
   gap: 18px;
   align-content: start;
@@ -8707,7 +8710,7 @@ html:has(.moiraPage) {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  min-height: clamp(500px, 58vh, 640px);
+  min-height: var(--library-map-height);
   border: 1px solid #bfd1c9;
   border-radius: var(--moira-radius-md);
   background: #d9e7e1;
@@ -8803,7 +8806,7 @@ html:has(.moiraPage) {
 .libraryResults {
   display: grid;
   gap: 12px;
-  height: clamp(620px, 74vh, 860px);
+  min-height: 0;
   overflow: auto;
   padding-right: 4px;
 }
@@ -9547,6 +9550,10 @@ html:has(.moiraPage) {
 
   .libraryFinderContent {
     position: static;
+  }
+
+  .libraryFinderExplorer {
+    height: auto;
   }
 
   .libraryResults {
