@@ -70,14 +70,38 @@ function LibraryIllustration() {
 }
 
 function LibraryNewsHero({ board }: { board: CommunityBoard }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <>
-      <section className="libraryNewsHero" aria-labelledby="library-news-title">
+      <section
+        className="libraryNewsHero"
+        aria-labelledby="library-news-title"
+        data-expanded={isExpanded}
+        onClick={() => setIsExpanded((current) => !current)}
+      >
         <div className="libraryNewsHeroCopy">
           <p className="libraryNewsEyebrow">지역 커뮤니티</p>
-          <h1 id="library-news-title">{board.title}</h1>
-          <p>{board.description}</p>
-          <strong>함께 만드는 더 나은 도서관, 더 가까운 우리 동네.</strong>
+          <div className="libraryNewsHeroHeading">
+            <h1 id="library-news-title">{board.title}</h1>
+            <button
+              className="libraryNewsHeroToggle"
+              type="button"
+              aria-expanded={isExpanded}
+              aria-controls="library-news-introduction"
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsExpanded((current) => !current);
+              }}
+            >
+              <span className="srOnly">게시판 소개 {isExpanded ? '접기' : '펼치기'}</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+          </div>
+          <div className="libraryNewsHeroIntroduction" id="library-news-introduction">
+            <p>{board.description}</p>
+            <strong>함께 만드는 더 나은 도서관, 더 가까운 우리 동네.</strong>
+          </div>
         </div>
         <LibraryIllustration />
       </section>
@@ -151,8 +175,8 @@ function PostActivityActions({ postId, activity, onChange }: { postId: string; a
   }
   return (
     <div className="libraryNewsActivity">
-      <button className={activity.liked ? 'isActive' : ''} type="button" onClick={() => toggle('like')} aria-label={`좋아요 ${activity.likeCount}개`} aria-pressed={activity.liked}><Icon name="heart" />좋아요 {activity.likeCount}</button>
-      <button className={activity.saved ? 'isActive' : ''} type="button" onClick={() => toggle('save')} aria-label={`관심글 ${activity.saveCount}개`} aria-pressed={activity.saved}><Icon name="bookmark" />관심 {activity.saveCount}</button>
+      <button className={activity.liked ? 'isActive' : ''} type="button" onClick={() => toggle('like')} aria-label={`좋아요 ${activity.likeCount}개`} aria-pressed={activity.liked}><Icon name="heart" /><span className="libraryNewsActivityLabel">좋아요</span><strong>{activity.likeCount}</strong></button>
+      <button className={activity.saved ? 'isActive' : ''} type="button" onClick={() => toggle('save')} aria-label={`관심글 ${activity.saveCount}개`} aria-pressed={activity.saved}><Icon name="bookmark" /><span className="libraryNewsActivityLabel">관심</span><strong>{activity.saveCount}</strong></button>
       {message ? <span role="status">{message}</span> : null}
     </div>
   );
@@ -252,6 +276,10 @@ export default function LibraryNewsBoard({ board, posts, user }: { board: Commun
           {visiblePosts.length ? visiblePosts.map((post) => <LibraryNewsPostCard key={post.id} post={post} activity={activities[post.id] ?? emptyActivity} onActivityChange={(activity) => setActivities((current) => ({ ...current, [post.id]: activity }))} />) : <div className="libraryNewsEmpty"><Icon name="search" /><strong>검색 결과가 없습니다.</strong><p>다른 검색어나 카테고리를 선택해 보세요.</p></div>}
         </section>
         <LibraryNewsPagination page={Math.min(page, pageCount)} pageCount={pageCount} onPage={setPage} />
+        <label className="libraryNewsBottomSearch">
+          <span className="srOnly">게시글 검색</span><Icon name="search" />
+          <input value={query} onChange={(event) => resetPage(setQuery)(event.target.value)} placeholder="제목, 내용으로 검색하세요" />
+        </label>
       </div>
     </main>
   );
