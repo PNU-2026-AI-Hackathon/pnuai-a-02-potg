@@ -121,7 +121,7 @@ export default function SiteHeader({
                   <Link href="/survey">프로그램 투표</Link>
                 </div>
               </div>
-              <Link className="siteStudioLink" href="/studio">✦ MOIRA Studio</Link>
+              <Link className="siteStudioLink" href="/studio/about">✦ MOIRA Studio</Link>
             </nav>
             <AuthActions initialUser={user} />
           </div>
