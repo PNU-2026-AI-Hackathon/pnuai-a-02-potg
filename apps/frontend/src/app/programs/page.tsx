@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import ProgramFavoriteButton from '@/components/programs/ProgramFavoriteButton';
+import { ProgramBoardHero, ProgramFilterPanel } from '@/components/programs/ProgramBoardControls';
 import {
   formatProgramPeriod,
   getProgramSummaries,
@@ -117,13 +118,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
           <Link href="/">홈</Link><span aria-hidden="true">/</span><span>프로그램 게시판</span>
         </nav>
 
-        <header className="programBoardHero">
-          <div>
-            <p className="programBoardEyebrow">MOIRA LIBRARY · PROGRAM</p>
-            <h1 id="program-board-title">우리 동네에서<br />열리는 프로그램들</h1>
-            <p>금정구 도서관이 운영한 문화·교육 프로그램을 한곳에서 확인해 보세요.</p>
-          </div>
-        </header>
+        <ProgramBoardHero />
 
         <section className="programSummary" aria-label="프로그램 현황">
           <div><strong>{programs.length}</strong><span>전체 프로그램</span></div>
@@ -136,36 +131,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
           링크 공유가 모두 되고, 페이지를 넘겨도 조건이 따라간다.
           page를 담지 않으므로 조건을 바꾸면 1페이지부터 다시 본다.
         */}
-        <form action="/programs" className="programFilterBar" method="get">
-          <label>
-            <span>접수별</span>
-            <select defaultValue={filters.status} name="status">
-              {statusOptions.map((option) => (
-                <option key={option.value || 'all'} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>대상별</span>
-            <select defaultValue={filters.target} name="target">
-              <option value="">전체 대상</option>
-              {targetOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>도서관</span>
-            <select defaultValue={filters.library} name="library">
-              <option value="">전체 도서관</option>
-              {libraryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label className="programFilterSearch">
-            <span>프로그램 검색</span>
-            <input defaultValue={filters.q} name="q" placeholder="프로그램명 또는 도서관명" type="search" />
-          </label>
-          {/* 조건을 풀 때도 「전체」로 되돌려 검색을 누르면 된다. 되돌리기 단추를 따로 두지 않는다. */}
-          <button className="uiButton uiButtonPrimary" type="submit">검색</button>
-        </form>
+        <ProgramFilterPanel filters={filters} statusOptions={statusOptions} targetOptions={targetOptions} libraryOptions={libraryOptions} />
 
         <section className="programListSection" aria-labelledby="program-list-title">
           <div className="programListHeading">
