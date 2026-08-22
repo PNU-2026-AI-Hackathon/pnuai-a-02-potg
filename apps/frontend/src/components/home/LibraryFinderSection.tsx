@@ -119,6 +119,7 @@ const GEUMJEONG_CENTER = { lat: 35.243, lng: 129.092 };
 const INITIAL_MAP_LEVEL = 5;
 const MAP_MIN_LEVEL = 1;
 const MAP_MAX_LEVEL = 12;
+const MOBILE_LIBRARY_LIMIT = 3;
 
 function getKakaoMapApiKey() {
   return process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY?.trim() ?? '';
@@ -281,6 +282,8 @@ export default function LibraryFinderSection() {
   const [errorMessage, setErrorMessage] = useState('');
   const [mapStatus, setMapStatus] = useState('지도를 준비하는 중입니다.');
   const [markerLocations, setMarkerLocations] = useState<Record<string, MarkerLocation>>({});
+  const [isMobile, setIsMobile] = useState(false);
+  const [showAllLibraries, setShowAllLibraries] = useState(false);
   const libraryGridRef = useRef<HTMLDivElement | null>(null);
   const mapPanelRef = useRef<HTMLDivElement | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -295,10 +298,26 @@ export default function LibraryFinderSection() {
     () => libraries.find((library) => library.id === selectedId) ?? libraries[0] ?? null,
     [libraries, selectedId],
   );
+  const visibleLibraries = isMobile && !showAllLibraries
+    ? libraries.slice(0, MOBILE_LIBRARY_LIMIT)
+    : libraries;
+
+  useEffect(() => {
+    const mobileMedia = window.matchMedia('(max-width: 720px)');
+    const syncMobile = () => setIsMobile(mobileMedia.matches);
+
+    syncMobile();
+    mobileMedia.addEventListener('change', syncMobile);
+    return () => mobileMedia.removeEventListener('change', syncMobile);
+  }, []);
 
   useEffect(() => {
     selectedIdRef.current = selectedId;
   }, [selectedId]);
+
+  useEffect(() => {
+    setShowAllLibraries(false);
+  }, [submittedQuery]);
 
   useEffect(() => {
     const grid = libraryGridRef.current;
@@ -550,7 +569,7 @@ export default function LibraryFinderSection() {
               <p className="libraryEmpty">일치하는 도서관이 없습니다. 다른 검색어를 입력해 주세요.</p>
             ) : null}
             {!isLoading && !errorMessage
-              ? libraries.map((library, index) => (
+              ? visibleLibraries.map((library, index) => (
                   <article className={library.id === selectedId ? 'isSelected' : undefined} key={library.id}>
                     <span className="libraryPin" aria-hidden="true">{index + 1}</span>
                     <div>
@@ -606,6 +625,18 @@ export default function LibraryFinderSection() {
                 ))
               : null}
           </div>
+          {!isLoading && !errorMessage && isMobile && libraries.length > MOBILE_LIBRARY_LIMIT ? (
+            <button
+              className="libraryResultsMore"
+              type="button"
+              aria-expanded={showAllLibraries}
+              onClick={() => setShowAllLibraries((current) => !current)}
+            >
+              {showAllLibraries
+                ? '도서관 목록 접기'
+                : `도서관 ${libraries.length - MOBILE_LIBRARY_LIMIT}곳 더보기`}
+            </button>
+          ) : null}
         </div>
       </div>
     </section>

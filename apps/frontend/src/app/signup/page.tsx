@@ -213,7 +213,7 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="signupPage">
+    <main className="signupPage" data-step={step}>
       <section className="signupShell" aria-labelledby="signup-title">
         <Link className="authBrand" href="/" aria-label="모이라 홈">
           <Image
