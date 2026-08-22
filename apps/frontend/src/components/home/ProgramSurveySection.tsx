@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import SectionHeading from './SectionHeading';
 import ProgramSurveyModal from './ProgramSurveyModal';
@@ -51,7 +52,17 @@ export default function ProgramSurveySection() {
   return (
     <section className="homeSection surveySection" id="program-survey">
       <div className="uiContainer">
-        <SectionHeading eyebrow="PLANNING NOW" title="주민의 선택을 기다리는 프로그램" description="사서가 준비 중인 프로그램 기획서를 확인하고, 투표로 참여 의사를 알려주세요." light />
+        <SectionHeading
+          eyebrow="PLANNING NOW"
+          title="주민의 선택을 기다리는 프로그램"
+          description="사서가 준비 중인 프로그램 기획서를 확인하고, 투표로 참여 의사를 알려주세요."
+          light
+          action={
+            <Link className="uiTextLink mobileOnlySectionLink" href="/survey">
+              전체 수요조사 보기 <span aria-hidden="true">→</span>
+            </Link>
+          }
+        />
         <div className="surveyGrid">
           {programs.map((program) => (
             <article className="surveyCard" key={program.id}>

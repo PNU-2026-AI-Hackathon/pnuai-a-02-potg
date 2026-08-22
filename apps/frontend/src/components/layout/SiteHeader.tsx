@@ -51,8 +51,8 @@ export default function SiteHeader({
                 </svg>
               </Link>
               <div className="siteNavSubmenu">
-                <Link href="/programs">전체 프로그램</Link>
-                <Link href="/programs/calendar">캘린더</Link>
+                <Link href="/programs">프로그램 둘러보기</Link>
+                <Link href="/programs/calendar">프로그램 일정</Link>
               </div>
             </div>
             <div className="siteNavDropdown">
@@ -80,7 +80,7 @@ export default function SiteHeader({
               href="/studio/about"
             >
               <span className="siteStudioIcon" aria-hidden="true">✦</span>
-              MOIRA STUDIO
+              MOIRA Studio
             </Link>
           </div>
           <div className="siteNavUtility">
@@ -96,10 +96,31 @@ export default function SiteHeader({
             <nav aria-label="모바일 주요 메뉴">
               <Link href="/about">모이라 소개</Link>
               <Link href="/#library-finder">우리동네 도서관</Link>
-              <Link className={activeMenu === 'programs' ? 'isActive' : ''} href="/programs">프로그램 게시판</Link>
-              <Link className="siteMobileSubLink" href="/programs/calendar">캘린더</Link>
-              <Link className={activeMenu === 'community' ? 'isActive' : ''} href="/community">우리동네 이야기</Link>
-              <Link href="/survey">프로그램 투표</Link>
+              <div className="siteMobileMenuGroup">
+                <Link
+                  className={`siteMobileMenuParent ${activeMenu === 'programs' ? 'isActive' : ''}`}
+                  href="/programs"
+                >
+                  프로그램 게시판
+                </Link>
+                <div className="siteMobileSubmenu">
+                  <Link href="/programs">프로그램 둘러보기</Link>
+                  <Link href="/programs/calendar">프로그램 일정</Link>
+                </div>
+              </div>
+              <div className="siteMobileMenuGroup">
+                <Link
+                  className={`siteMobileMenuParent ${activeMenu === 'community' ? 'isActive' : ''}`}
+                  href="/community"
+                >
+                  우리동네 이야기
+                </Link>
+                <div className="siteMobileSubmenu">
+                  <Link href="/community/library-news">도서관 행사 및 소식</Link>
+                  <Link href="/community/ideas">우리동네 아이디어</Link>
+                  <Link href="/survey">프로그램 투표</Link>
+                </div>
+              </div>
               <Link className="siteStudioLink" href="/studio">✦ MOIRA Studio</Link>
             </nav>
             <AuthActions initialUser={user} />

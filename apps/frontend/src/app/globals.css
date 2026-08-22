@@ -8481,6 +8481,10 @@ html:has(.moiraPage) {
   margin-top: 38px;
 }
 
+.mobileOnlySectionLink {
+  display: none;
+}
+
 .surveySection {
   background: var(--moira-green-dark);
   color: #fff;
@@ -8810,6 +8814,10 @@ html:has(.moiraPage) {
   min-height: 0;
   overflow: auto;
   padding-right: 4px;
+}
+
+.libraryResultsMore {
+  display: none;
 }
 
 .libraryResults article {
@@ -9571,20 +9579,16 @@ html:has(.moiraPage) {
   }
 
   html:has(.moiraPage) {
-    scroll-snap-type: y mandatory;
+    scroll-snap-type: none;
   }
 
   .moiraPage main > section {
-    min-height: calc(100svh - var(--site-header-height));
-    scroll-snap-align: start;
+    min-height: 0;
+    scroll-snap-align: none;
   }
 
   .homeSectionNavigation {
-    left: 4px;
-  }
-
-  .homeSectionNavigation ol {
-    gap: 8px;
+    display: none;
   }
 
   .uiContainer {
@@ -9639,7 +9643,8 @@ html:has(.moiraPage) {
 
   .homeHeroGrid {
     min-height: auto;
-    padding-block: 58px;
+    gap: 0;
+    padding-block: 48px;
   }
 
   .homeHeroCopy h1 {
@@ -9664,7 +9669,7 @@ html:has(.moiraPage) {
   }
 
   .moiraServicePreview {
-    padding: 0;
+    display: none;
   }
 
   .moiraServicePreviewHeader {
@@ -9712,7 +9717,8 @@ html:has(.moiraPage) {
   }
 
   .studioSectionHeader {
-    margin-bottom: 42px;
+    gap: 20px;
+    margin-bottom: 0;
   }
 
   .studioSectionDescription br {
@@ -9725,6 +9731,7 @@ html:has(.moiraPage) {
   }
 
   .studioSectionCta {
+    gap: 8px;
     padding: 0;
   }
 
@@ -9737,6 +9744,10 @@ html:has(.moiraPage) {
     padding: 18px;
   }
 
+  .studioShowcase {
+    display: none;
+  }
+
   .studioPreviewTop {
     align-items: flex-start;
     flex-direction: column;
@@ -9745,16 +9756,41 @@ html:has(.moiraPage) {
   .homeSection {
     display: block;
     min-height: 0;
-    padding-block: 78px;
+    padding-block: 48px;
+  }
+
+  .studioSection.homeSection {
+    padding-block: 48px;
   }
 
   .homeSectionHeading {
     display: block;
-    margin-bottom: 34px;
+    margin-bottom: 24px;
   }
 
   .homeSectionAction {
-    margin-top: 20px;
+    margin-top: 14px;
+  }
+
+  .mobileOnlySectionLink {
+    display: inline-flex;
+    color: inherit;
+  }
+
+  .homeSectionHeading.isLight .mobileOnlySectionLink {
+    color: #b8e1d2;
+  }
+
+  .agendaGrid,
+  .surveyGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .agendaItem:nth-child(n + 3),
+  .surveyCard:nth-child(n + 3),
+  .recruitingCard:nth-child(n + 3) {
+    display: none;
   }
 
   .serviceFlowList {
@@ -9785,22 +9821,154 @@ html:has(.moiraPage) {
   }
 
   .agendaItem {
-    padding: 24px;
+    min-height: 320px;
+    padding: 16px 14px;
+  }
+
+  .agendaIndex {
+    font-size: 23px;
+  }
+
+  .agendaItem h3 {
+    margin-top: 18px;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .agendaItem > p {
+    display: -webkit-box;
+    margin-top: 12px;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .agendaLocation {
+    padding-top: 18px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .agendaMeta {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    font-size: 12px;
+  }
+
+  .homeCenteredAction {
+    margin-top: 24px;
+  }
+
+  .surveyCard {
+    min-height: 390px;
+    padding: 16px 14px;
+  }
+
+  .surveyCardTop {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .surveyCard h3 {
+    margin-top: 18px;
+    font-size: 17px;
+    line-height: 1.45;
+  }
+
+  .surveyCard dl {
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .surveyCard dl div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    font-size: 12px;
+  }
+
+  .surveyCard > p {
+    display: -webkit-box;
+    margin-top: 16px;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 
   .surveyCardFooter {
     align-items: stretch;
     flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 18px;
+  }
+
+  .surveyCardFooter .uiButton {
+    width: 100%;
+    min-height: 44px;
+    padding-inline: 8px;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .recruitingList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    border-top: 0;
   }
 
   .recruitingCard {
-    grid-template-columns: 46px minmax(0, 1fr);
+    display: flex;
+    min-width: 0;
+    min-height: 260px;
+    flex-direction: column;
+    align-items: stretch;
     gap: 14px;
+    border: 1px solid #dce4e0;
+    border-radius: var(--moira-radius-md);
+    padding: 16px 14px;
+  }
+
+  .recruitingNumber {
+    display: none;
+  }
+
+  .recruitingContent > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .recruitingLibrary {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .recruitingContent h3 {
+    font-size: 17px;
+    line-height: 1.45;
+  }
+
+  .recruitingContent p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .recruitingContent p i {
+    display: none;
   }
 
   .recruitingCard .uiButton {
-    grid-column: 2;
-    justify-self: start;
+    width: 100%;
+    margin-top: auto;
+    padding-inline: 8px;
   }
 
   .librarySearch > div {
@@ -9816,7 +9984,7 @@ html:has(.moiraPage) {
 
   .libraryMapPanel,
   .libraryMap {
-    min-height: 300px;
+    min-height: 280px;
   }
 
   .librarySelected {
@@ -9829,6 +9997,37 @@ html:has(.moiraPage) {
     grid-template-columns: 38px minmax(0, 1fr);
     gap: 12px;
     padding: 17px 16px;
+  }
+
+  .libraryPrograms {
+    display: none;
+  }
+
+  .libraryResultsMore {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #a9c2b7;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--moira-green-dark);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  .libraryFinderGrid {
+    gap: 30px;
+  }
+
+  .libraryFinderContent {
+    gap: 16px;
+  }
+
+  .moiraFooter {
+    padding-block: 30px;
   }
 
   .libraryPin {
@@ -9865,6 +10064,243 @@ html:has(.moiraPage) {
 
   .surveyTimeOptions {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 430px) {
+  .studioSectionIntro > .uiEyebrow,
+  .studioTitleIcon,
+  .studioSectionDescription,
+  .studioCtaEyebrow,
+  .studioSectionCta > strong {
+    display: none;
+  }
+
+  .studioSectionHeader {
+    gap: 18px;
+  }
+
+  .studioSectionHeader h2 {
+    font-size: 34px;
+  }
+
+  .studioSectionClaim {
+    max-width: 310px;
+    margin-top: 10px;
+    font-size: 19px;
+    line-height: 1.5;
+  }
+
+  .studioSectionCta .uiButton {
+    min-height: 46px;
+    margin-top: 0;
+  }
+
+  .agendaItem {
+    min-height: 238px;
+    padding: 15px 13px;
+  }
+
+  .agendaItemTop {
+    justify-content: flex-start;
+  }
+
+  .agendaIndex,
+  .agendaItem > p,
+  .agendaMeta span:not(:first-child) {
+    display: none;
+  }
+
+  .agendaItem h3 {
+    display: -webkit-box;
+    min-height: 4.35em;
+    margin-top: 15px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .agendaLocation {
+    display: -webkit-box;
+    max-height: calc(2.9em + 16px);
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .agendaMeta {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .surveyCard {
+    min-height: 326px;
+    padding: 15px 13px;
+  }
+
+  .surveyCardTop > span:last-child,
+  .surveyCard > p {
+    display: none;
+  }
+
+  .surveyCard h3 {
+    display: -webkit-box;
+    min-height: 4.35em;
+    margin-top: 16px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .surveyCard dl {
+    margin-top: 14px;
+  }
+
+  .surveyCard dd {
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .surveyCardFooter {
+    gap: 8px;
+    padding-top: 14px;
+  }
+
+  .surveyCardFooter .uiButton {
+    min-height: 54px;
+  }
+
+  .libraryFinderSection.homeSection {
+    padding-block: 40px;
+  }
+
+  .libraryFinderGrid {
+    gap: 22px;
+  }
+
+  .libraryFinderContent {
+    gap: 12px;
+  }
+
+  .libraryFinderGrid .homeSectionHeading {
+    margin-bottom: 0;
+  }
+
+  .libraryFinderGrid .homeSectionDescription {
+    display: none;
+  }
+
+  .librarySearch > label {
+    margin-bottom: 6px;
+  }
+
+  .librarySearch > div {
+    flex-direction: row;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 4px;
+  }
+
+  .librarySearch input {
+    min-height: 42px;
+    padding-inline: 12px 6px;
+    font-size: 16px;
+  }
+
+  .librarySearch .uiButton {
+    min-height: 42px;
+    flex: 0 0 auto;
+    padding-inline: 14px;
+  }
+
+  .libraryMapPanel,
+  .libraryMap {
+    min-height: 220px;
+  }
+
+  .libraryMapStatus {
+    top: 10px;
+    left: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .librarySelected {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    width: auto;
+    margin: 0;
+    padding: 10px 12px;
+  }
+
+  .librarySelected strong {
+    margin-top: 3px;
+    font-size: 15px;
+  }
+
+  .librarySelected p {
+    display: none;
+  }
+
+  .libraryFinderExplorer {
+    gap: 10px;
+  }
+
+  .libraryResults {
+    gap: 8px;
+  }
+
+  .libraryResults article {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 9px;
+    padding: 12px 11px;
+  }
+
+  .libraryPin {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .libraryCardHeader {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .libraryCardHeader > span {
+    min-width: 0;
+  }
+
+  .libraryCardHeader button {
+    margin-left: auto;
+  }
+
+  .libraryResults h3 {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .libraryResults article > div > p {
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .libraryMeta {
+    display: none;
+  }
+
+  .libraryResultsMore {
+    min-height: 42px;
   }
 }
 
@@ -15437,6 +15873,38 @@ html:has(.moiraPage) {
     padding-bottom: 13px;
   }
 
+  .loginPage {
+    padding-top: clamp(44px, 8svh, 68px);
+    padding-bottom: 36px;
+  }
+
+  .loginCard {
+    box-shadow: 0 10px 30px rgba(33, 70, 61, 0.08);
+  }
+
+  .loginCard .authBrand {
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .loginCard .authBrandLogo {
+    width: 58px;
+    height: 46px;
+  }
+
+  .loginCard .authBrand strong {
+    font-size: 26px;
+  }
+
+  .loginCard .authBrand small {
+    margin-top: 3px;
+    font-size: 10px;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+  }
+
   .loginCard .loginForm {
     gap: 13px;
   }
@@ -15455,6 +15923,195 @@ html:has(.moiraPage) {
   .signupGhostButton {
     width: 100%;
     margin-left: 0;
+  }
+
+  .signupPage {
+    padding: clamp(28px, 5svh, 48px) 16px 36px;
+  }
+
+  .signupShell {
+    width: 100%;
+    max-width: 440px;
+    min-width: 0;
+    justify-self: stretch;
+    gap: 12px;
+  }
+
+  .signupPage .authBrand {
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .signupPage .authBrandLogo {
+    width: 58px;
+    height: 46px;
+  }
+
+  .signupPage .authBrand strong {
+    font-size: 26px;
+  }
+
+  .signupPage .authBrand small {
+    margin-top: 3px;
+    font-size: 10px;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+  }
+
+  .signupPage .signupCard {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 0;
+    border-radius: var(--moira-radius-sm);
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(33, 70, 61, 0.08);
+  }
+
+  .signupPage .signupTopRow {
+    margin-bottom: 8px;
+  }
+
+  .signupPage .signupBackLink {
+    font-size: 12px;
+  }
+
+  .signupPage .signupStepBadge {
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+
+  .signupPage .signupEyebrow {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .signupPage .signupTitle {
+    font-size: 24px;
+    line-height: 1.25;
+  }
+
+  .signupPage .signupProgressWrap {
+    gap: 5px;
+    margin-top: 12px;
+  }
+
+  .signupPage .signupProgressTrack {
+    height: 6px;
+  }
+
+  .signupPage .signupProgressMeta {
+    font-size: 11px;
+  }
+
+  .signupPage .signupStage {
+    min-width: 0;
+    align-content: start;
+    margin-top: 16px;
+  }
+
+  .signupPage .signupField,
+  .signupPage .signupFieldGrid {
+    gap: 7px;
+  }
+
+  .signupPage .signupField input,
+  .signupPage .signupField select {
+    min-height: 46px;
+    padding: 11px 13px;
+  }
+
+  .signupPage .signupActions {
+    align-items: stretch;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .signupPage .signupPrimaryButton,
+  .signupPage .signupGhostButton {
+    width: auto;
+    min-width: 0;
+    min-height: 44px;
+    flex: 1 1 0;
+    padding-inline: 14px;
+  }
+
+  .signupPage[data-step='1'] {
+    padding-top: clamp(20px, 3svh, 32px);
+  }
+
+  .signupPage[data-step='1'] .signupChoiceGrid {
+    gap: 8px;
+  }
+
+  .signupPage[data-step='1'] .signupChoiceCard {
+    min-height: 68px;
+    gap: 3px;
+    align-content: center;
+    padding: 10px 12px;
+  }
+
+  .signupPage[data-step='1'] .signupChoiceCard span {
+    font-size: 15px;
+  }
+
+  .signupPage[data-step='1'] .signupChoiceCard em {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .signupPage .signupInterestGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .signupPage .signupInterestButton {
+    min-height: 68px;
+    gap: 4px;
+    align-content: center;
+    padding: 9px 11px;
+  }
+
+  .signupPage .signupInterestButton span {
+    font-size: 14px;
+  }
+
+  .signupPage .signupWelcome {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .signupPage .signupWelcomeTitle {
+    font-size: 21px;
+  }
+
+  .signupPage .signupWelcomeText {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .signupPage .signupWelcomeSummary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .signupPage .signupWelcomeSummary div {
+    min-width: 0;
+    gap: 4px;
+    padding: 9px 8px;
+  }
+
+  .signupPage .signupWelcomeSummary span {
+    font-size: 10px;
+  }
+
+  .signupPage .signupWelcomeSummary strong {
+    overflow-wrap: anywhere;
+    font-size: 12px;
   }
 }
 
@@ -16255,6 +16912,30 @@ html:has(.moiraPage) {
     min-height: 64px;
   }
 
+  .siteBrand {
+    min-width: 0;
+    gap: 7px;
+  }
+
+  .siteBrandLogo {
+    width: 46px;
+    height: 38px;
+  }
+
+  .siteBrand > span:last-child {
+    display: grid;
+  }
+
+  .siteBrand strong {
+    font-size: 19px;
+  }
+
+  .siteBrand small {
+    margin-top: 4px;
+    font-size: 8.5px;
+    letter-spacing: 0.025em;
+  }
+
   .siteHeaderInner > .siteNav {
     display: none;
   }
@@ -16311,7 +16992,8 @@ html:has(.moiraPage) {
     display: grid;
   }
 
-  .siteMobileMenuPanel nav > a {
+  .siteMobileMenuPanel nav > a,
+  .siteMobileMenuParent {
     display: flex;
     min-height: 45px;
     align-items: center;
@@ -16323,17 +17005,40 @@ html:has(.moiraPage) {
 
   .siteMobileMenuPanel nav > a:hover,
   .siteMobileMenuPanel nav > a:focus-visible,
-  .siteMobileMenuPanel nav > a.isActive {
+  .siteMobileMenuPanel nav > a.isActive,
+  .siteMobileMenuParent:hover,
+  .siteMobileMenuParent:focus-visible,
+  .siteMobileMenuParent.isActive {
     color: #136f63;
   }
 
-  /* 프로그램 게시판 아래에 딸린 하위 링크(캘린더 등). 들여써서 상위 메뉴와 묶여 보이게 한다. */
-  .siteMobileMenuPanel nav > a.siteMobileSubLink {
-    min-height: 38px;
-    padding-left: 16px;
+  .siteMobileMenuGroup {
+    border-bottom: 1px solid #edf2f0;
+  }
+
+  .siteMobileMenuParent {
+    border-bottom: 0;
+  }
+
+  .siteMobileSubmenu {
+    display: grid;
+    margin: -2px 0 5px 10px;
+    border-left: 2px solid #dceae4;
+  }
+
+  .siteMobileSubmenu a {
+    display: flex;
+    min-height: 33px;
+    align-items: center;
+    padding-left: 14px;
     color: #6b7a74;
     font-size: 13px;
     font-weight: 700;
+  }
+
+  .siteMobileSubmenu a:hover,
+  .siteMobileSubmenu a:focus-visible {
+    color: #136f63;
   }
 
   .siteMobileMenuPanel .authActions {
