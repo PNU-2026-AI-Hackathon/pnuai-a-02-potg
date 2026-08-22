@@ -12,7 +12,7 @@ export default function RecruitingProgramSection() {
           description="일정이 확정되어 지금 참여할 수 있는 우리 동네 프로그램입니다."
           action={
             <Link className="uiTextLink" href="/community/library-news">
-              전체 프로그램 보기 <span aria-hidden="true">→</span>
+              프로그램 둘러보기 <span aria-hidden="true">→</span>
             </Link>
           }
         />

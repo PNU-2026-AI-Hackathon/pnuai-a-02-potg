@@ -3519,22 +3519,314 @@ button {
   line-height: 1.4;
 }
 
+.mobileProgramCalendar {
+  display: none;
+}
+
 @media (max-width: 720px) {
-  .calendarLegend {
+  .programCalendarPage {
+    padding-top: 18px;
+    padding-bottom: 40px;
+  }
+
+  .programCalendarPage .programBoardHero {
+    margin-bottom: 16px;
+    border-radius: 20px;
+    padding: 23px 20px;
+    box-shadow: 0 14px 34px rgba(15, 58, 49, 0.13);
+  }
+
+  .programCalendarPage .programBoardEyebrow {
+    margin-bottom: 8px;
+    font-size: 10px;
+  }
+
+  .programCalendarPage .programBoardHero h1 {
+    font-size: 30px;
+  }
+
+  .programCalendarPage .programBoardHero > div > p:last-child {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .programCalendarPage .calendarToolbar {
+    gap: 10px 12px;
+    margin-top: 18px;
+  }
+
+  .programCalendarPage .calendarMonthNav {
+    flex: 1 1 auto;
+  }
+
+  .programCalendarPage .calendarLegend {
+    width: 100%;
+    gap: 12px;
     margin-left: 0;
   }
 
-  .calendarMonthNav strong {
+  .programCalendarPage .calendarMonthNav strong {
     min-width: 90px;
     font-size: 18px;
   }
 
-  .calendarDayNumber span {
-    font-size: 10.5px;
+  .programCalendarPage .calendarGrid {
+    display: none;
   }
 
-  .calendarEventBar {
-    font-size: 9.5px;
+  .mobileProgramCalendar {
+    display: block;
+    min-width: 0;
+    margin-top: 14px;
+  }
+
+  .mobileCalendarGrid {
+    overflow: hidden;
+    min-width: 0;
+    border: 1px solid var(--moira-border);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(20, 40, 34, 0.08);
+  }
+
+  .mobileCalendarWeekdays,
+  .mobileCalendarDays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .mobileCalendarWeekdays {
+    border-bottom: 1px solid var(--moira-border);
+    background: #fafbf9;
+  }
+
+  .mobileCalendarWeekdays span {
+    padding: 9px 0 8px;
+    color: var(--moira-muted);
+    font-size: 10.5px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .mobileCalendarWeekdays span.isSunday {
+    color: #c0615f;
+  }
+
+  .mobileCalendarWeekdays span.isSaturday {
+    color: #3d6fa8;
+  }
+
+  .mobileCalendarDay {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 54px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    border: 0;
+    border-right: 1px solid #f0f1ee;
+    border-bottom: 1px solid #f0f1ee;
+    border-radius: 0;
+    background: #fff;
+    padding: 5px 2px 4px;
+    color: var(--moira-ink);
+    font: inherit;
+  }
+
+  .mobileCalendarDay:nth-child(7n) {
+    border-right: 0;
+  }
+
+  .mobileCalendarDay:nth-last-child(-n + 7) {
+    border-bottom: 0;
+  }
+
+  .mobileCalendarDay.isOutside {
+    background: #fafbf9;
+    color: #c3cac5;
+  }
+
+  .mobileCalendarDay.isSelected {
+    z-index: 1;
+    background: #edf7f3;
+    box-shadow: inset 0 0 0 2px var(--moira-green);
+  }
+
+  .mobileCalendarDay:focus-visible {
+    z-index: 2;
+    outline: 2px solid var(--moira-green-dark);
+    outline-offset: -2px;
+  }
+
+  .mobileCalendarDayNumber {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+
+  .mobileCalendarDay.isToday .mobileCalendarDayNumber {
+    background: var(--moira-green);
+    color: #fff;
+  }
+
+  .mobileCalendarDay.isToday.isSelected {
+    box-shadow: inset 0 0 0 2px var(--moira-warm);
+  }
+
+  .mobileCalendarIndicators {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .mobileCalendarDots {
+    display: flex;
+    gap: 2px;
+  }
+
+  .mobileCalendarDots i,
+  .mobileCalendarAgendaStatus i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #c1c9c3;
+  }
+
+  .mobileCalendarDots i.is-open,
+  .mobileCalendarAgendaStatus.is-open i {
+    background: var(--moira-green);
+  }
+
+  .mobileCalendarDots i.is-upcoming,
+  .mobileCalendarAgendaStatus.is-upcoming i {
+    background: var(--moira-warm);
+  }
+
+  .mobileCalendarIndicators small {
+    color: var(--moira-muted);
+    font-size: 9px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .mobileCalendarAgenda {
+    margin-top: 14px;
+  }
+
+  .mobileCalendarAgendaHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 9px;
+  }
+
+  .mobileCalendarAgendaHeader h2 {
+    margin: 0;
+    color: var(--moira-ink);
+    font-size: 17px;
+    line-height: 1.35;
+    letter-spacing: -0.025em;
+  }
+
+  .mobileCalendarAgendaHeader > span {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: var(--moira-mint);
+    padding: 4px 9px;
+    color: var(--moira-green-dark);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .mobileCalendarAgendaList {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mobileCalendarAgendaList a {
+    display: block;
+    min-width: 0;
+    border: 1px solid var(--moira-border);
+    border-radius: 13px;
+    background: #fff;
+    padding: 13px 14px;
+    box-shadow: 0 7px 20px rgba(20, 40, 34, 0.06);
+  }
+
+  .mobileCalendarAgendaMeta {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    color: var(--moira-muted);
+    font-size: 10.5px;
+    font-weight: 700;
+  }
+
+  .mobileCalendarAgendaMeta > span:last-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .mobileCalendarAgendaStatus {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+    color: var(--moira-green-dark);
+  }
+
+  .mobileCalendarAgendaStatus.is-upcoming {
+    color: #8a5417;
+  }
+
+  .mobileCalendarAgendaStatus.is-closed,
+  .mobileCalendarAgendaStatus.is-unknown {
+    color: #6b756f;
+  }
+
+  .mobileCalendarAgendaList strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: var(--moira-ink);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .mobileCalendarAgendaList p {
+    overflow: hidden;
+    margin: 5px 0 0;
+    color: var(--moira-muted);
+    font-size: 11.5px;
+    line-height: 1.4;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .mobileCalendarAgendaEmpty {
+    margin: 0;
+    border: 1px dashed var(--moira-border);
+    border-radius: 13px;
+    background: #fafbf9;
+    padding: 22px 14px;
+    color: var(--moira-muted);
+    font-size: 13px;
+    text-align: center;
   }
 }
 

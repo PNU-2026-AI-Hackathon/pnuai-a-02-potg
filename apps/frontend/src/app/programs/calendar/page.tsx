@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import MobileProgramCalendar from '@/components/programs/MobileProgramCalendar';
 import {
   CALENDAR_MAX_VISIBLE_LANES,
   CALENDAR_WEEKDAY_LABELS,
@@ -15,7 +16,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: '캘린더 | 모이라',
+  title: '프로그램 일정 | 모이라',
   description: '금정구 작은도서관 프로그램의 신청기간을 달력으로 확인합니다.',
 };
 
@@ -48,20 +49,36 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
   const { year: prevYear, month: prevMonth } = shiftMonth(year, month, -1);
   const { year: nextYear, month: nextMonth } = shiftMonth(year, month, 1);
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth() + 1;
+  const mobileDays = calendar.weeks.flat().map((day) => ({
+    iso: day.iso,
+    dayOfMonth: day.dayOfMonth,
+    inMonth: day.inMonth,
+    isToday: day.isToday,
+    entries: (calendar.entriesByDate[day.iso] ?? []).map(({ program, status }) => ({
+      sourceId: program.sourceId,
+      title: program.title,
+      libraryName: program.libraryName,
+      targetGroup: program.targetGroup,
+      sourceUrl: program.sourceUrl,
+      period: formatProgramPeriod(program.applyStartDate, program.applyEndDate),
+      status,
+      statusLabel: programRecruitLabel[status],
+    })),
+  }));
 
   return (
-    <main className="programPage">
+    <main className="programPage programCalendarPage">
       <section className="uiContainer programShell" aria-labelledby="program-calendar-title">
         <nav className="communityBreadcrumb" aria-label="현재 위치">
           <Link href="/">홈</Link><span aria-hidden="true">/</span>
           <Link href="/programs">프로그램 게시판</Link><span aria-hidden="true">/</span>
-          <span>캘린더</span>
+          <span>프로그램 일정</span>
         </nav>
 
         <header className="programBoardHero">
           <div>
             <p className="programBoardEyebrow">MOIRA LIBRARY · PROGRAM</p>
-            <h1 id="program-calendar-title">캘린더</h1>
+            <h1 id="program-calendar-title">프로그램 일정</h1>
             <p>프로그램 게시판에 올라온 신청기간을 달력에서 한눈에 확인해 보세요.</p>
           </div>
         </header>
@@ -187,6 +204,13 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
             </div>
           ))}
         </div>
+
+        <MobileProgramCalendar
+          days={mobileDays}
+          month={month}
+          weekdayLabels={CALENDAR_WEEKDAY_LABELS}
+          year={year}
+        />
       </section>
     </main>
   );

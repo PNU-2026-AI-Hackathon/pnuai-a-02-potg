@@ -114,7 +114,9 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     <main className="programPage">
       <section className="uiContainer programShell" aria-labelledby="program-board-title">
         <nav className="communityBreadcrumb" aria-label="현재 위치">
-          <Link href="/">홈</Link><span aria-hidden="true">/</span><span>프로그램 게시판</span>
+          <Link href="/">홈</Link><span aria-hidden="true">/</span>
+          <Link href="/programs">프로그램 게시판</Link><span aria-hidden="true">/</span>
+          <span>프로그램 둘러보기</span>
         </nav>
 
         <header className="programBoardHero">
@@ -126,7 +128,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
         </header>
 
         <section className="programSummary" aria-label="프로그램 현황">
-          <div><strong>{programs.length}</strong><span>전체 프로그램</span></div>
+          <div><strong>{programs.length}</strong><span>등록 프로그램</span></div>
           <div><strong>{openCount}</strong><span>모집 중</span></div>
           <div><strong>{libraries}</strong><span>운영 도서관</span></div>
         </section>
@@ -169,7 +171,7 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
 
         <section className="programListSection" aria-labelledby="program-list-title">
           <div className="programListHeading">
-            <h2 id="program-list-title">{hasFilters ? '검색 결과' : '전체 프로그램'}</h2>
+            <h2 id="program-list-title">{hasFilters ? '검색 결과' : '프로그램 둘러보기'}</h2>
             <span>총 {programs.length}건 · {page}/{lastPage} 페이지</span>
           </div>
 
