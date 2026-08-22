@@ -138,7 +138,9 @@ const audienceList = [
   {
     icon: '👥',
     label: '지역 주민',
+    mobileLabel: '지역 주민',
     description: '우리 동네 문화·교육 프로그램을 찾고, 필요한 프로그램을 제안하며 다양한 도서관 서비스에 참여합니다.',
+    mobileDescription: '아이디어를 제안하고, 프로그램에 투표하며 지역 도서관 프로그램에 참여해요.',
     items: [
       {
         icon: '▦',
@@ -160,7 +162,9 @@ const audienceList = [
   {
     icon: '🧑‍💻',
     label: '사서 및 프로그램 기획 담당자',
+    mobileLabel: '사서',
     description: '주민 의견을 바탕으로 AI의 도움을 받아 지역 맞춤형 문화·교육 프로그램을 기획하고 운영합니다.',
+    mobileDescription: '주민 의견을 확인하고, MOIRA Studio를 활용해 프로그램을 기획해요.',
     items: [
       {
         icon: 'AI',
@@ -392,8 +396,10 @@ export default async function AboutPage() {
                 <div className="audienceCardHeader">
                   <span className="audienceCardIcon" aria-hidden="true">{audience.icon}</span>
                   <div>
-                    <strong>{audience.label}</strong>
-                    <p>{audience.description}</p>
+                    <strong className="audienceDesktopLabel">{audience.label}</strong>
+                    <strong className="audienceMobileLabel">{audience.mobileLabel}</strong>
+                    <p className="audienceDesktopDescription">{audience.description}</p>
+                    <p className="audienceMobileSummary">{audience.mobileDescription}</p>
                   </div>
                 </div>
                 <ul>
