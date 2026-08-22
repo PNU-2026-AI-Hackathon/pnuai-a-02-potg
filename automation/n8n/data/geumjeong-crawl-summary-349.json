@@ -1,0 +1,1940 @@
+[
+  {
+    "requestedListPages": 35,
+    "discoveredPrograms": 349,
+    "afterIdDeduplication": 349,
+    "duplicateCountById": 0,
+    "afterUrlDeduplication": 349,
+    "duplicateCountByUrl": 0,
+    "detailRequestTargetCount": 349,
+    "detailSuccessCount": 349,
+    "detailFailureCount": 0,
+    "failedPostIds": [],
+    "failedUrls": [],
+    "failedDetails": [],
+    "warningProgramCount": 237,
+    "warningPostIds": [
+      "4337",
+      "4331",
+      "4330",
+      "4325",
+      "4225",
+      "4224",
+      "4324",
+      "4296",
+      "4281",
+      "4272",
+      "4266",
+      "4261",
+      "4260",
+      "4259",
+      "4257",
+      "4245",
+      "4207",
+      "4206",
+      "4205",
+      "4203",
+      "4196",
+      "4195",
+      "4136",
+      "4120",
+      "4119",
+      "4118",
+      "4117",
+      "4116",
+      "4115",
+      "4114",
+      "4113",
+      "4112",
+      "4111",
+      "4110",
+      "4109",
+      "4077",
+      "4076",
+      "4069",
+      "4060",
+      "4041",
+      "4036",
+      "4035",
+      "4034",
+      "4016",
+      "3976",
+      "3975",
+      "3974",
+      "3973",
+      "3939",
+      "3938",
+      "3914",
+      "3913",
+      "3912",
+      "3911",
+      "3902",
+      "3901",
+      "3898",
+      "3894",
+      "3888",
+      "3885",
+      "3872",
+      "3859",
+      "3858",
+      "3857",
+      "3856",
+      "3855",
+      "3854",
+      "3853",
+      "3852",
+      "3851",
+      "3850",
+      "3849",
+      "3790",
+      "3789",
+      "3783",
+      "3782",
+      "3781",
+      "3780",
+      "3779",
+      "3777",
+      "3776",
+      "3775",
+      "3774",
+      "3773",
+      "3772",
+      "3766",
+      "3761",
+      "3760",
+      "3759",
+      "3751",
+      "3750",
+      "3742",
+      "3740",
+      "3703",
+      "3702",
+      "3696",
+      "3695",
+      "3694",
+      "3693",
+      "3688",
+      "3685",
+      "3684",
+      "3683",
+      "3682",
+      "3681",
+      "3680",
+      "3679",
+      "3678",
+      "3658",
+      "3657",
+      "3656",
+      "3655",
+      "3654",
+      "3653",
+      "3652",
+      "3651",
+      "3650",
+      "3649",
+      "3636",
+      "3635",
+      "3634",
+      "3612",
+      "3611",
+      "3606",
+      "3604",
+      "3598",
+      "3597",
+      "3596",
+      "3595",
+      "3586",
+      "3581",
+      "3570",
+      "3569",
+      "3567",
+      "3566",
+      "3565",
+      "3533",
+      "3532",
+      "3531",
+      "3530",
+      "3302",
+      "3253",
+      "3189",
+      "3172",
+      "2989",
+      "2988",
+      "2896",
+      "2895",
+      "2894",
+      "2893",
+      "2892",
+      "2891",
+      "2890",
+      "2889",
+      "2888",
+      "2887",
+      "2886",
+      "2885",
+      "2883",
+      "2882",
+      "2881",
+      "2835",
+      "2834",
+      "2813",
+      "2812",
+      "2811",
+      "2810",
+      "2809",
+      "2808",
+      "2747",
+      "2746",
+      "2745",
+      "2744",
+      "2743",
+      "2742",
+      "2741",
+      "2740",
+      "2739",
+      "2738",
+      "2737",
+      "2736",
+      "2711",
+      "2710",
+      "2709",
+      "2708",
+      "2707",
+      "2706",
+      "2705",
+      "2704",
+      "2703",
+      "2702",
+      "2701",
+      "2700",
+      "2699",
+      "2698",
+      "2697",
+      "2607",
+      "2606",
+      "2605",
+      "2604",
+      "2600",
+      "2573",
+      "2572",
+      "2571",
+      "2570",
+      "2569",
+      "2568",
+      "2567",
+      "2566",
+      "2565",
+      "2564",
+      "2563",
+      "2562",
+      "2561",
+      "2560",
+      "2559",
+      "2558",
+      "2557",
+      "2556",
+      "2555",
+      "2554",
+      "2553",
+      "2552",
+      "2523",
+      "2522",
+      "2494",
+      "2493",
+      "2492",
+      "2490",
+      "2489",
+      "2488",
+      "2487",
+      "2485",
+      "2484",
+      "2483",
+      "2480",
+      "2456"
+    ],
+    "warningCountsByReason": {
+      "세부 회차 정보가 첨부파일에만 존재할 수 있습니다.": 237
+    },
+    "warningDetails": [
+      {
+        "sourcePostId": "4337",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4337&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4331",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4331&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4330",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4330&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4325",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4325&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4225",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4225&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4224",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4224&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4324",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4324&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4296",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4296&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4281",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4281&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4272",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4272&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4266",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4266&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4261",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4261&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4260",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4260&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4259",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4259&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4257",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4257&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4245",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4245&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4207",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4207&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4206",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4206&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4205",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4205&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4203",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4203&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4196",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4196&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4195",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4195&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4136",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4136&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4120",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4120&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4119",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4119&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4118",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4118&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4117",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4117&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4116",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4116&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4115",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4115&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4114",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4114&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4113",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4113&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4112",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4112&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4111",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4111&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4110",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4110&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4109",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4109&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4077",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4077&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4076",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4076&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4069",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4069&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4060",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4060&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4041",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4041&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4036",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4036&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4035",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4035&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4034",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4034&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "4016",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=4016&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3976",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3976&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3975",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3975&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3974",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3974&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3973",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3973&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3939",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3939&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3938",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3938&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3914",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3914&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3913",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3913&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3912",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3912&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3911",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3911&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3902",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3902&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3901",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3901&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3898",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3898&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3894",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3894&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3888",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3888&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3885",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3885&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3872",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3872&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3859",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3859&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3858",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3858&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3857",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3857&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3856",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3856&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3855",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3855&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3854",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3854&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3853",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3853&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3852",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3852&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3851",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3851&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3850",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3850&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3849",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3849&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3790",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3790&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3789",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3789&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3783",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3783&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3782",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3782&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3781",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3781&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3780",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3780&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3779",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3779&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3777",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3777&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3776",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3776&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3775",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3775&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3774",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3774&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3773",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3773&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3772",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3772&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3766",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3766&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3761",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3761&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3760",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3760&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3759",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3759&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3751",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3751&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3750",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3750&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3742",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3742&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3740",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3740&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3703",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3703&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3702",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3702&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3696",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3696&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3695",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3695&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3694",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3694&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3693",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3693&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3688",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3688&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3685",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3685&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3684",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3684&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3683",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3683&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3682",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3682&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3681",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3681&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3680",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3680&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3679",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3679&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3678",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3678&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3658",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3658&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3657",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3657&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3656",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3656&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3655",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3655&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3654",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3654&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3653",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3653&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3652",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3652&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3651",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3651&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3650",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3650&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3649",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3649&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3636",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3636&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3635",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3635&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3634",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3634&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3612",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3612&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3611",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3611&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3606",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3606&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3604",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3604&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3598",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3598&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3597",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3597&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3596",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3596&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3595",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3595&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3586",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3586&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3581",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3581&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3570",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3570&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3569",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3569&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3567",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3567&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3566",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3566&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3565",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3565&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3533",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3533&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3532",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3532&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3531",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3531&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3530",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3530&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3302",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3302&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3253",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3253&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3189",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3189&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "3172",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=3172&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2989",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2989&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2988",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2988&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2896",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2896&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2895",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2895&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2894",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2894&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2893",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2893&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2892",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2892&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2891",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2891&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2890",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2890&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2889",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2889&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2888",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2888&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2887",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2887&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2886",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2886&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2885",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2885&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2883",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2883&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2882",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2882&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2881",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2881&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2835",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2835&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2834",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2834&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2813",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2813&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2812",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2812&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2811",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2811&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2810",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2810&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2809",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2809&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2808",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2808&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2747",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2747&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2746",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2746&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2745",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2745&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2744",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2744&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2743",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2743&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2742",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2742&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2741",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2741&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2740",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2740&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2739",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2739&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2738",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2738&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2737",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2737&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2736",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2736&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2711",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2711&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2710",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2710&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2709",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2709&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2708",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2708&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2707",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2707&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2706",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2706&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2705",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2705&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2704",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2704&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2703",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2703&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2702",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2702&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2701",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2701&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2700",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2700&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2699",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2699&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2698",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2698&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2697",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2697&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2607",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2607&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2606",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2606&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2605",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2605&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2604",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2604&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2600",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2600&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2573",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2573&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2572",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2572&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2571",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2571&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2570",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2570&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2569",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2569&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2568",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2568&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2567",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2567&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2566",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2566&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2565",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2565&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2564",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2564&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2563",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2563&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2562",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2562&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2561",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2561&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2560",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2560&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2559",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2559&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2558",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2558&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2557",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2557&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2556",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2556&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2555",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2555&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2554",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2554&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2553",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2553&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2552",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2552&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2523",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2523&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2522",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2522&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2494",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2494&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2493",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2493&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2492",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2492&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2490",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2490&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2489",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2489&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2488",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2488&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2487",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2487&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2485",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2485&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2484",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2484&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2483",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2483&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2480",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2480&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      },
+      {
+        "sourcePostId": "2456",
+        "sourceUrl": "https://www.geumjeong.go.kr/index.geumj?menuCd=DOM_000000901008000000&mode=view&idx=2456&searchStr=&searchType=&applyType=&applyStatus=&searchOperation=",
+        "warnings": [
+          "세부 회차 정보가 첨부파일에만 존재할 수 있습니다."
+        ]
+      }
+    ],
+    "programsWithAttachments": 237,
+    "totalAttachmentCount": 237,
+    "attachmentCounts": {
+      "hwp": 26,
+      "pdf": 55,
+      "image": 156,
+      "other": 0,
+      "unknown": 0
+    },
+    "attachmentCountsByExtension": {
+      "jpg": 125,
+      "pdf": 55,
+      "hwp": 26,
+      "png": 31
+    },
+    "finalResultCount": 349,
+    "finalProgramCount": 349,
+    "startedAt": "2026-07-19T12:28:29.783Z",
+    "finishedAt": "2026-07-19T12:46:58.801Z",
+    "durationSeconds": 1109
+  }
+]
