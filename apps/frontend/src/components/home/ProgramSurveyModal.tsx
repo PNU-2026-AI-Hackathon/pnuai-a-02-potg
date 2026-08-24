@@ -42,9 +42,9 @@ export default function ProgramSurveyModal({ program, onUpdated, onClose }: Prop
       <p className="uiEyebrow">PROGRAM SURVEY</p><h2 id="survey-modal-title">{program.title}</h2>
       <form onSubmit={submit}>
         <fieldset><legend>이 프로그램이 개설된다면 참여할 의향이 있나요?</legend><div className="surveyOptions">{intentions.map((option) => <label key={option}><input type="radio" name="intention" value={option} checked={intention === option} onChange={(event) => setIntention(event.target.value)} /><span>{option}</span></label>)}</div></fieldset>
-        <fieldset><legend>선호하는 시간대가 있나요? <small>선택</small></legend><div className="surveyTimeOptions">{timeSlots.map((option) => <label key={option}><input type="radio" name="timeSlot" value={option} checked={timeSlot === option} onChange={(event) => setTimeSlot(event.target.value)} /><span>{option}</span></label>)}</div></fieldset>
+        <fieldset><legend>선호하는 시간대가 있나요? <small>선택사항</small></legend><div className="surveyTimeOptions">{timeSlots.map((option) => <label key={option}><input type="radio" name="timeSlot" value={option} checked={timeSlot === option} onChange={(event) => setTimeSlot(event.target.value)} /><span>{option}</span></label>)}</div></fieldset>
         {error ? <p role="alert">{error}</p> : null}
-        <button className="uiButton uiButtonPrimary surveySubmit" type="submit" disabled={!intention || submitting}>{submitting ? '저장 중…' : program.hasVoted ? '응답 수정하기' : '투표 보내기'}</button>
+        <button className="uiButton uiButtonPrimary surveySubmit" type="submit" disabled={!intention || submitting}>{submitting ? '저장 중…' : program.hasVoted ? '응답 수정하기' : '응답 제출'}</button>
       </form>
     </div>
   </div>;

@@ -26,7 +26,7 @@ async function forward(method: 'POST' | 'DELETE', context: Context, request?: Re
     });
     return NextResponse.json(await response.json(), { status: response.status });
   } catch {
-    return NextResponse.json({ error: '투표를 처리하지 못했습니다.' }, { status: 503 });
+    return NextResponse.json({ error: '응답을 처리하지 못했습니다.' }, { status: 503 });
   }
 }
 

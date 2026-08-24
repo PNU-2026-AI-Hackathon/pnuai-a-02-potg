@@ -214,7 +214,7 @@ export default function AboutExperience() {
     if (!hero || !card) return;
 
     const stages = [
-      card.querySelector<HTMLElement>('.studioModeTabs'),
+      card.querySelector<HTMLElement>('.studioMockupExamples'),
       card.querySelector<HTMLElement>('.studioFieldGroup'),
       card.querySelector<HTMLElement>('.studioSelectRow'),
       card.querySelector<HTMLElement>('.studioActionBar'),

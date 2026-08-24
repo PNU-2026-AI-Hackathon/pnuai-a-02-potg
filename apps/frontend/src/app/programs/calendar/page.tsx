@@ -79,7 +79,7 @@ export default async function ProgramCalendarPage({ searchParams }: CalendarPage
           <div>
             <p className="programBoardEyebrow">MOIRA LIBRARY · PROGRAM</p>
             <h1 id="program-calendar-title">프로그램 일정</h1>
-            <p>프로그램 게시판에 올라온 신청기간을 달력에서 한눈에 확인해 보세요.</p>
+            <p>우리 동네 도서관 프로그램의 <strong>신청 일정을 달력에서 한눈에 확인해 보세요.</strong></p>
           </div>
         </header>
 

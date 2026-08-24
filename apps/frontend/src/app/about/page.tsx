@@ -140,7 +140,7 @@ const audienceList = [
     label: '지역 주민',
     mobileLabel: '지역 주민',
     description: '우리 동네 문화·교육 프로그램을 찾고, 필요한 프로그램을 제안하며 다양한 도서관 서비스에 참여합니다.',
-    mobileDescription: '아이디어를 제안하고, 프로그램에 투표하며 지역 도서관 프로그램에 참여해요.',
+    mobileDescription: '아이디어를 제안하고, 프로그램 수요조사에 응답하며 지역 도서관 프로그램에 참여해요.',
     items: [
       {
         icon: '▦',
@@ -237,24 +237,30 @@ export default async function AboutPage() {
             </div>
             <div className="studioMockupShell">
               <div className="studioMockupInner">
-                <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
-                <h2 className="studioMockupTitle">MOIRA STUDIO</h2>
-                <p className="studioMockupSubtitle">
-                  주민의 이야기에서 시작하는 도서관 프로그램 기획을 간단한 아이디어로 시작하세요.
-                </p>
+                <div className="studioMockupHeader">
+                  <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
+                  <h2 className="studioMockupTitle">
+                    <span aria-hidden="true">✦</span> MOIRA STUDIO
+                  </h2>
+                </div>
 
                 <div className="studioMockupCard">
-                  <div className="studioModeTabs" role="tablist" aria-label="기획 모드">
-                    <button type="button" className="isActive">
-                      프로그램 기획
-                    </button>
-                    <button type="button">주민 아이디어</button>
+                  <div className="studioMockupExamples">
+                    <div>
+                      <strong><span aria-hidden="true">✦</span> 프로그램 예시 선택</strong>
+                      <small>아이디어를 골라 빠르게 시작해보세요.</small>
+                    </div>
+                    <div className="studioMockupExampleChips" aria-label="프로그램 아이디어 예시">
+                      <span>초등학생 독서 토론</span>
+                      <span>시니어 디지털 교육</span>
+                      <span>가족 주말 프로그램</span>
+                    </div>
                   </div>
 
                   <div className="studioFieldGroup">
                     <label className="studioFieldLabel">프로그램 아이디어</label>
                     <div className="studioTextBlock">
-                      예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램
+                      초등 고학년과 함께 우리 동네 기억을 수집하는 프로그램
                     </div>
                   </div>
 
@@ -274,8 +280,7 @@ export default async function AboutPage() {
                   </div>
 
                   <div className="studioActionBar">
-                    <span>만들고 싶은 프로그램을 한 줄로 적어주세요.</span>
-                    <button type="button">기획안 만들기</button>
+                    <button type="button"><span aria-hidden="true">✦</span> 기획안 만들기 <span aria-hidden="true">→</span></button>
                   </div>
                 </div>
 

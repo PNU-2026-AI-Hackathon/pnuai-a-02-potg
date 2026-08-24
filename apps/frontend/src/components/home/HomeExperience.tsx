@@ -81,6 +81,7 @@ export default function HomeExperience() {
     let wheelAccumulator = 0;
     let wheelDirection = 0;
     let lastWheelAt = 0;
+    let isBoundaryScrollReleased = false;
 
     function getHeaderHeight() {
       const header = document.querySelector<HTMLElement>('.moiraPage .siteHeader');
@@ -154,6 +155,25 @@ export default function HomeExperience() {
       if (!isLongSection) return false;
       if (direction > 0) return rect.bottom > window.innerHeight + 2;
       return rect.top < getHeaderHeight() - 2;
+    }
+
+    function setBoundaryScrollReleased(released: boolean) {
+      isBoundaryScrollReleased = released;
+      document.documentElement.classList.toggle(
+        'isHomeScrollReleased',
+        released && desktopMedia.matches,
+      );
+    }
+
+    function handleBoundaryScroll() {
+      if (!isBoundaryScrollReleased || !desktopMedia.matches) return;
+
+      const lastSection = sections.at(-1);
+      if (!lastSection) return;
+
+      if (lastSection.getBoundingClientRect().top >= getHeaderHeight() - 2) {
+        setBoundaryScrollReleased(false);
+      }
     }
 
     function unlockScroll(alignTarget = false) {
@@ -240,6 +260,8 @@ export default function HomeExperience() {
       const direction = deltaY > 0 ? 1 : -1;
       if (canScrollInsideTarget(event.target, direction)) return;
 
+      if (isBoundaryScrollReleased) return;
+
       const currentIndex = getCurrentSectionIndex();
       if (hasMoreSectionContent(currentIndex, direction)) {
         wheelAccumulator = 0;
@@ -248,6 +270,12 @@ export default function HomeExperience() {
       }
 
       const targetIndex = currentIndex + direction;
+      if (direction > 0 && currentIndex === sections.length - 1) {
+        wheelAccumulator = 0;
+        wheelDirection = 0;
+        setBoundaryScrollReleased(true);
+        return;
+      }
       if (targetIndex < 0 || targetIndex >= sections.length) return;
 
       event.preventDefault();
@@ -296,6 +324,13 @@ export default function HomeExperience() {
       const currentIndex = getCurrentSectionIndex();
       if (hasMoreSectionContent(currentIndex, direction)) return;
 
+      if (direction > 0 && currentIndex === sections.length - 1) {
+        setBoundaryScrollReleased(true);
+        return;
+      }
+
+      if (isBoundaryScrollReleased) return;
+
       if (moveToSection(currentIndex + direction)) {
         event.preventDefault();
       }
@@ -306,13 +341,17 @@ export default function HomeExperience() {
         'isFullPageScroll',
         desktopMedia.matches,
       );
-      if (!desktopMedia.matches) unlockScroll();
+      if (!desktopMedia.matches) {
+        setBoundaryScrollReleased(false);
+        unlockScroll();
+      }
     }
 
     syncDesktopMode();
     desktopMedia.addEventListener('change', syncDesktopMode);
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleBoundaryScroll, { passive: true });
 
     return () => {
       observer.disconnect();
@@ -322,7 +361,9 @@ export default function HomeExperience() {
       desktopMedia.removeEventListener('change', syncDesktopMode);
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleBoundaryScroll);
       document.documentElement.classList.remove('isFullPageScroll');
+      document.documentElement.classList.remove('isHomeScrollReleased');
     };
   }, []);
 

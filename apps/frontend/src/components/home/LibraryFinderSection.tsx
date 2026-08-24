@@ -514,7 +514,7 @@ export default function LibraryFinderSection() {
   }, [markerLocations, selectedId]);
 
   return (
-    <section className="homeSection libraryFinderSection" id="library-finder">
+    <section className="homeSection libraryFinderSection libraryFinderHomePreview" id="library-finder">
       <div ref={libraryGridRef} className="uiContainer libraryFinderGrid">
         <div className="libraryFinderContent">
           <SectionHeading

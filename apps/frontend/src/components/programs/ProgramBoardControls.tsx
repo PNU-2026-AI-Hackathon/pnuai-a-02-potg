@@ -28,7 +28,7 @@ export function ProgramBoardHero() {
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </button>
         </div>
-        <p id="program-board-introduction">금정구 도서관이 운영한 문화·교육 프로그램을 한곳에서 확인해 보세요.</p>
+        <p id="program-board-introduction">우리 동네 도서관에서 진행되는 다양한 프로그램을 한눈에 살펴보세요.</p>
       </div>
     </header>
   );

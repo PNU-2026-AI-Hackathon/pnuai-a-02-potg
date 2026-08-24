@@ -35,7 +35,6 @@ export default function SiteHeader({
             <Link className={activeMenu === 'about' ? 'isActive' : ''} href="/about">
               모이라 소개
             </Link>
-            <Link href="/#library-finder">우리동네 도서관</Link>
             <div className="siteNavDropdown">
               <Link
                 className={activeMenu === 'programs' ? 'isActive' : ''}
@@ -72,7 +71,7 @@ export default function SiteHeader({
               <div className="siteNavSubmenu">
                 <Link href="/community/library-news">도서관 행사 및 소식</Link>
                 <Link href="/community/ideas">우리동네 아이디어</Link>
-                <Link href="/survey">프로그램 투표</Link>
+                <Link href="/survey">프로그램 수요조사</Link>
               </div>
             </div>
             <Link
@@ -80,7 +79,7 @@ export default function SiteHeader({
               href="/studio/about"
             >
               <span className="siteStudioIcon" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </Link>
           </div>
           <div className="siteNavUtility">
@@ -95,7 +94,6 @@ export default function SiteHeader({
           <div className="siteMobileMenuPanel">
             <nav aria-label="모바일 주요 메뉴">
               <Link href="/about">모이라 소개</Link>
-              <Link href="/#library-finder">우리동네 도서관</Link>
               <div className="siteMobileMenuGroup">
                 <Link
                   className={`siteMobileMenuParent ${activeMenu === 'programs' ? 'isActive' : ''}`}
@@ -118,10 +116,10 @@ export default function SiteHeader({
                 <div className="siteMobileSubmenu">
                   <Link href="/community/library-news">도서관 행사 및 소식</Link>
                   <Link href="/community/ideas">우리동네 아이디어</Link>
-                  <Link href="/survey">프로그램 투표</Link>
+                  <Link href="/survey">프로그램 수요조사</Link>
                 </div>
               </div>
-              <Link className="siteStudioLink" href="/studio/about">✦ MOIRA Studio</Link>
+              <Link className="siteStudioLink" href="/studio/about">✦ MOIRA STUDIO</Link>
             </nav>
             <AuthActions initialUser={user} />
           </div>

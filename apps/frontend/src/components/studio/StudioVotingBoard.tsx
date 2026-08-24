@@ -82,7 +82,7 @@ export default function StudioVotingBoard() {
       if (!response.ok) throw new Error();
       setDocuments((current) => current.map((item) => item.id === document.id ? data.document : item));
       setSelectedId(null);
-    } catch { setError('투표를 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.'); }
+    } catch { setError('응답을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.'); }
     finally { setPendingId(null); }
   }
 
@@ -95,36 +95,36 @@ export default function StudioVotingBoard() {
       setDocuments((current) => current.map((item) => item.id === document.id ? data.document : item));
       setSelections((current) => ({ ...current, [document.id]: { intention: '', timeSlot: '' } }));
       setSelectedId(null);
-    } catch { setError('투표 취소를 처리하지 못했습니다.'); }
+    } catch { setError('응답 취소를 처리하지 못했습니다.'); }
     finally { setPendingId(null); }
   }
 
   const selectedDocument = documents.find((document) => document.id === selectedId);
 
   return <main className="studioVotingPage"><section className="uiContainer studioVotingShell">
-    <CommunitySectionBreadcrumb current="프로그램 투표" />
-    <section className="studioVotingHero" aria-labelledby="studio-voting-title"><div><p>MOIRA STUDIO</p><h1 id="studio-voting-title">우리 동네 프로그램 투표</h1><span>도서관에서 만나고 싶은 프로그램을 살펴보고<br />마음에 드는 프로그램에 투표해주세요.</span></div><div className="studioVotingHeroArt" aria-hidden="true"><div className="studioVotingBallot"><i /><i /><Icon name="check" /></div><div className="studioVotingBooks"><i /><i /><i /></div></div></section>
+    <CommunitySectionBreadcrumb current="프로그램 수요조사" />
+    <section className="studioVotingHero" aria-labelledby="studio-voting-title"><div><p>MOIRA STUDIO</p><h1 id="studio-voting-title">우리 동네 프로그램 수요조사</h1><span>도서관에서 만나고 싶은 프로그램의 수요조사에 참여해 주세요.<br />여러분의 응답은 도서관 프로그램을 준비하는 데 도움이 됩니다.</span></div><div className="studioVotingHeroArt" aria-hidden="true"><div className="studioVotingBallot"><i /><i /><Icon name="check" /></div><div className="studioVotingBooks"><i /><i /><i /></div></div></section>
 
     {!loading && !error && documents.length > 0 ? <section className="studioVotingControls" aria-label="프로그램 탐색"><p>프로그램 <strong>{filtered.length}</strong></p><div><label className="studioVotingSearch"><Icon name="search" /><span className="uiSrOnly">프로그램 검색</span><input type="search" placeholder="프로그램명으로 검색" value={query} onChange={(event) => setQuery(event.target.value)} /></label><label className="studioVotingSort"><span className="uiSrOnly">정렬</span><select value={sort} onChange={(event) => setSort(event.target.value as Sort)}><option value="popular">인기순</option><option value="latest">최신순</option></select></label></div></section> : null}
 
     {error ? <section className="studioVotingState" role="alert"><Icon name="empty" /><h2>프로그램을 불러오지 못했습니다.</h2><p>잠시 후 다시 시도해주세요.</p><button type="button" onClick={() => void loadDocuments()}>다시 시도</button></section> : null}
     {loading ? <div className="studioVotingGrid" aria-label="프로그램을 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="studioVotingSkeleton" key={index}><i /><b /><span /><span /><em /></div>)}</div> : null}
-    {!loading && !error && documents.length === 0 ? <section className="studioVotingState"><Icon name="empty" /><h2>현재 투표할 수 있는 프로그램이 없습니다.</h2><p>새로운 프로그램이 등록되면 이곳에서 확인할 수 있습니다.</p></section> : null}
+    {!loading && !error && documents.length === 0 ? <section className="studioVotingState"><Icon name="empty" /><h2>현재 진행 중인 프로그램 수요조사가 없습니다.</h2><p>새로운 프로그램이 등록되면 이곳에서 확인할 수 있습니다.</p></section> : null}
     {!loading && !error && documents.length > 0 && filtered.length === 0 ? <section className="studioVotingState"><Icon name="search" /><h2>검색 결과가 없습니다.</h2><p>다른 검색어를 입력해주세요.</p></section> : null}
 
     {!loading && !error && pageItems.length > 0 ? <div className="studioVotingGrid">{pageItems.map((document) => {
       const description = fieldValue(document.content, '기획 의도') || document.content.replace(/\s+/g, ' ').trim();
       return <article className="studioVotingCard" key={document.id}>
-        <div className="studioVotingCardTop"><span>수요조사 중</span>{document.hasVoted ? <strong><Icon name="check" /> 투표 완료</strong> : null}</div>
+        <div className="studioVotingCardTop"><span>수요조사 중</span>{document.hasVoted ? <strong><Icon name="check" /> 참여 완료</strong> : null}</div>
         <div className="studioVotingCardIdentity"><div><Icon name="book" /></div><h2>{document.title}</h2></div>
         <p className="studioVotingContent">{description}</p>
         <Link className="studioVotingDetailLink" href={`/survey/${document.id}`}>자세히 보기 <span aria-hidden="true">→</span></Link>
-        <footer className="studioVotingCardFooter"><span><Icon name="users" />{document.voteCount}명 참여</span><button type="button" className={document.hasVoted ? 'isVoted' : ''} onClick={() => setSelectedId(document.id)}>{document.hasVoted ? <><Icon name="check" />내 응답 수정</> : '투표하기'}</button></footer>
+        <footer className="studioVotingCardFooter"><span><Icon name="users" />{document.voteCount}명 참여</span><button type="button" className={document.hasVoted ? 'isVoted' : ''} onClick={() => setSelectedId(document.id)}>{document.hasVoted ? <><Icon name="check" />내 응답 수정</> : '수요조사 참여'}</button></footer>
       </article>;
     })}</div> : null}
 
     {lastPage > 1 && filtered.length > 0 ? <nav className="studioVotingPagination" aria-label="프로그램 목록 페이지"><button type="button" disabled={page === 1} onClick={() => setPage((value) => value - 1)} aria-label="이전 페이지">←</button>{Array.from({ length: lastPage }, (_, index) => index + 1).map((number) => <button type="button" className={page === number ? 'isCurrent' : ''} aria-current={page === number ? 'page' : undefined} onClick={() => setPage(number)} key={number}>{number}</button>)}<button type="button" disabled={page === lastPage} onClick={() => setPage((value) => value + 1)} aria-label="다음 페이지">→</button></nav> : null}
 
-    {selectedDocument ? (() => { const selection = selections[selectedDocument.id] ?? { intention: '', timeSlot: '' }; return <div className="surveyModalBackdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedId(null); }}><div className="surveyModal studioVotingModal" role="dialog" aria-modal="true" aria-labelledby="studio-vote-modal-title"><button className="surveyModalClose" type="button" aria-label="투표 창 닫기" onClick={() => setSelectedId(null)}>×</button><p className="uiEyebrow">PROGRAM SURVEY</p><h2 id="studio-vote-modal-title">{selectedDocument.title}</h2><form onSubmit={(event) => { event.preventDefault(); void submitVote(selectedDocument); }}><fieldset><legend>이 프로그램이 개설된다면 참여할 의향이 있나요?</legend><div className="surveyOptions">{intentions.map((option) => <label key={option}><input type="radio" name="intention" checked={selection.intention === option} onChange={() => select(selectedDocument.id, 'intention', option)} /><span>{option}</span></label>)}</div></fieldset><fieldset><legend>선호하는 시간대가 있나요? <small>선택</small></legend><div className="surveyTimeOptions">{timeSlots.map((option) => <label key={option}><input type="radio" name="timeSlot" checked={selection.timeSlot === option} onChange={() => select(selectedDocument.id, 'timeSlot', option)} /><span>{option}</span></label>)}</div></fieldset><button className="uiButton uiButtonPrimary surveySubmit" type="submit" disabled={!selection.intention || pendingId === selectedDocument.id}>{pendingId === selectedDocument.id ? '처리 중…' : selectedDocument.hasVoted ? '응답 수정하기' : '투표 보내기'}</button>{selectedDocument.hasVoted ? <button type="button" className="studioVotingModalCancel" disabled={pendingId === selectedDocument.id} onClick={() => cancelVote(selectedDocument)}>응답 취소</button> : null}</form></div></div>; })() : null}
+    {selectedDocument ? (() => { const selection = selections[selectedDocument.id] ?? { intention: '', timeSlot: '' }; return <div className="surveyModalBackdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedId(null); }}><div className="surveyModal studioVotingModal" role="dialog" aria-modal="true" aria-labelledby="studio-vote-modal-title"><button className="surveyModalClose" type="button" aria-label="수요조사 창 닫기" onClick={() => setSelectedId(null)}>×</button><p className="uiEyebrow">PROGRAM SURVEY</p><h2 id="studio-vote-modal-title">{selectedDocument.title}</h2><form onSubmit={(event) => { event.preventDefault(); void submitVote(selectedDocument); }}><fieldset><legend>이 프로그램이 개설된다면 참여할 의향이 있나요?</legend><div className="surveyOptions">{intentions.map((option) => <label key={option}><input type="radio" name="intention" checked={selection.intention === option} onChange={() => select(selectedDocument.id, 'intention', option)} /><span>{option}</span></label>)}</div></fieldset><fieldset><legend>선호하는 시간대가 있나요? <small>선택사항</small></legend><div className="surveyTimeOptions">{timeSlots.map((option) => <label key={option}><input type="radio" name="timeSlot" checked={selection.timeSlot === option} onChange={() => select(selectedDocument.id, 'timeSlot', option)} /><span>{option}</span></label>)}</div></fieldset><button className="uiButton uiButtonPrimary surveySubmit" type="submit" disabled={!selection.intention || pendingId === selectedDocument.id}>{pendingId === selectedDocument.id ? '처리 중…' : selectedDocument.hasVoted ? '응답 수정하기' : '응답 제출'}</button>{selectedDocument.hasVoted ? <button type="button" className="studioVotingModalCancel" disabled={pendingId === selectedDocument.id} onClick={() => cancelVote(selectedDocument)}>응답 취소</button> : null}</form></div></div>; })() : null}
   </section></main>;
 }

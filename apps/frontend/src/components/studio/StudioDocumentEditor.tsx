@@ -646,7 +646,7 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
       setLastSavedAt(formatStudioDate(data.document.updatedAt));
       setStageSaveState('idle');
       setStageMessage(nextStage === '수요조사 중'
-        ? '수요조사가 시작되어 주민 프로그램 투표에 공개되었습니다.'
+        ? '수요조사가 시작되어 주민 프로그램 수요조사에 공개되었습니다.'
         : '수요조사가 종료되었습니다. 기존 응답 결과는 계속 확인할 수 있습니다.');
       return true;
     } catch (error) {
@@ -1233,8 +1233,8 @@ function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
             </h2>
             <p id="studio-survey-confirm-description">
               {pendingSurveyAction === 'start'
-                ? '시작하면 이 프로그램이 주민 프로그램 투표에 공개되며 주민들의 응답을 받을 수 있습니다.'
-                : '종료하면 주민 프로그램 투표에서 내려가며 더 이상 새로운 응답을 받지 않습니다. 기존 응답 결과는 계속 확인할 수 있습니다.'}
+                ? '시작하면 이 프로그램이 주민 프로그램 수요조사에 공개되며 주민들의 응답을 받을 수 있습니다.'
+                : '종료하면 주민 프로그램 수요조사에서 내려가며 더 이상 새로운 응답을 받지 않습니다. 기존 응답 결과는 계속 확인할 수 있습니다.'}
             </p>
             <div className="studioSurveyConfirmActions">
               <button
