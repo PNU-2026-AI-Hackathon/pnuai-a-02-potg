@@ -24,6 +24,8 @@ export type CommunityPost = {
   author: string;
   createdAt: string;
   tags: string[];
+  likeCount: number;
+  commentCount: number;
 };
 
 export const communityBoards: Record<CommunityBoardSlug, CommunityBoard> = {
@@ -75,7 +77,9 @@ function isCommunityPost(value: unknown): value is CommunityPost {
     typeof post.author === 'string' &&
     typeof post.createdAt === 'string' &&
     Array.isArray(post.tags) &&
-    post.tags.every((tag) => typeof tag === 'string')
+    post.tags.every((tag) => typeof tag === 'string') &&
+    typeof post.likeCount === 'number' &&
+    typeof post.commentCount === 'number'
   );
 }
 
@@ -127,6 +131,33 @@ export async function getCommunityPosts(slug: CommunityBoardSlug) {
     return posts;
   } catch (error) {
     console.error('Community posts request failed:', error);
+    return [];
+  }
+}
+
+export async function getPopularIdeaPosts(limit = 3) {
+  try {
+    const params = new URLSearchParams({
+      boardSlug: 'ideas',
+      sort: 'likes',
+      limit: String(limit),
+    });
+    const response = await fetch(getBackendUrl(`/api/posts?${params.toString()}`), {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) return [];
+
+    const data: unknown = await response.json();
+    if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).posts)) {
+      return [];
+    }
+
+    return (data as { posts: unknown[] }).posts.filter(
+      (post): post is CommunityPost => isCommunityPost(post) && post.boardSlug === 'ideas',
+    );
+  } catch (error) {
+    console.error('Popular idea request failed:', error);
     return [];
   }
 }
