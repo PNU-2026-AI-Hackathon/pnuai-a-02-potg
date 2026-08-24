@@ -81,8 +81,11 @@ const BUSAN_DISTRICTS = [
 
 const PHONE_DISPLAY_PATTERN = /^\d{3}-\d{3,4}-\d{4}$/;
 
-function postHref(postId: string) {
-  return `/community/posts/${encodeURIComponent(postId)}`;
+function postHref(post: { id: string; boardSlug: string }) {
+  if (post.boardSlug === 'ideas') {
+    return `/community/ideas?topic=${encodeURIComponent(post.id)}`;
+  }
+  return `/community/posts/${encodeURIComponent(post.id)}`;
 }
 
 async function fetchDashboardData() {
@@ -184,11 +187,11 @@ function FavoriteProgramSection({ items, onRemove }: { items: FavoriteProgram[];
 }
 
 function PostSection({ title, eyebrow, icon, items, empty, actionLabel, onAction }: { title: string; eyebrow: string; icon: string; items: ActivityPost[]; empty: string; actionLabel?: string; onAction?: (id: string) => void }) {
-  return <section className="mypageActivityCard"><div className="mypageSectionHeading"><span className="mypageSectionIcon" aria-hidden="true">{icon}</span><div><p className="uiEyebrow">{eyebrow}</p><h2>{title}</h2></div></div><div className="mypagePostList">{items.length ? items.map((post) => <article className="mypagePostItem" key={post.id}><span className="uiTag">{post.boardSlug}</span><div className="mypagePostCopy"><Link href={postHref(post.id)}><h3>{post.title}</h3></Link><p>{post.content}</p><div className="mypagePostMeta"><span>{dateFormatter.format(new Date(post.createdAt))}</span><span>댓글 {post.commentCount} · 좋아요 {post.likeCount}</span></div></div>{onAction && actionLabel ? <button className="mypageInlineAction" type="button" onClick={() => onAction(post.id)}>{actionLabel}</button> : <span className="mypageRowArrow">›</span>}</article>) : <p className="mypageEmptyState">{empty}</p>}</div></section>;
+  return <section className="mypageActivityCard"><div className="mypageSectionHeading"><span className="mypageSectionIcon" aria-hidden="true">{icon}</span><div><p className="uiEyebrow">{eyebrow}</p><h2>{title}</h2></div></div><div className="mypagePostList">{items.length ? items.map((post) => <article className="mypagePostItem" key={post.id}><span className="uiTag">{post.boardSlug}</span><div className="mypagePostCopy"><Link href={postHref(post)}><h3>{post.title}</h3></Link><p>{post.content}</p><div className="mypagePostMeta"><span>{dateFormatter.format(new Date(post.createdAt))}</span><span>댓글 {post.commentCount} · 좋아요 {post.likeCount}</span></div></div>{onAction && actionLabel ? <button className="mypageInlineAction" type="button" onClick={() => onAction(post.id)}>{actionLabel}</button> : <span className="mypageRowArrow">›</span>}</article>) : <p className="mypageEmptyState">{empty}</p>}</div></section>;
 }
 
 function CommentSection({ items }: { items: ActivityComment[] }) {
-  return <section className="mypageActivityCard"><div className="mypageSectionHeading"><span className="mypageSectionIcon" aria-hidden="true">💬</span><div><p className="uiEyebrow">MY COMMENTS</p><h2>내가 작성한 댓글</h2></div></div><div className="mypagePostList">{items.length ? items.map((comment) => <article className="mypagePostItem" key={comment.id}><span className="uiTag">댓글</span><div className="mypagePostCopy"><Link href={postHref(comment.post.id)}><h3>{comment.post.title}</h3></Link><p>{comment.content}</p><div className="mypagePostMeta"><span>{dateFormatter.format(new Date(comment.createdAt))}</span></div></div><span className="mypageRowArrow">›</span></article>) : <p className="mypageEmptyState">작성한 댓글이 없습니다.</p>}</div></section>;
+  return <section className="mypageActivityCard"><div className="mypageSectionHeading"><span className="mypageSectionIcon" aria-hidden="true">💬</span><div><p className="uiEyebrow">MY COMMENTS</p><h2>내가 작성한 댓글</h2></div></div><div className="mypagePostList">{items.length ? items.map((comment) => <article className="mypagePostItem" key={comment.id}><span className="uiTag">댓글</span><div className="mypagePostCopy"><Link href={postHref(comment.post)}><h3>{comment.post.title}</h3></Link><p>{comment.content}</p><div className="mypagePostMeta"><span>{dateFormatter.format(new Date(comment.createdAt))}</span></div></div><span className="mypageRowArrow">›</span></article>) : <p className="mypageEmptyState">작성한 댓글이 없습니다.</p>}</div></section>;
 }
 
 function ProfileForm({ profile, availableInterests, onSaved }: { profile: Profile; availableInterests: Interest[]; onSaved: (profile: Profile) => void }) {
