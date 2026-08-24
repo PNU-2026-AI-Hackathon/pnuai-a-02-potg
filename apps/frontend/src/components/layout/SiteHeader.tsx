@@ -35,7 +35,6 @@ export default function SiteHeader({
             <Link className={activeMenu === 'about' ? 'isActive' : ''} href="/about">
               모이라 소개
             </Link>
-            <Link href="/#library-finder">우리동네 도서관</Link>
             <div className="siteNavDropdown">
               <Link
                 className={activeMenu === 'programs' ? 'isActive' : ''}
@@ -95,7 +94,6 @@ export default function SiteHeader({
           <div className="siteMobileMenuPanel">
             <nav aria-label="모바일 주요 메뉴">
               <Link href="/about">모이라 소개</Link>
-              <Link href="/#library-finder">우리동네 도서관</Link>
               <div className="siteMobileMenuGroup">
                 <Link
                   className={`siteMobileMenuParent ${activeMenu === 'programs' ? 'isActive' : ''}`}

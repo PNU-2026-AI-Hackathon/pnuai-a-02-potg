@@ -66,12 +66,14 @@ export default function ProgramSurveySection() {
         <div className="surveyGrid">
           {programs.map((program) => (
             <article className="surveyCard" key={program.id}>
-              <div className="surveyCardTop"><span className="uiTag uiTagPlanning">수요조사 중</span><span>{program.voteCount}명 참여</span></div>
+              <div className="surveyCardTop">
+                <span className="uiTag uiTagPlanning">수요조사 중</span>
+              </div>
               <h3>{program.title}</h3>
               <dl><div><dt>대상</dt><dd>{fieldValue(program.content, '대상')}</dd></div><div><dt>운영 기간</dt><dd>{fieldValue(program.content, '운영 기간')}</dd></div></dl>
               <p>{description(program.content)}</p>
               <div className="surveyCardFooter">
-                <strong><span aria-hidden="true">●</span> {program.voteCount}명 참여 현황</strong>
+                <strong><span aria-hidden="true">●</span> {program.voteCount}명 참여</strong>
                 <button className="uiButton uiButtonLight" type="button" onClick={() => setSelectedProgram(program)}>{program.hasVoted ? '내 응답 확인·수정' : '수요조사 참여하기'}</button>
               </div>
             </article>

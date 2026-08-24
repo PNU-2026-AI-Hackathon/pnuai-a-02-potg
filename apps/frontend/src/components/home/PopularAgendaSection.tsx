@@ -1,21 +1,22 @@
 import Link from 'next/link';
-import SectionHeading from './SectionHeading';
 import { popularAgendas } from './home-data';
 
 export default function PopularAgendaSection() {
   return (
     <section className="homeSection popularAgendaSection" id="neighborhood-stories">
       <div className="uiContainer">
-        <SectionHeading
-          eyebrow="NEIGHBORHOOD VOICES"
-          title="우리 동네 인기 의제"
-          description="최근 주민들의 공감을 많이 받은 지역 의제를 살펴보세요."
-          action={
-            <Link className="uiTextLink" href="/community/ideas">
-              우리동네 아이디어 보기 <span aria-hidden="true">→</span>
-            </Link>
-          }
-        />
+        <div className="homeSectionHeading popularAgendaHeading">
+          <p className="uiEyebrow">NEIGHBORHOOD VOICES</p>
+          <h2>우리 동네 인기 아이디어</h2>
+          <p className="homeSectionDescription">
+            주민들의 공감을 많이 받은 도서관 프로그램 아이디어를 살펴보세요.
+          </p>
+        </div>
+        <div className="popularAgendaListAction">
+          <Link className="uiButton uiButtonSecondary popularAgendaListButton" href="/community/ideas">
+            전체 아이디어 보기 <span aria-hidden="true">→</span>
+          </Link>
+        </div>
         <div className="agendaGrid">
           {popularAgendas.map((agenda, index) => (
             <article className="agendaItem" key={agenda.id}>
