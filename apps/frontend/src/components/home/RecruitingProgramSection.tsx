@@ -10,7 +10,10 @@ import {
 export default async function RecruitingProgramSection() {
   const today = new Date();
   const recruitingPrograms = (await getProgramSummaries())
-    .filter((program) => programRecruitStatus(program, today) === 'open')
+    .sort((left, right) => {
+      const dateOrder = (right.applyStartDate ?? '').localeCompare(left.applyStartDate ?? '');
+      return dateOrder || right.sourceId - left.sourceId;
+    })
     .slice(0, 3);
 
   return (
@@ -18,10 +21,10 @@ export default async function RecruitingProgramSection() {
       <div className="uiContainer">
         <SectionHeading
           eyebrow="OPEN PROGRAMS"
-          title="모집 중인 작은도서관 프로그램"
-          description="일정이 확정되어 지금 참여할 수 있는 우리 동네 프로그램입니다."
+          title="최근 모집 작은도서관 프로그램"
+          description="최근 모집을 시작한 우리 동네 프로그램을 확인해 보세요."
           action={
-            <Link className="uiTextLink" href="/programs?status=open">
+            <Link className="uiTextLink" href="/programs">
               프로그램 둘러보기 <span aria-hidden="true">→</span>
             </Link>
           }
@@ -32,7 +35,7 @@ export default async function RecruitingProgramSection() {
               <span className="recruitingNumber">0{index + 1}</span>
               <div className="recruitingContent">
                 <div>
-                  <span className="uiTag uiTagRecruiting">
+                  <span className={`uiTag ${programRecruitStatus(program, today) === 'open' ? 'uiTagRecruiting' : ''}`}>
                     {programRecruitLabel[programRecruitStatus(program, today)]}
                   </span>
                   <span className="recruitingLibrary">{program.libraryName ?? '운영 도서관 확인 필요'}</span>
@@ -48,7 +51,7 @@ export default async function RecruitingProgramSection() {
               </a>
             </article>
           ))}
-        </div> : <p className="homeSectionEmpty">현재 모집 중인 작은도서관 프로그램이 없습니다.</p>}
+        </div> : <p className="homeSectionEmpty">등록된 작은도서관 프로그램이 없습니다.</p>}
       </div>
     </section>
   );
