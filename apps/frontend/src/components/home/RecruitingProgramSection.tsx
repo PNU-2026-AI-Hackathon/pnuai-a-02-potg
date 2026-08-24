@@ -21,10 +21,10 @@ export default async function RecruitingProgramSection() {
       <div className="uiContainer">
         <SectionHeading
           eyebrow="OPEN PROGRAMS"
-          title="최근 모집 작은도서관 프로그램"
+          title="최근 모집 도서관 프로그램"
           description="최근 모집을 시작한 우리 동네 프로그램을 확인해 보세요."
           action={
-            <Link className="uiTextLink" href="/programs">
+            <Link className="uiButton uiButtonSecondary recruitingBrowseButton" href="/programs">
               프로그램 둘러보기 <span aria-hidden="true">→</span>
             </Link>
           }

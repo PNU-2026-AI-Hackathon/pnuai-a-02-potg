@@ -79,7 +79,7 @@ export default function SiteHeader({
               href="/studio/about"
             >
               <span className="siteStudioIcon" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </Link>
           </div>
           <div className="siteNavUtility">
@@ -119,7 +119,7 @@ export default function SiteHeader({
                   <Link href="/survey">프로그램 수요조사</Link>
                 </div>
               </div>
-              <Link className="siteStudioLink" href="/studio/about">✦ MOIRA Studio</Link>
+              <Link className="siteStudioLink" href="/studio/about">✦ MOIRA STUDIO</Link>
             </nav>
             <AuthActions initialUser={user} />
           </div>

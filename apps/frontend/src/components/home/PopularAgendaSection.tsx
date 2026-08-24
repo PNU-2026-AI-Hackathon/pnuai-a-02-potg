@@ -2,6 +2,25 @@ import Link from 'next/link';
 
 import { getPopularIdeaPosts } from '@/lib/community-boards';
 
+function AgendaMetaIcon({ name }: { name: 'user' | 'heart' | 'message' }) {
+  const paths = {
+    user: (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0" />
+      </>
+    ),
+    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.7-7.5a5.5 5.5 0 0 0 1.1-8.9Z" />,
+    message: <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />,
+  };
+
+  return (
+    <svg className="agendaMetaIcon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
 function summarize(content: string) {
   const plainText = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   return plainText.length > 100 ? `${plainText.slice(0, 100).trim()}…` : plainText;
@@ -46,12 +65,13 @@ export default async function PopularAgendaSection() {
                 <p>{summarize(agenda.content)}</p>
 
                 <div className="agendaLocation">
-                  <span aria-hidden="true">⌖</span> {agenda.author}
+                  <AgendaMetaIcon name="user" />
+                  <span>{agenda.author}</span>
                 </div>
 
                 <div className="agendaMeta">
-                  <span>♥ 공감 {agenda.likeCount}</span>
-                  <span>◯ 댓글 {agenda.commentCount}</span>
+                  <span><AgendaMetaIcon name="heart" />공감 {agenda.likeCount}</span>
+                  <span><AgendaMetaIcon name="message" />댓글 {agenda.commentCount}</span>
                 </div>
               </article>
             ))}

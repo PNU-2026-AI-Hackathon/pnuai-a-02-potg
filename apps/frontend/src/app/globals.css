@@ -9282,17 +9282,29 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 }
 
 .agendaLocation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-top: auto;
   padding-top: 26px;
-  color: #70807a;
-  font-size: 12px;
+  color: #687a74;
+  font-size: 13px;
   font-weight: 700;
 }
 
-.agendaLocation span {
-  margin-right: 5px;
-  color: var(--moira-green);
-  font-size: 17px;
+.agendaMetaIcon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.agendaLocation .agendaMetaIcon {
+  color: #5f8076;
 }
 
 .agendaMeta {
@@ -9301,13 +9313,19 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   margin-top: 16px;
   border-top: 1px solid #edf0ee;
   padding-top: 16px;
-  color: #71807b;
-  font-size: 12px;
+  color: #6b7c76;
+  font-size: 13px;
   font-weight: 700;
 }
 
-.agendaMeta span:first-child {
-  color: #b65e4c;
+.agendaMeta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.agendaMeta .agendaMetaIcon {
+  color: #698a7f;
 }
 
 .homeCenteredAction {
@@ -9424,35 +9442,67 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   background: #fff;
 }
 
+.recruitingSection .homeSectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 34px;
+}
+
+.recruitingBrowseButton {
+  min-height: 42px;
+  flex: 0 0 auto;
+  border-color: var(--moira-green);
+  padding-inline: 17px;
+  color: var(--moira-green);
+  font-size: 13px;
+}
+
 .recruitingList {
-  border-top: 1px solid #cad7d2;
+  display: grid;
+  gap: 16px;
 }
 
 .recruitingCard {
+  position: relative;
   display: grid;
-  grid-template-columns: 80px minmax(0, 1fr) auto;
-  gap: 24px;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 22px;
   align-items: center;
-  border-bottom: 1px solid #dce4e0;
-  padding: 28px 8px;
+  border: 1px solid #dce4e0;
+  border-radius: 16px;
+  background: #fff;
+  padding: 28px 30px;
+}
+
+.recruitingCard:hover {
+  z-index: 1;
 }
 
 .recruitingNumber {
+  justify-self: center;
   color: #c4cfcb;
   font-size: 27px;
   font-weight: 850;
 }
 
+.recruitingContent {
+  min-width: 0;
+}
+
 .recruitingContent > div {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
 .recruitingLibrary {
   color: #76837e;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.45;
 }
 
 .recruitingContent h3 {
@@ -9465,7 +9515,8 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 .recruitingContent p {
   margin: 10px 0 0;
   color: #6c7b76;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .recruitingContent p i {
@@ -9475,6 +9526,12 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   margin: 0 9px 3px;
   border-radius: 50%;
   background: #9caaa5;
+}
+
+.recruitingCard > .uiButton {
+  min-width: 98px;
+  min-height: 42px;
+  padding-inline: 16px;
 }
 
 .libraryFinderSection {
@@ -10687,7 +10744,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 
   .agendaLocation {
     padding-top: 18px;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.45;
   }
 
@@ -10696,7 +10753,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
     gap: 6px 10px;
     margin-top: 12px;
     padding-top: 12px;
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .homeCenteredAction {
@@ -10761,8 +10818,17 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   .recruitingList {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 12px;
     border-top: 0;
+  }
+
+  .recruitingSection .homeSectionHeading {
+    display: block;
+    margin-bottom: 24px;
+  }
+
+  .recruitingSection .homeSectionAction {
+    margin-top: 16px;
   }
 
   .recruitingCard {
@@ -10774,7 +10840,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
     gap: 14px;
     border: 1px solid #dce4e0;
     border-radius: var(--moira-radius-md);
-    padding: 16px 14px;
+    padding: 18px;
   }
 
   .recruitingNumber {
@@ -10788,7 +10854,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   }
 
   .recruitingLibrary {
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.45;
   }
 
@@ -10798,7 +10864,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   }
 
   .recruitingContent p {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.55;
   }
 
@@ -10962,8 +11028,13 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   }
 
   .agendaLocation {
-    display: -webkit-box;
+    display: flex;
     max-height: calc(2.9em + 16px);
+    overflow: hidden;
+  }
+
+  .agendaLocation > span {
+    display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
