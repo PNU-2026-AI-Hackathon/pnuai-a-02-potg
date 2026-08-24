@@ -55,7 +55,7 @@ export default function ProgramSurveySection() {
         <SectionHeading
           eyebrow="PLANNING NOW"
           title="주민의 선택을 기다리는 프로그램"
-          description="사서가 준비 중인 프로그램 기획서를 확인하고, 투표로 참여 의사를 알려주세요."
+          description="사서가 준비 중인 프로그램 기획서를 확인하고, 수요조사로 참여 의사를 알려주세요."
           light
           action={
             <Link className="uiTextLink mobileOnlySectionLink" href="/survey">

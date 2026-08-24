@@ -7023,10 +7023,10 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 
 .introHeroGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(500px, 1.2fr);
-  gap: clamp(92px, 8vw, 144px);
+  grid-template-columns: minmax(0, 1.22fr) minmax(380px, 0.78fr);
+  gap: clamp(80px, 7vw, 112px);
   align-items: center;
-  width: min(1440px, calc(100% - 48px));
+  width: min(1120px, calc(100% - 48px));
   min-height: 74vh;
 }
 
@@ -7034,14 +7034,14 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   display: grid;
   justify-items: start;
   width: 100%;
-  max-width: 760px;
+  max-width: 640px;
 }
 
 .introHeroCopy h1 {
   margin: 0;
   width: 100%;
-  max-width: 760px;
-  font-size: clamp(42px, 3.9vw, 62px);
+  max-width: 640px;
+  font-size: clamp(40px, 3.5vw, 56px);
   line-height: 1.14;
   letter-spacing: -0.08em;
   color: var(--moira-ink);
@@ -7054,10 +7054,10 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 }
 
 .introHeroLead {
-  max-width: 700px;
+  max-width: 600px;
   margin: 24px 0 0;
   color: var(--moira-muted);
-  font-size: clamp(16px, 1.5vw, 19px);
+  font-size: clamp(16px, 1.3vw, 18px);
   line-height: 1.8;
 }
 
@@ -7095,6 +7095,8 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   display: grid;
   justify-items: stretch;
   width: 100%;
+  max-width: 440px;
+  justify-self: end;
 }
 
 .introLibraryMark {
@@ -7131,14 +7133,206 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   letter-spacing: 0.16em;
 }
 
+.introHeroVisual .introLibraryMark {
+  top: -78px;
+}
+
 .studioMockupShell {
-  width: min(100%, 650px);
+  width: min(100%, 600px);
   justify-self: stretch;
   padding: 16px;
   border: 1px solid rgba(22, 116, 95, 0.18);
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.4);
   box-shadow: 0 28px 60px rgba(17, 55, 45, 0.08);
+}
+
+.introHeroVisual .studioMockupShell {
+  width: min(100%, 440px);
+  padding: 10px;
+  border-radius: 22px;
+  background: rgba(248, 252, 249, 0.82);
+}
+
+.introHeroVisual .studioMockupInner {
+  gap: 8px;
+  min-height: 0;
+  padding: 10px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fbfcf7 0%, #f3f8f4 100%);
+}
+
+.introHeroVisual .studioMockupHeader {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+}
+
+.introHeroVisual .studioMockupEyebrow {
+  padding-left: 0;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.introHeroVisual .studioMockupTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: clamp(28px, 2vw, 34px);
+  letter-spacing: -0.06em;
+}
+
+.introHeroVisual .studioMockupTitle span {
+  color: #efa35f;
+  font-size: 0.58em;
+}
+
+.introHeroVisual .studioMockupSubtitle {
+  max-width: 380px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.introHeroVisual .studioMockupCard {
+  align-content: space-between;
+  gap: 7px;
+  min-height: 240px;
+  padding: 9px;
+  border-color: #cfe0d8;
+  border-radius: 16px;
+  background: rgba(250, 253, 251, 0.94);
+}
+
+.studioMockupExamples {
+  display: grid;
+  gap: 5px;
+  padding: 8px 9px;
+  border: 1px solid #d8e5df;
+  border-radius: 12px;
+  background: #f8fbf9;
+  transition: border-color 0.32s ease, background 0.32s ease;
+}
+
+.studioMockupExamples.isHeroStepReached {
+  border-color: rgba(22, 116, 95, 0.3);
+  background: #ffffff;
+}
+
+.studioMockupExamples > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.studioMockupExamples strong {
+  color: var(--moira-ink);
+  font-size: 10px;
+}
+
+.studioMockupExamples strong span {
+  margin-right: 3px;
+  color: #efa35f;
+}
+
+.studioMockupExamples small {
+  overflow: hidden;
+  color: var(--moira-muted);
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studioMockupExampleChips {
+  display: flex;
+  gap: 5px;
+  min-width: 0;
+}
+
+.studioMockupExampleChips span {
+  overflow: hidden;
+  min-width: 0;
+  border: 1px solid #d4e3dc;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 4px 7px;
+  color: #52645e;
+  font-size: 8px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.introHeroVisual .studioFieldGroup {
+  gap: 4px;
+}
+
+.introHeroVisual .studioFieldLabel {
+  font-size: 10px;
+}
+
+.introHeroVisual .studioTextBlock {
+  min-height: 34px;
+  padding: 8px 9px;
+  border-color: #d8e5df;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #7c8b86;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.introHeroVisual .studioSelectRow {
+  gap: 8px;
+}
+
+.introHeroVisual .studioSelectBox {
+  position: relative;
+  gap: 2px;
+  min-height: 40px;
+  padding: 7px 20px 7px 8px;
+  border-color: #d4e3dc;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.introHeroVisual .studioSelectBox::after {
+  content: '⌄';
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  color: #52645e;
+  font-size: 11px;
+  transform: translateY(-58%);
+}
+
+.introHeroVisual .studioSelectBox span {
+  font-size: 8px;
+}
+
+.introHeroVisual .studioSelectBox strong {
+  font-size: 10px;
+}
+
+.introHeroVisual .studioActionBar {
+  justify-content: flex-end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.introHeroVisual .studioActionBar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #acc8bd;
+  font-size: 10px;
+}
+
+.introHeroVisual .studioActionBar.isHeroStepReached button {
+  background: #9fbeb2;
 }
 
 .studioMockupInner {
@@ -8200,9 +8394,8 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 /* 15-inch laptop layouts: retain the desktop composition without crowding. */
 @media (max-width: 1440px) {
   .introHeroGrid {
-    grid-template-columns: minmax(0, 0.96fr) minmax(430px, 1.04fr);
-    gap: clamp(44px, 5vw, 72px);
-    width: min(1220px, calc(100% - 112px));
+    grid-template-columns: minmax(0, 1.2fr) minmax(380px, 0.8fr);
+    gap: clamp(72px, 6vw, 96px);
     min-height: min(720px, calc(100vh - 72px));
   }
 
@@ -8270,7 +8463,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   }
 
   .introHeroGrid {
-    width: min(1080px, calc(100% - 88px));
+    width: min(1040px, calc(100% - 96px));
   }
 
   .introPage .homeSection > .uiContainer,
@@ -8280,6 +8473,54 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 
   .audienceGrid {
     gap: 56px;
+  }
+}
+
+@media (min-width: 981px) and (max-width: 1600px) and (max-height: 1000px) {
+  .introHero {
+    padding-block: clamp(54px, 6vh, 68px);
+  }
+
+  .introHeroGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr);
+    min-height: min(640px, calc(100svh - var(--site-header-height) - 40px));
+    gap: clamp(56px, 5vw, 72px);
+  }
+
+  .introHeroCopy,
+  .introHeroCopy h1 {
+    max-width: 520px;
+  }
+
+  .introHeroCopy h1 {
+    font-size: clamp(38px, 3vw, 46px);
+  }
+
+  .introHeroLead {
+    max-width: 500px;
+    font-size: 16px;
+    line-height: 1.72;
+  }
+
+  .introHeroVisual {
+    width: 100%;
+    max-width: 420px;
+    justify-self: end;
+  }
+
+  .introHeroVisual .studioMockupShell {
+    width: min(100%, 420px);
+  }
+}
+
+@media (min-width: 981px) {
+  .introHeroVisual .studioMockupShell {
+    transform: scale(1.22);
+    transform-origin: left center;
+  }
+
+  .introHeroCopy .h1LineBreak {
+    white-space: nowrap;
   }
 }
 
@@ -16959,7 +17200,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   grid-template-columns: minmax(0, .95fr) minmax(390px, 1.05fr);
   align-items: center;
   border: 1px solid #d5e7df;
-  border-radius: 20px 20px 0 0;
+  border-radius: 20px;
   background:
     radial-gradient(circle at 12% 8%, rgba(255,255,255,.98), transparent 34%),
     linear-gradient(125deg, #f8fcfa 0%, #edf8f3 56%, #e5f3ec 100%);
@@ -17178,7 +17419,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 
 .libraryNewsPostCard {
   display: grid;
-  grid-template-columns: 70px minmax(0, 1fr) minmax(260px, auto);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, auto);
   gap: 20px;
   align-items: center;
   min-height: 142px;
@@ -17443,8 +17684,8 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   .libraryNewsTools { width: 100%; }
   .libraryNewsSearch { flex: 1; }
   .libraryNewsSearch input { width: 100%; }
-  .libraryNewsPostCard { grid-template-columns: 62px minmax(0, 1fr); }
-  .libraryNewsPostMeta { grid-column: 2; grid-template-columns: minmax(130px, 1fr) auto; }
+  .libraryNewsPostCard { grid-template-columns: minmax(0, 1fr); }
+  .libraryNewsPostMeta { grid-column: 1; grid-template-columns: minmax(130px, 1fr) auto; }
 }
 
 @media (max-width: 768px) {
@@ -17506,7 +17747,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   .libraryNewsFilters {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 5px;
   }
   .libraryNewsFilters button {
@@ -17603,9 +17844,9 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 
 @media (max-width: 480px) {
   .libraryNewsBreadcrumb { overflow: hidden; white-space: nowrap; }
-  .libraryNewsHero { border-radius: 16px 16px 0 0; }
+  .libraryNewsHero { border-radius: 16px; }
   .libraryNewsHeroIntroduction > p { font-size: 14px; }
-  .libraryNewsFilters { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .libraryNewsFilters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .libraryNewsFilters button { padding-inline: 3px; font-size: 11px; }
   .libraryNewsTools { grid-template-columns: 1fr; }
   .libraryNewsSearch,

@@ -71,7 +71,7 @@ export default function SiteHeader({
               <div className="siteNavSubmenu">
                 <Link href="/community/library-news">도서관 행사 및 소식</Link>
                 <Link href="/community/ideas">우리동네 아이디어</Link>
-                <Link href="/survey">프로그램 투표</Link>
+                <Link href="/survey">프로그램 수요조사</Link>
               </div>
             </div>
             <Link
@@ -116,7 +116,7 @@ export default function SiteHeader({
                 <div className="siteMobileSubmenu">
                   <Link href="/community/library-news">도서관 행사 및 소식</Link>
                   <Link href="/community/ideas">우리동네 아이디어</Link>
-                  <Link href="/survey">프로그램 투표</Link>
+                  <Link href="/survey">프로그램 수요조사</Link>
                 </div>
               </div>
               <Link className="siteStudioLink" href="/studio/about">✦ MOIRA Studio</Link>

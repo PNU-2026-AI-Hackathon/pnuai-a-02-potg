@@ -531,14 +531,9 @@ export default function IdeaThreadBoard() {
         <section className="ideaHero">
           <div className="ideaHeroCopy">
             <p className="ideaEyebrow">MOIRA IDEA LAB · THREAD</p>
-            <h1>
-              같이 말할수록
-              <br />
-              아이디어는 선명해져요.
-            </h1>
+            <h1>우리 동네에 필요한 변화를 이야기해 주세요.</h1>
             <p>
-              우리 동네에 필요한 변화와 다양한 아이디어를 자유롭게 제안하고,
-              <br className="ideaHeroBreak" /> 함께 의견을 나눠보세요.
+              도서관에서 해보고 싶은 프로그램, 우리 동네의 불편한 점과 해결하고 싶은 문제를 자유롭게 제안해 보세요. 주민들의 공감과 의견이 새로운 변화로 이어집니다.
             </p>
           </div>
           <div className="ideaHeroVisual" aria-hidden="true">
@@ -546,10 +541,10 @@ export default function IdeaThreadBoard() {
               <IdeaIcon name="bulb" />
             </span>
             <span className="ideaVisualBubble ideaVisualBubbleOne">
-              좋은 생각!
+              어르신을 위한 스마트폰 교육이 있으면 좋겠어요!
             </span>
             <span className="ideaVisualBubble ideaVisualBubbleTwo">
-              함께 더해요
+              우리 동네에 아이들이 편하게 모일 공간이 부족해요.
             </span>
             <i />
             <i />
@@ -989,7 +984,7 @@ export default function IdeaThreadBoard() {
           <span>
             <IdeaIcon name="plus" />
           </span>{" "}
-          새 아이디어
+          아이디어 제안하기
         </button>
         {isCreateOpen && (
           <div

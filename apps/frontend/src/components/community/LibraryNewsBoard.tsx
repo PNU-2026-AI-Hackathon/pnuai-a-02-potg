@@ -7,7 +7,8 @@ import { postContentExcerpt, postContentText } from '@/lib/rich-post-content';
 import type { CommunityBoard, CommunityPost } from '@/lib/community-boards';
 import CommunitySectionBreadcrumb from '@/components/community/CommunitySectionBreadcrumb';
 
-type FilterKey = 'all' | 'notice' | 'recruiting' | 'event' | 'program';
+type FilterKey = 'all' | 'notice' | 'event-program';
+type PostCategory = 'notice' | 'recruiting' | 'event' | 'program' | 'general';
 type SortKey = 'latest' | 'popular';
 type Activity = { likeCount: number; saveCount: number; liked: boolean; saved: boolean };
 
@@ -20,7 +21,7 @@ const dateFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
 });
 
-function categoryOf(post: CommunityPost): Exclude<FilterKey, 'all'> | 'general' {
+function categoryOf(post: CommunityPost): PostCategory {
   if (post.type === 'notice') return 'notice';
   const source = `${post.title} ${postContentText(post.content)} ${post.tags.join(' ')}`;
   if (/모집|참가자|신청/.test(source)) return 'recruiting';
@@ -30,14 +31,11 @@ function categoryOf(post: CommunityPost): Exclude<FilterKey, 'all'> | 'general' 
 }
 
 function categoryLabel(category: ReturnType<typeof categoryOf>) {
-  return ({ notice: '공지', recruiting: '모집', event: '행사', program: '프로그램', general: '일반' })[category];
+  return ({ notice: '공지', recruiting: '모집', event: '행사·프로그램', program: '행사·프로그램', general: '일반' })[category];
 }
 
-function Icon({ name }: { name: 'megaphone' | 'pin' | 'calendar' | 'search' | 'pen' | 'heart' | 'bookmark' | 'more' | 'arrow' }) {
+function Icon({ name }: { name: 'search' | 'pen' | 'heart' | 'bookmark' | 'more' | 'arrow' }) {
   const paths = {
-    megaphone: <><path d="m3 11 15-6v14L3 13z" /><path d="M11.6 16.4 13 21H8l-1.6-6.4" /></>,
-    pin: <><path d="m12 17 5-5-2-2 1-5-7 7-4-1-2 2 5 5" /><path d="m7 17-4 4" /></>,
-    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
     search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
     pen: <><path d="M12 20h9" /><path d="m16.5 3.5 4 4L8 20l-5 1 1-5z" /></>,
     heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.7-7.5a5.5 5.5 0 0 0 1.1-8.9Z" />,
@@ -100,15 +98,10 @@ function LibraryNewsHero({ board }: { board: CommunityBoard }) {
           </div>
           <div className="libraryNewsHeroIntroduction" id="library-news-introduction">
             <p>{board.description}</p>
-            <strong>함께 만드는 더 나은 도서관, 더 가까운 우리 동네.</strong>
           </div>
         </div>
         <LibraryIllustration />
       </section>
-      <aside className="libraryNewsBanner" aria-label="게시판 이용 안내">
-        <span><Icon name="megaphone" /></span>
-        <p>{board.purpose}</p>
-      </aside>
     </>
   );
 }
@@ -123,7 +116,7 @@ function LibraryNewsControls({ counts, filter, onFilter, query, onQuery, sort, o
   onSort: (sort: SortKey) => void;
   canWrite: boolean;
 }) {
-  const filters: Array<[FilterKey, string]> = [['all', '전체'], ['notice', '공지'], ['recruiting', '모집'], ['event', '행사'], ['program', '프로그램']];
+  const filters: Array<[FilterKey, string]> = [['all', '전체'], ['notice', '공지'], ['event-program', '행사·프로그램']];
   return (
     <section className="libraryNewsControls" aria-label="게시글 필터 및 검색">
       <div className="libraryNewsFilters" role="group" aria-label="카테고리 필터">
@@ -186,10 +179,6 @@ function LibraryNewsPostCard({ post, activity, onActivityChange }: { post: Commu
   const category = categoryOf(post);
   return (
     <article className={`libraryNewsPostCard is-${category} ${post.type === 'notice' ? 'isNotice' : ''}`}>
-      <div className="libraryNewsPostCategory" aria-label={`게시글 분류 ${categoryLabel(category)}`}>
-        <span>{post.type === 'notice' ? <Icon name="pin" /> : <Icon name="calendar" />}</span>
-        <strong>{categoryLabel(category)}</strong>
-      </div>
       <div className="libraryNewsPostContent">
         <div className="libraryNewsPostHeading">
           <span className={`libraryNewsBadge is-${category}`}>{categoryLabel(category)}</span>
@@ -244,14 +233,20 @@ export default function LibraryNewsBoard({ board, posts, user }: { board: Commun
   const counts = useMemo(() => posts.reduce<Record<FilterKey, number>>((result, post) => {
     result.all += 1;
     const category = categoryOf(post);
-    if (category !== 'general') result[category] += 1;
+    if (category === 'event' || category === 'program' || category === 'recruiting') result['event-program'] += 1;
+    else if (category === 'notice') result.notice += 1;
     return result;
-  }, { all: 0, notice: 0, recruiting: 0, event: 0, program: 0 }), [posts]);
+  }, { all: 0, notice: 0, 'event-program': 0 }), [posts]);
 
   const filteredPosts = useMemo(() => {
     const keyword = query.trim().toLocaleLowerCase('ko-KR');
     return [...posts]
-      .filter((post) => filter === 'all' || categoryOf(post) === filter)
+      .filter((post) => {
+        if (filter === 'all') return true;
+        const category = categoryOf(post);
+        if (filter === 'event-program') return category === 'event' || category === 'program' || category === 'recruiting';
+        return category === filter;
+      })
       .filter((post) => !keyword || `${post.title} ${postContentText(post.content)} ${post.tags.join(' ')}`.toLocaleLowerCase('ko-KR').includes(keyword))
       .sort((left, right) => {
         if (left.type !== right.type) return left.type === 'notice' ? -1 : 1;
