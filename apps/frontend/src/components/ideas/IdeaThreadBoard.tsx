@@ -51,6 +51,19 @@ type Reply = {
   parentId: string | null;
   parentAuthor?: string;
 };
+type TopicActivity = {
+  likeCount: number;
+  saveCount: number;
+  liked: boolean;
+  saved: boolean;
+};
+
+const emptyTopicActivity: TopicActivity = {
+  likeCount: 0,
+  saveCount: 0,
+  liked: false,
+  saved: false,
+};
 
 const topicCategories = [
   "미술·공예",
@@ -235,6 +248,7 @@ export default function IdeaThreadBoard() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const isPicking = searchParams.get("pick") === "studio";
+  const requestedTopicId = searchParams.get("topic");
   const pickTopic = (id: string) =>
     router.push(`/studio?agenda=${encodeURIComponent(id)}`);
 
@@ -284,23 +298,33 @@ export default function IdeaThreadBoard() {
       if (!response.ok)
         throw new Error(data?.error || "아이디어를 불러오지 못했습니다.");
       const loadedTopics = ((data.posts || []) as ApiPost[]).map(mapPost);
-      const commentEntries = await Promise.all(
+      const topicEntries = await Promise.all(
         loadedTopics.map(async (topic) => {
-          const commentsResponse = await fetch(
-            `/api/posts/${encodeURIComponent(topic.id)}/comments`,
-            { cache: "no-store" },
-          );
-          if (!commentsResponse.ok) return [topic.id, []] as const;
-          const commentsData = await commentsResponse.json();
-          return [
-            topic.id,
-            mapComments((commentsData.comments || []) as ApiComment[]),
-          ] as const;
+          const [commentsResponse, activityResponse] = await Promise.all([
+            fetch(`/api/posts/${encodeURIComponent(topic.id)}/comments`, { cache: "no-store" }),
+            fetch(`/api/posts/${encodeURIComponent(topic.id)}/activity`, { cache: "no-store" }),
+          ]);
+          const commentsData = commentsResponse.ok ? await commentsResponse.json() : { comments: [] };
+          const activityData = activityResponse.ok ? await activityResponse.json() : { activity: emptyTopicActivity };
+          return {
+            topicId: topic.id,
+            replies: mapComments((commentsData.comments || []) as ApiComment[]),
+            activity: activityData.activity as TopicActivity,
+          };
         }),
       );
-      setTopics(loadedTopics);
-      setRepliesByTopic(Object.fromEntries(commentEntries));
+      const activityByTopic = new Map(topicEntries.map((entry) => [entry.topicId, entry.activity]));
+      setTopics(loadedTopics.map((topic) => ({
+        ...topic,
+        votes: activityByTopic.get(topic.id)?.likeCount ?? 0,
+      })));
+      setRepliesByTopic(Object.fromEntries(topicEntries.map((entry) => [entry.topicId, entry.replies])));
+      setLikedTopics(topicEntries.filter((entry) => entry.activity.liked).map((entry) => entry.topicId));
+      setScrappedTopics(topicEntries.filter((entry) => entry.activity.saved).map((entry) => entry.topicId));
       setSelected((current) => {
+        if (requestedTopicId && loadedTopics.some((topic) => topic.id === requestedTopicId)) {
+          return requestedTopicId;
+        }
         if (current && loadedTopics.some((topic) => topic.id === current))
           return current;
         return window.matchMedia("(max-width: 767px)").matches
@@ -316,7 +340,7 @@ export default function IdeaThreadBoard() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [requestedTopicId]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -350,12 +374,10 @@ export default function IdeaThreadBoard() {
         )
         .sort((left, right) =>
           sort === "인기순"
-            ? right.votes +
-              Number(likedTopics.includes(right.id)) -
-              (left.votes + Number(likedTopics.includes(left.id)))
+            ? right.votes - left.votes
             : Date.parse(right.createdAt) - Date.parse(left.createdAt),
         ),
-    [topics, category, normalizedQuery, sort, likedTopics],
+    [topics, category, normalizedQuery, sort],
   );
   const active =
     selected === null
@@ -363,14 +385,39 @@ export default function IdeaThreadBoard() {
       : (topics.find((topic) => topic.id === selected) ?? null);
   const activeReplies = active ? (repliesByTopic[active.id] ?? []) : [];
   const orderedReplies = orderReplies(activeReplies, replySort, likedReplies);
-  const toggleTopicLike = (id: string) =>
-    setLikedTopics((items) =>
-      items.includes(id) ? items.filter((item) => item !== id) : [...items, id],
-    );
-  const toggleTopicScrap = (id: string) =>
-    setScrappedTopics((items) =>
-      items.includes(id) ? items.filter((item) => item !== id) : [...items, id],
-    );
+  async function toggleTopicActivity(id: string, kind: "like" | "save") {
+    const state = kind === "like" ? likedTopics : scrappedTopics;
+    const setState = kind === "like" ? setLikedTopics : setScrappedTopics;
+    const active = state.includes(id);
+
+    setActionError("");
+    setState((items) => active ? items.filter((item) => item !== id) : [...items, id]);
+    if (kind === "like") {
+      setTopics((items) => items.map((topic) => topic.id === id
+        ? { ...topic, votes: Math.max(0, topic.votes + (active ? -1 : 1)) }
+        : topic));
+    }
+
+    try {
+      const response = await fetch(`/api/posts/${encodeURIComponent(id)}/${kind}`, {
+        method: active ? "DELETE" : "PUT",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(response.status === 401 ? "로그인 후 이용해 주세요." : data?.error || "활동을 저장하지 못했습니다.");
+      }
+    } catch (error) {
+      setState((items) => active ? [...items, id] : items.filter((item) => item !== id));
+      if (kind === "like") {
+        setTopics((items) => items.map((topic) => topic.id === id
+          ? { ...topic, votes: Math.max(0, topic.votes + (active ? 1 : -1)) }
+          : topic));
+      }
+      setActionError(error instanceof Error ? error.message : "활동을 저장하지 못했습니다.");
+    }
+  }
+  const toggleTopicLike = (id: string) => void toggleTopicActivity(id, "like");
+  const toggleTopicScrap = (id: string) => void toggleTopicActivity(id, "save");
   const selectTopic = (id: string) => {
     if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
     setIsDetailClosing(false);
@@ -666,9 +713,7 @@ export default function IdeaThreadBoard() {
                       type="button"
                     >
                       <span aria-hidden="true">◇</span>
-                      <strong>
-                        {topic.votes + Number(likedTopics.includes(topic.id))}
-                      </strong>
+                      <strong>{topic.votes}</strong>
                       <small>좋아요</small>
                     </button>
                     <div className="threadCardBody">
@@ -807,9 +852,7 @@ export default function IdeaThreadBoard() {
                     type="button"
                   >
                     <span>♡</span> 좋아요{" "}
-                    <strong>
-                      {active.votes + Number(likedTopics.includes(active.id))}
-                    </strong>
+                    <strong>{active.votes}</strong>
                   </button>
                   <button
                     aria-pressed={scrappedTopics.includes(active.id)}

@@ -13,6 +13,8 @@ type CommunityPostResponse = {
   author: string;
   createdAt: string;
   tags: string[];
+  likeCount: number;
+  commentCount: number;
   isOwner: boolean;
   canDelete: boolean;
 };
@@ -84,6 +86,7 @@ function serializePost(post: {
   createdAt: Date;
   tags: string[];
   authorId?: string | null;
+  _count?: { likes: number; comments: number };
 }, viewerId?: string, viewerRole?: string): CommunityPostResponse {
   return {
     id: post.id,
@@ -94,6 +97,8 @@ function serializePost(post: {
     author: post.author,
     createdAt: post.createdAt.toISOString(),
     tags: post.tags,
+    likeCount: post._count?.likes ?? 0,
+    commentCount: post._count?.comments ?? 0,
     isOwner: Boolean(viewerId && (post.authorId === viewerId || canManageLibraryNews(post.boardSlug, viewerRole))),
     canDelete: Boolean(viewerId && (post.authorId === viewerId || canModeratePosts(viewerRole))),
   };
@@ -116,6 +121,9 @@ router.get('/', async (req: Request, res: Response) => {
   const boardSlug = readString(req.query.boardSlug) || DEFAULT_BOARD_SLUG;
   const search = readString(req.query.search);
   const type = readString(req.query.type);
+  const sort = readString(req.query.sort);
+  const requestedLimit = Number.parseInt(readString(req.query.limit), 10);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : undefined;
 
   if (!VALID_BOARD_SLUGS.has(boardSlug)) {
     return res.status(400).json({
@@ -149,7 +157,11 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const posts = await prisma.communityPost.findMany({
       where,
-      orderBy: [{ type: 'asc' }, { createdAt: 'desc' }],
+      include: { _count: { select: { likes: true, comments: true } } },
+      orderBy: sort === 'likes'
+        ? [{ likes: { _count: 'desc' } }, { createdAt: 'desc' }]
+        : [{ type: 'asc' }, { createdAt: 'desc' }],
+      ...(limit ? { take: limit } : {}),
     });
     return res.status(200).json({ posts: posts.map((post) => serializePost(post, req.user?.id, req.user?.accountType)) });
   } catch (error) {
@@ -160,7 +172,10 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.get('/:postId', async (req: Request<{ postId: string }>, res: Response) => {
   try {
-    const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
+    const post = await prisma.communityPost.findUnique({
+      where: { id: req.params.postId },
+      include: { _count: { select: { likes: true, comments: true } } },
+    });
     if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
     return res.status(200).json({ post: serializePost(post, req.user?.id, req.user?.accountType) });
   } catch (error) {
