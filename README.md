@@ -294,6 +294,13 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 
 ## 7. 팀 소개
 
+
+| 박현아 | 권아영 | 양현서 | 윤상현 |
+| :---: | :---: | :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/5c220f17-e1f1-4a43-9680-700ab0b1b5c8" width="100"> | <img src="https://github.com/user-attachments/assets/227f274c-6ac6-416e-a276-3ee592134bbf" width="100"> | <img src="https://github.com/user-attachments/assets/578911fd-8260-4184-a7e3-7b6ed85f2bd6" width="100"> | <img src="https://github.com/user-attachments/assets/df270322-9d68-4ab0-9420-b12309669c0b" width="100"> |
+| nandarina7@pusan.ac.kr | lpovsc23@pusan.ac.kr | ibuilder05@gmail.com | ggagga132@pusan.ac.kr |
+| **팀장) AI · 프론트 · 백** | **기획 · 문서화 · UI/UX** | **프론트 · 기능 구현 · 테스트** | **프론트 · 백 · 시스템 설계** |
+
 <br>
 
 ## 8. 해커톤 참여 후기
@@ -301,7 +308,7 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 <br>
 
 박현아:
-권아영: 시키는 게 너무 많아요.... 오버워치 흥해라
+권아영:
 양현서:
 윤상현:
 
