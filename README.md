@@ -84,14 +84,23 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 ## 3. 개발결과
 
 ### 3.1. 전체 시스템 흐름도
-#### 1. 메인 페이지
+
+### 3.2. 기능설명
+
+#### 📌 메인 페이지
+
 지역 내 도서관 프로그램과 주민 참여 콘텐츠를 한눈에 확인할 수 있습니다.
+<img width="1863" height="836" alt="image" src="https://github.com/user-attachments/assets/04c665c6-e1ea-4fd2-9140-8690318e6c93" />
+<img width="1863" height="836" alt="image" src="https://github.com/user-attachments/assets/d99d1775-0846-47df-8836-5abb964a510a" />
 
-<img width="1585" height="817" alt="image" src="https://github.com/user-attachments/assets/f283d165-365d-461c-89e8-0f8355c83e3e" />
-<img width="1402" height="829" alt="image" src="https://github.com/user-attachments/assets/24f0d040-95e3-49f0-bcf1-881026a5f3e6" />
-<img width="1332" height="817" alt="image" src="https://github.com/user-attachments/assets/907f85ba-ff2d-4cf0-85aa-e56d728fef54" />
-<img width="1326" height="771" alt="image" src="https://github.com/user-attachments/assets/a49a0e68-1974-4849-93e3-43ddde2ca421" />
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f283d165-365d-461c-89e8-0f8355c83e3e" width="48%" />
+  <img src="https://github.com/user-attachments/assets/24f0d040-95e3-49f0-bcf1-881026a5f3e6" width="48%" />
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/907f85ba-ff2d-4cf0-85aa-e56d728fef54" width="48%" />
+  <img src="https://github.com/user-attachments/assets/a49a0e68-1974-4849-93e3-43ddde2ca421" width="48%" />
+</p>
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
@@ -101,12 +110,13 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 | 4 | 우리 동네 도서관 찾기 | 지역 내 도서관의 위치 정보를 지도로 확인할 수 있습니다. |
 
 
-#### 2. 프로그램 둘러보기 및 일정
+#### 📌 프로그램 둘러보기 및 일정
+
 금정구 공공도서관과 작은도서관의 프로그램을 통합하여 탐색하고 프로그램 일정을 확인할 수 있습니다.
 
 <img width="1331" height="799" alt="프로그램 둘러보기 화면" src="https://github.com/user-attachments/assets/f7b7bc2a-a4de-453f-a7f1-8b9183a63ce8" />
-<img width="840" height="414" alt="프로그램 일정 화면" src="https://github.com/user-attachments/assets/eb91f31e-aa94-45f1-9530-4848d5f82ebe" />
 
+<img width="840" height="414" alt="프로그램 일정 화면" src="https://github.com/user-attachments/assets/eb91f31e-aa94-45f1-9530-4848d5f82ebe" />
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
@@ -115,11 +125,12 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 | 3 | 관심 프로그램 | 관심 있는 프로그램을 저장하고 마이페이지에서 다시 확인할 수 있습니다. |
 | 4 | 프로그램 일정 | 캘린더 보기를 통해 지역 도서관의 프로그램 일정을 날짜별로 확인할 수 있습니다. |
 
-#### 3. 우리동네 아이디어 게시판
+
+#### 📌 우리동네 아이디어 게시판
+
 지역 주민이 원하는 도서관 프로그램이나 지역 관련 아이디어를 제안하고 다른 주민과 의견을 나눌 수 있습니다.
 
-<img width="1352" height="765" alt="image" src="https://github.com/user-attachments/assets/1dd52b1a-15aa-47a9-b736-e3fe33f9658f" />
-
+<img width="1352" height="765" alt="우리동네 아이디어 게시판" src="https://github.com/user-attachments/assets/1dd52b1a-15aa-47a9-b736-e3fe33f9658f" />
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
@@ -129,12 +140,17 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 | 4 | 아이디어 탐색 | 등록된 주민 아이디어를 확인할 수 있습니다. |
 
 
-#### 4. MOIRA STUDIO
-AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수정할 수 있습니다. (사서 계정 전용 기능)
-<img width="1864" height="844" alt="image" src="https://github.com/user-attachments/assets/6ce6454b-6b26-4a26-b470-1face1bbb2e9" />
+#### ✨ MOIRA STUDIO
 
-##### 4-1. 프로그램 기획 모드
-<img width="987" height="713" alt="image" src="https://github.com/user-attachments/assets/9ebd8561-81c6-474b-bbd4-ef784ce35bf3" />
+AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수정할 수 있습니다.  
+*사서 계정 전용 기능입니다.*
+
+<img width="1864" height="844" alt="MOIRA Studio 메인 화면" src="https://github.com/user-attachments/assets/6ce6454b-6b26-4a26-b470-1face1bbb2e9" />
+
+
+##### 프로그램 기획 모드
+
+<img width="987" height="713" alt="프로그램 기획 모드" src="https://github.com/user-attachments/assets/9ebd8561-81c6-474b-bbd4-ef784ce35bf3" />
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
@@ -143,31 +159,37 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 | 3 | AI 기획안 생성 | 입력한 아이디어와 조건을 바탕으로 기존 도서관 프로그램 사례를 참고하여 AI가 프로그램 기획안 초안을 생성합니다. |
 
 
-##### 4-2. 주민 아이디어 모드
-<img width="938" height="710" alt="image" src="https://github.com/user-attachments/assets/21db7f27-5683-4f3c-995c-088d20a66029" />
+##### 주민 아이디어 모드
+
+<img width="938" height="710" alt="주민 아이디어 모드" src="https://github.com/user-attachments/assets/21db7f27-5683-4f3c-995c-088d20a66029" />
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
-| 1 | 주민 아이디어 선택 | 주민이 작성한 프로그램 아이디어를 확인하고, 기획에 활용할 아이디어를 선택할 수 있습니다. |
-| 2 | 아이디어 게시판 연계 | ‘아이디어 게시판 불러보기’를 통해 우리 동네 아이디어 게시판의 다양한 주민 의견을 탐색하고 선택할 수 있습니다. |
+| 1 | 주민 아이디어 선택 | 주민이 작성한 프로그램 아이디어를 확인하고 기획에 활용할 아이디어를 선택할 수 있습니다. |
+| 2 | 아이디어 게시판 연계 | ‘아이디어 게시판 불러보기’를 통해 우리동네 아이디어 게시판의 다양한 주민 의견을 탐색하고 선택할 수 있습니다. |
 | 3 | 프로그램 조건 설정 | 선택한 주민 아이디어에 프로그램 분야, 대상, 운영 기간 등의 조건을 추가하여 기획 방향을 구체화할 수 있습니다. |
 | 4 | AI 기획안 생성 | 선택한 주민 아이디어와 설정한 조건을 바탕으로 AI가 프로그램 기획안 초안을 생성합니다. |
 
-##### 4-3. AI 기획안 생성
-<img width="1399" height="746" alt="image" src="https://github.com/user-attachments/assets/cf9ec19a-c586-4c25-8980-5923d1ccfe1d" />
+
+##### AI 기획안 생성
+
+<img width="1399" height="746" alt="AI 기획안 생성 화면" src="https://github.com/user-attachments/assets/cf9ec19a-c586-4c25-8980-5923d1ccfe1d" />
+
 > 기획안 생성 중에는 조건 확인 → 기획 구조 구성 → 세부 운영 내용 작성 → 기획서 초안 정리의 진행 단계를 확인할 수 있습니다.
 
-<img width="697" height="849" alt="image" src="https://github.com/user-attachments/assets/49b01db9-69b3-40b5-ba87-abfc21fff8e1" />
+<img width="697" height="849" alt="AI 기획안 생성 결과" src="https://github.com/user-attachments/assets/49b01db9-69b3-40b5-ba87-abfc21fff8e1" />
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
 | 1 | AI 기획안 초안 생성 | 입력한 아이디어와 조건, 기존 도서관 프로그램 사례 등을 바탕으로 AI가 프로그램 기획안 초안을 생성합니다. |
-| 2 | 주민 아이디어 반영 | 주민 아이디어 모드에서 선택한 주민 의견이 프로그램 기획안에 반영되며, 활용된 아이디어를 확인할 수 있습니다. |
-| 3 | 기획안 세부 내용 확인 | 프로그램명, 기획 의도, 대상, 운영 기간, 운영 횟수, 모집 인원 등 생성된 기획안의 세부 내용을 확인할 수 있습니다. |
+| 2 | 주민 아이디어 반영 | 주민 아이디어 모드에서 선택한 주민 의견을 프로그램 기획안에 반영하고, 활용된 아이디어를 함께 확인할 수 있습니다. |
 
-##### 4-4. 기획안 편집 및 AI로 다듬기
+
+##### 기획안 편집 및 AI로 다듬기
+
 생성된 기획안은 사서 및 프로그램 기획 담당자가 직접 수정하거나, 필요한 항목만 선택하여 AI의 도움을 받아 보완할 수 있습니다.
-<img width="1469" height="818" alt="image" src="https://github.com/user-attachments/assets/a9f87e5c-e133-4638-b7f2-273bbc0d44ac" />
+
+<img width="1469" height="818" alt="기획안 편집 및 AI로 다듬기" src="https://github.com/user-attachments/assets/a9f87e5c-e133-4638-b7f2-273bbc0d44ac" />
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
@@ -177,31 +199,24 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 | 4 | 수정 결과 반영 | AI가 제안한 수정 내용을 확인한 후 기획안에 반영하여 초안을 지속적으로 보완할 수 있습니다. |
 
 
-#### 5. 프로그램 수요조사
-MOIRA Studio에서 생성한 기획안을 바탕으로 주민의 실제 참여 의향을 확인할 수 있습니다.
+#### 📌 프로그램 수요조사
 
-[수요조사 생성 화면]
-[주민 투표 화면]
-[결과 확인 화면]
+MOIRA Studio에서 생성한 기획안을 바탕으로 수요조사를 진행하여, 프로그램 운영 전 주민의 실제 참여 의향과 선호 시간대를 확인할 수 있습니다.
 
-→ 번호 + 기능표
+**주민 수요조사 화면**
 
+<img width="1267" height="722" alt="프로그램 수요조사 목록" src="https://github.com/user-attachments/assets/535fbb45-7382-418c-9427-9af4aeeb81a4" />
 
-#### 6. 프로그램 등록 및 관리
-사서 및 프로그램 기획 담당자가 프로그램 정보를 등록하고 관리할 수 있습니다.
+<img width="1858" height="916" alt="프로그램 수요조사 참여 화면" src="https://github.com/user-attachments/assets/c5ad7fb4-8b54-4155-bf7d-946a57a8e107" />
 
-[관리 화면]
+**수요조사 결과 확인 화면**
 
-→ 번호 + 기능표
+<img width="1006" height="651" alt="프로그램 수요조사 결과 화면" src="https://github.com/user-attachments/assets/97a66c1f-d1a2-4a26-8ccf-d20b6b85565d" />
 
-
-#### 7. 로그인 및 마이페이지
-사용자 유형에 따라 필요한 정보와 활동 내역을 관리할 수 있습니다.
-
-[로그인/회원가입]
-[마이페이지]
-
-→ 번호 + 기능표
+| 번호 | 기능 | 설명 |
+| --- | --- | --- |
+| 1 | 주민 수요조사 | 주민은 기획 중인 프로그램을 확인하고 참여 의향과 선호 시간대에 응답하여 프로그램 기획 과정에 참여할 수 있습니다. |
+| 2 | 수요조사 결과 확인 | 사서 및 프로그램 기획 담당자는 주민의 참여 의향과 선호 시간대별 응답 결과를 확인하여 프로그램의 실제 개설 여부와 운영 일정 결정에 참고할 수 있습니다. |
 
    3.3 기능명세서
    3.4 디렉토리 구조
