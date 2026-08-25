@@ -150,8 +150,8 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 MOIRA Studio에서는 **직접 프로그램 아이디어를 입력하는 ‘프로그램 기획 모드’**와 **주민이 제안한 아이디어를 활용하는 ‘주민 아이디어 모드’** 두 가지 방식으로 프로그램 기획을 시작할 수 있습니다.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/9ebd8561-81c6-474b-bbd4-ef784ce35bf3" width="48%" alt="프로그램 기획 모드" />
-  <img src="https://github.com/user-attachments/assets/21db7f27-5683-4f3c-995c-088d20a66029" width="48%" alt="주민 아이디어 모드" />
+  <img src="https://github.com/user-attachments/assets/bacaf4d8-a54c-495a-84ca-a4f08f0e37ab" width="48%" alt="프로그램 기획 모드" />
+  <img src="https://github.com/user-attachments/assets/54aafa73-7d15-403f-a014-bbff6405f4d8" width="48%" alt="주민 아이디어 모드" />
 </p>
 
 | 구분 | 기능 | 설명 |
@@ -164,23 +164,22 @@ MOIRA Studio에서는 **직접 프로그램 아이디어를 입력하는 ‘프�
 
 ##### - AI 기획안 생성
 
-<img width="1399" height="746" alt="AI 기획안 생성 화면" src="https://github.com/user-attachments/assets/cf9ec19a-c586-4c25-8980-5923d1ccfe1d" />
-
-> 기획안 생성 중에는 조건 확인 → 기획 구조 구성 → 세부 운영 내용 작성 → 기획서 초안 정리의 진행 단계를 확인할 수 있습니다.
-
-<img width="697" height="849" alt="AI 기획안 생성 결과" src="https://github.com/user-attachments/assets/49b01db9-69b3-40b5-ba87-abfc21fff8e1" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/bfc72488-f31d-46fd-863c-dd6348b03a98" width="48%" alt="AI 기획안 생성 중 화면" />
+  <img src="https://github.com/user-attachments/assets/556d2174-23cf-4d18-8802-28a9c706248b" width="48%" alt="AI 기획안 생성 완료 화면" />
+</p>
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
-| 1 | AI 기획안 초안 생성 | 입력한 아이디어와 조건, 기존 도서관 프로그램 사례 등을 바탕으로 AI가 프로그램 기획안 초안을 생성합니다. |
-| 2 | 주민 아이디어 반영 | 주민 아이디어 모드에서 선택한 주민 의견을 프로그램 기획안에 반영하고, 활용된 아이디어를 함께 확인할 수 있습니다. |
-
+| 1 | 생성 과정 확인 | 조건 확인 → 기획 구조 구성 → 세부 운영 내용 작성 → 기획서 초안 정리의 단계별 진행 상황을 확인할 수 있습니다. |
+| 2 | AI 기획안 생성 | 입력한 아이디어와 조건, 기존 도서관 프로그램 사례 등을 바탕으로 AI가 프로그램 기획안 초안을 생성합니다. |
+| 3 | 주민 아이디어 반영 | 주민 아이디어 모드에서는 선택한 주민 의견을 기획안에 반영하고, 활용된 아이디어를 함께 확인할 수 있습니다. |
 
 ##### - 기획안 편집 및 AI로 다듬기
 
 생성된 기획안은 사서 및 프로그램 기획 담당자가 직접 수정하거나, 필요한 항목만 선택하여 AI의 도움을 받아 보완할 수 있습니다.
 
-<img width="1469" height="818" alt="기획안 편집 및 AI로 다듬기" src="https://github.com/user-attachments/assets/a9f87e5c-e133-4638-b7f2-273bbc0d44ac" />
+<img src="https://github.com/user-attachments/assets/a9f87e5c-e133-4638-b7f2-273bbc0d44ac" width="75%" alt="기획안 편집 및 AI로 다듬기" />
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
@@ -192,25 +191,21 @@ MOIRA Studio에서는 **직접 프로그램 아이디어를 입력하는 ‘프�
 
 #### 📌 프로그램 수요조사
 
-MOIRA Studio에서 생성한 기획안을 바탕으로 수요조사를 진행하여, 프로그램 운영 전 주민의 실제 참여 의향과 선호 시간대를 확인할 수 있습니다.
-
-**주민 수요조사 화면**
-
-<img width="1267" height="722" alt="프로그램 수요조사 목록" src="https://github.com/user-attachments/assets/535fbb45-7382-418c-9427-9af4aeeb81a4" />
-
-<img width="1858" height="916" alt="프로그램 수요조사 참여 화면" src="https://github.com/user-attachments/assets/c5ad7fb4-8b54-4155-bf7d-946a57a8e107" />
-
-**수요조사 결과 확인 화면**
-
-<img width="1006" height="651" alt="프로그램 수요조사 결과 화면" src="https://github.com/user-attachments/assets/97a66c1f-d1a2-4a26-8ccf-d20b6b85565d" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3ed99cdc-598b-4c43-bc76-89364db4e965" width="45%" alt="프로그램 수요조사 목록" />
+  <img src="https://github.com/user-attachments/assets/97a66c1f-d1a2-4a26-8ccf-d20b6b85565d" width="45%" alt="프로그램 수요조사 결과 화면" />
+</p>
 
 | 번호 | 기능 | 설명 |
 | --- | --- | --- |
-| 1 | 주민 수요조사 | 주민은 기획 중인 프로그램을 확인하고 참여 의향과 선호 시간대에 응답하여 프로그램 기획 과정에 참여할 수 있습니다. |
-| 2 | 수요조사 결과 확인 | 사서 및 프로그램 기획 담당자는 주민의 참여 의향과 선호 시간대별 응답 결과를 확인하여 프로그램의 실제 개설 여부와 운영 일정 결정에 참고할 수 있습니다. |
-
-   3.3 기능명세서
-   3.4 디렉토리 구조
+| 1 | 수요조사 생성 | 사서 및 프로그램 기획 담당자는 생성된 기획서의 **‘수요조사 시작’** 버튼을 통해 해당 프로그램에 대한 주민 수요조사를 간편하게 생성할 수 있습니다. |
+| 2 | 주민 수요조사 | 주민은 기획 중인 프로그램을 확인하고 참여 의향과 선호 시간대에 응답하여 프로그램 기획 과정에 참여할 수 있습니다. |
+| 3 | 수요조사 결과 확인 | 사서 및 프로그램 기획 담당자는 주민의 참여 의향과 선호 시간대별 응답 결과를 확인하여 프로그램의 실제 개설 여부와 운영 일정 결정에 참고할 수 있습니다. |
+  
+   
+ 3.3 기능명세서
+   
+  3.4 디렉토리 구조
   3.5 주요 개발 성과
 
 4. 피드백 반영 및 사용자 검증
