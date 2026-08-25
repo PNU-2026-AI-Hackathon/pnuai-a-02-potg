@@ -109,7 +109,46 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 ### 2.1. 시스템 구성도
 
 
-### 2.2. 사용기술
+### 2.2. 사용 기술
+
+#### Frontend
+
+| 이름 | 버전 | 사용 범위 |
+|:---:|:---:| --- |
+| Next.js | 16.2.6 | App Router 기반 웹 화면 및 프론트 API 라우트 |
+| React | 19.2.0 | 화면 컴포넌트와 사용자 인터랙션 |
+| TypeScript | 5.8.0 | 정적 타입 기반 프론트엔드 개발 |
+| Framer Motion | 12.43.0 | 주요 화면 인터랙션과 애니메이션 |
+
+#### Backend
+
+| 이름 | 버전 | 사용 범위 |
+|:---:|:---:| --- |
+| Node.js | 22 LTS | 백엔드 실행 환경 |
+| Express | 4.18.2 | REST API 서버 |
+| Prisma | 7.8.0 | ORM, DB 스키마 및 마이그레이션 관리 |
+| TypeScript | 5.6.0 | 정적 타입 기반 서버 개발 |
+| JWT / bcryptjs | 9.0.2 / 2.4.3 | 인증 토큰 및 비밀번호 암호화 |
+
+#### Database / Infra
+
+| 이름 | 버전 | 사용 범위 |
+|:---:|:---:| --- |
+| PostgreSQL | 17 | 서비스 데이터 저장 |
+| pgvector | 0.8.2 | 프로그램 사례 임베딩 검색 |
+| Docker Compose | - | 로컬 개발 DB 실행 |
+| Vercel | - | 프론트엔드 배포 |
+
+#### AI / Data
+
+| 이름 | 버전/모델 | 사용 범위 |
+|:---:|:---:| --- |
+| Google Gemini API | gemini-3.6/3.5/2.5 Flash | MOIRA STUDIO 기획안 생성 및 수정 |
+| KURE-v1 | d14c8a942394 | 한국어 프로그램 사례 임베딩 |
+| Sentence Transformers | 3.3.1 | KURE-v1 임베딩 실행 |
+| NAVER Cloud CLOVA OCR | General API V2 | 이미지·스캔 PDF 텍스트 추출 |
+| PDF.js / kordoc / hwp.js | 6.1.200 / 4.2.7 / 0.0.3 | PDF·HWP 첨부파일 텍스트 추출 |
+| Kakao Maps API | - | 우리 동네 도서관 위치 지도 |
 
 
 <br>
