@@ -285,6 +285,130 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 
 ## 5. 설치 및 사용 방법
 
+### 5.1. 필요 환경
+
+- **Git**
+- **Node.js 22 LTS 권장** 및 **npm**
+- **Docker Desktop** 또는 Docker Engine + Docker Compose
+
+### 5.2. 설치 및 실행
+
+#### 1) 저장소 복제
+
+```bash
+git clone https://github.com/PNU-2026-AI-Hackathon/pnuai-a-02-potg.git
+cd pnuai-a-02-potg
+```
+
+#### 2) PostgreSQL 실행
+
+저장소 루트에서 Docker Compose를 실행하면 개발용 PostgreSQL과 데이터 볼륨이 자동으로 생성됩니다.
+
+```bash
+docker compose up -d
+```
+
+정상 실행 여부는 `docker compose ps`로 확인할 수 있습니다. `moira-postgres`의 상태가 `healthy`로 표시되면 준비가 완료된 것입니다.
+
+#### 3) 백엔드 실행
+
+```bash
+cd apps/backend
+npm ci
+```
+
+`apps/backend/.env.example`을 복사하여 `.env`를 만듭니다.
+
+```bash
+# macOS / Linux
+cp .env.example .env
+
+# Windows PowerShell
+Copy-Item .env.example .env
+```
+
+`.env`에서 다음 값을 설정합니다. `JWT_SECRET`에는 외부에 공개하지 않을 충분히 긴 임의의 문자열을 입력합니다.
+
+```env
+DATABASE_URL=postgresql://moira:moira_local@localhost:5432/moira
+JWT_SECRET=replace-with-a-long-random-secret
+```
+
+최초 실행 시 데이터베이스 테이블과 초기 데이터를 생성한 후 백엔드 서버를 시작합니다.
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
+npm run dev
+```
+
+백엔드는 `http://localhost:4000`에서 실행됩니다. 아래 주소에서 서버와 DB 연결 상태를 확인할 수 있습니다.
+
+- `http://localhost:4000/api/health`
+- `http://localhost:4000/api/health/db`
+
+#### 4) 프론트엔드 실행
+
+백엔드를 실행한 상태로 **새 터미널**을 열고 저장소의 프론트엔드 디렉터리로 이동합니다.
+
+```bash
+cd apps/frontend
+npm ci
+```
+
+`apps/frontend/.env.example`을 복사하여 `.env.local`을 만듭니다.
+
+```bash
+# macOS / Linux
+cp .env.example .env.local
+
+# Windows PowerShell
+Copy-Item .env.example .env.local
+```
+
+`.env.local`에 로컬 백엔드 주소를 설정합니다.
+
+```env
+BACKEND_URL=http://localhost:4000
+```
+
+다음 환경변수는 해당 기능을 사용할 때 추가합니다.
+
+```env
+# MOIRA Studio의 AI 기획안 생성·수정
+GEMINI_API_KEY=your-gemini-api-key
+
+# 메인 페이지의 카카오 지도
+NEXT_PUBLIC_KAKAO_MAP_API_KEY=your-kakao-map-javascript-key
+```
+
+프론트엔드 서버를 실행합니다.
+
+```bash
+npm run dev
+```
+
+브라우저에서 `http://localhost:3000`에 접속하면 모이라를 사용할 수 있습니다.
+
+### 5.3. 종료 및 다시 실행
+
+개발 서버는 각 터미널에서 `Ctrl+C`로 종료합니다. PostgreSQL 컨테이너는 저장소 루트에서 다음 명령으로 종료할 수 있으며, 저장된 데이터는 Docker 볼륨에 유지됩니다.
+
+```bash
+docker compose down
+```
+
+다음 사용 시 `docker compose up -d`를 실행한 뒤 백엔드와 프론트엔드를 다시 시작하면 됩니다.
+
+### 5.4. 접속 주소
+
+| 구분 | 주소 |
+| --- | --- |
+| 프론트엔드 | `http://localhost:3000` |
+| 백엔드 API | `http://localhost:4000` |
+| 백엔드 상태 확인 | `http://localhost:4000/api/health` |
+| 데이터베이스 상태 확인 | `http://localhost:4000/api/health/db` |
+
 <br>
 
 ## 6. 소개 및 시연영상
