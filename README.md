@@ -1,16 +1,17 @@
 <div align="center">
   <img src="apps/frontend/public/moira-logo-mark-no-ai.png" width="120" alt="모이라 로고" />
-  <h1>모이라</h1>
-  <p><strong>모두가 이어지는 라이브러리</strong></p>
+  <h1>모이라 : 모두가 이어지는 라이브러리</h1>
   <p>
     <strong>주민의 목소리가 도서관 프로그램이 되는 곳, 모이라</strong>
   </p>
   <p>
-    모이라는 아이디어 제안, AI 기획안 생성, 수요조사를 통해<br />
-    주민과 도서관이 함께 프로그램을 만들어가는 서비스입니다.
+    <font color="#6a737d">
+      모이라는 아이디어 제안, AI 기획안 생성, 수요조사를 통해<br />
+      주민과 도서관이 함께 프로그램을 만들어가는 서비스입니다.
+    </font>
   </p>
   <p>
-    제7회 PNU 창의융합 AI 해커톤 · 융합트랙 2팀 · 팀 POTG ·
+    제7회 PNU 창의융합 AI 해커톤 · 융합트랙 2팀 · 팀 POTG<br />
     <strong>서비스 바로가기</strong> —
     <a href="https://pnuai-a-02-potg.vercel.app/">pnuai-a-02-potg.vercel.app</a>
   </p>
