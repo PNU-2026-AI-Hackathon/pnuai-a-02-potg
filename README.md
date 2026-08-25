@@ -1,20 +1,24 @@
 <div align="center">
-  <img src="apps/frontend/public/moira-logo-mark-no-ai.png" width="120" alt="모이라 로고" />
+  <img src="apps/frontend/public/moira-logo-mark-no-ai.png" width="112" alt="모이라 로고" />
   <h1>모이라 : 모두가 이어지는 라이브러리</h1>
   <p>
-    <strong>주민의 목소리가 도서관 프로그램이 되는 곳, 모이라</strong>
+    <strong>주민의 목소리가 도서관 프로그램이 되는 곳</strong>
   </p>
   <p>
-    <font color="#6a737d">
-      모이라는 지역 주민과 도서관을 연결하는 AI 기반 웹서비스 플랫폼입니다.<br />
-      지역 주민은 원하는 프로그램을 제안하고, 사서는 MOIRA STUDIO로 주민 의견과 기존 사례를 참고해 더 쉽고 빠르게 기획안을 생성합니다.
-      이를 통해 지역 주민과 도서관이 함께 프로그램을 만들어갑니다.
-    </font>
+    <code>아이디어 제안</code> · <code>AI 기획안 생성</code> · <code>수요조사</code>
   </p>
   <p>
-    제7회 PNU 창의융합 AI 해커톤 · 융합트랙 2팀 · 팀 POTG<br />
-    <strong>서비스 바로가기</strong> —
-    <a href="https://pnuai-a-02-potg.vercel.app/">pnuai-a-02-potg.vercel.app</a>
+    <sub>
+      <font color="#6a737d">
+        모이라는 지역 주민과 도서관을 연결하는 AI 기반 웹서비스 플랫폼입니다.<br />
+        지역 주민은 원하는 프로그램을 제안하고, 사서는 MOIRA STUDIO로 주민 의견과 기존 사례를 참고해<br />
+        더 쉽고 빠르게 기획안을 생성합니다. 이를 통해 지역 주민과 도서관이 함께 프로그램을 만들어갑니다.
+      </font>
+    </sub>
+  </p>
+  <p>
+    <a href="https://pnuai-a-02-potg.vercel.app/"><strong>서비스 바로가기</strong></a>
+    · 제7회 PNU 창의융합 AI 해커톤 · 융합트랙 2팀 · 팀 POTG
   </p>
 </div>
 
