@@ -18,7 +18,7 @@ import {
   VerifiedBinarySnapshot,
 } from './types';
 
-export const DEFAULT_CRAWLER_SOURCE_REF = 'automation/n8n/data/geumjeong-programs-349.json';
+export const DEFAULT_CRAWLER_SOURCE_REF = 'docs/fixtures/geumjeong-programs-349.json';
 export const DEFAULT_SNAPSHOT_DIRECTORY = '.local/program-case-search-v2/sources';
 
 type CrawlerRecord = Record<string, unknown>;

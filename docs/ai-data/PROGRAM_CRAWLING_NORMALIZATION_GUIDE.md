@@ -27,15 +27,10 @@ apps/backend/.local/geumjeong-small-library-crawl/geumjeong-small-library-progra
 스크립트는 파일명이 `geumjeong-small-library-programs-`로 시작하고 `.json`으로 끝나는
 파일 중 사전순 마지막 파일을 최신 크롤로 읽는다.
 
-n8n 워크플로우는 아래 파일이 기준이다.
-
-```text
-automation/n8n/geumjeong-program-crawler-workflow.json
-```
-
-기존 보관본 `automation/n8n/data/geumjeong-programs-349.json`은 2026-07-19 수동 실행 결과다.
+기존 보관본 `docs/fixtures/geumjeong-programs-349.json`은 2026-07-19 수동 실행 결과다.
+당시 실행 요약은 `docs/analysis/geumjeong-crawl-summary-349.json`에 보관한다.
 그 실행은 35페이지, 349건, 상세 실패 0건이었다. 이후 정제 작업 기록은 351건 재크롤을 기준으로
-작성되어 있으므로 새 작업에서는 반드시 최신 크롤 JSON을 다시 생성하거나 받아서 `.local`에 둔다.
+작성되어 있으므로 새 작업에서는 백엔드 크롤러로 최신 크롤 JSON을 다시 생성하거나 받아서 `.local`에 둔다.
 
 ## 3. 현재 알려진 데이터 구성
 

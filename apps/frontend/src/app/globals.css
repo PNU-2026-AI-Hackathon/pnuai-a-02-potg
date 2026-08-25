@@ -23,7 +23,7 @@
   --site-header-height: 88px;
 }
 
-/* Community boards — DESIGN.md aligned final treatment */
+/* Community boards — docs/design/DESIGN.md aligned final treatment */
 .communityBoardPage {
   background:
     radial-gradient(circle at 90% 0%, rgba(223, 243, 233, 0.75), transparent 34%),
@@ -16470,7 +16470,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   }
 }
 
-/* Authentication pages — DESIGN.md aligned */
+/* Authentication pages — docs/design/DESIGN.md aligned */
 .loginPage,
 .signupPage {
   background:

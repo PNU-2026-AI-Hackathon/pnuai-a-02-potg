@@ -1,11 +1,12 @@
-# 금정구 작은도서관 프로그램 크롤링
+# 금정구 프로그램 초기 n8n 크롤링 기록
 
-이 디렉터리는 금정구 공공예약서비스의 작은도서관 행사·교육 프로그램 사례를 수집하는 n8n 워크플로우와 검증 결과를 관리합니다. 워크플로우는 수동으로 실행하며, 프로그램 목록과 상세 페이지를 순서대로 요청한 뒤 공통 DTO로 정리합니다.
+이 문서는 금정구 공공예약서비스 프로그램 사례를 수집하던 초기 n8n 기반 실행 흐름과 검증 결과를 보존한 기록입니다.
+현재 운영 기준은 백엔드 CLI 중심의 `PROGRAM_CRAWLING_NORMALIZATION_GUIDE.md`로 이동했으며, 이 문서는 AI 기능 개발 과정과 시행착오를 설명할 때 참고하는 아카이브입니다.
 
 - 수집 대상: [금정구 공공예약서비스 작은도서관 프로그램](https://www.geumjeong.go.kr/booking/index.geumj?menuCd=DOM_000000901008000000)
-- 최종 워크플로우: [`geumjeong-program-crawler-workflow.json`](./geumjeong-program-crawler-workflow.json)
-- 전체 프로그램 349건: [`data/geumjeong-programs-349.json`](./data/geumjeong-programs-349.json)
-- 전체 실행 요약: [`data/geumjeong-crawl-summary-349.json`](./data/geumjeong-crawl-summary-349.json)
+- 전체 프로그램 349건: [`docs/fixtures/geumjeong-programs-349.json`](../fixtures/geumjeong-programs-349.json)
+- 전체 실행 요약: [`docs/analysis/geumjeong-crawl-summary-349.json`](../analysis/geumjeong-crawl-summary-349.json)
+- 당시 최종 워크플로우 파일명: `geumjeong-program-crawler-workflow.json`
 
 기존 `geumjeong-small-library-crawler.json`은 초기 워크플로우이며, 전체 크롤링과 예외 처리가 반영된 최종본은 `geumjeong-program-crawler-workflow.json`입니다.
 
@@ -88,11 +89,7 @@ requestDelaySeconds: 1
 
 다음 단계는 **프로그램 사례 DB 스키마 설계 및 Prisma 마이그레이션**입니다.
 
-## n8n에서 가져오기
+## 보존 범위
 
-1. n8n의 워크플로우 화면에서 **Import from File**을 선택합니다.
-2. `geumjeong-program-crawler-workflow.json`을 선택합니다.
-3. 가져온 노드와 연결, 요청 URL 및 실행 옵션을 확인합니다.
-4. 필요한 인증이 추가되는 경우 n8n에서 credentials를 별도로 설정합니다.
-
-저장된 최종 워크플로우에는 Credential 값, API 키, 비밀번호, 인증 토큰, 쿠키, pinned data 및 n8n 인스턴스 식별자를 포함하지 않습니다.
+워크플로우 JSON은 현재 저장소의 실행 구조에서 제외하고, 결과 fixture와 실행 요약만 `docs` 아래에 보존합니다.
+당시 워크플로우에는 Credential 값, API 키, 비밀번호, 인증 토큰, 쿠키, pinned data 및 n8n 인스턴스 식별자를 포함하지 않았습니다.

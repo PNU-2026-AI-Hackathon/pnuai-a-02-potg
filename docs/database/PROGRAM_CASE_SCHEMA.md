@@ -2,12 +2,12 @@
 
 ## 목적과 범위
 
-이 문서는 #67에서 생성한 금정구 프로그램 크롤링 결과를 #71에서 PostgreSQL에 저장하기 위한 Prisma 스키마 결정을 기록한다. 이번 작업은 `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment` 모델과 마이그레이션까지만 포함한다. JSON 적재, Upsert 서비스, Express API, n8n 연동 및 첨부파일 본문 추출은 후속 작업 범위다.
+이 문서는 #67에서 생성한 금정구 프로그램 크롤링 결과를 #71에서 PostgreSQL에 저장하기 위한 Prisma 스키마 결정을 기록한다. 이번 작업은 `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment` 모델과 마이그레이션까지만 포함한다. JSON 적재, Upsert 서비스, Express API 및 첨부파일 본문 추출은 후속 작업 범위다.
 
 ## 분석 자료
 
-- `automation/n8n/data/geumjeong-programs-349.json`: 최종 공통 DTO 349건. DB 모델의 직접 근거다.
-- `automation/n8n/data/geumjeong-crawl-summary-349.json`: 수집·검증 요약. 349건 전부 상세 요청에 성공했고 ID/URL 중복은 없으며, 237건에 첨부파일 관련 경고가 있다. 실행 통계이므로 `ProgramCase`에는 저장하지 않는다.
+- `docs/fixtures/geumjeong-programs-349.json`: 초기 크롤링 공통 DTO 349건. DB 모델의 직접 근거다.
+- 초기 수집·검증 요약: 349건 전부 상세 요청에 성공했고 ID/URL 중복은 없으며, 237건에 첨부파일 관련 경고가 있었다. 실행 통계이므로 `ProgramCase`에는 저장하지 않는다.
 
 최종 DTO는 프로그램 349건, 회차 20건, 첨부파일 237건이다. 모든 프로그램에 `sourceType`, `sourcePostId`, `sourceUrl`, `title`, 날짜 문자열, `sessions`, `attachments`, `parseWarnings`가 존재한다. 프로그램 344건은 회차가 비어 있고 112건은 첨부파일이 비어 있다. 프로그램 내부 회차 번호 중복과 `(sourceType, sourcePostId)` 중복은 발견되지 않았다.
 

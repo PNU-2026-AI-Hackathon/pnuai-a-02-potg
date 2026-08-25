@@ -133,7 +133,7 @@ npm run test:attachment-regression
 - 중복 회차 오류 발생 시 프로그램·첨부 변경 전체 롤백
 - `(programCaseId, fileUrl)` 중복 0건
 
-`test:attachment-regression`은 `automation/n8n/data/geumjeong-programs-349.json`을 검증해 349건 전체를 재동기화한다. 별도 테스트 프로그램의 추출 결과를 설정해 대량 동기화 중 보존을 확인한 후 삭제한다. 최종 결과는 프로그램 349건, 회차 20건, 활성 첨부파일 237건이며 프로그램·회차·첨부파일 복합키 중복은 모두 0건이다. 실제 237개 첨부파일 ID digest도 동기화 전후 동일했다.
+`test:attachment-regression`은 `docs/fixtures/geumjeong-programs-349.json`을 검증해 349건 전체를 재동기화한다. 별도 테스트 프로그램의 추출 결과를 설정해 대량 동기화 중 보존을 확인한 후 삭제한다. 최종 결과는 프로그램 349건, 회차 20건, 활성 첨부파일 237건이며 프로그램·회차·첨부파일 복합키 중복은 모두 0건이다. 실제 237개 첨부파일 ID digest도 동기화 전후 동일했다.
 
 ## 아직 구현하지 않은 기능
 
@@ -146,6 +146,6 @@ npm run test:attachment-regression
 - HWP/HWPX 텍스트 추출
 - 실제 추출 실행 API
 - 작업 큐와 재처리 실행
-- n8n 및 EC2 배포 설정 변경
+- 별도 수집 자동화 및 EC2 배포 설정 변경
 
 EC2 운영체제·아키텍처·자원·패키지 설치 권한을 확인한 뒤 PDF/HWP/OCR 도구, worker 실행 방식, timeout과 메모리 제한, 임시 파일 정책을 다음 단계에서 확정한다.

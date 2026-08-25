@@ -54,7 +54,7 @@ function assertNoDuplicates(rows, fields) {
 }
 
 async function run() {
-  const dataPath = path.resolve('../../automation/n8n/data/geumjeong-programs-349.json');
+  const dataPath = path.resolve('../../docs/fixtures/geumjeong-programs-349.json');
   const rawPrograms = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
   assert.equal(rawPrograms.length, 349);
   const programs = validate(rawPrograms);

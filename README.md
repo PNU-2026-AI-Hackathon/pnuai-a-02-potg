@@ -238,6 +238,40 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 ### 3.3. 기능명세서
    
 ### 3.4. 디렉토리 구조
+
+```text
+pnuai-a-02-potg/
+|-- apps/
+|   |-- frontend/                 # Next.js 기반 웹 프론트엔드
+|   |   |-- public/               # 로고 등 정적 리소스
+|   |   |-- src/app/              # 페이지 라우트와 프론트 API 라우트
+|   |   |-- src/components/       # 화면별 UI 컴포넌트
+|   |   `-- src/lib/              # 인증, 데이터 요청, AI 프롬프트, 유틸 로직
+|   `-- backend/                  # Express + Prisma 기반 백엔드
+|       |-- prisma/               # DB 스키마, 마이그레이션, seed
+|       |-- src/routes/           # REST API 라우트
+|       |-- src/services/         # 프로그램 정제, 검색, 첨부 처리 등 도메인 로직
+|       |-- src/cli/              # 데이터 수집·정제 배치 실행 도구
+|       |-- scripts/              # 검증 및 회귀 테스트 스크립트
+|       `-- python/               # 프로그램 사례 의미 검색 및 임베딩 실험 코드
+|-- docs/                         # 기능 설계, API, DB, AI 데이터, 분석 문서
+|   |-- ai-data/                  # 프로그램 데이터 정제 및 AI 검색 고도화 문서
+|   |-- analysis/                 # 데이터 분석, 검증 결과, 실험 기록
+|   |-- api/                      # 백엔드 API 설계 및 연동 문서
+|   |-- backend/                  # 백엔드 데이터 계약 및 구현 메모
+|   |-- database/                 # DB 스키마 설계 문서
+|   |-- design/                   # UI/UX 설계 기록
+|   |-- fixtures/                 # 테스트와 검증에 사용하는 수집 결과 fixture
+|   |-- issues/                   # 개발 이슈 및 PR 작업 메모
+|   `-- specs/                    # 세부 기능·데이터 처리 명세
+|-- packages/
+|   `-- types/                    # 공통 타입 패키지 확장 예정 영역
+|-- .github/                      # 이슈 및 PR 템플릿
+|-- compose.yaml                  # 로컬 PostgreSQL 실행 설정
+|-- CONTRIBUTING.md               # 협업 및 기여 가이드
+`-- README.md
+```
+
 <br>
 <br>
 

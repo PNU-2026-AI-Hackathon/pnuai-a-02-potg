@@ -2,7 +2,7 @@
 
 ## 목적과 범위
 
-#67의 금정구 프로그램 크롤링 DTO를 #71의 `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment` 테이블에 저장한다. 이 API는 내부 서버 간 동기화용이며 n8n HTTP Request 노드 연결과 첨부파일 본문 추출은 별도 작업이다.
+#67의 금정구 프로그램 크롤링 DTO를 #71의 `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment` 테이블에 저장한다. 이 API는 내부 서버 간 동기화용이며 첨부파일 본문 추출은 별도 작업이다.
 
 ## 엔드포인트와 인증
 
@@ -16,7 +16,7 @@ X-Internal-Api-Key: <INTERNAL_API_KEY>
 
 ## 요청 형식
 
-n8n 연결 편의를 위해 다음 두 형식을 모두 허용한다.
+내부 배치와 수동 검증 편의를 위해 다음 두 형식을 모두 허용한다.
 
 ```json
 { "programs": [{ "sourceType": "GEUMJEONG_SMALL_LIBRARY", "sourcePostId": "4354" }] }
@@ -118,7 +118,7 @@ npm.cmd run dev
 
 ## 2026-07-20 검증 결과
 
-- 검증 파일: `automation/n8n/data/geumjeong-programs-349.json`
+- 검증 파일: `docs/fixtures/geumjeong-programs-349.json`
 - 프로그램 DTO 349건, 회차 20건, 첨부파일 237건
 - 인증 누락·잘못된 키: `401`
 - 잘못된 요청: `400`, 필드 위치 포함
@@ -132,6 +132,6 @@ npm.cmd run dev
 - 프로그램·회차·첨부파일 중복 각각 0건
 - 실제 크롤링 원본 JSON은 커밋하지 않음
 
-## 후속 n8n 연동
+## 후속 배치 연동
 
-n8n HTTP Request 노드는 위 URL에 `POST`하고 `Content-Type: application/json`, `X-Internal-Api-Key` 헤더를 설정해야 한다. 키는 n8n Credential이나 환경변수에서 참조하고 워크플로우 JSON에 평문으로 넣지 않는다. 요청 본문은 최종 프로그램 배열 또는 `{ "programs": 배열 }`을 사용하며 수집 실행 요약 JSON은 전송하지 않는다.
+외부 수집 배치가 이 API를 호출할 때는 위 URL에 `POST`하고 `Content-Type: application/json`, `X-Internal-Api-Key` 헤더를 설정해야 한다. 키는 배포 환경변수나 별도 비밀 관리 도구에서 참조하고 코드·문서·로그에 평문으로 남기지 않는다. 요청 본문은 최종 프로그램 배열 또는 `{ "programs": 배열 }`을 사용하며 수집 실행 요약 JSON은 전송하지 않는다.
