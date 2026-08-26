@@ -124,60 +124,80 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 
 **1. 프로그램 사례 데이터 구축**
 
+금정구 공공예약 서비스의 작은도서관 프로그램 정보를 수집하고, 본문·표·첨부파일·이미지에서 텍스트를 추출했습니다. 정제된 문서를 의미 단위로 분할한 뒤 KURE-v1으로 임베딩하여 PostgreSQL pgvector에 저장합니다.
+
 ```mermaid
 %%{init: {"themeVariables": {"fontSize": "18px"}}}%%
 flowchart LR
-    SOURCE["프로그램 정보 원천<br/>금정구 도서관 프로그램"]
-    CRAWL["크롤링<br/>목록 · 상세 수집"]
-    EXTRACT["텍스트 추출<br/>PDF · HWP/HWPX · 이미지"]
-    OCR["CLOVA OCR<br/>이미지 · 스캔 문서"]
-    NORMALIZE["정제 · 정규화<br/>태그 · 특수문자 · 중복 제거"]
-    CHUNK["문서 청킹<br/>의미 단위 분할"]
-    EMBED["KURE-v1 임베딩<br/>1024차원"]
-    STORE[("PostgreSQL + pgvector<br/>벡터 저장")]
+    COLLECT["프로그램 정보 수집<br/>목록 · 상세 페이지"]
+    EXTRACT{"추출 경로 분류"}
+    FILE["첨부파일<br/>PDF · HWP"]
+    OCR["이미지 OCR<br/>이미지 · 스캔 문서"]
+    WEB["웹 텍스트<br/>본문 · 표"]
+    CLEAN["정제 · 청킹<br/>의미 단위 분할"]
+    EMBED["KURE-v1 임베딩<br/>1024차원 벡터"]
+    STORE[("PostgreSQL + pgvector<br/>프로그램 사례 저장")]
 
-    SOURCE --> CRAWL --> EXTRACT --> NORMALIZE --> CHUNK --> EMBED --> STORE
-    EXTRACT -. "필요 시 OCR" .-> OCR
-    OCR --> NORMALIZE
+    COLLECT --> EXTRACT
+    EXTRACT --> FILE --> CLEAN
+    EXTRACT --> OCR --> CLEAN
+    EXTRACT --> WEB --> CLEAN
+    CLEAN --> EMBED --> STORE
 
     classDef process fill:#F6FBF7,stroke:#2E7D4F,color:#173E29,stroke-width:1.5px,font-size:18px;
     classDef storage fill:#EAF5ED,stroke:#1F6B40,color:#173E29,stroke-width:2px,font-size:18px;
-    class SOURCE,CRAWL,EXTRACT,OCR,NORMALIZE,CHUNK,EMBED process;
+    class COLLECT,EXTRACT,FILE,OCR,WEB,CLEAN,EMBED process;
     class STORE storage;
 ```
 
+> [프로그램 사례 데이터 구축 상세보기](docs/PROGRAM_CASE_DATA_PIPELINE.md)
+
 **2. MOIRA STUDIO AI 기획**
+
+사서의 입력 조건과 주민 아이디어로 검색어를 구성하고, pgvector에서 의미가 유사한 프로그램을 검색합니다. 대상 조건을 반영해 재정렬한 상위 5개 사례를 Markdown 참고자료로 구성하고, Gemini Context에 포함하여 프로그램 기획안을 생성합니다.
 
 ```mermaid
 %%{init: {"themeVariables": {"fontSize": "18px"}}}%%
 flowchart LR
-    CONDITIONS["사서 입력 조건<br/>분야 · 대상 · 운영 방식<br/>기간 · 회차 · 예산 · 장소"]
-    IDEAS["주민 아이디어 · 의견<br/>주민 제안 내용 및 의견"]
-    VECTOR[("프로그램 사례 벡터<br/>PostgreSQL + pgvector")]
-    SEARCH{{"KURE-v1 의미 기반 검색"}}
-    CASES["유사 프로그램 사례 Top-K<br/>Markdown 선택적 참조"]
-    CONTEXT["Context 구성<br/>입력 조건 · 주민 아이디어<br/>유사 사례 · 프롬프트 템플릿"]
-    GEMINI{{"Google Gemini API<br/>프로그램 기획안 생성"}}
-    DRAFT["프로그램 기획안 초안"]
-    REVIEW["사서 검토 · 수정<br/>최종 기획안 확정"]
+    INPUT["사서 입력 조건<br/>+ 주민 아이디어"]
+    QUERY["검색어 구성"]
+    SEARCH{{"KURE-v1 · pgvector<br/>의미 기반 검색"}}
+    RERANK["대상 필터 · 재정렬<br/>유사 사례 Top 5"]
+    CONTEXT["Markdown Context<br/>참고자료 구성"]
+    GEMINI{{"Google Gemini API"}}
+    RESULT["기획안 생성<br/>사서 검토 · 수정"]
 
-    CONDITIONS --> SEARCH
-    IDEAS --> SEARCH
-    VECTOR --> SEARCH --> CASES --> CONTEXT
-    CONDITIONS --> CONTEXT
-    IDEAS --> CONTEXT
-    CONTEXT --> GEMINI --> DRAFT --> REVIEW
-    REVIEW -. "수정 후 재생성" .-> CONTEXT
+    INPUT --> QUERY --> SEARCH --> RERANK --> CONTEXT --> GEMINI --> RESULT
 
     classDef input fill:#FBF9FF,stroke:#7450B8,color:#382064,stroke-width:1.5px,font-size:18px;
     classDef ai fill:#F3EEFF,stroke:#6842B5,color:#382064,stroke-width:2px,font-size:18px;
     classDef output fill:#F8F5FF,stroke:#7450B8,color:#382064,stroke-width:1.5px,font-size:18px;
-    classDef storage fill:#F2EEF9,stroke:#6842B5,color:#382064,stroke-width:2px,font-size:18px;
-    class CONDITIONS,IDEAS,CASES,CONTEXT input;
+    class INPUT,QUERY,RERANK,CONTEXT input;
     class SEARCH,GEMINI ai;
-    class DRAFT,REVIEW output;
-    class VECTOR storage;
+    class RESULT output;
 ```
+
+**요청 경로**
+
+```mermaid
+sequenceDiagram
+    participant U as 사서
+    participant V as Next.js / Vercel
+    participant E as Express / EC2
+    participant P as KURE-v1 · pgvector
+    participant G as Gemini API
+
+    U->>V: 조건·아이디어로 기획 요청
+    V->>E: 유사 사례 Context 요청
+    E->>P: 검색어 임베딩·유사도 검색
+    P-->>E: 재정렬된 Top 5
+    E-->>V: Markdown Context
+    V->>G: 조건 + 아이디어 + Context
+    G-->>V: JSON 기획안 초안
+    V-->>U: 기획안 편집 화면
+```
+
+> [MOIRA Studio AI 기획 과정 상세보기](docs/MOIRA_STUDIO_AI_PLANNING.md)
 
 <br>
 
