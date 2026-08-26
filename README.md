@@ -585,25 +585,26 @@ pnuai-a-02-potg/
 
 ### 5.1. 필요 환경
 
-- Git
-- Node.js 22 LTS 및 npm
-- Python 3.12
-- Docker Desktop 또는 Docker Engine + Docker Compose
-- KURE-v1 모델 및 Python 패키지 설치를 위한 약 4GB 이상의 여유 공간
+- Git, Node.js 22 LTS, npm
+- Python 3.11
+- Docker Desktop 또는 Docker Engine
+- KURE-v1 설치를 위한 약 4GB의 여유 공간
+
+> MOIRA는 PostgreSQL의 `vector` 확장을 사용합니다. 일반 PostgreSQL 이미지가 아니라 pgvector가 포함된 PostgreSQL 17 환경이 필요합니다.
 
 <br>
 
 ### 5.2. 설치 및 실행
 
-저장소를 복제한 뒤 개발용 PostgreSQL을 실행합니다.
+저장소를 복제하고 pgvector가 포함된 PostgreSQL을 실행합니다.
 
 ```bash
 git clone https://github.com/PNU-2026-AI-Hackathon/pnuai-a-02-potg.git
 cd pnuai-a-02-potg
-docker compose up -d
+docker run --name moira-postgres -e POSTGRES_DB=moira -e POSTGRES_USER=moira -e POSTGRES_PASSWORD=moira_local -p 127.0.0.1:5432:5432 -v moira-postgres-data:/var/lib/postgresql/data -d pgvector/pgvector:0.8.2-pg17
 ```
 
-백엔드 환경변수를 설정하고 서버를 실행합니다.
+백엔드 패키지를 설치하고 `apps/backend/.env`를 설정합니다.
 
 ```bash
 cd apps/backend
@@ -611,47 +612,34 @@ npm ci
 cp .env.example .env
 ```
 
-MOIRA Studio의 유사 프로그램 검색을 위해 Python 가상환경과 관련 패키지를 설치합니다.
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/pip install -r python/requirements.txt
-```
-
-> Windows에서는 `.venv/bin/python` 대신 `.venv\Scripts\python.exe`를 사용합니다.
-
-KURE-v1 모델을 백엔드의 로컬 캐시에 내려받습니다. 모델 캐시는 Git에 포함되지 않으며 최초 설치 시 약 2.3GB의 저장 공간이 필요합니다.
-
-```bash
-.venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('nlpai-lab/KURE-v1', revision='d14c8a9423946e268a0c9952fecf3a7aabd73bd9', device='cpu', cache_folder='.model-cache', trust_remote_code=False)"
-```
-
 ```env
 DATABASE_URL=postgresql://moira:moira_local@localhost:5432/moira
 JWT_SECRET=replace-with-a-long-random-secret
 ```
 
+데이터베이스를 준비하고 Python 검색 환경을 설치합니다.
+
 ```bash
 npx prisma migrate deploy
 npm run db:seed
+python3.11 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r python/requirements.txt
+.venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('nlpai-lab/KURE-v1', revision='d14c8a9423946e268a0c9952fecf3a7aabd73bd9', device='cpu', cache_folder='.model-cache', trust_remote_code=False)"
+```
+
+> Windows에서는 `python3.11` 대신 `py -3.11`, `.venv/bin/python` 대신 `.venv\Scripts\python.exe`를 사용합니다. 기본 seed에는 프로그램 사례와 검색 임베딩이 포함되지 않으므로, MOIRA STUDIO 전체 기능은 운영 데이터와 검색 산출물이 있는 환경에서 사용할 수 있습니다.
+
+검색 산출물을 보유한 환경에서는 Studio용 검색 프로필을 먼저 적재합니다. 해당 명령은 검색 산출물이 없는 기본 환경에서는 건너뛰고 백엔드만 실행합니다.
+
+```bash
+# 선택: 검색 산출물이 있는 환경에서만 실행
+npm run program-board-search:pgvector-sync
+
 npm run dev
 ```
 
-프로그램 검색 산출물을 보유한 운영·데이터 구축 환경에서는 마이그레이션 후 MOIRA Studio용 검색 프로필을 pgvector에 적재합니다. 같은 체크섬의 프로필은 다시 생성하지 않습니다.
-
-```bash
-npm run program-board-search:pgvector-sync
-```
-
-운영 PostgreSQL 연결 주소는 Node.js와 Python 드라이버가 함께 사용할 수 있도록 `sslmode=require`를 사용합니다. EC2에서는 백엔드 빌드 후 PM2 프로세스에 변경된 환경변수를 반영합니다.
-
-```bash
-npm run build
-pm2 restart moira-backend --update-env
-```
-
-새 터미널에서 프론트엔드 환경변수를 설정하고 실행합니다.
+새 터미널에서 프론트엔드를 설치하고 `apps/frontend/.env.local`을 설정합니다.
 
 ```bash
 cd apps/frontend
@@ -680,7 +668,11 @@ npm run dev
 | 백엔드 상태 확인 | `http://localhost:4000/api/health` |
 | 데이터베이스 상태 확인 | `http://localhost:4000/api/health/db` |
 
-개발 서버는 각 터미널에서 `Ctrl+C`로 종료하며, PostgreSQL 컨테이너는 저장소 루트에서 `docker compose down`으로 종료합니다.
+개발 서버는 `Ctrl+C`, PostgreSQL 컨테이너는 다음 명령으로 종료합니다.
+
+```bash
+docker stop moira-postgres
+```
 
 <br>
 
