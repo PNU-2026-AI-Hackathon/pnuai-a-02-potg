@@ -111,7 +111,7 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 #### ① 전체 시스템 구성
 
 <p align="center">
-  <img src="docs/diagrams/moira-system-architecture.png" width="80%" alt="모이라 시스템 구성도" />
+  <img src="docs/diagrams/moira-system-architecture-final.png" width="80%" alt="모이라 시스템 구성도" />
 </p>
 
 - **Frontend:** Vercel 기반 Next.js Web UI·API Routes, Gemini 및 Kakao Maps 연동
