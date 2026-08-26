@@ -37,6 +37,8 @@ export async function searchProgramCases(
         KURE_MODEL_CACHE_DIR: process.env.KURE_MODEL_CACHE_DIR || modelCacheDirectory,
         PYTHONIOENCODING: 'utf-8',
         PYTHONUTF8: '1',
+        HF_HUB_OFFLINE: '1',
+        TRANSFORMERS_OFFLINE: '1',
       },
       encoding: 'utf8',
       maxBuffer: 1024 * 1024,

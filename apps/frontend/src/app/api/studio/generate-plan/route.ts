@@ -26,7 +26,6 @@ type ReferenceContextResponse = {
   error?: unknown;
 };
 
-const REFERENCE_LIMIT = 5;
 const REFERENCE_TIMEOUT_MS = 90_000;
 
 export const maxDuration = 120;
@@ -74,9 +73,8 @@ async function buildReferenceContext(
   const query = buildSearchQuery(referenceSearchMemo(memo, agenda), conditions).slice(0, 1000);
   if (!query) throw new ReferenceContextError('유사 사례 검색어를 구성하지 못했습니다.');
 
-  const target = new URL(getBackendUrl('/api/program-board/context'));
+  const target = new URL(getBackendUrl('/api/program-case/studio-context'));
   target.searchParams.set('q', query);
-  target.searchParams.set('limit', String(REFERENCE_LIMIT));
   const audience = audienceFilter(conditions);
   if (audience) target.searchParams.set('audience', audience);
 

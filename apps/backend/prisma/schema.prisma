@@ -290,6 +290,31 @@ model ProgramCaseDocumentChunkEmbedding {
   @@index([provider, model, modelRevision], map: "ProgramCaseChunkEmbedding_modelRevision_idx")
 }
 
+/// MOIRA Studio에서 사용하는 프로그램 단위 검색 프로필.
+/// 크롤 원본의 대표 사례를 그대로 보존해야 하므로 서비스 ProgramCase 생명주기와 분리한다.
+model StudioProgramSearchProfile {
+  id                String   @id @default(uuid())
+  sourceId          Int      @unique
+  sourceUrl         String
+  title             String
+  target            String?
+  libraryName       String?
+  summary           String   @db.Text
+  profileData       Json
+  embeddingText     String   @db.Text
+  contentHash       String
+  provider          String
+  model             String
+  modelRevision     String
+  embeddingVersion  String
+  dimension         Int
+  embedding         Unsupported("vector(1024)")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([provider, model, modelRevision])
+}
+
 model StudioDocument {
   id               String   @id @default(uuid())
   ownerId          String?
