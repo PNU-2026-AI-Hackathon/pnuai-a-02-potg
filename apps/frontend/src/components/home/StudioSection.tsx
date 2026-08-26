@@ -8,8 +8,8 @@ export const studioFeatures = [
   },
   {
     number: '02',
-    title: 'AI 기반 의견 분석',
-    description: '모인 의견의 핵심 요구와 공통 관심사를 정리합니다.',
+    title: '유사 프로그램 사례 참고',
+    description: '선택한 조건과 관련된 기존 도서관 프로그램 사례를 기획에 참고합니다.',
   },
   {
     number: '03',
@@ -34,7 +34,7 @@ export function StudioPreview({ className = '' }: ReusableStudioBlockProps) {
       <div className="studioPreviewTop">
         <span className="uiTag uiTagAccent">MOIRA STUDIO</span>
         <span className="studioStatus">
-          <i aria-hidden="true" /> AI 의견 분석 완료
+          <i aria-hidden="true" /> 참고 사례 확인 완료
         </span>
       </div>
       <div className="studioAgenda">
@@ -109,7 +109,7 @@ export default function StudioSection() {
               주민의 의견을 작은도서관 프로그램 기획안으로
             </p>
             <p className="studioSectionDescription">
-              모이라 스튜디오는 주민 제안과 수요조사 결과를 분석하여 사서가 프로그램 초안을 빠르게 작성할 수 있도록 돕습니다.
+              모이라 스튜디오는 주민 제안과 수요조사 결과, 기존 프로그램 사례를 참고하여 사서가 프로그램 초안을 빠르게 작성할 수 있도록 돕습니다.
             </p>
           </div>
           <aside className="studioSectionCta" aria-label="모이라 스튜디오 사서 안내">

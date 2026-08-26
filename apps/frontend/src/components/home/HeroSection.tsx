@@ -44,7 +44,7 @@ export default function HeroSection() {
             <li>
               <span aria-hidden="true">01</span>
               <div>
-                <strong>지역 의제 제안</strong>
+                <strong>우리동네 아이디어 제안</strong>
                 <p>주민이 동네에 필요한 변화와 관심사를 나눕니다.</p>
               </div>
             </li>

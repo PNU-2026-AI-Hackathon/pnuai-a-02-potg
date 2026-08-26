@@ -6126,7 +6126,6 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   color: var(--moira-muted);
   font-size: 16px;
   line-height: 1.65;
-  white-space: nowrap;
 }
 
 .studioSectionCta {
@@ -6234,11 +6233,6 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   color: var(--moira-green-dark);
   font-size: 11px;
   font-weight: 850;
-}
-
-.studioFeatureList li:nth-child(2) > span {
-  background: #fff0dd;
-  color: #a65317;
 }
 
 .studioFeatureList strong {
@@ -7697,7 +7691,7 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
 .pipeline {
   --flow-progress: 0;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
   position: relative;
   align-items: start;
@@ -10353,12 +10347,6 @@ html:has(.moiraPage).isFullPageScroll:not(.isHomeScrollReleased) {
   color: var(--moira-muted);
   font-size: 14px;
   line-height: 1.7;
-}
-
-@media (max-width: 1100px) {
-  .studioSectionDescription {
-    white-space: normal;
-  }
 }
 
 @media (max-width: 980px) {

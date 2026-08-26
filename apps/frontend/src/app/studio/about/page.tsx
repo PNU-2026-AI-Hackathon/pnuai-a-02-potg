@@ -10,7 +10,7 @@ import { getCurrentUser } from '@/lib/server-auth';
 export const metadata: Metadata = {
   title: 'MOIRA STUDIO 소개 | 사서를 위한 AI 프로그램 기획 도구',
   description:
-    '주민 의견과 수요조사를 분석해 사서의 도서관 문화·교육 프로그램 기획을 돕는 MOIRA STUDIO를 소개합니다.',
+    '주민 아이디어와 기존 프로그램 사례를 참고해 사서의 도서관 문화·교육 프로그램 기획을 돕는 MOIRA STUDIO를 소개합니다.',
 };
 
 const studioValues = [
@@ -22,7 +22,7 @@ const studioValues = [
   {
     icon: 'sparkles',
     title: '기획 과정의 부담 완화',
-    description: '의견 분석과 초안 작성을 AI가 지원하여 프로그램 기획에 필요한 시간과 부담을 줄입니다.',
+    description: '기존 프로그램 사례 참고와 초안 작성을 AI가 지원하여 프로그램 기획에 필요한 시간과 부담을 줄입니다.',
   },
   {
     icon: 'review',
@@ -68,13 +68,13 @@ const studioLandingFeatures = [
   },
   {
     number: '02',
-    title: 'AI 기반 주민 의견 분석',
-    description: '선택한 주민 의견과 수요조사 결과를 AI가 분석하여 주요 요구와 관심 주제를 파악하고, 프로그램 기획에 필요한 내용을 정리합니다.',
+    title: '유사 프로그램 사례 참고',
+    description: '선택한 조건과 관련된 기존 도서관 프로그램 사례를 찾아 기획에 참고합니다.',
   },
   {
     number: '03',
     title: '프로그램 기획 초안 생성',
-    description: '분석한 지역 수요를 바탕으로 대상, 운영 방식, 주요 활동 등 프로그램 구성 요소가 포함된 기획 초안을 생성합니다.',
+    description: '선택한 조건과 참고 사례를 바탕으로 대상, 운영 방식, 주요 활동 등 프로그램 구성 요소가 포함된 기획 초안을 생성합니다.',
   },
   {
     number: '04',
@@ -107,7 +107,7 @@ export default async function StudioAboutPage() {
               </h1>
               <p className="studioLandingClaim">주민 의견을 기획으로 연결하는 AI 도구, MOIRA STUDIO</p>
               <p className="studioLandingLead">
-                MOIRA STUDIO는 주민 의견과 수요조사 결과를 분석하여 사서와 도서관 프로그램
+                MOIRA STUDIO는 주민 아이디어와 기획 조건, 기존 프로그램 사례를 참고하여 사서와 도서관 프로그램
                 기획 담당자가 지역에 필요한 문화·교육 프로그램의 기획 초안을 빠르게 작성할 수
                 있도록 돕습니다.
               </p>
@@ -127,7 +127,7 @@ export default async function StudioAboutPage() {
             <div className="studioLandingSectionHeading">
               <p className="uiEyebrow">WHY MOIRA STUDIO</p>
               <h2 id="studio-value-title">프로그램 기획의 부담은 줄이고, 지역의 필요는 더 가까이</h2>
-              <p>AI는 기획을 대신하는 것이 아니라, 주민의 목소리를 읽고 사서의 판단을 돕습니다.</p>
+              <p>AI가 선택한 조건과 기존 프로그램 사례를 바탕으로 초안을 만들고, 사서가 직접 검토하고 수정해 완성합니다.</p>
             </div>
             <div className="studioLandingValueGrid">
               {studioValues.map((value) => (

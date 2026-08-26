@@ -520,8 +520,7 @@ export default function SignupPage() {
                 <p className="signupWelcomeEyebrow">환영합니다</p>
                 <h2 className="signupWelcomeTitle">{name || '새로운 이용자'}님, 모이라 가입이 완료되었습니다.</h2>
                 <p className="signupWelcomeText">
-                  {selectedAccountTypeLabel} 계정으로 시작합니다. 선택한 관심분야는 추후 추천과 주민 참여 흐름에
-                  활용됩니다.
+                  {selectedAccountTypeLabel} 계정으로 시작합니다.
                 </p>
 
                 <div className="signupWelcomeSummary">
