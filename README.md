@@ -152,9 +152,13 @@ flowchart LR
 
 > [프로그램 사례 데이터 구축 상세보기](docs/PROGRAM_CASE_DATA_PIPELINE.md)
 
-**2. MOIRA STUDIO AI 기획**
+<br>
+
+**2. MOIRA STUDIO AI 기획 및 요청 흐름**
 
 사서의 입력 조건과 주민 아이디어로 검색어를 구성하고, pgvector에서 의미가 유사한 프로그램을 검색합니다. 대상 조건을 반영해 재정렬한 상위 5개 사례를 Markdown 참고자료로 구성하고, Gemini Context에 포함하여 프로그램 기획안을 생성합니다.
+
+**기획 과정**
 
 ```mermaid
 %%{init: {"themeVariables": {"fontSize": "18px"}}}%%
@@ -177,7 +181,7 @@ flowchart LR
     class RESULT output;
 ```
 
-**요청 경로**
+**서비스 요청 경로**
 
 ```mermaid
 sequenceDiagram
