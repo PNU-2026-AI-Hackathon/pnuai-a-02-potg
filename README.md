@@ -150,7 +150,7 @@ flowchart LR
     class STORE storage;
 ```
 
-> [프로그램 사례 데이터 구축 상세보기](docs/PROGRAM_CASE_DATA_PIPELINE.md)
+> [프로그램 사례 데이터 구축 상세보기](docs/ai-data/PROGRAM_CASE_DATA_PIPELINE.md)
 
 <br>
 
@@ -201,7 +201,7 @@ sequenceDiagram
     V-->>U: 기획안 편집 화면
 ```
 
-> [MOIRA Studio AI 기획 과정 상세보기](docs/MOIRA_STUDIO_AI_PLANNING.md)
+> [MOIRA Studio AI 기획 과정 상세보기](docs/ai-data/MOIRA_STUDIO_AI_PLANNING.md)
 
 <br>
 

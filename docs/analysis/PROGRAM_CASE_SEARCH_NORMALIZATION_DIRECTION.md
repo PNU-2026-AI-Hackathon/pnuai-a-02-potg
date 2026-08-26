@@ -1,6 +1,6 @@
 # ProgramCase 정규화 및 기획서 생성 AI 결정 기록
 
-> **문서 상태 — 결정 기록:** 이 문서에서 제안한 프로그램 단위 검색 프로필과 기획안 생성 연계는 현재 구현되었습니다. 운영 흐름은 [MOIRA Studio AI 기획 과정](../MOIRA_STUDIO_AI_PLANNING.md), 검색 계약은 [MOIRA Studio 검색 명세](../specs/MOIRA_STUDIO_RETRIEVAL.md)를 확인하세요.
+> **문서 상태 — 결정 기록:** 이 문서에서 제안한 프로그램 단위 검색 프로필과 기획안 생성 연계는 현재 구현되었습니다. 운영 흐름은 [MOIRA Studio AI 기획 과정](../ai-data/MOIRA_STUDIO_AI_PLANNING.md), 검색 계약은 [MOIRA Studio 검색 명세](../specs/MOIRA_STUDIO_RETRIEVAL.md)를 확인하세요.
 
 ## 문서 목적
 
