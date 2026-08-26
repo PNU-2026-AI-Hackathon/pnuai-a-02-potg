@@ -468,32 +468,38 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 ```text
 pnuai-a-02-potg/
 |-- apps/
-|   |-- frontend/                 # Next.js 웹 프론트엔드
-|   |   |-- public/               # 로고 등 정적 리소스
+|   |-- frontend/                 # Next.js 웹 애플리케이션과 BFF
+|   |   |-- public/               # 이미지·아이콘 등 정적 리소스
 |   |   `-- src/
-|   |       |-- app/              # 페이지 라우트와 프론트 API 라우트
-|   |       |-- components/       # 홈, 커뮤니티, 프로그램, STUDIO UI
-|   |       `-- lib/              # 인증, 데이터 요청, AI 프롬프트
-|   `-- backend/                  # Express/Prisma API 서버
-|       |-- prisma/               # DB 스키마, 마이그레이션, seed
+|   |       |-- app/              # 화면과 Next.js Route Handler
+|   |       |-- components/       # 공통·도메인 UI 컴포넌트
+|   |       `-- lib/              # 인증, API 요청, 데이터 변환
+|   `-- backend/                  # Express REST API와 데이터 처리
+|       |-- prisma/               # PostgreSQL 스키마·migration·seed
 |       |-- src/
-|       |   |-- routes/           # REST API 라우트
-|       |   |-- services/         # 프로그램 정제, 검색, 첨부 처리 로직
-|       |   `-- cli/              # 데이터 수집·정제 배치 명령
-|       |-- scripts/              # 검증 및 회귀 테스트 스크립트
-|       `-- python/               # 의미 검색 및 임베딩 실험 코드
-|-- docs/                         # 설계, API, DB, AI 데이터 및 분석 문서
-|   |-- ai-data/                  # 크롤링, OCR, AI 검색 고도화 기록
-|   |-- analysis/                 # 데이터 분석 및 검증 보고서
-|   |-- api/                      # API 설계 문서
-|   |-- database/                 # DB 설계 문서
-|   |-- design/                   # UI/UX 디자인 가이드
+|       |   |-- routes/           # 서비스·내부 API 라우트
+|       |   |-- services/         # 도메인·첨부파일 처리 로직
+|       |   `-- cli/              # 데이터 구축·검증 명령
+|       |-- python/               # KURE-v1·pgvector 검색 모듈
+|       `-- scripts/              # 테스트·운영 실행 스크립트
+|-- docs/                         # 프로젝트 문서 허브
+|   |-- ai-data/                  # 데이터 가공과 AI 기획 과정
+|   |-- analysis/                 # 실험·분석·검증 기록
+|   |-- api/                      # 현재 API 계약
+|   |-- backend/                  # 백엔드 구조와 데이터 계약
+|   |-- database/                 # Prisma·PostgreSQL·pgvector 구조
+|   |-- design/                   # 프론트엔드 디자인 가이드
+|   |-- diagrams/                 # README용 시스템 구성도
 |   |-- features/                 # 기능명세서 항목별 PR·이슈 구현 흐름
-|   `-- specs/                    # 데이터·검색 계약 문서
-|-- packages/                     # 공통 패키지
+|   |-- fixtures/                 # 수집·동기화 회귀 테스트 데이터
+|   `-- specs/                    # 데이터 산출물·검색 기술 명세
+|-- packages/
+|   `-- types/                    # 프론트엔드·백엔드 공통 타입
 |-- .github/                      # 이슈 및 PR 템플릿
 `-- compose.yaml                  # 로컬 PostgreSQL 설정
 ```
+
+> 전체 기술 문서와 AI 도구 활용 보고서는 [docs/](docs/README.md)에서 확인할 수 있습니다.
 
 <br>
 <br>
