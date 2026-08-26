@@ -111,7 +111,7 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 #### ① 전체 시스템 구성
 
 <p align="center">
-  <img src="docs/diagrams/moira-system-architecture-final-v2.png" width="80%" alt="모이라 시스템 구성도" />
+  <img src="docs/diagrams/moira-system-architecture.png" width="80%" alt="모이라 시스템 구성도" />
 </p>
 
 - **Frontend:** Vercel 기반 Next.js Web UI·API Routes, Gemini 및 Kakao Maps 연동
@@ -207,7 +207,7 @@ sequenceDiagram
 
 ### 2.2. 사용 기술
 
-#### - Frontend
+#### Frontend
 
 | 이름 | 버전 | 사용 범위 |
 |:---:|:---:| --- |
@@ -216,7 +216,7 @@ sequenceDiagram
 | TypeScript | 5.8.0 | 정적 타입 기반 프론트엔드 개발 |
 | Framer Motion | 12.43.0 | 주요 화면 인터랙션과 애니메이션 |
 
-#### - Backend
+#### Backend
 
 | 이름 | 버전 | 사용 범위 |
 |:---:|:---:| --- |
@@ -226,7 +226,7 @@ sequenceDiagram
 | TypeScript | 5.6.0 | 정적 타입 기반 서버 개발 |
 | JWT / bcryptjs | 9.0.2 / 2.4.3 | 인증 토큰 및 비밀번호 암호화 |
 
-#### - Database / Infra
+#### Database / Infra
 
 | 이름 | 버전 | 사용 범위 |
 |:---:|:---:| --- |
@@ -235,7 +235,7 @@ sequenceDiagram
 | Docker Compose | - | 로컬 개발 DB 실행 |
 | Vercel | - | 프론트엔드 배포 |
 
-#### - AI / Data
+#### AI / Data
 
 | 이름 | 버전/모델 | 사용 범위 |
 |:---:|:---:| --- |
@@ -394,7 +394,7 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 | 프로그램 기획 모드 | 아이디어 직접 입력 | 기획하고 싶은 프로그램의 아이디어를 직접 입력하거나 제공되는 예시를 선택할 수 있습니다. |
 | 주민 아이디어 모드 | 주민 아이디어 활용 | 우리동네 아이디어 게시판에 등록된 주민 의견을 탐색하고, 원하는 아이디어를 선택하여 프로그램 기획에 활용할 수 있습니다. |
 | 공통 | 프로그램 조건 설정 | 프로그램 분야, 대상, 운영 기간 등의 조건을 설정하여 기획 방향을 구체화할 수 있습니다. |
-| 공통 | AI 기획안 생성 | 입력하거나 선택한 아이디어와 설정 조건을 바탕으로 기존 도서관 프로그램 사례를 참고하여 AI가 기획안 초안을 생성합니다. | |
+| 공통 | AI 기획안 생성 | 입력하거나 선택한 아이디어와 설정 조건을 바탕으로 기존 도서관 프로그램 사례를 참고하여 AI가 기획안 초안을 생성합니다. |
 <br>
 
 **② AI 기획안 생성**
