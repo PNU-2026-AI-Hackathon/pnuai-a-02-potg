@@ -173,6 +173,72 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 
 ### 3.1. 전체 시스템 흐름도
 
+```mermaid
+flowchart LR
+    START(["서비스<br/>접속"]) --> MAIN(["MOIRA<br/>메인"])
+
+    MAIN --> BOARD(["프로그램<br/>게시판"])
+    BOARD --> PROGRAM(["프로그램<br/>둘러보기"])
+    BOARD --> CALENDAR(["프로그램<br/>일정"])
+
+    PROGRAM --> FILTER["검색<br/>필터"]
+    PROGRAM --> DETAIL["상세<br/>조회"]
+    PROGRAM --> FAVORITE["관심 프로그램<br/>등록"]
+
+    MAIN --> LIBRARY(["우리 동네<br/>도서관 찾기"])
+    LIBRARY --> MAP["지도<br/>위치 확인"]
+
+    MAIN --> COMMUNITY(["우리동네<br/>이야기"])
+    COMMUNITY --> NEWS(["도서관 행사<br/>및 소식"])
+    COMMUNITY --> IDEA(["우리동네<br/>아이디어"])
+    COMMUNITY --> SURVEY(["프로그램<br/>수요조사"])
+
+    NEWS --> NEWS_VIEW["게시글<br/>조회 · 검색"]
+
+    IDEA --> WRITE["아이디어<br/>작성"]
+    IDEA --> REACTION["공감<br/>댓글"]
+
+    MAIN --> STUDIO(["✦ MOIRA<br/>STUDIO"])
+    STUDIO --> MODE{"기획 시작<br/>방식"}
+
+    MODE --> DIRECT["아이디어<br/>직접 입력"]
+    MODE --> SELECT["주민 아이디어<br/>선택"]
+
+    WRITE -. "주민 의견 반영" .-> SELECT
+    REACTION -. "주민 의견 반영" .-> SELECT
+
+    DIRECT --> CONDITION["프로그램<br/>조건 설정"]
+    SELECT --> CONDITION
+
+    CONDITION --> CASE{{"KURE-v1<br/>유사 사례 검색"}}
+    CASE --> GENERATE{{"Gemini<br/>기획안 생성"}}
+    GENERATE --> EDIT["기획안<br/>편집 · 저장"]
+    EDIT --> OPEN["수요조사<br/>생성 · 공개"]
+
+    OPEN -. "수요조사 공개" .-> SURVEY
+    SURVEY --> CONFIRM["프로그램<br/>기획 확정"]
+
+    classDef main fill:#102d5c,color:#fff,stroke:#102d5c,font-size:18px
+    classDef page fill:#eef6ff,color:#1e4f91,stroke:#62a3f5,stroke-width:2px,font-size:18px
+    classDef residentAction fill:#edf9f1,color:#17603a,stroke:#54b77c,font-size:18px
+    classDef librarianAction fill:#fff4e9,color:#9a4500,stroke:#fb923c,font-size:18px
+    classDef studioMain fill:#fff4e9,color:#9a4500,stroke:#fb923c,stroke-width:3px,font-size:22px,font-weight:bold
+    classDef aiProcess fill:#f4edff,color:#5b2aaa,stroke:#8b5cf6,stroke-width:2px,font-size:18px
+    classDef decision fill:#fff,color:#27364a,stroke:#94a3b8,font-size:18px
+    classDef result fill:#eaf8ef,color:#185c37,stroke:#22a559,font-size:18px
+
+    class START,MAIN main
+    class BOARD,PROGRAM,CALENDAR,LIBRARY,COMMUNITY,NEWS,IDEA,SURVEY page
+    class FILTER,DETAIL,FAVORITE,MAP,NEWS_VIEW,WRITE,REACTION residentAction
+    class STUDIO studioMain
+    class DIRECT,SELECT,CONDITION,EDIT,OPEN librarianAction
+    class CASE,GENERATE aiProcess
+    class MODE decision
+    class CONFIRM result
+```
+
+> 둥근 도형은 **페이지**, 사각형은 **사용자·사서의 행위**, 육각형은 **AI 처리**, 마름모는 **선택 분기**를 나타냅니다.
+
 <br>
 
 ### 3.2. 기능설명
