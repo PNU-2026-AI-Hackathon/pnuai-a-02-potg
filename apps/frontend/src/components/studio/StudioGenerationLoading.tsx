@@ -28,16 +28,16 @@ type StudioDocumentCreateResponse = {
 
 const generationSteps = [
   {
-    label: '조건 확인',
-    description: '선택한 분야, 대상, 운영 조건을 점검합니다.',
+    label: '유사 사례 검색',
+    description: '입력 조건과 아이디어를 바탕으로 기존 프로그램 사례를 찾습니다.',
   },
   {
-    label: '기획 구조 구성',
-    description: '기획 배경과 목적, 운영 흐름의 뼈대를 정리합니다.',
+    label: '참고 Context 구성',
+    description: '상위 유사 사례를 기획안 생성용 참고자료로 구성합니다.',
   },
   {
-    label: '세부 운영 내용 작성',
-    description: '회차별 활동과 준비물을 기획서 초안에 배치합니다.',
+    label: 'AI 기획안 생성',
+    description: '입력 조건과 주민 의견, 유사 사례를 반영해 기획안을 작성합니다.',
   },
   {
     label: '기획서 초안 정리',
