@@ -427,7 +427,7 @@ AI를 활용하여 도서관 프로그램 기획안 초안을 생성하고 수�
 | 프로그램 | 일정·관심 관리 | 캘린더 확인, 관심 프로그램 저장·해제 | 로그인 | [F05 · 2단계 / PR 2건](docs/features/README.md#f05-일정관심-관리) |
 | 커뮤니티 | 주민 아이디어 | 아이디어 작성, 댓글, 공감, STUDIO 연계 | 공통 | [F06 · 5단계 / PR 17건](docs/features/README.md#f06-주민-아이디어) |
 | 커뮤니티 | 도서관 소식 | 공지·행사 글 조회, 검색, 좋아요·저장 | 공통 | [F07 · PR 1건](docs/features/README.md#f07-도서관-소식) |
-| MOIRA STUDIO | 기획안 생성 | 직접 입력 또는 주민 아이디어 기반 AI 초안 생성 | 사서 | [F08 · 5단계 / PR 10건](docs/features/README.md#f08-기획안-생성) |
+| MOIRA STUDIO | 기획안 생성 | 직접 입력 또는 주민 아이디어 기반 AI 초안 생성, 기존 프로그램 사례 참고 | 사서 | [F08 · 6단계 / PR 11건](docs/features/README.md#f08-기획안-생성) |
 | MOIRA STUDIO | 기획안 편집 | 항목별 수정, AI 다듬기, 기획서 저장 | 사서 | [F09 · 4단계 / PR 12건](docs/features/README.md#f09-기획안-편집) |
 | 수요조사 | 참여와 집계 | 참여 의향·선호 시간대 응답, 결과 확인 | 공통/사서 | [F10 · 2단계 / PR 3건](docs/features/README.md#f10-참여와-집계) |
 | 마이페이지 | 내 활동 관리 | 프로필, 게시글, 댓글, 관심글, 관심 프로그램 관리 | 로그인 | [F11 · 2단계 / PR 5건](docs/features/README.md#f11-내-활동-관리) |
