@@ -746,7 +746,7 @@ https://youtu.be/uBzASOUlOsY
 https://www.libsta.go.kr/libsta/statistics/public/main
 
 <a id="ref-2"></a>**[2]** 부산광역시 금정구, 「공공예약서비스」. [↩](#cite-2)
-https://reserve.geumjeong.go.kr/index.geumj
+https://www.geumjeong.go.kr/booking/index.geumj
 
 <a id="ref-3"></a>**[3]** 부산광역시 금정구, 「금정도서관」. [↩](#cite-3)
 https://library.geumjeong.go.kr/index.geumj
