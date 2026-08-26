@@ -742,17 +742,17 @@ https://youtu.be/uBzASOUlOsY
 
 ## 9. 참고문헌
 
-<a id="ref-1"></a>**[1]** 문화체육관광부, 「공공도서관 주요 통계(2025년 실적)」, 국가도서관통계시스템, 2026. [↩](#cite-1)
+<a id="ref-1"></a>**[1]** 문화체육관광부, 「공공도서관 주요 통계(2025년 실적)」, 국가도서관통계시스템, 2026. [본문으로](#cite-1)
 https://www.libsta.go.kr/libsta/statistics/public/main
 
-<a id="ref-2"></a>**[2]** 부산광역시 금정구, 「공공예약서비스」. [↩](#cite-2)
+<a id="ref-2"></a>**[2]** 부산광역시 금정구, 「금정 공공예약 서비스」. [본문으로](#cite-2)
 https://www.geumjeong.go.kr/booking/index.geumj
 
-<a id="ref-3"></a>**[3]** 부산광역시 금정구, 「금정도서관」. [↩](#cite-3)
-https://library.geumjeong.go.kr/index.geumj
+<a id="ref-3"></a>**[3]** 부산광역시 금정구, 「금정구 통합도서관」. [본문으로](#cite-3)
+https://www.geumjeong.go.kr/index.geumj?contentsSid=6366
 
-<a id="ref-4"></a>**[4]** 국립중앙도서관, 「작은도서관 정보누리」. [↩](#cite-4)
+<a id="ref-4"></a>**[4]** 국립중앙도서관, 「작은도서관 정보누리」. [본문으로](#cite-4)
 https://knu.nl.go.kr/libsearch
 
-<a id="ref-5"></a>**[5]** 문화체육관광부, 「작은도서관」. [↩](#cite-5)
+<a id="ref-5"></a>**[5]** 문화체육관광부, 「작은도서관」. [본문으로](#cite-5)
 https://www.smalllibrary.org/
