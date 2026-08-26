@@ -557,7 +557,9 @@ pnuai-a-02-potg/
 
 - Git
 - Node.js 22 LTS 및 npm
+- Python 3.12
 - Docker Desktop 또는 Docker Engine + Docker Compose
+- KURE-v1 모델 및 Python 패키지 설치를 위한 약 4GB 이상의 여유 공간
 
 <br>
 
@@ -579,6 +581,22 @@ npm ci
 cp .env.example .env
 ```
 
+MOIRA Studio의 유사 프로그램 검색을 위해 Python 가상환경과 관련 패키지를 설치합니다.
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/pip install -r python/requirements.txt
+```
+
+> Windows에서는 `.venv/bin/python` 대신 `.venv\Scripts\python.exe`를 사용합니다.
+
+KURE-v1 모델을 백엔드의 로컬 캐시에 내려받습니다. 모델 캐시는 Git에 포함되지 않으며 최초 설치 시 약 2.3GB의 저장 공간이 필요합니다.
+
+```bash
+.venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('nlpai-lab/KURE-v1', revision='d14c8a9423946e268a0c9952fecf3a7aabd73bd9', device='cpu', cache_folder='.model-cache', trust_remote_code=False)"
+```
+
 ```env
 DATABASE_URL=postgresql://moira:moira_local@localhost:5432/moira
 JWT_SECRET=replace-with-a-long-random-secret
@@ -588,6 +606,19 @@ JWT_SECRET=replace-with-a-long-random-secret
 npx prisma migrate deploy
 npm run db:seed
 npm run dev
+```
+
+프로그램 검색 산출물을 보유한 운영·데이터 구축 환경에서는 마이그레이션 후 MOIRA Studio용 검색 프로필을 pgvector에 적재합니다. 같은 체크섬의 프로필은 다시 생성하지 않습니다.
+
+```bash
+npm run program-board-search:pgvector-sync
+```
+
+운영 PostgreSQL 연결 주소는 Node.js와 Python 드라이버가 함께 사용할 수 있도록 `sslmode=require`를 사용합니다. EC2에서는 백엔드 빌드 후 PM2 프로세스에 변경된 환경변수를 반영합니다.
+
+```bash
+npm run build
+pm2 restart moira-backend --update-env
 ```
 
 새 터미널에서 프론트엔드 환경변수를 설정하고 실행합니다.
