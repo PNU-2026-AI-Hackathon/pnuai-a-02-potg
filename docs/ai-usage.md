@@ -8,7 +8,7 @@
 
 | 구분 | 도구 | 활용 내용 |
 | --- | --- | --- |
-| 개발 보조 | ChatGPT, Claude, Codex, GitHub Copilot | 코드 구조 분석 및 구현, 오류 원인 분석, 테스트, 이슈·PR·기술 문서 작성 |
+| 개발 보조 | ChatGPT, Claude, Claude Code, Codex, GitHub Copilot | 코드 구조 분석 및 구현, 오류 원인 분석, 테스트, 이슈·PR·기술 문서 작성 |
 | 서비스 내 생성형 AI | Google Gemini API | MOIRA STUDIO 기획안 초안 생성 및 항목별 문장 수정 |
 | 의미 검색 | KURE-v1 / Sentence Transformers | 프로그램 사례 임베딩 생성 및 pgvector 기반 유사 사례 검색 |
 | 문서 인식 | NAVER Cloud CLOVA OCR | 이미지·스캔 PDF 형태의 프로그램 안내문 텍스트 추출 |
