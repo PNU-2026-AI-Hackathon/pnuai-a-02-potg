@@ -28,26 +28,25 @@ const serviceSteps = [
     number: '01',
     title: '주민 아이디어',
     description: '주민이 우리 동네에 필요한 문화·교육 프로그램과 지역 의견을 자유롭게 제안합니다.',
+    iconIndex: 0,
   },
   {
     number: '02',
-    title: '지역 의제 도출',
-    description: 'AI가 주민 의견을 분석·분류하여 주요 관심 주제와 지역 의제를 정리합니다.',
+    title: 'MOIRA STUDIO',
+    description: '사서가 주민 의견과 기존 프로그램 사례를 바탕으로 AI 기획안 초안을 만들고 검토·보완합니다.',
+    iconIndex: 2,
   },
   {
     number: '03',
-    title: 'MOIRA STUDIO',
-    description: '사서가 주민 의견과 기존 프로그램 사례를 바탕으로 AI 기획안 초안을 만들고 검토·보완합니다.',
+    title: '주민 수요조사',
+    description: '기획안을 공개하여 참여 의향, 희망 요일·시간대와 주민 의견을 확인합니다.',
+    iconIndex: 3,
   },
   {
     number: '04',
-    title: '주민 수요조사',
-    description: '기획안을 공개하여 참여 의향, 희망 요일·시간대와 주민 의견을 확인합니다.',
-  },
-  {
-    number: '05',
     title: '프로그램 운영',
     description: '수요조사 결과를 반영해 기획안을 보완하고 실제 도서관 문화·교육 프로그램으로 운영합니다.',
+    iconIndex: 4,
   },
 ];
 
@@ -115,7 +114,7 @@ const featureItems = [
   {
     icon: '⚙️',
     title: 'AI 기반 프로그램 기획 (MOIRA STUDIO)',
-    description: '주민 의견과 기존 프로그램 사례를 바탕으로 AI가 문화·교육 프로그램 기획안을 생성하고 사서의 기획을 지원합니다.',
+    description: '주민 아이디어와 선택한 기획 조건, 기존 프로그램 사례를 바탕으로 AI가 문화·교육 프로그램 기획 초안을 생성합니다.',
   },
   {
     icon: '📈',
@@ -201,8 +200,8 @@ export default async function AboutPage() {
               <span className="h1LineBreak">도서관 프로그램이 되는 곳</span>
             </h1>
             <p className="introHeroLead">
-              모이라는 주민이 제안한 프로그램 아이디어와 지역 의견을 AI가 분석해
-              사서의 문화·교육 프로그램 기획을 지원하는 AI 기반 도서관 프로그램
+              모이라는 주민이 제안한 프로그램 아이디어와 사서가 선택한 기획 조건,
+              기존 프로그램 사례를 바탕으로 AI 기획 초안을 생성하는 도서관 프로그램
               특화 플랫폼입니다. 프로그램 수요조사와 통합 정보 제공을 통해
               주민과 도서관이 함께 지역 맞춤형 프로그램을 만들어갑니다.
             </p>
@@ -338,7 +337,7 @@ export default async function AboutPage() {
                 <div key={step.number} className={`pipelineItem ${isStudio ? 'isStudioHighlight' : ''}`}>
                   <div className="pipelineStep">
                     <span className={`pipelineNumber ${isStudio ? 'isStudioNumber' : ''}`}>
-                      <FlowStepIcon index={index} />
+                      <FlowStepIcon index={step.iconIndex} />
                       <span className="flowStepNumber">{step.number}</span>
                     </span>
                     {index < serviceSteps.length - 1 && (
@@ -371,7 +370,7 @@ export default async function AboutPage() {
           <SectionHeading
             eyebrow="KEY FEATURES"
             title="모이라의 주요 기능"
-            description="주민 의견 수렴부터 AI 기반 문화·교육 프로그램 기획, 수요 조사, 프로그램 정보 제공까지 하나의 플랫폼에서 지원합니다."
+            description="주민 아이디어 제안부터 기존 사례를 참고한 AI 프로그램 기획, 수요 조사, 프로그램 정보 제공까지 하나의 플랫폼에서 지원합니다."
           />
           <div className="featureGrid">
             {featureItems.map((item) => (
