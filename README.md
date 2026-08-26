@@ -198,7 +198,7 @@ flowchart LR
     IDEA --> WRITE["아이디어<br/>작성"]
     IDEA --> REACTION["공감<br/>댓글"]
 
-    MAIN --> STUDIO(["✦ MOIRA<br/>STUDIO"])
+    MAIN --> STUDIO(["MOIRA STUDIO"])
     STUDIO --> MODE{"기획 시작<br/>방식"}
 
     MODE --> DIRECT["아이디어<br/>직접 입력"]
@@ -218,14 +218,14 @@ flowchart LR
     OPEN -. "수요조사 공개" .-> SURVEY
     SURVEY --> CONFIRM["프로그램<br/>기획 확정"]
 
-    classDef main fill:#102d5c,color:#fff,stroke:#102d5c,font-size:18px
-    classDef page fill:#eef6ff,color:#1e4f91,stroke:#62a3f5,stroke-width:2px,font-size:18px
-    classDef residentAction fill:#edf9f1,color:#17603a,stroke:#54b77c,font-size:18px
-    classDef librarianAction fill:#fff4e9,color:#9a4500,stroke:#fb923c,font-size:18px
-    classDef studioMain fill:#fff4e9,color:#9a4500,stroke:#fb923c,stroke-width:3px,font-size:22px,font-weight:bold
-    classDef aiProcess fill:#f4edff,color:#5b2aaa,stroke:#8b5cf6,stroke-width:2px,font-size:18px
-    classDef decision fill:#fff,color:#27364a,stroke:#94a3b8,font-size:18px
-    classDef result fill:#eaf8ef,color:#185c37,stroke:#22a559,font-size:18px
+    classDef main fill:#17345f,color:#fff,stroke:#17345f,font-size:18px
+    classDef page fill:#eef3f8,color:#243b53,stroke:#829ab1,stroke-width:2px,font-size:18px
+    classDef residentAction fill:#fff,color:#334e68,stroke:#9fb3c8,font-size:18px
+    classDef librarianAction fill:#fff,color:#334e68,stroke:#9fb3c8,font-size:18px
+    classDef studioMain fill:#e7eef7,color:#17345f,stroke:#486581,stroke-width:3px,font-size:26px,font-weight:bold
+    classDef aiProcess fill:#f1eef8,color:#4c3f75,stroke:#8b7bb5,stroke-width:2px,font-size:18px
+    classDef decision fill:#fff,color:#334e68,stroke:#829ab1,font-size:18px
+    classDef result fill:#edf4f1,color:#285943,stroke:#6b9b84,font-size:18px
 
     class START,MAIN main
     class BOARD,PROGRAM,CALENDAR,LIBRARY,COMMUNITY,NEWS,IDEA,SURVEY page
