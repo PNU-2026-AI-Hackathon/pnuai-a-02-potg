@@ -213,7 +213,7 @@ sequenceDiagram
 |:---:|:---:| --- |
 | Next.js | 16.2.6 | App Router 기반 웹 화면 및 프론트 API 라우트 |
 | React | 19.2.0 | 화면 컴포넌트와 사용자 인터랙션 |
-| TypeScript | 5.8.0 | 정적 타입 기반 프론트엔드 개발 |
+| TypeScript | 5.9.3 | 정적 타입 기반 프론트엔드 개발 |
 | Framer Motion | 12.43.0 | 주요 화면 인터랙션과 애니메이션 |
 
 #### Backend
@@ -221,10 +221,10 @@ sequenceDiagram
 | 이름 | 버전 | 사용 범위 |
 |:---:|:---:| --- |
 | Node.js | 22 LTS | 백엔드 실행 환경 |
-| Express | 4.18.2 | REST API 서버 |
+| Express | 4.22.2 | REST API 서버 |
 | Prisma | 7.8.0 | ORM, DB 스키마 및 마이그레이션 관리 |
-| TypeScript | 5.6.0 | 정적 타입 기반 서버 개발 |
-| JWT / bcryptjs | 9.0.2 / 2.4.3 | 인증 토큰 및 비밀번호 암호화 |
+| TypeScript | 5.9.3 | 정적 타입 기반 서버 개발 |
+| JWT / bcryptjs | 9.0.3 / 2.4.3 | 인증 토큰 및 비밀번호 암호화 |
 
 #### Database / Infra
 
@@ -239,7 +239,7 @@ sequenceDiagram
 
 | 이름 | 버전/모델 | 사용 범위 |
 |:---:|:---:| --- |
-| Google Gemini API | gemini-3.6/3.5/2.5 Flash | MOIRA STUDIO 기획안 생성 및 수정 |
+| Google Gemini API | Gemini 3.6·3.5·3.1·2.5 Flash 계열 | MOIRA STUDIO 기획안 생성 및 수정 |
 | KURE-v1 | d14c8a942394 | 한국어 프로그램 사례 임베딩 |
 | Sentence Transformers | 3.3.1 | KURE-v1 임베딩 실행 |
 | NAVER Cloud CLOVA OCR | General API V2 | 이미지·스캔 PDF 텍스트 추출 |
@@ -601,7 +601,7 @@ pnuai-a-02-potg/
 ```bash
 git clone https://github.com/PNU-2026-AI-Hackathon/pnuai-a-02-potg.git
 cd pnuai-a-02-potg
-docker run --name moira-postgres -e POSTGRES_DB=moira -e POSTGRES_USER=moira -e POSTGRES_PASSWORD=moira_local -p 127.0.0.1:5432:5432 -v moira-postgres-data:/var/lib/postgresql/data -d pgvector/pgvector:0.8.2-pg17
+docker compose up -d
 ```
 
 백엔드 패키지를 설치하고 `apps/backend/.env`를 설정합니다.
@@ -671,7 +671,7 @@ npm run dev
 개발 서버는 `Ctrl+C`, PostgreSQL 컨테이너는 다음 명령으로 종료합니다.
 
 ```bash
-docker stop moira-postgres
+docker compose down
 ```
 
 <br>

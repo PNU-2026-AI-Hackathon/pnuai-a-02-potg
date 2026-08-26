@@ -2,7 +2,7 @@ name: moira-local
 
 services:
   postgres:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:0.8.2-pg17
     container_name: moira-postgres
     environment:
       POSTGRES_DB: moira
