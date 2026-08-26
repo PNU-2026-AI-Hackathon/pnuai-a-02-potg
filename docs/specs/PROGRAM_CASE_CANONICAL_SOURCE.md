@@ -128,9 +128,9 @@ npm.cmd run program-case-source-snapshot -- --validate
 
 실패가 있더라도 개별 상태를 manifest와 validation report에 기록한다. 다음 실행은 이미 검증된 Attachment ID와 binary hash를 확인하여 재사용하고 실패 항목만 다시 시도할 수 있다.
 
-## 후속 이슈 계약
+## 파생 산출물 계약
 
-다음 구조 보존 재추출 이슈는 URL이 아니라 `binarySnapshotRef`가 가리키는 검증 binary를 입력으로 사용한다.
+구조 보존 재추출은 URL이 아니라 `binarySnapshotRef`가 가리키는 검증 binary를 입력으로 사용한다.
 
 - PDF: page와 page source 복원
 - Image/PDF OCR: field, bounding box, confidence 보존

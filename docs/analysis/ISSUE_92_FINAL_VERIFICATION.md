@@ -458,7 +458,7 @@ self.assertIn("embedding cascade deletion failed", source)
 - `apps/backend/prisma/migrations/20260729180000_reconcile_pre_issue92_schema/**`
 - `apps/backend/prisma/migrations/20260729190000_add_program_case_chunk_embeddings/**`
 - `apps/backend/python/**` 중 위 A를 제외한 Issue #92 package, scripts, tests, requirements
-- `docs/ai-data/PROGRAM_CASE_SEMANTIC_SEARCH.md`
+- `docs/analysis/PROGRAM_CASE_SEMANTIC_SEARCH.md`
 - 이 최종 검증 문서
 
 ### C. 관련 없는 기존 변경으로 제외

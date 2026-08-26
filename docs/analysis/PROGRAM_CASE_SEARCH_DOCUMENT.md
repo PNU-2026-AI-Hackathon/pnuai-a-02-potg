@@ -1,4 +1,4 @@
-# 프로그램 사례 검색 문서
+# 프로그램 사례 검색 문서 — 구현 기록
 
 GitHub 이슈 #88의 프로그램 사례 통합 텍스트 생성 구현을 정리한다. 이 단계는 `ProgramCase`, `ProgramCaseSession`, 활성·추출 완료 `ProgramCaseAttachment.cleanedText`를 결정적인 단일 검색 문서로 결합한다. 청킹, 임베딩, pgvector, RAG는 포함하지 않는다.
 

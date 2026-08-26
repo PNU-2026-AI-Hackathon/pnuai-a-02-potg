@@ -3,18 +3,18 @@
 목적: 메인페이지와 관련 컴포넌트/스타일을 기준으로 팀과 AI 코딩 에이전트가 일관된 UI 언어를 따르도록 재사용 가능한 규칙을 정리합니다. 실제 코드에서 확인 가능한 값만 우선 사용하고, 확인 불가 항목은 '권장' 또는 '미정'으로 표기합니다.
 
 참조된 구현 파일
-- [apps/frontend/src/app/globals.css](apps/frontend/src/app/globals.css)
-- [apps/frontend/src/app/page.tsx](apps/frontend/src/app/page.tsx)
-- [apps/frontend/src/app/layout.tsx](apps/frontend/src/app/layout.tsx)
-- [apps/frontend/src/components/layout/SiteHeader.tsx](apps/frontend/src/components/layout/SiteHeader.tsx)
-- [apps/frontend/src/components/home/HeroSection.tsx](apps/frontend/src/components/home/HeroSection.tsx)
-- [apps/frontend/src/components/home/StudioSection.tsx](apps/frontend/src/components/home/StudioSection.tsx)
-- [apps/frontend/src/components/home/PopularAgendaSection.tsx](apps/frontend/src/components/home/PopularAgendaSection.tsx)
-- [apps/frontend/src/components/home/ProgramSurveySection.tsx](apps/frontend/src/components/home/ProgramSurveySection.tsx)
-- [apps/frontend/src/components/home/ProgramSurveyModal.tsx](apps/frontend/src/components/home/ProgramSurveyModal.tsx)
-- [apps/frontend/src/components/home/SectionHeading.tsx](apps/frontend/src/components/home/SectionHeading.tsx)
-- [apps/frontend/src/components/home/HomeExperience.tsx](apps/frontend/src/components/home/HomeExperience.tsx)
-- [apps/frontend/src/components/auth/LoginForm.tsx](apps/frontend/src/components/auth/LoginForm.tsx)
+- [apps/frontend/src/app/globals.css](../../apps/frontend/src/app/globals.css)
+- [apps/frontend/src/app/page.tsx](../../apps/frontend/src/app/page.tsx)
+- [apps/frontend/src/app/layout.tsx](../../apps/frontend/src/app/layout.tsx)
+- [apps/frontend/src/components/layout/SiteHeader.tsx](../../apps/frontend/src/components/layout/SiteHeader.tsx)
+- [apps/frontend/src/components/home/HeroSection.tsx](../../apps/frontend/src/components/home/HeroSection.tsx)
+- [apps/frontend/src/components/home/StudioSection.tsx](../../apps/frontend/src/components/home/StudioSection.tsx)
+- [apps/frontend/src/components/home/PopularAgendaSection.tsx](../../apps/frontend/src/components/home/PopularAgendaSection.tsx)
+- [apps/frontend/src/components/home/ProgramSurveySection.tsx](../../apps/frontend/src/components/home/ProgramSurveySection.tsx)
+- [apps/frontend/src/components/home/ProgramSurveyModal.tsx](../../apps/frontend/src/components/home/ProgramSurveyModal.tsx)
+- [apps/frontend/src/components/home/SectionHeading.tsx](../../apps/frontend/src/components/home/SectionHeading.tsx)
+- [apps/frontend/src/components/home/HomeExperience.tsx](../../apps/frontend/src/components/home/HomeExperience.tsx)
+- [apps/frontend/src/components/auth/LoginForm.tsx](../../apps/frontend/src/components/auth/LoginForm.tsx)
 
 ---
 

@@ -1,4 +1,6 @@
-# 프로그램 사례 청크 의미 검색
+# 프로그램 사례 청크 의미 검색 — 구현 기록
+
+> **문서 상태 — 단계별 구현 기록:** 이 문서는 청크 기반 의미 검색을 도입한 당시 범위를 설명합니다. 현재 MOIRA Studio는 `StudioProgramSearchProfile`의 프로그램 단위 pgvector 검색 결과를 Gemini Context로 사용합니다. 현재 계약은 [MOIRA Studio 검색 명세](../specs/MOIRA_STUDIO_RETRIEVAL.md)를 확인하세요.
 
 ## 목적과 범위
 

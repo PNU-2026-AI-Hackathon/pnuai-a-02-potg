@@ -1,4 +1,4 @@
-# 프로그램 사례 검색 문서 청킹
+# 프로그램 사례 검색 문서 청킹 — 구현 기록
 
 GitHub 이슈 #89에서 `SEARCH` 유형 `ProgramCaseDocument`를 검색·RAG 후속 작업에 사용할 수 있는 결정적 청크로 변환했다. 임베딩, tokenizer, pgvector, 벡터 검색, RAG는 포함하지 않는다.
 
