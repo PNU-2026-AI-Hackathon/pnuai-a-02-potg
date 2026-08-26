@@ -495,7 +495,10 @@ npm run dev
 <br>
 
 ## 6. 소개 및 시연영상
-유튜브 링크 추가 예정
+
+> 유튜브 링크
+
+https://youtu.be/uBzASOUlOsY
 
 <br>
 
