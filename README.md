@@ -108,6 +108,21 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 
 ### 2.1. 시스템 구성도
 
+#### ① 전체 시스템 구성
+
+<p align="center">
+  <img src="docs/diagrams/moira-system-architecture.png" width="900" alt="모이라 시스템 구성도" />
+</p>
+
+- **Frontend:** Vercel 기반 Next.js Web UI·API Routes, Gemini 및 Kakao Maps 연동
+- **Backend:** AWS EC2 기반 Express REST API, Prisma CRUD 및 KURE-v1 의미 검색
+- **Database:** AWS RDS PostgreSQL, pgvector 기반 임베딩 저장·유사도 검색
+
+<br>
+
+#### ② AI 데이터 가공 및 검색 파이프라인
+
+<br>
 
 ### 2.2. 사용 기술
 
