@@ -324,7 +324,7 @@ PR 없이 이슈로만 남은 항목
 
 | 이슈 | 제목 | 상태 |
 | --- | --- | --- |
-| [#63](https://github.com/PNU-2026-AI-Hackathon/pnuai-a-02-potg/issues/63) | feat(studio): AI 프로그램 기획서 UI 구축 | 열림 |
+| [#63](https://github.com/PNU-2026-AI-Hackathon/pnuai-a-02-potg/issues/63) | feat(studio): AI 프로그램 기획서 UI 구축 | 닫힘 |
 
 <br>
 
