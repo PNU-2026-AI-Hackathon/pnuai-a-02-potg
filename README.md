@@ -120,7 +120,64 @@ AI 기반 프로그램 기획 기능을 통해 **사서 및 프로그램 기획 
 
 <br>
 
-#### ② AI 데이터 가공 및 검색 파이프라인
+#### ② 데이터 가공 및 AI 검색 파이프라인
+
+**1. 프로그램 사례 데이터 구축**
+
+```mermaid
+%%{init: {"themeVariables": {"fontSize": "18px"}}}%%
+flowchart LR
+    SOURCE["프로그램 정보 원천<br/>금정구 도서관 프로그램"]
+    CRAWL["크롤링<br/>목록 · 상세 수집"]
+    EXTRACT["텍스트 추출<br/>PDF · HWP/HWPX · 이미지"]
+    OCR["CLOVA OCR<br/>이미지 · 스캔 문서"]
+    NORMALIZE["정제 · 정규화<br/>태그 · 특수문자 · 중복 제거"]
+    CHUNK["문서 청킹<br/>의미 단위 분할"]
+    EMBED["KURE-v1 임베딩<br/>1024차원"]
+    STORE[("PostgreSQL + pgvector<br/>벡터 저장")]
+
+    SOURCE --> CRAWL --> EXTRACT --> NORMALIZE --> CHUNK --> EMBED --> STORE
+    EXTRACT -. "필요 시 OCR" .-> OCR
+    OCR --> NORMALIZE
+
+    classDef process fill:#F6FBF7,stroke:#2E7D4F,color:#173E29,stroke-width:1.5px,font-size:18px;
+    classDef storage fill:#EAF5ED,stroke:#1F6B40,color:#173E29,stroke-width:2px,font-size:18px;
+    class SOURCE,CRAWL,EXTRACT,OCR,NORMALIZE,CHUNK,EMBED process;
+    class STORE storage;
+```
+
+**2. MOIRA STUDIO AI 기획**
+
+```mermaid
+%%{init: {"themeVariables": {"fontSize": "18px"}}}%%
+flowchart LR
+    CONDITIONS["사서 입력 조건<br/>분야 · 대상 · 운영 방식<br/>기간 · 회차 · 예산 · 장소"]
+    IDEAS["주민 아이디어 · 의견<br/>주민 제안 내용 및 의견"]
+    VECTOR[("프로그램 사례 벡터<br/>PostgreSQL + pgvector")]
+    SEARCH{{"KURE-v1 의미 기반 검색"}}
+    CASES["유사 프로그램 사례 Top-K<br/>Markdown 선택적 참조"]
+    CONTEXT["Context 구성<br/>입력 조건 · 주민 아이디어<br/>유사 사례 · 프롬프트 템플릿"]
+    GEMINI{{"Google Gemini API<br/>프로그램 기획안 생성"}}
+    DRAFT["프로그램 기획안 초안"]
+    REVIEW["사서 검토 · 수정<br/>최종 기획안 확정"]
+
+    CONDITIONS --> SEARCH
+    IDEAS --> SEARCH
+    VECTOR --> SEARCH --> CASES --> CONTEXT
+    CONDITIONS --> CONTEXT
+    IDEAS --> CONTEXT
+    CONTEXT --> GEMINI --> DRAFT --> REVIEW
+    REVIEW -. "수정 후 재생성" .-> CONTEXT
+
+    classDef input fill:#FBF9FF,stroke:#7450B8,color:#382064,stroke-width:1.5px,font-size:18px;
+    classDef ai fill:#F3EEFF,stroke:#6842B5,color:#382064,stroke-width:2px,font-size:18px;
+    classDef output fill:#F8F5FF,stroke:#7450B8,color:#382064,stroke-width:1.5px,font-size:18px;
+    classDef storage fill:#F2EEF9,stroke:#6842B5,color:#382064,stroke-width:2px,font-size:18px;
+    class CONDITIONS,IDEAS,CASES,CONTEXT input;
+    class SEARCH,GEMINI ai;
+    class DRAFT,REVIEW output;
+    class VECTOR storage;
+```
 
 <br>
 
