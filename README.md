@@ -491,7 +491,7 @@ npm run dev
 | :---: | :---: | :---: | :---: |
 | <img src="https://github.com/user-attachments/assets/5c220f17-e1f1-4a43-9680-700ab0b1b5c8" width="100"> | <img src="https://github.com/user-attachments/assets/227f274c-6ac6-416e-a276-3ee592134bbf" width="100"> | <img src="https://github.com/user-attachments/assets/578911fd-8260-4184-a7e3-7b6ed85f2bd6" width="100"> | <img src="https://github.com/user-attachments/assets/df270322-9d68-4ab0-9420-b12309669c0b" width="100"> |
 | nandarina7@pusan.ac.kr | lpovsc23@pusan.ac.kr | ibuilder05@gmail.com | ggagga132@pusan.ac.kr |
-| **(팀장)** AI · 프론트 · 백 | 기획 · 문서화 · UI/UX | 프론트 · 기능 구현 · 테스트 | 프론트 · 백 · 시스템 설계 |
+| **(팀장)** AI · 프론트 · 백 | 기획 · 문서화 · UX/UI | 프론트 · 기능 구현 · 테스트 | 프론트 · 백 · 시스템 설계 |
 
 <br>
 
