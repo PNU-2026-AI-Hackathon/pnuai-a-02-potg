@@ -227,8 +227,31 @@ def rerank(query: str, candidates: list[dict[str, Any]], limit: int, audience: s
             "candidateCount": len(scored), "eligibleCount": len(eligible), "results": results}
 
 
+def search_from_vector(
+    query: str,
+    vector: list[float],
+    limit: int = 5,
+    audience: str | None = None,
+) -> dict[str, Any]:
+    """이미 계산한 질의 벡터로 검색한다.
+
+    상시 검색 API는 KURE 모델을 한 번만 메모리에 올린 뒤 이 함수를 호출한다.
+    CLI 경로와 검색·재정렬 정책을 공유해야 두 실행 방식의 결과가 달라지지 않는다.
+    """
+    normalized_query = query.strip()
+    return rerank(
+        normalized_query,
+        _pgvector_candidates_from_vector(_vector_value(vector)),
+        limit,
+        audience,
+    )
+
+
 def search(query: str, limit: int = 5, audience: str | None = None) -> dict[str, Any]:
-    return rerank(query.strip(), _pgvector_candidates(query.strip()), limit, audience)
+    normalized_query = query.strip()
+    settings = _settings()
+    vector = _provider(settings).encode_query(normalized_query)
+    return search_from_vector(normalized_query, vector, limit, audience)
 
 
 class _StaticQueryEncoder:
@@ -276,8 +299,7 @@ def _session_excerpt(sessions: list[dict[str, Any]]) -> str:
     return "\n\n".join(rows)[:8000]
 
 
-def build_context(query: str, limit: int = 5, audience: str | None = None) -> dict[str, Any]:
-    response = search(query, limit, audience)
+def _context_response(query: str, response: dict[str, Any]) -> dict[str, Any]:
     lines = ["# 유사 프로그램 참고 컨텍스트", "", f"## 사용자 요청\n{query}", "",
              "## 검색 및 사용 원칙",
              f"- 검색 후보: {response['candidateCount']}건 / 최소 기준 통과: {response['eligibleCount']}건 / 참고: {len(response['results'])}건",
@@ -298,6 +320,26 @@ def build_context(query: str, limit: int = 5, audience: str | None = None) -> di
                      ["", "> 회차별 원문 정보가 없어 프로그램 소개까지만 참고할 수 있음.", ""])
     markdown = "\n".join(lines).strip() + "\n"
     return {"query": query, "resultCount": len(response["results"]), "markdown": markdown, "search": response}
+
+
+def build_context_from_vector(
+    query: str,
+    vector: list[float],
+    limit: int = 5,
+    audience: str | None = None,
+) -> dict[str, Any]:
+    normalized_query = query.strip()
+    return _context_response(
+        normalized_query,
+        search_from_vector(normalized_query, vector, limit, audience),
+    )
+
+
+def build_context(query: str, limit: int = 5, audience: str | None = None) -> dict[str, Any]:
+    normalized_query = query.strip()
+    settings = _settings()
+    vector = _provider(settings).encode_query(normalized_query)
+    return build_context_from_vector(normalized_query, vector, limit, audience)
 
 
 def main() -> int:
