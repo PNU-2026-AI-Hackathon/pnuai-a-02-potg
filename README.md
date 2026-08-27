@@ -758,7 +758,7 @@ https://www.geumjeong.go.kr/booking/index.geumj
 https://www.geumjeong.go.kr/index.geumj?contentsSid=6366
 
 <a id="ref-6"></a>**[6]** 국립중앙도서관. 「작은도서관 정보누리」.
-https://knu.nl.go.kr/libsearch
+https://knu.nl.go.kr/
 
 <a id="ref-7"></a>**[7]** 문화체육관광부. 「작은도서관 서비스」.
 https://www.smalllibrary.org/
