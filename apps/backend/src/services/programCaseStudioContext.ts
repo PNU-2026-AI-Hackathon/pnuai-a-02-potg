@@ -26,11 +26,43 @@ export type ProgramCaseStudioContextResponse = {
   };
 };
 
+const SEARCH_API_TIMEOUT_MS = 15_000;
+
+async function searchWithPersistentApi(
+  apiUrl: string,
+  query: string,
+  audience?: string,
+): Promise<ProgramCaseStudioContextResponse> {
+  const response = await fetch(new URL('/studio-context', apiUrl), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, audience, limit: 5 }),
+    signal: AbortSignal.timeout(SEARCH_API_TIMEOUT_MS),
+  });
+  const payload = await response.json().catch(() => ({})) as Partial<ProgramCaseStudioContextResponse> & {
+    error?: string;
+  };
+  if (!response.ok) {
+    throw new Error(payload.error || `Persistent search API failed (${response.status})`);
+  }
+  if (typeof payload.markdown !== 'string' || !payload.search) {
+    throw new Error('Persistent search API returned an invalid response');
+  }
+  return payload as ProgramCaseStudioContextResponse;
+}
+
 /** 프로그램 단위 pgvector 검색과 파일럿 재정렬을 한 프로세스에서 실행한다. */
 export function searchProgramCaseStudioContext(
   query: string,
   audience?: string,
 ): Promise<ProgramCaseStudioContextResponse> {
+  const persistentApiUrl = process.env.PROGRAM_CASE_SEARCH_API_URL?.trim();
+  if (persistentApiUrl) {
+    return searchWithPersistentApi(persistentApiUrl, query, audience);
+  }
+
+  // 로컬 개발과 기존 배포의 호환성을 위해 URL이 없을 때만 CLI를 사용한다.
+  // 운영 EC2는 PROGRAM_CASE_SEARCH_API_URL을 설정해 KURE 모델을 재사용한다.
   const backendDirectory = path.resolve(__dirname, '../..');
   const pythonExecutable = process.platform === 'win32'
     ? path.join(backendDirectory, '.venv', 'Scripts', 'python.exe')
