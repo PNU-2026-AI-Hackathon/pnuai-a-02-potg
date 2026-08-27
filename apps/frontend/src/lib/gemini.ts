@@ -16,14 +16,18 @@ export type GeminiModel = (typeof allowedGeminiModels)[number];
 
 const fallbackModels = [process.env.GEMINI_MODEL, ...allowedGeminiModels]
   .filter((model): model is string => typeof model === 'string' && model.trim().length > 0)
-  .map((model) => model.trim());
+  .map((model) => model.trim())
+  .filter((model, index, models) => models.indexOf(model) === index);
 
 export function resolveModels(requested?: unknown) {
   const model = typeof requested === 'string' && allowedGeminiModels.includes(requested as GeminiModel)
     ? requested
     : null;
-  return model ? [model] : fallbackModels;
+  // 화면에서 고른 모델을 먼저 쓰되, 그 모델이 일시적으로 막히면 나머지를 시도한다.
+  return model ? [model, ...fallbackModels.filter((candidate) => candidate !== model)] : fallbackModels;
 }
+
+const GEMINI_TIMEOUT_MS = 45_000;
 
 function readText(responseBody: unknown) {
   if (!responseBody || typeof responseBody !== 'object') return null;
@@ -50,21 +54,34 @@ export async function requestGeminiJson(
 ): Promise<GeminiJsonResult> {
   let lastError = 'Gemini API 호출에 실패했습니다.';
   for (const model of models) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { temperature, responseMimeType: 'application/json' },
-        }),
-      },
-    );
-    const responseBody = await response.json();
+    let response: Response;
+    let responseBody: { error?: { message?: string }; candidates?: unknown[] };
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { temperature, responseMimeType: 'application/json' },
+          }),
+          signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
+        },
+      );
+      responseBody = await response.json() as typeof responseBody;
+    } catch (error) {
+      lastError = error instanceof Error && error.name === 'TimeoutError'
+        ? `Gemini 응답 시간이 초과되었습니다. (${model})`
+        : `Gemini 서버에 연결하지 못했습니다. (${model})`;
+      console.error('Gemini request failed:', model, error);
+      continue;
+    }
     if (!response.ok) {
       lastError = responseBody?.error?.message || `Gemini API 호출에 실패했습니다. (${model})`;
-      if (shouldTryNextModel(response.status, lastError)) continue;
+      // 잘못된 키(401/403)는 다른 모델에서도 같지만, 모델별 제한(429)이나
+      // 일시 서버 장애(5xx)는 다음 모델에서 성공할 수 있다.
+      if (shouldTryNextModel(response.status, lastError) || response.status === 429 || response.status >= 500) continue;
       return { ok: false, error: lastError, status: 502 };
     }
     const text = readText(responseBody);
@@ -76,7 +93,8 @@ export async function requestGeminiJson(
       return { ok: true, value: JSON.parse(extractStudioJson(text)), model };
     } catch (error) {
       console.error('Gemini JSON parse failed:', error);
-      return { ok: false, error: 'Gemini 응답을 JSON으로 읽지 못했습니다.', status: 502 };
+      lastError = `Gemini 응답을 JSON으로 읽지 못했습니다. (${model})`;
+      continue;
     }
   }
   return { ok: false, error: lastError, status: 502 };
