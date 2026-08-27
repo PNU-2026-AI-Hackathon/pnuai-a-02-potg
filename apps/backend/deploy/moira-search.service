@@ -1,0 +1,21 @@
+[Unit]
+Description=MOIRA persistent KURE search API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/pnuai-a-02-potg/apps/backend/python
+EnvironmentFile=/home/ubuntu/pnuai-a-02-potg/apps/backend/.env
+Environment=KURE_MODEL_CACHE_DIR=/home/ubuntu/pnuai-a-02-potg/apps/backend/.model-cache
+Environment=HF_HUB_OFFLINE=1
+Environment=TRANSFORMERS_OFFLINE=1
+Environment=PYTHONPATH=/home/ubuntu/pnuai-a-02-potg/apps/backend/python
+ExecStart=/home/ubuntu/pnuai-a-02-potg/apps/backend/.venv/bin/python /home/ubuntu/pnuai-a-02-potg/apps/backend/python/program_board_search_api.py
+Restart=always
+RestartSec=3
+TimeoutStartSec=180
+
+[Install]
+WantedBy=multi-user.target
