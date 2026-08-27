@@ -5,10 +5,9 @@ import {
   parseStudioRevision,
   type StudioReviseRequest,
 } from '@/lib/studio-draft';
+import { resolveModels, shouldTryNextGeminiModel } from '@/lib/gemini';
 
-const geminiModels = [process.env.GEMINI_MODEL, 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
-  .filter((model): model is string => typeof model === 'string' && model.trim().length > 0)
-  .map((model) => model.trim());
+const geminiModels = resolveModels();
 
 function readGeminiText(responseBody: unknown) {
   if (!responseBody || typeof responseBody !== 'object') {
@@ -27,12 +26,6 @@ function readGeminiText(responseBody: unknown) {
   const text = parts.map((part) => part.text || '').join('').trim();
 
   return text.length > 0 ? text : null;
-}
-
-function isUnsupportedModelError(message: string) {
-  const lowerMessage = message.toLowerCase();
-
-  return lowerMessage.includes('not found') || lowerMessage.includes('not supported');
 }
 
 async function reviseTextWithModel(model: string, apiKey: string, input: StudioReviseRequest) {
@@ -107,13 +100,21 @@ export async function POST(request: Request) {
     let generatedText: string | null = null;
 
     for (const model of geminiModels) {
-      const { response, responseBody } = await reviseTextWithModel(model, apiKey, reviseInput);
+      let response: Response;
+      let responseBody: { error?: { message?: string } };
+      try {
+        ({ response, responseBody } = await reviseTextWithModel(model, apiKey, reviseInput));
+      } catch (error) {
+        console.error(`Gemini revision request failed (${model}):`, error);
+        lastErrorMessage = `Gemini API에 연결하지 못했습니다. (${model})`;
+        continue;
+      }
 
       if (!response.ok) {
         const errorMessage = responseBody?.error?.message || `Gemini API 호출에 실패했습니다. (${model})`;
         lastErrorMessage = errorMessage;
 
-        if (response.status === 404 || response.status === 400 || isUnsupportedModelError(errorMessage)) {
+        if (shouldTryNextGeminiModel(response.status, errorMessage)) {
           continue;
         }
 
