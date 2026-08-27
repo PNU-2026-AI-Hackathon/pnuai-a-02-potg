@@ -26,7 +26,9 @@ type ReferenceContextResponse = {
   error?: unknown;
 };
 
-const REFERENCE_TIMEOUT_MS = 90_000;
+// 검색은 생성의 보조 단계다. 검색 서버가 느릴 때 Gemini가 쓸 시간을 모두
+// 소비하지 않도록 백엔드의 15초 제한보다 조금 긴 값만 기다린다.
+const REFERENCE_TIMEOUT_MS = 20_000;
 
 export const maxDuration = 120;
 
@@ -138,11 +140,20 @@ export async function POST(request: Request) {
     const suppliedReferences = typeof body.referencesMarkdown === 'string'
       ? body.referencesMarkdown.trim().slice(0, 30000)
       : '';
-    const referencesMarkdown = suppliedReferences || await buildReferenceContext(
-      memo,
-      agenda,
-      conditions,
-    );
+    let referencesMarkdown = suppliedReferences;
+    let referenceWarning: string | undefined;
+    if (!referencesMarkdown) {
+      try {
+        referencesMarkdown = await buildReferenceContext(memo, agenda, conditions);
+      } catch (error) {
+        // RAG 검색은 기획안의 품질을 높이는 보조 기능이다. 검색 결과가 없거나
+        // 검색 서버가 잠시 내려가도 사용자의 메모와 조건만으로 생성은 계속한다.
+        referenceWarning = error instanceof ReferenceContextError
+          ? error.message
+          : '유사 프로그램 참고자료를 불러오지 못했습니다.';
+        console.warn('Studio reference context unavailable; continuing without it:', error);
+      }
+    }
 
     const prompt = buildStudioPlanPrompt({
       memo,
@@ -167,6 +178,7 @@ export async function POST(request: Request) {
       // 비어 온 항목을 알려 준다. 화면에서 「이 항목은 다시 만들어 주세요」로 안내할 수 있다.
       missingFields: missing,
       model: result.model,
+      referenceWarning,
     });
   } catch (error) {
     /**
