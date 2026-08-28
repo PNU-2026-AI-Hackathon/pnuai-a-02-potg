@@ -1,0 +1,24 @@
+name: moira-local
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.2-pg17
+    container_name: moira-postgres
+    environment:
+      POSTGRES_DB: moira
+      POSTGRES_USER: moira
+      POSTGRES_PASSWORD: moira_local
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - moira-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moira -d moira"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  moira-postgres-data:

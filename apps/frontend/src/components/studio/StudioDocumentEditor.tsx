@@ -1,0 +1,1323 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  buildStudioDraftContent,
+  formatStudioDate,
+  studioDraftStorageKey,
+  type StudioDraft,
+  type StudioReviseRequest,
+  type StudioAgendaInput,
+  type StudioDocumentStage,
+  type StudioSavedDocument,
+} from '@/lib/studio-draft';
+import { planToContent, studioPlanStorageKey, toStudioPlan, type StudioPlan, type StudioPlanFieldKey } from '@/lib/studio-plan';
+import StudioPlanSheet, {
+  applyPlanRevision, planSelectionLabel, planSelectionValue, type PlanSelection,
+} from './StudioPlanSheet';
+import StudioPlanPrintView from './StudioPlanPrintView';
+import StudioSurveyResultsPanel from './StudioSurveyResultsPanel';
+import { defaultSurveyResult, normalizeSurveyResult, type StudioSurveyResult } from '@/lib/studio-survey';
+
+type SaveState = 'saved' | 'dirty' | 'saving' | 'failed';
+type StageSaveState = 'idle' | 'saving' | 'failed';
+type SurveyWorkflowStage = Exclude<StudioDocumentStage, '기획서 확정'>;
+type PendingSurveyAction = 'start' | 'end' | null;
+type LoadState = 'loading' | 'ready' | 'failed' | 'auth-required';
+type AiRequestState = 'idle' | 'submitting' | 'ready' | 'failed';
+type TextSelectionRange = {
+  start: number;
+  end: number;
+};
+
+type AiRevisionSource = {
+  text: string;
+  range: TextSelectionRange;
+};
+
+type StudioDocument = {
+ id: string;
+ title: string;
+ stage: StudioDocumentStage;
+ updatedAt: string;
+ content: string;
+ surveyResult?: StudioSurveyResult;
+};
+
+const dummyDocument: StudioDocument = {
+  id: 'demo-document-1',
+  title: '시니어 디지털 생활 교실',
+  stage: '기획 중',
+  updatedAt: '방금 전',
+  surveyResult: defaultSurveyResult,
+  content: `기획 배경
+지역 작은도서관을 이용하는 중장년 및 시니어 주민 가운데 스마트폰, 키오스크, 온라인 행정 서비스 이용에 어려움을 겪는 사례가 꾸준히 확인되고 있다. 일상생활에 필요한 디지털 도구 활용 역량은 정보 접근성과 사회 참여를 높이는 기본 조건이므로, 도서관이 안전하고 익숙한 학습 거점이 되어 단계적인 생활 디지털 교육을 제공한다.
+
+프로그램 목적
+이 프로그램은 시니어 주민이 스마트폰 기본 설정, 메신저 활용, 사진 관리, 온라인 예약, 공공 서비스 이용을 직접 실습하며 생활 속 불편을 줄이는 것을 목표로 한다. 참여자는 자신의 속도에 맞춰 반복 실습하고, 교육 이후에도 도서관에서 도움을 받을 수 있는 연결점을 확보한다.
+
+운영 대상
+스마트폰 사용이 익숙하지 않거나 생활 디지털 서비스 활용에 어려움을 느끼는 60세 이상 지역 주민 12명을 대상으로 운영한다. 보조 진행자가 함께 참여하여 개인별 질문과 속도 차이를 지원한다.
+
+운영 기간
+총 4회차 과정으로 운영하며, 회차당 90분을 기준으로 한다. 매주 같은 요일과 시간에 진행하여 참여자의 일정 예측 가능성을 높인다.
+
+세부 운영 내용
+1회차에서는 스마트폰 화면 구성, 글자 크기 조정, 와이파이 연결, 앱 설치와 삭제 방법을 다룬다.
+2회차에서는 카카오톡 또는 문자 메시지 보내기, 사진 촬영과 공유, 연락처 저장을 실습한다.
+3회차에서는 병원 예약, 교통 정보 확인, 도서관 프로그램 신청 등 생활 서비스 이용 흐름을 다룬다.
+4회차에서는 개인별로 자주 겪는 문제를 해결하는 상담형 실습과 배운 내용을 정리하는 시간을 운영한다.
+
+기대 효과
+참여자는 디지털 기기 사용에 대한 불안감을 줄이고, 일상에서 필요한 서비스를 스스로 이용할 수 있는 자신감을 얻는다. 도서관은 지역 주민의 생활 문제를 해결하는 실질적인 학습 거점으로 인식될 수 있다.
+
+준비물
+참여자 개인 스마트폰, 충전기, 와이파이 환경, 실습 안내지, 큰 글씨 체크리스트, 보조 진행자용 질문 기록지를 준비한다.
+
+예산 계획
+강사비, 보조 진행 인건비, 실습 안내지 인쇄비, 참여자 다과비를 포함하여 소규모 예산으로 운영한다. 기존 도서관 공간과 장비를 활용해 추가 장비 구입은 최소화한다.
+
+홍보 및 모집 방법
+도서관 안내 데스크, 지역 복지관, 주민센터 게시판을 통해 모집한다. 온라인 신청이 어려운 대상을 고려해 전화 및 방문 접수를 함께 운영한다.`,
+};
+
+const historyDocuments: StudioDocument[] = [
+  dummyDocument,
+  {
+    id: 'family-reading-weekend',
+    title: '가족 독서 주말 프로그램',
+    stage: '수요조사 중',
+    updatedAt: '3일 전',
+surveyResult: {
+  respondents: 84,
+  totalTarget: 100,
+  satisfaction: 91,
+  topChoices: [
+    { label: '가족 독서 워크숍', ratio: 42, count: 35 },
+    { label: '주말/오후 시간대', ratio: 29, count: 24 },
+    { label: '책 기반 대화 활동', ratio: 26, count: 22 },
+    { label: '작품 전시 및 공유', ratio: 19, count: 16 },
+  ],
+  intentionBreakdown: [
+    { label: '꼭 참여하고 싶어요', ratio: 42, count: 35 },
+    { label: '일정이 맞으면 참여하고 싶어요', ratio: 29, count: 24 },
+    { label: '관심은 있지만 참여는 어려워요', ratio: 19, count: 16 },
+    { label: '관심이 없어요', ratio: 10, count: 8 },
+  ],
+  timeSlotBreakdown: [
+    { label: '평일 오전', ratio: 18, count: 15 },
+    { label: '평일 오후', ratio: 34, count: 29 },
+    { label: '평일 저녁', ratio: 22, count: 18 },
+    { label: '주말', ratio: 26, count: 22 },
+  ],
+  comments: [
+    '가족이 함께 참여할 수 있는 프로그램이라 부담이 적어요.',
+    '주말 오후 수업이 가장 참여하기 편합니다.',
+    '책을 읽고 이야기 나누는 시간이 가족 소통에 좋을 것 같아요.',
+  ],
+  actionPoints: [
+    '가족이 함께 참여하는 활동 구조를 중심으로 구성 유지',
+    '주말 오후 시간대 운영을 우선 고려',
+    '독서 후 공감 나누기와 작품 전시를 연결하는 흐름 강화',
+  ],
+},
+content: `기획 배경
+주말에 도서관을 찾는 가족 단위 이용자는 많지만, 부모와 자녀가 함께 책을 읽고 대화하는 정기 프로그램은 부족하다. 가족 독서 활동은 책을 매개로 세대 간 대화를 만들고, 도서관을 주말 여가와 학습이 만나는 생활 공간으로 인식하게 하는 데 효과적이다.
+
+프로그램 목적
+부모와 자녀가 같은 책을 읽고 서로의 생각을 나누는 경험을 제공한다. 참여 가족은 독서 후 감상 나누기, 짧은 글쓰기, 책 속 장면 만들기 활동을 통해 가정에서도 이어갈 수 있는 독서 습관을 형성한다.
+
+운영 대상
+초등학생 자녀를 둔 가족 10팀을 대상으로 운영한다. 자녀 연령은 초등 1학년부터 4학년까지를 권장하며, 보호자 1인 이상이 함께 참여한다.
+
+운영 기간
+총 3회차 주말 프로그램으로 운영하며, 회차당 100분을 기준으로 한다. 토요일 오전 시간대를 활용해 가족 참여 부담을 줄인다.
+
+세부 운영 내용
+1회차에서는 가족별 관심사를 확인하고 함께 읽을 그림책과 동화책을 고른다.
+2회차에서는 책 속 인물의 선택을 주제로 가족 대화를 진행하고, 인상 깊은 문장을 기록한다.
+3회차에서는 가족별 독서 약속을 만들고, 함께 만든 결과물을 작은 전시 형태로 공유한다.
+
+기대 효과
+가족 간 대화 시간이 늘어나고, 도서관 방문이 단순 대출을 넘어 공동 경험으로 확장된다. 도서관은 지역 가족의 주말 문화 활동 거점으로 자리 잡을 수 있다.
+
+준비물
+선정 도서, 가족 활동지, 필기구, 색지, 스티커, 전시용 보드, 참여 가족 명찰을 준비한다.
+
+예산 계획
+활동지 인쇄비, 만들기 재료비, 전시 소모품비, 간단한 다과비를 포함한다.
+
+홍보 및 모집 방법
+도서관 홈페이지, 학교 알림장, 지역 맘카페, 안내 데스크를 통해 홍보한다. 가족 단위 신청이므로 전화와 온라인 접수를 병행한다.`,
+  },
+  {
+    id: 'local-memory-archive',
+    title: '우리 동네 기억 수집 워크숍',
+    stage: '수요조사 완료',
+    updatedAt: '지난주',
+surveyResult: {
+  respondents: 72,
+  totalTarget: 90,
+  satisfaction: 88,
+  topChoices: [
+    { label: '지역 이야기 기록하기', ratio: 39, count: 28 },
+    { label: '시니어·청년 협업', ratio: 31, count: 22 },
+    { label: '사진과 인터뷰 결합', ratio: 27, count: 19 },
+    { label: '마을 전시 공유회', ratio: 21, count: 15 },
+  ],
+  intentionBreakdown: [
+    { label: '꼭 참여하고 싶어요', ratio: 39, count: 28 },
+    { label: '일정이 맞으면 참여하고 싶어요', ratio: 31, count: 22 },
+    { label: '관심은 있지만 참여는 어려워요', ratio: 18, count: 13 },
+    { label: '관심이 없어요', ratio: 12, count: 9 },
+  ],
+  timeSlotBreakdown: [
+    { label: '평일 오전', ratio: 22, count: 16 },
+    { label: '평일 오후', ratio: 29, count: 21 },
+    { label: '평일 저녁', ratio: 24, count: 17 },
+    { label: '주말', ratio: 25, count: 18 },
+  ],
+  comments: [
+    '마을 이야기를 모으는 활동이 의미 있어 보여요.',
+    '어르신과 청년이 함께 만들면 더 풍부한 결과물이 나올 것 같아요.',
+    '사진과 인터뷰를 같이 담으면 더 오래 남을 것 같습니다.',
+  ],
+  actionPoints: [
+    '주민 서사 수집과 기록 활동을 프로그램의 핵심으로 유지',
+    '세대 간 협업형 구성 유지',
+    '전시와 발표를 통해 참여와 기록을 연결',
+  ],
+},
+content: `기획 배경
+지역의 오래된 장소, 생활사, 주민의 경험은 시간이 지나면 쉽게 사라진다. 작은도서관은 지역 주민이 가진 기억을 기록하고 공유할 수 있는 가까운 문화 거점이므로, 주민 참여형 아카이브 프로그램을 통해 지역 이야기를 보존한다.
+
+프로그램 목적
+주민이 자신의 동네 경험을 글, 사진, 인터뷰 형태로 정리하고 서로 공유하도록 돕는다. 프로그램 결과물은 도서관 내 작은 전시와 온라인 게시 자료로 활용할 수 있는 기초 아카이브가 된다.
+
+운영 대상
+지역 생활사를 기록하고 싶은 성인 주민 15명을 대상으로 한다. 오래 거주한 주민과 새로 이주한 주민이 함께 참여할 수 있도록 모집한다.
+
+운영 기간
+총 4회차로 운영하며, 회차당 120분을 기준으로 한다. 기록 작성, 인터뷰 실습, 자료 정리, 공유 전시 순서로 구성한다.
+
+세부 운영 내용
+1회차에서는 지역 기억 아카이브의 의미와 기록 주제를 소개한다.
+2회차에서는 사진과 사물에 담긴 개인 기억을 글로 정리한다.
+3회차에서는 짝 인터뷰를 진행하고 질문 기록지를 작성한다.
+4회차에서는 수집한 내용을 함께 편집하고 도서관 전시 구성을 논의한다.
+
+기대 효과
+주민은 자신의 경험이 지역 문화 자산이 될 수 있음을 체감한다. 도서관은 지역 기록을 축적하고 주민 간 관계를 연결하는 플랫폼 역할을 강화할 수 있다.
+
+준비물
+기록 활동지, 인터뷰 질문지, 녹음 가능한 스마트폰, 사진 스캔 안내문, 전시용 파일과 보드를 준비한다.
+
+예산 계획
+강사비, 기록지 인쇄비, 전시 물품비, 사진 출력비를 중심으로 예산을 편성한다.
+
+홍보 및 모집 방법
+주민센터, 아파트 게시판, 지역 커뮤니티, 도서관 안내문을 통해 모집한다. 고령 주민 참여를 위해 방문 접수도 함께 운영한다.`,
+  },
+];
+
+const stageClassName: Record<SurveyWorkflowStage, string> = {
+  '기획 중': 'isDraft',
+  '수요조사 중': 'isSurvey',
+  '수요조사 완료': 'isSurveyDone',
+};
+
+const aiStateLabel: Record<AiRequestState, string> = {
+  idle: '요청 전',
+  submitting: '다듬기 요청 중',
+  ready: '다듬기 결과 준비됨',
+  failed: '요청 실패',
+};
+
+const aiQuickRequests = [
+  '더 공공기관 문서답게 다듬어 주세요.',
+  '초등학생 대상 프로그램에 맞게 쉽게 바꿔 주세요.',
+  '문장을 짧고 명확하게 정리해 주세요.',
+  '운영 내용이 더 구체적으로 보이게 다듬어 주세요.',
+  '홍보 문구처럼 참여하고 싶게 바꿔 주세요.',
+];
+
+type StudioDocumentEditorProps = {
+  documentId: string;
+};
+
+export default function StudioDocumentEditor({ documentId }: StudioDocumentEditorProps) {
+  const document = useMemo(
+    () => historyDocuments.find((item) => item.id === documentId) ?? { ...dummyDocument, id: documentId },
+    [documentId],
+  );
+
+  return <StudioDocumentEditorView document={document} key={document.id} />;
+}
+
+type StudioDocumentEditorViewProps = {
+  document: StudioDocument;
+};
+
+/**
+ * 생성 화면이 남겨 둔 임시 초안. 저장이 끝나기 전에 편집 화면으로 넘어와도 방금 만든
+ * 내용을 볼 수 있게 한다.
+ *
+ * 첫 렌더에서 읽지 않는다. 서버에는 세션 저장소가 없어 서버가 그린 것과 화면이 달라지고,
+ * 그러면 hydration이 어긋난다.
+ */
+function readStoredDraft(documentId: string): StudioDraft | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const storedDraftText = window.sessionStorage.getItem(studioDraftStorageKey);
+
+  if (!storedDraftText) {
+    return null;
+  }
+
+  try {
+    const parsedDraft = JSON.parse(storedDraftText) as Partial<StudioDraft>;
+
+    if (parsedDraft.id !== documentId) {
+      return null;
+    }
+
+    if (!parsedDraft.title || !parsedDraft.summary || !parsedDraft.target || !parsedDraft.duration || !parsedDraft.expectedEffects) {
+      return null;
+    }
+
+    const details = Array.isArray(parsedDraft.details)
+      ? parsedDraft.details.filter((item): item is string => typeof item === 'string')
+      : [];
+    const notes = Array.isArray(parsedDraft.notes)
+      ? parsedDraft.notes.filter((item): item is string => typeof item === 'string')
+      : [];
+
+    return {
+      id: parsedDraft.id,
+      title: parsedDraft.title,
+      summary: parsedDraft.summary,
+      target: parsedDraft.target,
+      duration: parsedDraft.duration,
+      details,
+      expectedEffects: parsedDraft.expectedEffects,
+      notes,
+      content:
+        typeof parsedDraft.content === 'string' && parsedDraft.content.trim().length > 0
+          ? parsedDraft.content
+          : buildStudioDraftContent({
+              summary: parsedDraft.summary,
+              target: parsedDraft.target,
+              duration: parsedDraft.duration,
+              details,
+              expectedEffects: parsedDraft.expectedEffects,
+              notes,
+            }),
+    };
+  } catch (error) {
+    console.error('Failed to load studio draft from sessionStorage:', error);
+    return null;
+  }
+}
+
+function StudioDocumentEditorView({ document }: StudioDocumentEditorViewProps) {
+  const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
+  /** 문서 조회에 실패했을 때 이것으로 대신 보여준다. 화면에 그리지는 않아 상태가 아니라 참조로 둔다. */
+  const storedDraftRef = useRef<StudioDraft | null>(null);
+  const [storedDraft, setStoredDraft] = useState<StudioDraft | null>(null);
+  const [hasMounted, setHasMounted] = useState(false);
+  /**
+   * 생성 화면이 남겨 둔 항목 구조. 이것이 있어야 항목 하나만 고칠 수 있다.
+   * 이미 저장된 기획서는 글만 있어 항목 구분이 없으므로 예전 편집 방식으로 보여준다.
+   *
+   * 서버와 클라이언트 첫 렌더가 달라지지 않도록 마운트 뒤에 세션 저장소를 읽는다.
+   */
+  const [plan, setPlan] = useState<StudioPlan | null>(null);
+  /** 기획서에서 지금 고르고 있는 곳. 오른쪽 수정 패널이 이것을 보고 무엇을 고칠지 정한다. */
+  const [planSelection, setPlanSelection] = useState<PlanSelection | null>(null);
+  /** 어디를 고쳤는지. 화면에 표시해 주지 않으면 사서가 바뀐 줄을 모른다. */
+  const [revisedFields, setRevisedFields] = useState<Set<StudioPlanFieldKey>>(new Set());
+  const [revisedSessions, setRevisedSessions] = useState<Set<number>>(new Set());
+  const [title, setTitle] = useState(document.title);
+  const [stage, setStage] = useState<StudioDocumentStage>(document.stage);
+  const [surveyResult, setSurveyResult] = useState<StudioSurveyResult | undefined>(document.surveyResult ?? defaultSurveyResult);
+  const [stageSaveState, setStageSaveState] = useState<StageSaveState>('idle');
+  const [stageMessage, setStageMessage] = useState('');
+  const [pendingSurveyAction, setPendingSurveyAction] = useState<PendingSurveyAction>(null);
+  const [savedDocuments, setSavedDocuments] = useState<Pick<StudioSavedDocument, 'id' | 'title' | 'updatedAt'>[]>([]);
+  const [content, setContent] = useState(document.content);
+  const [loadState, setLoadState] = useState<LoadState>('loading');
+  const [loadErrorMessage, setLoadErrorMessage] = useState('');
+  /**
+   * 이 기획서가 어느 주민 아이디어에서 나왔는지. 표시가 없으면 사서가 아이디어를 골랐다는 사실이
+   * 결과에 남지 않아, 반영됐는지 확인할 방법이 없다.
+   */
+  const [agenda, setAgenda] = useState<StudioAgendaInput | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>('saved');
+  const [lastSavedAt, setLastSavedAt] = useState(document.updatedAt);
+  const [saveErrorMessage, setSaveErrorMessage] = useState('');
+  const [selectedText, setSelectedText] = useState('');
+  const [selectedRange, setSelectedRange] = useState<TextSelectionRange | null>(null);
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
+  const [aiRequest, setAiRequest] = useState('');
+  const [aiRequestState, setAiRequestState] = useState<AiRequestState>('idle');
+  const [aiRevisedText, setAiRevisedText] = useState('');
+  const [aiRevisionSource, setAiRevisionSource] = useState<AiRevisionSource | null>(null);
+  const [aiReviewMessage, setAiReviewMessage] = useState('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
+
+  // 세션 저장소는 서버 초기 HTML과 달라지므로 하이드레이션 전에는 읽지 않는다.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasMounted(true);
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const nextStoredDraft = readStoredDraft(document.id);
+    setStoredDraft(nextStoredDraft);
+
+    if (nextStoredDraft) {
+      setTitle(nextStoredDraft.title);
+      setContent(nextStoredDraft.content);
+      setLastSavedAt('방금 전');
+    }
+
+    try {
+      const raw = window.sessionStorage.getItem(studioPlanStorageKey);
+      if (!raw) {
+        return;
+      }
+      const stored = JSON.parse(raw) as { documentId?: string; plan?: unknown };
+      if (stored.documentId !== document.id) {
+        return;
+      }
+      setPlan(toStudioPlan(stored.plan));
+    } catch (error) {
+      console.error('Failed to load studio plan from sessionStorage:', error);
+    }
+  }, [document.id]);
+
+  const hasEmptyTitle = title.trim().length === 0;
+  const canSave = saveState === 'dirty' && !hasEmptyTitle;
+  const hasSelectedText = selectedText.trim().length > 0;
+  const canRequestAiEdit = hasSelectedText && aiRequest.trim().length > 0 && aiRequestState !== 'submitting';
+  /** 기획서 항목을 고른 경우에는 그 선택이 곧 수정 대상이라 문장 선택이 필요 없다. */
+  const canRequestPlanEdit = Boolean(plan && planSelection) && aiRequest.trim().length > 0 && aiRequestState !== 'submitting';
+  const planSelectionPreview = plan && planSelection
+    ? (() => {
+      const value = planSelectionValue(plan, planSelection);
+      if (typeof value === 'string') return value;
+      if (Array.isArray(value)) return value.map((row) => (typeof row === 'string' ? row : row?.activity ?? '')).join(' · ');
+      if (value && typeof value === 'object' && 'activity' in value) return String((value as { activity: string }).activity);
+      return '';
+    })()
+    : '';
+  const activeSelectionRange = aiRevisionSource?.range ?? selectedRange;
+  const workflowStage: SurveyWorkflowStage = stage === '기획서 확정' ? '수요조사 완료' : stage;
+
+  useEffect(() => {
+    storedDraftRef.current = storedDraft;
+  }, [storedDraft]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadDocument() {
+      await Promise.resolve();
+
+      if (isCancelled) {
+        return;
+      }
+
+      setLoadState('loading');
+      setLoadErrorMessage('');
+
+      try {
+        const response = await fetch(`/api/studio/documents/${document.id}`, {
+          cache: 'no-store',
+        });
+        const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
+
+        if (response.status === 401) {
+          setLoadState('auth-required');
+          setLoadErrorMessage('기획서를 보려면 로그인이 필요합니다.');
+          return;
+        }
+
+        if (!response.ok || !data.document) {
+          throw new Error(data.error || '기획서를 불러오지 못했습니다.');
+        }
+
+        if (isCancelled) {
+          return;
+        }
+
+        const nextSurveyResult = normalizeSurveyResult(data.document.surveyResult) ?? defaultSurveyResult;
+
+        setTitle(data.document.title);
+        setStage(data.document.stage);
+        setSurveyResult(nextSurveyResult);
+        setStageMessage('');
+        setContent(data.document.content);
+        /**
+         * 조회에 성공했으면 저장된 것이 기준이다. 세션 저장소에 남은 항목 구조는 생성
+         * 직후의 옛 모습이라, 그것을 살려 두면 고친 뒤 다시 열었을 때 수정 전으로 보인다.
+         * 저장된 항목 구조가 없는 예전 문서는 항목이 아니라 글로 보여준다.
+         */
+        setPlan(toStudioPlan(data.document.plan));
+        setAgenda(data.document.agenda ?? null);
+        setLastSavedAt(formatStudioDate(data.document.updatedAt));
+        setSaveState('saved');
+        setLoadState('ready');
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (storedDraftRef.current) {
+          setLoadState('ready');
+          setLoadErrorMessage('저장된 문서 조회에 실패해 생성 직후 임시 초안을 표시합니다.');
+          return;
+        }
+
+        setLoadState('failed');
+        setLoadErrorMessage(error instanceof Error ? error.message : '기획서를 불러오지 못했습니다.');
+      }
+    }
+
+    void loadDocument();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [document.id]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadSavedDocuments() {
+      try {
+        const response = await fetch('/api/studio/documents', { cache: 'no-store' });
+        const data = (await response.json()) as { documents?: StudioSavedDocument[] };
+
+        if (!isCancelled && response.ok && data.documents) {
+          setSavedDocuments(data.documents.map(({ id, title: savedTitle, updatedAt }) => ({
+            id,
+            title: savedTitle,
+            updatedAt,
+          })));
+        }
+      } catch {
+        // 목록 조회 실패가 현재 기획서 편집을 막지 않도록 사이드바만 비워 둔다.
+      }
+    }
+
+    void loadSavedDocuments();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [document.id]);
+
+  useEffect(() => {
+    if (!isAiPanelOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        closeAiPanel();
+      }
+    }
+
+    globalThis.document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      globalThis.document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAiPanelOpen]);
+
+  useEffect(() => {
+    if (!pendingSurveyAction) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape' && stageSaveState !== 'saving') {
+        setPendingSurveyAction(null);
+      }
+    }
+
+    globalThis.document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      globalThis.document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [pendingSurveyAction, stageSaveState]);
+
+  useEffect(() => {
+    const textarea = bodyTextareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [content]);
+
+  function markDirty() {
+    if (saveState !== 'dirty') {
+      setSaveState('dirty');
+    }
+    setSaveErrorMessage('');
+  }
+
+  async function handleSave() {
+    if (!canSave) {
+      return;
+    }
+
+    setSaveState('saving');
+    setSaveErrorMessage('');
+
+    try {
+      const response = await fetch(`/api/studio/documents/${document.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          content,
+          /** 본문만 저장하면 다음에 열었을 때 항목이 예전 것으로 돌아간다. 같이 보낸다. */
+          ...(plan ? { plan } : {}),
+        }),
+      });
+      const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
+
+      if (!response.ok || !data.document) {
+        throw new Error(response.status === 401 ? '기획서를 저장하려면 로그인이 필요합니다.' : data.error || '기획서를 저장하지 못했습니다.');
+      }
+
+      setSaveState('saved');
+      setLastSavedAt(formatStudioDate(data.document.updatedAt));
+    } catch (error) {
+      setSaveState('failed');
+      setSaveErrorMessage(error instanceof Error ? error.message : '기획서를 저장하지 못했습니다.');
+    }
+  }
+
+  async function handleStageChange(nextStage: StudioDocumentStage) {
+    if (nextStage === stage || stageSaveState === 'saving') {
+      return false;
+    }
+
+    const previousStage = stage;
+    setStage(nextStage);
+    setStageSaveState('saving');
+    setStageMessage(nextStage === '수요조사 중' ? '수요조사를 시작하는 중입니다.' : '수요조사를 종료하는 중입니다.');
+    setSaveErrorMessage('');
+
+    try {
+      const response = await fetch(`/api/studio/documents/${document.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stage: nextStage,
+          surveyResult: surveyResult ?? defaultSurveyResult,
+        }),
+      });
+      const data = (await response.json()) as { document?: StudioSavedDocument; error?: string };
+
+      if (!response.ok || !data.document) {
+        throw new Error(response.status === 401 ? '진행 단계를 변경하려면 로그인이 필요합니다.' : data.error || '진행 단계를 저장하지 못했습니다.');
+      }
+
+      const nextSavedSurveyResult = normalizeSurveyResult(data.document.surveyResult) ?? defaultSurveyResult;
+
+      setStage(data.document.stage);
+      setSurveyResult(nextSavedSurveyResult);
+      setLastSavedAt(formatStudioDate(data.document.updatedAt));
+      setStageSaveState('idle');
+      setStageMessage(nextStage === '수요조사 중'
+        ? '수요조사가 시작되어 주민 프로그램 수요조사에 공개되었습니다.'
+        : '수요조사가 종료되었습니다. 기존 응답 결과는 계속 확인할 수 있습니다.');
+      return true;
+    } catch (error) {
+      setStage(previousStage);
+      setStageSaveState('failed');
+      setStageMessage(error instanceof Error ? error.message : '진행 단계를 저장하지 못했습니다.');
+      return false;
+    }
+  }
+
+  async function handleConfirmSurveyAction() {
+    if (!pendingSurveyAction) {
+      return;
+    }
+
+    const nextStage: SurveyWorkflowStage = pendingSurveyAction === 'start' ? '수요조사 중' : '수요조사 완료';
+    const didSave = await handleStageChange(nextStage);
+
+    if (didSave) {
+      setPendingSurveyAction(null);
+    }
+  }
+
+  function updateSelectedText() {
+    const textarea = bodyTextareaRef.current;
+
+    if (!textarea || textarea.selectionStart === textarea.selectionEnd) {
+      setSelectedText('');
+      setSelectedRange(null);
+      return;
+    }
+
+    const nextRange = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    };
+
+    setSelectedRange(nextRange);
+    setSelectedText(content.slice(nextRange.start, nextRange.end));
+  }
+
+  function openAiPanel() {
+    updateSelectedText();
+    setIsAiPanelOpen(true);
+    setAiRequestState('idle');
+    setAiRevisedText('');
+    setAiRevisionSource(null);
+    setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
+  }
+
+  function closeAiPanel() {
+    setIsAiPanelOpen(false);
+    setAiRequest('');
+    setAiRequestState('idle');
+    setAiRevisedText('');
+    setAiRevisionSource(null);
+    /**
+     * 고른 곳도 함께 푼다. 패널을 닫았는데 항목이 골라진 채로 남으면, 화면에는
+     * 「선택 해제」가 떠 있는데 수정할 자리는 사라진 상태가 된다.
+     */
+    setPlanSelection(null);
+    setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
+  }
+
+  /**
+   * 기획서 항목을 고르고 보낸 수정 요청. 고른 곳만 보내고 고친 결과만 돌려받는다.
+   * 글 한 덩어리를 고치는 경로와 달리 결과가 곧바로 그 항목에 들어가므로
+   * 「적용」 단계를 따로 두지 않는다.
+   */
+  async function handlePlanRevision() {
+    if (!plan || !planSelection || !aiRequest.trim()) return;
+    setAiRequestState('submitting');
+    setAiReviewMessage('AI 다듬기 결과를 생성하고 있습니다.');
+    try {
+      const response = await fetch('/api/studio/revise-field', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fieldKey: planSelection.field.key,
+          currentValue: planSelectionValue(plan, planSelection),
+          instruction: aiRequest.trim(),
+          scopeLabel: planSelection.kind === 'field' ? undefined : planSelectionLabel(planSelection),
+          planTitle: plan.title,
+          planTarget: plan.target,
+        }),
+      });
+      const data = (await response.json()) as { value?: unknown; error?: string };
+      if (!response.ok || data.value === undefined) {
+        throw new Error(data.error || 'AI 다듬기 결과를 생성하지 못했습니다.');
+      }
+      const next = applyPlanRevision(plan, planSelection, data.value);
+      setPlan(next);
+      setContent(planToContent(next));
+      markDirty();
+      setRevisedFields((current) => new Set(current).add(planSelection.field.key));
+      if (planSelection.kind === 'session') {
+        setRevisedSessions((current) => new Set(current).add(planSelection.session));
+      }
+      setAiRequestState('idle');
+      setAiRequest('');
+      setPlanSelection(null);
+      setIsAiPanelOpen(false);
+      setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
+    } catch (error) {
+      setAiRequestState('failed');
+      setAiReviewMessage(error instanceof Error ? error.message : 'AI 다듬기 결과를 생성하지 못했습니다.');
+    }
+  }
+
+  async function handleAiRequest() {
+    if (plan && planSelection) {
+      await handlePlanRevision();
+      return;
+    }
+    if (!canRequestAiEdit || !selectedRange) {
+      return;
+    }
+
+    const revisionSource = {
+      text: selectedText,
+      range: selectedRange,
+    };
+
+    setAiRequestState('submitting');
+    setAiRevisedText('');
+    setAiRevisionSource(revisionSource);
+    setAiReviewMessage('AI 다듬기 결과를 생성하고 있습니다.');
+
+    const contextSize = 260;
+    const requestBody: StudioReviseRequest = {
+      documentId: document.id,
+      selectedText: revisionSource.text,
+      instruction: aiRequest.trim(),
+      context: {
+        title,
+        before: content.slice(Math.max(0, revisionSource.range.start - contextSize), revisionSource.range.start),
+        after: content.slice(revisionSource.range.end, Math.min(content.length, revisionSource.range.end + contextSize)),
+      },
+    };
+
+    try {
+      const response = await fetch('/api/studio/revise', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const data = (await response.json()) as { revisedText?: string; error?: string };
+
+      if (!response.ok || !data.revisedText) {
+        throw new Error(data.error || 'AI 다듬기 결과를 생성하지 못했습니다.');
+      }
+
+      setAiRevisedText(data.revisedText);
+      setAiRequestState('ready');
+      setAiReviewMessage('다듬기 결과 준비 완료');
+    } catch (error) {
+      setAiRequestState('failed');
+      setAiReviewMessage(error instanceof Error ? error.message : 'AI 다듬기 결과를 생성하지 못했습니다.');
+    }
+  }
+
+  function handleAiRevisionApply() {
+    if (!aiRevisedText || !aiRevisionSource) {
+      setAiReviewMessage('적용할 AI 다듬기 결과를 찾지 못했습니다.');
+      return;
+    }
+
+    const { range, text } = aiRevisionSource;
+
+    if (range.start < 0 || range.end > content.length || range.start >= range.end) {
+      setAiReviewMessage('선택 영역이 현재 문서 범위와 맞지 않아 적용할 수 없습니다.');
+      return;
+    }
+
+    const currentSourceText = content.slice(range.start, range.end);
+
+    if (currentSourceText !== text) {
+      setAiReviewMessage('AI 다듬기 요청 이후 원문이 변경되어 적용할 수 없습니다. 다시 요청해 주세요.');
+      return;
+    }
+
+    const nextContent = `${content.slice(0, range.start)}${aiRevisedText}${content.slice(range.end)}`;
+    const nextRange = {
+      start: range.start,
+      end: range.start + aiRevisedText.length,
+    };
+
+    setContent(nextContent);
+    setSaveState('dirty');
+    setSaveErrorMessage('');
+    setSelectedText(aiRevisedText);
+    setSelectedRange(nextRange);
+    setIsAiPanelOpen(false);
+    setAiRequest('');
+    setAiRequestState('idle');
+    setAiRevisedText('');
+    setAiRevisionSource(null);
+    setAiReviewMessage('AI 다듬기 결과가 적용되었습니다. 저장 버튼으로 변경 사항을 저장해 주세요.');
+
+    window.requestAnimationFrame(() => {
+      bodyTextareaRef.current?.focus();
+      bodyTextareaRef.current?.setSelectionRange(nextRange.start, nextRange.end);
+    });
+  }
+
+  function handleAiRevisionRetry() {
+    setAiRequestState('idle');
+    setAiRevisedText('');
+    setAiRevisionSource(null);
+    setAiReviewMessage('요청 입력 상태로 돌아왔습니다.');
+  }
+
+  return (
+    <div className="studioPage studioDocumentPage">
+      <aside className="studioSideRail" aria-label="MOIRA STUDIO 메뉴">
+        <Link className="studioRailLogo" href="/" aria-label="홈으로 이동" title="홈으로 이동">
+          <svg className="studioHomeIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 11.2 12 4l8 7.2" />
+            <path d="M6.5 10.5V20h11v-9.5" />
+            <path d="M10 20v-5h4v5" />
+          </svg>
+          <small>홈</small>
+        </Link>
+        <nav className="studioRailNav" aria-label="작업 메뉴">
+          <Link href="/studio">
+            <span aria-hidden="true">+</span>
+            새 기획
+          </Link>
+          <Link className="isActive" href="/studio/documents">
+            <span aria-hidden="true">≡</span>
+            내 기획서
+          </Link>
+        </nav>
+      </aside>
+
+      <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 문서 메뉴">
+        <div className="studioHistoryHeader">
+          <div>
+            <small>MOIRA STUDIO</small>
+          </div>
+          <span className="studioHistoryPinIcon" aria-hidden="true">◆</span>
+        </div>
+
+        <div className="studioDocumentsSidebarBody">
+          <Link className="uiButton uiButtonPrimary studioDocumentsNewButton" href="/studio">
+            <span aria-hidden="true">＋</span>
+            새 기획서
+          </Link>
+
+          <div className="studioDocumentsRecentSection">
+            <strong className="studioDocumentsSidebarLabel">최근 기획서</strong>
+            {savedDocuments.length > 0 ? (
+              <nav className="studioDocumentsRecentList" aria-label="최근 기획서">
+                {savedDocuments.map((item) => (
+                  <Link
+                    className={item.id === document.id ? 'studioDocumentsRecentItem isCurrent' : 'studioDocumentsRecentItem'}
+                    href={`/studio/document/${item.id}`}
+                    key={item.id}
+                    aria-current={item.id === document.id ? 'page' : undefined}
+                  >
+                    <strong>{item.id === document.id ? title || '제목 없는 기획서' : item.title}</strong>
+                    <small>{item.id === document.id ? lastSavedAt : formatStudioDate(item.updatedAt)} 수정</small>
+                  </Link>
+                ))}
+              </nav>
+            ) : (
+              <p className="studioDocumentsRecentEmpty">아직 저장된 기획서가 없습니다.</p>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      <main className="studioMain studioDocumentMain">
+        <section className="studioDocumentToolbar" aria-label="문서 저장 상태와 작업">
+          <div className="studioDocumentTitleBlock">
+            <p className="uiEyebrow">
+              <span className="studioBrandSpark" aria-hidden="true">✦</span>
+              MOIRA STUDIO
+            </p>
+            <div className="studioDocumentTitleRow">
+              <h1>프로그램 기획서 편집</h1>
+              <span className={`studioDocumentStageBadge ${stageClassName[workflowStage]}`}>
+                <span aria-hidden="true" />
+                {workflowStage}
+              </span>
+            </div>
+            <small className="studioDocumentUpdatedMeta">최근 수정 {lastSavedAt}</small>
+          </div>
+          <div className="studioDocumentActions">
+            <div className="studioDocumentStatusActions" aria-label="상태 및 진행">
+              {workflowStage === '기획 중' ? (
+                <button
+                  className="uiButton uiButtonPrimary studioSurveyStageAction"
+                  type="button"
+                  disabled={loadState !== 'ready' || stageSaveState === 'saving'}
+                  onClick={() => setPendingSurveyAction('start')}
+                >
+                  수요조사 시작
+                </button>
+              ) : workflowStage === '수요조사 중' ? (
+                <button
+                  className="uiButton uiButtonSecondary studioSurveyStageAction isEnd"
+                  type="button"
+                  disabled={loadState !== 'ready' || stageSaveState === 'saving'}
+                  onClick={() => setPendingSurveyAction('end')}
+                >
+                  수요조사 종료
+                </button>
+              ) : null}
+              <button
+                className="uiButton uiButtonSecondary studioDocumentSaveButton"
+                type="button"
+                disabled={!canSave}
+                onClick={handleSave}
+              >
+                저장
+              </button>
+            </div>
+            <div className="studioDocumentWorkActions" aria-label="문서 작업">
+              <button className="uiButton uiButtonSecondary studioAiToolbarButton" type="button" onClick={openAiPanel}>
+                <span aria-hidden="true">✦</span> 선택한 내용 AI로 다듬기
+              </button>
+              {plan && hasMounted ? (
+                /**
+                 * 브라우저 인쇄로 PDF를 만든다. 인쇄 창에서 「PDF로 저장」을 고르면 된다.
+                 * 한글 글꼴을 번들에 싣지 않아도 되고 표가 그대로 나온다.
+                 */
+                <button className="uiButton uiButtonSecondary" type="button" onClick={() => window.print()}>
+                  PDF로 내보내기
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        {loadState === 'failed' || loadState === 'auth-required' ? (
+          <section className="studioDocumentsEmptyState" aria-labelledby="studio-document-load-failed-title">
+            <span aria-hidden="true">□</span>
+            <h2 id="studio-document-load-failed-title">
+              {loadState === 'auth-required' ? '로그인이 필요합니다.' : '기획서를 불러오지 못했습니다.'}
+            </h2>
+            <p>{loadErrorMessage}</p>
+            <Link
+              className="uiButton uiButtonPrimary"
+              href={loadState === 'auth-required' ? `/login?next=/studio/document/${document.id}` : '/studio/documents'}
+            >
+              {loadState === 'auth-required' ? '로그인하기' : '기획서 목록으로 이동'}
+            </Link>
+          </section>
+        ) : null}
+
+        {loadState === 'loading' ? (
+          <section className="studioDocumentsNotice" aria-live="polite">
+            기획서를 불러오는 중입니다.
+          </section>
+        ) : null}
+
+        {loadState === 'ready' && (loadErrorMessage || saveErrorMessage) ? (
+          <p className="studioDocumentsNotice" aria-live="polite">
+            {saveErrorMessage || loadErrorMessage}
+          </p>
+        ) : null}
+
+        {loadState === 'ready' && stageMessage ? (
+          <p className={`studioDocumentsNotice ${stageSaveState === 'failed' ? 'isError' : ''}`} aria-live="polite">
+            {stageMessage}
+          </p>
+        ) : null}
+
+        {loadState === 'ready' ? (
+        <div className={isAiPanelOpen ? 'studioDocumentWorkspace hasAiPanel' : 'studioDocumentWorkspace'}>
+          <section className="studioDocumentEditor" aria-labelledby="studio-document-title-label">
+            <label className="studioDocumentTitleField">
+              <span id="studio-document-title-label">기획서 제목</span>
+              <input
+                aria-invalid={hasEmptyTitle}
+                placeholder="기획서 제목을 입력하세요"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  markDirty();
+                }}
+              />
+            </label>
+            {hasEmptyTitle ? <p className="studioDocumentError">제목은 비워둘 수 없습니다.</p> : null}
+
+            {/* 어느 의제에서 나온 기획서인지 남긴다. 사서가 반영 여부를 눈으로 확인할 수 있어야 한다. */}
+            {agenda ? (
+              <div className="studioDocumentAgenda">
+                <span>반영한 주민 아이디어</span>
+                <strong>{agenda.title}</strong>
+                <p>{agenda.content}</p>
+              </div>
+            ) : null}
+
+            <StudioSurveyResultsPanel
+              stage={workflowStage}
+              survey={surveyResult}
+            />
+
+            {plan ? (
+              /**
+               * 항목 구조가 있으면 항목으로 보여준다. 항목 하나만 고치려면 어디부터
+               * 어디까지가 어느 항목인지 알아야 하는데, 글 한 덩어리에서는 알 수 없다.
+               */
+              <div className="studioDocumentBodyField">
+                <div className="studioDocumentBodyHeader"><span>기획서 본문</span></div>
+                <StudioPlanSheet
+                  plan={plan}
+                  selection={planSelection}
+                  revisedFields={revisedFields}
+                  revisedSessions={revisedSessions}
+                  onSelect={(next) => {
+                    setPlanSelection(next);
+                    // 고르면 곧바로 오른쪽 수정 패널을 연다. 사서가 쓰던 흐름을 그대로 쓴다.
+                    if (next) { setIsAiPanelOpen(true); setAiRequestState('idle'); setAiRevisedText(''); }
+                  }}
+                  onChange={(next) => {
+                    setPlan(next); setContent(planToContent(next)); markDirty();
+                  }}
+                />
+              </div>
+            ) : (
+            <div className="studioDocumentBodyField">
+              <div className="studioDocumentBodyHeader">
+                <span>기획서 본문</span>
+                <button
+                  className="studioTextAiButton"
+                  type="button"
+                  disabled={!hasSelectedText}
+                  onClick={openAiPanel}
+                >
+                  ✦ 선택한 내용 AI로 다듬기
+                </button>
+              </div>
+              {isAiPanelOpen && activeSelectionRange ? (
+                <SelectedTextMarker content={content} selectionRange={activeSelectionRange} />
+              ) : null}
+              <textarea
+                className="studioDocumentBodyTextarea"
+                aria-label="기획서 본문 편집"
+                ref={bodyTextareaRef}
+                value={content}
+                onBlur={updateSelectedText}
+                onKeyUp={updateSelectedText}
+                onMouseUp={updateSelectedText}
+                onSelect={updateSelectedText}
+                onChange={(event) => {
+                  setContent(event.target.value);
+                  markDirty();
+                  window.requestAnimationFrame(updateSelectedText);
+                }}
+              />
+            </div>
+            )}
+          </section>
+
+          {isAiPanelOpen ? (
+            <aside className="studioAiEditPanel" aria-labelledby="studio-ai-edit-title">
+              <div className="studioAiEditPanelHeader">
+                <h2 id="studio-ai-edit-title">✦ AI로 다듬기</h2>
+                <button type="button" aria-label="AI로 다듬기 패널 닫기" onClick={closeAiPanel}>
+                  ×
+                </button>
+              </div>
+
+              {aiRequestState === 'ready' && aiRevisedText ? (
+                <StudioAiRevisionCompare originalText={aiRevisionSource?.text || selectedText} revisedText={aiRevisedText} />
+              ) : (
+                <>
+                  <section className="studioAiSelectedSource" aria-label="수정할 내용">
+                    <strong>수정할 내용</strong>
+                    {planSelection ? (
+                      <>
+                        <p className="studioAiSelectedTarget">{planSelectionLabel(planSelection)}</p>
+                        <p>{planSelectionPreview}</p>
+                      </>
+                    ) : hasSelectedText ? (
+                      <p>{selectedText}</p>
+                    ) : (
+                      <p className="studioAiEmptySource">
+                        기획서에서 다듬고 싶은 내용을 선택해 주세요.
+                      </p>
+                    )}
+                  </section>
+
+                  <label className="studioAiRequestField">
+                    <span>다듬기 요청</span>
+                    <textarea
+                      placeholder="더 공공기관 문서답게 다듬어 주세요."
+                      value={aiRequest}
+                      onChange={(event) => {
+                        setAiRequest(event.target.value);
+                        setAiRequestState('idle');
+                        setAiRevisedText('');
+                        setAiRevisionSource(null);
+                        setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
+                      }}
+                    />
+                  </label>
+
+                  <div className="studioAiQuickRequests" aria-label="빠른 수정 요청">
+                    {aiQuickRequests.map((request) => (
+                      <button
+                        className={aiRequest === request ? 'isSelected' : ''}
+                        key={request}
+                        type="button"
+                        onClick={() => {
+                          setAiRequest(request);
+                          setAiRequestState('idle');
+                          setAiRevisedText('');
+                          setAiRevisionSource(null);
+                          setAiReviewMessage('선택한 내용을 검토한 뒤 다듬기 요청을 보낼 수 있습니다.');
+                        }}
+                      >
+                        {request}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <div className={`studioAiRequestState is-${aiRequestState}`} aria-live="polite">
+                <strong>{aiStateLabel[aiRequestState]}</strong>
+                <span>{aiReviewMessage}</span>
+              </div>
+
+              <div className="studioAiEditActions">
+                {aiRequestState === 'ready' ? (
+                  <>
+                    <button className="uiButton uiButtonPrimary" type="button" onClick={handleAiRevisionApply}>
+                      적용
+                    </button>
+                    <button className="uiButton uiButtonSecondary" type="button" onClick={handleAiRevisionRetry}>
+                      다시 요청
+                    </button>
+                    <button className="uiButton uiButtonSecondary" type="button" onClick={closeAiPanel}>
+                      취소
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="uiButton uiButtonSecondary" type="button" onClick={closeAiPanel}>
+                      취소
+                    </button>
+                    <button
+                      className="uiButton uiButtonPrimary"
+                      type="button"
+                      disabled={plan && planSelection ? !canRequestPlanEdit : !canRequestAiEdit}
+                      onClick={handleAiRequest}
+                    >
+                      {aiRequestState === 'submitting' ? '요청 중' : aiRequestState === 'failed' ? '다시 요청' : '다듬기 요청'}
+                    </button>
+                  </>
+                )}
+              </div>
+            </aside>
+          ) : null}
+        </div>
+        ) : null}
+      </main>
+      {pendingSurveyAction ? (
+        <div
+          className="studioSurveyConfirmBackdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && stageSaveState !== 'saving') {
+              setPendingSurveyAction(null);
+            }
+          }}
+        >
+          <section
+            className="studioSurveyConfirmDialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="studio-survey-confirm-title"
+            aria-describedby="studio-survey-confirm-description"
+          >
+            <span className="studioSurveyConfirmIcon" aria-hidden="true">✦</span>
+            <h2 id="studio-survey-confirm-title">
+              {pendingSurveyAction === 'start' ? '수요조사를 시작할까요?' : '수요조사를 종료할까요?'}
+            </h2>
+            <p id="studio-survey-confirm-description">
+              {pendingSurveyAction === 'start'
+                ? '시작하면 이 프로그램이 주민 프로그램 수요조사에 공개되며 주민들의 응답을 받을 수 있습니다.'
+                : '종료하면 주민 프로그램 수요조사에서 내려가며 더 이상 새로운 응답을 받지 않습니다. 기존 응답 결과는 계속 확인할 수 있습니다.'}
+            </p>
+            <div className="studioSurveyConfirmActions">
+              <button
+                className="uiButton uiButtonSecondary"
+                type="button"
+                disabled={stageSaveState === 'saving'}
+                onClick={() => setPendingSurveyAction(null)}
+              >
+                취소
+              </button>
+              <button
+                className="uiButton uiButtonPrimary"
+                type="button"
+                disabled={stageSaveState === 'saving'}
+                onClick={() => void handleConfirmSurveyAction()}
+              >
+                {stageSaveState === 'saving'
+                  ? '처리 중'
+                  : pendingSurveyAction === 'start' ? '수요조사 시작' : '수요조사 종료'}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+      {/* 화면에서는 숨어 있다가 인쇄할 때만 나온다. 페이지 루트 안에 두어야
+          인쇄 규칙이 이 형제들만 숨기고 이것을 남길 수 있다. */}
+      {plan ? <StudioPlanPrintView plan={plan} title={title} /> : null}
+    </div>
+  );
+}
+
+type SelectedTextMarkerProps = {
+  content: string;
+  selectionRange: TextSelectionRange;
+};
+
+function SelectedTextMarker({ content, selectionRange }: SelectedTextMarkerProps) {
+  const contextSize = 78;
+  const beforeStart = Math.max(0, selectionRange.start - contextSize);
+  const afterEnd = Math.min(content.length, selectionRange.end + contextSize);
+  const beforeText = content.slice(beforeStart, selectionRange.start);
+  const selectedText = content.slice(selectionRange.start, selectionRange.end);
+  const afterText = content.slice(selectionRange.end, afterEnd);
+
+  return (
+    <aside className="studioSelectedTextMarker" aria-label="수정 중인 선택 영역">
+      <strong>수정 중인 선택 영역</strong>
+      <p>
+        {beforeStart > 0 ? '...' : ''}
+        {beforeText}
+        <mark>{selectedText}</mark>
+        {afterText}
+        {afterEnd < content.length ? '...' : ''}
+      </p>
+    </aside>
+  );
+}
+
+type StudioAiRevisionCompareProps = {
+  originalText: string;
+  revisedText: string;
+};
+
+function StudioAiRevisionCompare({ originalText, revisedText }: StudioAiRevisionCompareProps) {
+  return (
+    <section className="studioAiRevisionCompare" aria-labelledby="studio-ai-revision-compare-title">
+      <div className="studioAiRevisionCompareHeader">
+        <h3 id="studio-ai-revision-compare-title">수정 결과 비교</h3>
+        <p>다듬기 결과를 적용하기 전에 기존 원문과 나란히 검토합니다.</p>
+      </div>
+
+      <div className="studioAiRevisionCompareGrid">
+        <section className="studioAiRevisionPane" aria-labelledby="studio-ai-original-title">
+          <h4 id="studio-ai-original-title">기존 원문</h4>
+          <p>{originalText}</p>
+        </section>
+        <section className="studioAiRevisionPane isRevised" aria-labelledby="studio-ai-revised-title">
+          <h4 id="studio-ai-revised-title">AI 다듬기 결과</h4>
+          <p>
+            <mark>{revisedText}</mark>
+          </p>
+        </section>
+      </div>
+    </section>
+  );
+}

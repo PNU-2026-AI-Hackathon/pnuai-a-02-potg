@@ -1,0 +1,49 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { studioGenerateRequestStorageKey, type StudioAgendaInput, type StudioGenerateRequest } from '@/lib/studio-draft';
+import type { StudioConditionKey } from './studio-options';
+
+type GenerateButtonProps = {
+  canGenerate: boolean;
+  prompt: string;
+  conditions: Record<StudioConditionKey, string[]>;
+  selectedAgenda: StudioAgendaInput | null;
+};
+
+export default function GenerateButton({
+  canGenerate,
+  prompt,
+  conditions,
+  selectedAgenda,
+}: GenerateButtonProps) {
+  const router = useRouter();
+
+  function handleGenerate() {
+    if (!canGenerate) {
+      return;
+    }
+
+    const requestBody: StudioGenerateRequest = {
+      prompt: prompt.trim(),
+      conditions: conditions as Record<string, string[]>,
+      agenda: selectedAgenda,
+    };
+
+    window.sessionStorage.setItem(studioGenerateRequestStorageKey, JSON.stringify(requestBody));
+    router.push('/studio/generating');
+  }
+
+  return (
+    <div className="studioGeneratePanel" aria-live="polite">
+      <button
+        className="uiButton uiButtonPrimary studioGenerateButton"
+        disabled={!canGenerate}
+        type="button"
+        onClick={handleGenerate}
+      >
+        <span className="studioGenerateSpark" aria-hidden="true">✦</span> 기획안 만들기 <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  );
+}
