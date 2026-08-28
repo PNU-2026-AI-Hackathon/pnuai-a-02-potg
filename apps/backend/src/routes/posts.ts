@@ -13,6 +13,10 @@ type CommunityPostResponse = {
   author: string;
   createdAt: string;
   tags: string[];
+  likeCount: number;
+  commentCount: number;
+  isOwner: boolean;
+  canDelete: boolean;
 };
 
 type CreateCommunityPostBody = {
@@ -28,6 +32,8 @@ type CreateCommunityPostBody = {
 type UpdateCommunityPostBody = {
   title?: string;
   content?: string;
+  type?: string;
+  tags?: unknown;
   password?: string;
 };
 
@@ -39,12 +45,10 @@ type CreateCommunityCommentBody = {
 
 const DEFAULT_BOARD_SLUG = 'library-news';
 const DEFAULT_POST_TYPE = 'normal';
-const VALID_BOARD_SLUGS = new Set(['library-news', 'free', 'ideas']);
+const VALID_BOARD_SLUGS = new Set(['library-news', 'ideas']);
 const VALID_POST_TYPES = new Set(['notice', 'normal']);
-const MIN_PASSWORD_LENGTH = 4;
-const MAX_PASSWORD_LENGTH = 64;
 const MAX_TITLE_LENGTH = 100;
-const MAX_CONTENT_LENGTH = 5000;
+const MAX_CONTENT_LENGTH = 2_000_000;
 const MAX_COMMENT_LENGTH = 2000;
 
 const router = Router();
@@ -82,7 +86,8 @@ function serializePost(post: {
   createdAt: Date;
   tags: string[];
   authorId?: string | null;
-}, viewerId?: string): CommunityPostResponse & { isOwner: boolean } {
+  _count?: { likes: number; comments: number };
+}, viewerId?: string, viewerRole?: string): CommunityPostResponse {
   return {
     id: post.id,
     boardSlug: post.boardSlug,
@@ -92,12 +97,19 @@ function serializePost(post: {
     author: post.author,
     createdAt: post.createdAt.toISOString(),
     tags: post.tags,
-    isOwner: Boolean(viewerId && post.authorId === viewerId),
+    likeCount: post._count?.likes ?? 0,
+    commentCount: post._count?.comments ?? 0,
+    isOwner: Boolean(viewerId && (post.authorId === viewerId || canManageLibraryNews(post.boardSlug, viewerRole))),
+    canDelete: Boolean(viewerId && (post.authorId === viewerId || canModeratePosts(viewerRole))),
   };
 }
 
-function isPasswordLengthValid(password: string) {
-  return password.length >= MIN_PASSWORD_LENGTH && password.length <= MAX_PASSWORD_LENGTH;
+function canManageLibraryNews(boardSlug: string, accountType?: string) {
+  return boardSlug === 'library-news' && (accountType === 'LIBRARIAN' || accountType === 'ADMIN');
+}
+
+function canModeratePosts(accountType?: string) {
+  return accountType === 'LIBRARIAN' || accountType === 'ADMIN';
 }
 
 async function verifyPostPassword(passwordHash: string | null, password: unknown) {
@@ -109,11 +121,14 @@ router.get('/', async (req: Request, res: Response) => {
   const boardSlug = readString(req.query.boardSlug) || DEFAULT_BOARD_SLUG;
   const search = readString(req.query.search);
   const type = readString(req.query.type);
+  const sort = readString(req.query.sort);
+  const requestedLimit = Number.parseInt(readString(req.query.limit), 10);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : undefined;
 
   if (!VALID_BOARD_SLUGS.has(boardSlug)) {
     return res.status(400).json({
       code: 'INVALID_BOARD_SLUG',
-      error: 'boardSlug must be library-news, free, proposals, or ideas.',
+      error: 'boardSlug must be library-news or ideas.',
     });
   }
 
@@ -142,9 +157,13 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const posts = await prisma.communityPost.findMany({
       where,
-      orderBy: [{ type: 'asc' }, { createdAt: 'desc' }],
+      include: { _count: { select: { likes: true, comments: true } } },
+      orderBy: sort === 'likes'
+        ? [{ likes: { _count: 'desc' } }, { createdAt: 'desc' }]
+        : [{ type: 'asc' }, { createdAt: 'desc' }],
+      ...(limit ? { take: limit } : {}),
     });
-    return res.status(200).json({ posts: posts.map((post) => serializePost(post, req.user?.id)) });
+    return res.status(200).json({ posts: posts.map((post) => serializePost(post, req.user?.id, req.user?.accountType)) });
   } catch (error) {
     console.error('Community post list lookup failed:', error);
     return res.status(500).json({ code: 'POST_LIST_FAILED', error: 'Unable to load posts.' });
@@ -153,9 +172,12 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.get('/:postId', async (req: Request<{ postId: string }>, res: Response) => {
   try {
-    const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
+    const post = await prisma.communityPost.findUnique({
+      where: { id: req.params.postId },
+      include: { _count: { select: { likes: true, comments: true } } },
+    });
     if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-    return res.status(200).json({ post: serializePost(post, req.user?.id) });
+    return res.status(200).json({ post: serializePost(post, req.user?.id, req.user?.accountType) });
   } catch (error) {
     console.error('Community post detail lookup failed:', error);
     return res.status(500).json({ code: 'POST_DETAIL_FAILED', error: 'Unable to load post.' });
@@ -168,9 +190,7 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
   const title = readString(req.body?.title);
   const content = readString(req.body?.content);
   const author = req.user?.name || readString(req.body.author) || '\uBAA8\uC774\uB77C \uC0AC\uC6A9\uC790';
-  const password = readPassword(req.body.password);
-  const requestedTags = readTags(req.body.tags);
-  const tags = boardSlug === 'free' && requestedTags.length === 0 ? ['자유글'] : requestedTags;
+  const tags = readTags(req.body.tags);
 
   if (!VALID_BOARD_SLUGS.has(boardSlug)) {
     return res.status(400).json({ code: 'INVALID_BOARD_SLUG', error: 'Invalid boardSlug.' });
@@ -184,19 +204,17 @@ router.post('/', async (req: Request<{}, {}, CreateCommunityPostBody>, res: Resp
   if (title.length > MAX_TITLE_LENGTH || content.length > MAX_CONTENT_LENGTH) {
     return res.status(400).json({ code: 'POST_TOO_LONG', error: 'title or content is too long.' });
   }
-  if (boardSlug === 'free' && !isPasswordLengthValid(password)) {
-    return res.status(400).json({
-      code: 'INVALID_POST_PASSWORD',
-      error: `password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters.`,
-    });
-  }
 
   try {
-    const passwordHash = boardSlug === 'free' ? await bcrypt.hash(password, 10) : null;
+    /**
+     * 비밀번호로 글을 지키던 게시판은 자유 게시판뿐이었고 그 게시판은 없어졌다.
+     * 새 글은 로그인한 사람의 것으로만 남는다. verifyPostPassword 는 지우지 않는다 —
+     * 예전에 비밀번호로 쓴 글이 DB에 남아 있고, 그 주인이 지울 길까지 막을 이유는 없다.
+     */
     const post = await prisma.communityPost.create({
-      data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash, authorId: req.user?.id },
+      data: { boardSlug, type: requestedType, title, content, author, tags, passwordHash: null, authorId: req.user?.id },
     });
-    return res.status(201).json({ post: serializePost(post, req.user?.id) });
+    return res.status(201).json({ post: serializePost(post, req.user?.id, req.user?.accountType) });
   } catch (error) {
     console.error('Community post creation failed:', error);
     return res.status(500).json({ code: 'POST_CREATE_FAILED', error: 'Unable to create post.' });
@@ -350,6 +368,8 @@ async function updatePost(
 ) {
   const title = readString(req.body?.title);
   const content = readString(req.body?.content);
+  const requestedType = readString(req.body?.type);
+  const requestedTags = Array.isArray(req.body?.tags) ? readTags(req.body.tags) : undefined;
 
   if (!title || !content) {
     return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
@@ -361,16 +381,24 @@ async function updatePost(
   try {
     const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
     if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-    const canEdit = req.user?.id === post.authorId || await verifyPostPassword(post.passwordHash, req.body?.password);
+    if (post.boardSlug === 'library-news' && requestedType && !VALID_POST_TYPES.has(requestedType)) {
+      return res.status(400).json({ code: 'INVALID_POST_TYPE', error: 'Invalid post type.' });
+    }
+    const canEdit = req.user?.id === post.authorId || canManageLibraryNews(post.boardSlug, req.user?.accountType) || await verifyPostPassword(post.passwordHash, req.body?.password);
     if (!canEdit) {
       return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
     }
 
     const updatedPost = await prisma.communityPost.update({
       where: { id: post.id },
-      data: { title, content },
+      data: {
+        title,
+        content,
+        ...(post.boardSlug === 'library-news' && requestedType ? { type: requestedType } : {}),
+        ...(requestedTags ? { tags: requestedTags } : {}),
+      },
     });
-    return res.status(200).json({ post: serializePost(updatedPost, req.user?.id) });
+    return res.status(200).json({ post: serializePost(updatedPost, req.user?.id, req.user?.accountType) });
   } catch (error) {
     console.error('Community post update failed:', error);
     return res.status(500).json({ code: 'POST_UPDATE_FAILED', error: 'Unable to update post.' });
@@ -386,9 +414,9 @@ router.delete(
     try {
       const post = await prisma.communityPost.findUnique({ where: { id: req.params.postId } });
       if (!post) return res.status(404).json({ code: 'POST_NOT_FOUND', error: 'Post not found.' });
-      const canDelete = req.user?.id === post.authorId || await verifyPostPassword(post.passwordHash, req.body?.password);
+      const canDelete = req.user?.id === post.authorId || canModeratePosts(req.user?.accountType) || await verifyPostPassword(post.passwordHash, req.body?.password);
       if (!canDelete) {
-        return res.status(403).json({ code: 'INVALID_POST_PASSWORD', error: 'Invalid password.' });
+        return res.status(403).json({ code: 'POST_DELETE_FORBIDDEN', error: 'You do not have permission to delete this post.' });
       }
 
       await prisma.communityPost.delete({ where: { id: post.id } });

@@ -4,12 +4,12 @@ export const studioFeatures = [
   {
     number: '01',
     title: '주민 의견 또는 수요조사 선택',
-    description: '기획에 반영할 지역 의제와 주민 수요를 선택합니다.',
+    description: '기획에 반영할 주민 아이디어와 주민 수요를 선택합니다.',
   },
   {
     number: '02',
-    title: 'AI 기반 의견 분석',
-    description: '모인 의견의 핵심 요구와 공통 관심사를 정리합니다.',
+    title: '유사 프로그램 사례 참고',
+    description: '선택한 조건과 관련된 기존 도서관 프로그램 사례를 기획에 참고합니다.',
   },
   {
     number: '03',
@@ -32,13 +32,13 @@ export function StudioPreview({ className = '' }: ReusableStudioBlockProps) {
   return (
     <div className={`studioPreview studioShowcasePreview ${className}`.trim()} aria-label="모이라 스튜디오 화면 미리보기">
       <div className="studioPreviewTop">
-        <span className="uiTag uiTagAccent">MOIRA Studio</span>
+        <span className="uiTag uiTagAccent">MOIRA STUDIO</span>
         <span className="studioStatus">
-          <i aria-hidden="true" /> AI 의견 분석 완료
+          <i aria-hidden="true" /> 참고 사례 확인 완료
         </span>
       </div>
       <div className="studioAgenda">
-        <span>선택된 주민 의제</span>
+        <span>선택된 주민 아이디어</span>
         <strong>아이들의 안전한 방과 후 돌봄</strong>
       </div>
       <div className="studioDocument">
@@ -103,13 +103,13 @@ export default function StudioSection() {
             <p className="uiEyebrow">LIBRARIAN PLANNING TOOL</p>
             <h2>
               <span className="studioTitleIcon" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </h2>
             <p className="studioSectionClaim">
               주민의 의견을 작은도서관 프로그램 기획안으로
             </p>
             <p className="studioSectionDescription">
-              모이라 스튜디오는 주민 제안과 수요조사 결과를 분석하여 사서가 프로그램 초안을 빠르게 작성할 수 있도록 돕습니다.
+              모이라 스튜디오는 주민 제안과 수요조사 결과, 기존 프로그램 사례를 참고하여 사서가 프로그램 초안을 빠르게 작성할 수 있도록 돕습니다.
             </p>
           </div>
           <aside className="studioSectionCta" aria-label="모이라 스튜디오 사서 안내">
@@ -117,7 +117,7 @@ export default function StudioSection() {
             <strong>AI 프로그램 기획을 시작해보세요.</strong>
             <Link className="uiButton studioBrandButton" href="/studio/about">
               <span className="studioBrandButtonIcon" aria-hidden="true">✦</span>
-              MOIRA Studio 시작하기
+              MOIRA STUDIO 시작하기
               <span className="studioBrandButtonArrow" aria-hidden="true">→</span>
             </Link>
           </aside>

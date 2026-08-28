@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
@@ -26,14 +27,25 @@ const interestCategories: InterestCategory[] = [
 ];
 
 const accountTypes: AccountType[] = [
-  { id: 'resident', title: '일반 사용자', description: '마을 주민으로 가입해요' },
-  { id: 'librarian', title: '사서', description: '도서관 운영자 계정이에요' },
-  { id: 'admin', title: '관리자', description: '전체 관리 권한 계정이에요' },
+  { id: 'resident', title: '일반 사용자', description: '마을 주민으로 가입할 수 있어요' },
+  { id: 'librarian', title: '사서', description: '도서관 운영자 계정입니다' },
+  { id: 'admin', title: '관리자', description: '전체 관리 권한 계정입니다' },
 ];
 
 const steps = ['계정 유형', '계정 정보', '이름', '기본 정보', '지역', '연락처', '관심분야', '완료'] as const;
+const stepTitles = [
+  '계정 유형을 선택해 주세요',
+  '계정 정보를 입력해 주세요',
+  '이름을 입력해 주세요',
+  '기본 정보를 입력해 주세요',
+  '지역을 선택해 주세요',
+  '연락처를 입력해 주세요',
+  '관심분야를 선택해 주세요',
+  '회원가입이 완료되었습니다',
+] as const;
 const regions = ['금정구', '부산진구', '동래구', '해운대구', '북구', '남구'];
 const genders = ['선택 안 함', '여성', '남성', '기타'];
+const userIdPattern = /^[a-zA-Z0-9가-힣_-]{4,30}$/;
 const today = new Date();
 const currentYear = today.getFullYear();
 const currentMonth = today.getMonth() + 1;
@@ -67,10 +79,13 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const progress = Math.round(((step - 1) / (steps.length - 1)) * 100);
-  const stepTitle = useMemo(() => steps[step - 1], [step]);
+  const stepTitle = useMemo(() => stepTitles[step - 1] ?? '회원가입', [step]);
 
   const isStepOneValid = Boolean(accountType);
-  const isStepTwoValid = /^[a-zA-Z0-9_-]{4,30}$/.test(userId.trim()) && password.length >= 8 && password === confirmPassword;
+  const isUserIdFormatInvalid = userId.trim().length > 0 && !userIdPattern.test(userId.trim());
+  const isPasswordTooShort = password.length > 0 && password.length < 8;
+  const isPasswordValid = password.length >= 8;
+  const isStepTwoValid = userIdPattern.test(userId.trim()) && isPasswordValid && password === confirmPassword;
   const isStepThreeValid = name.trim().length > 0;
   const isPasswordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
   const availableMonths =
@@ -95,17 +110,6 @@ export default function SignupPage() {
     selectedInterests.includes(item.id),
   );
 
-  // 한국어 목적격 조사(을/를)를 단어 끝받침에 따라 결정합니다.
-  function josaEulReul(word: string) {
-    if (!word) return '을';
-    const last = word.slice(-1);
-    const code = last.charCodeAt(0);
-    // 한글 완성형 음절 범위인지 확인
-    if (code < 0xac00 || code > 0xd7a3) return '을';
-    const jong = (code - 0xac00) % 28;
-    return jong === 0 ? '를' : '을';
-  }
-
   function toggleInterest(interestId: string) {
     setStatusMessage('');
     setSelectedInterests((current) =>
@@ -123,7 +127,13 @@ export default function SignupPage() {
 
     if (step === 2 && !isStepTwoValid) {
       setStatusMessage(
-        isPasswordMismatch ? '비밀번호와 비밀번호 확인이 다릅니다.' : '회원 아이디와 비밀번호를 모두 입력해 주세요.',
+        isPasswordMismatch
+          ? '비밀번호와 비밀번호 확인이 다릅니다.'
+          : isUserIdFormatInvalid
+            ? '회원 아이디는 한글, 영문, 숫자, 밑줄, 하이픈을 사용해 4~30자로 입력해 주세요.'
+            : isPasswordTooShort
+              ? '비밀번호는 8자 이상입니다.'
+              : '회원 아이디와 비밀번호를 모두 입력해 주세요.',
       );
       return;
     }
@@ -144,7 +154,7 @@ export default function SignupPage() {
     }
 
     if (step === 6 && !isStepSixValid) {
-      setStatusMessage('이메일은 필수입니다.');
+      setStatusMessage('이메일을 올바르게 입력해 주세요.');
       return;
     }
 
@@ -203,11 +213,21 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="signupPage">
+    <main className="signupPage" data-step={step}>
       <section className="signupShell" aria-labelledby="signup-title">
         <Link className="authBrand" href="/" aria-label="모이라 홈">
-          <strong>모이라</strong>
-          <span>모두가 이어지는 라이브러리</span>
+          <Image
+            className="authBrandLogo"
+            src="/moira-logo-mark-no-ai.png"
+            alt=""
+            width={72}
+            height={56}
+            priority
+          />
+          <span>
+            <strong>모이라</strong>
+            <small>모두가 이어지는 라이브러리</small>
+          </span>
         </Link>
         <div className="signupCard">
           <div className="signupTopRow">
@@ -221,7 +241,7 @@ export default function SignupPage() {
 
           <p className="uiEyebrow signupEyebrow">모이라 회원가입</p>
           <h1 id="signup-title" className="signupTitle">
-            {step === 8 ? '환영합니다' : `${stepTitle}${josaEulReul(stepTitle)} 입력해 주세요`}
+            {step === 8 ? '환영합니다' : stepTitle}
           </h1>
 
           <div className="signupProgressWrap" aria-label="진행률">
@@ -267,20 +287,40 @@ export default function SignupPage() {
                     id="signup-userid"
                     type="text"
                     value={userId}
-                    onChange={(event) => setUserId(event.target.value)}
-                    placeholder="모이라에서 사용할 아이디"
+                    onChange={(event) => {
+                      setUserId(event.target.value);
+                      setStatusMessage('');
+                    }}
+                    placeholder="한글, 영문, 숫자 4~30자"
+                    aria-invalid={isUserIdFormatInvalid}
+                    aria-describedby={isUserIdFormatInvalid ? 'signup-userid-error' : undefined}
                   />
+                  {isUserIdFormatInvalid ? (
+                    <small id="signup-userid-error" className="signupFieldError" role="alert">
+                      한글, 영문, 숫자, 밑줄, 하이픈만 4~30자로 사용할 수 있습니다.
+                    </small>
+                  ) : null}
                 </label>
 
-                <label className="signupField" htmlFor="signup-password">
+                <label className="signupField signupFieldWide" htmlFor="signup-password">
                   <span>비밀번호</span>
                   <input
                     id="signup-password"
                     type="password"
                     value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    onChange={(event) => {
+                      setPassword(event.target.value);
+                      setStatusMessage('');
+                    }}
                     placeholder="비밀번호를 입력하세요"
+                    aria-invalid={isPasswordTooShort}
+                    aria-describedby={isPasswordTooShort ? 'signup-password-length-error' : undefined}
                   />
+                  {isPasswordTooShort ? (
+                    <small id="signup-password-length-error" className="signupFieldError" role="alert">
+                      비밀번호는 8자 이상입니다.
+                    </small>
+                  ) : null}
                 </label>
 
                 <label className="signupField signupFieldWide" htmlFor="signup-password-confirm">
@@ -480,8 +520,7 @@ export default function SignupPage() {
                 <p className="signupWelcomeEyebrow">환영합니다</p>
                 <h2 className="signupWelcomeTitle">{name || '새로운 이용자'}님, 모이라 가입이 완료되었습니다.</h2>
                 <p className="signupWelcomeText">
-                  {selectedAccountTypeLabel} 계정으로 시작합니다. 선택한 관심분야는 추후 추천과 주민 참여 흐름에
-                  활용됩니다.
+                  {selectedAccountTypeLabel} 계정으로 시작합니다.
                 </p>
 
                 <div className="signupWelcomeSummary">

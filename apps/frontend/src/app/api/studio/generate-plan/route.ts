@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getBackendUrl } from '@/lib/backend-url';
 import { requestGeminiJson, resolveModels } from '@/lib/gemini';
+import { audienceFilter, buildSearchQuery, type StudioConditions } from '@/lib/studio-search-query';
 import { buildStudioPlanPrompt, parseStudioPlan, type StudioPlanAgenda } from '@/lib/studio-plan-prompt';
 
 /**
@@ -17,6 +19,90 @@ export type StudioGeneratePlanRequest = {
   agenda?: StudioPlanAgenda | null;
   model?: string;
 };
+
+type ReferenceContextResponse = {
+  markdown?: unknown;
+  resultCount?: unknown;
+  error?: unknown;
+};
+
+// 검색은 생성의 보조 단계다. 검색 서버가 느릴 때 Gemini가 쓸 시간을 모두
+// 소비하지 않도록 백엔드의 15초 제한보다 조금 긴 값만 기다린다.
+const REFERENCE_TIMEOUT_MS = 20_000;
+
+export const maxDuration = 120;
+
+class ReferenceContextError extends Error {}
+
+function readConditions(value: unknown): StudioConditions {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const source = value as Record<string, unknown>;
+  return Object.fromEntries(
+    Object.entries(source).flatMap(([key, values]) => {
+      if (!Array.isArray(values)) return [];
+      const cleaned = values
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.trim())
+        .filter(Boolean);
+      return cleaned.length ? [[key, cleaned]] : [];
+    }),
+  ) as StudioConditions;
+}
+
+/**
+ * 사서의 메모와 주민 아이디어를 하나의 검색 질의로 만든다.
+ * 메모 없이 주민 아이디어만 고른 경우에도 그 내용과 가까운 프로그램을 찾아야 한다.
+ */
+function referenceSearchMemo(memo: string, agenda: StudioPlanAgenda | null) {
+  return [
+    memo,
+    agenda?.title,
+    agenda?.content,
+    agenda?.tags.length ? agenda.tags.join(' ') : '',
+  ].filter(Boolean).join('. ');
+}
+
+/**
+ * 기존 KURE-v1 의미 검색이 만든 상위 사례 Markdown을 가져온다.
+ * 브라우저가 EC2를 직접 부르지 않고 Vercel의 Route Handler가 서버 간 요청을 보내므로
+ * 배포 주소와 CORS 정책을 화면에 노출하지 않는다.
+ */
+async function buildReferenceContext(
+  memo: string,
+  agenda: StudioPlanAgenda | null,
+  conditions: StudioConditions,
+) {
+  const query = buildSearchQuery(referenceSearchMemo(memo, agenda), conditions).slice(0, 1000);
+  if (!query) throw new ReferenceContextError('유사 사례 검색어를 구성하지 못했습니다.');
+
+  const target = new URL(getBackendUrl('/api/program-case/studio-context'));
+  target.searchParams.set('q', query);
+  const audience = audienceFilter(conditions);
+  if (audience) target.searchParams.set('audience', audience);
+
+  let response: Response;
+  try {
+    response = await fetch(target, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(REFERENCE_TIMEOUT_MS),
+    });
+  } catch (error) {
+    throw new ReferenceContextError(
+      error instanceof Error && error.name === 'TimeoutError'
+        ? '유사 프로그램 검색 시간이 초과되었습니다.'
+        : '유사 프로그램 검색 서버에 연결할 수 없습니다.',
+    );
+  }
+  const payload = await response.json().catch(() => ({})) as ReferenceContextResponse;
+  if (!response.ok) {
+    const detail = typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new ReferenceContextError(`유사 프로그램 참고자료 생성 실패: ${detail}`);
+  }
+  if (typeof payload.markdown !== 'string' || !payload.markdown.trim()) {
+    throw new ReferenceContextError('유사 프로그램 참고자료가 비어 있습니다.');
+  }
+  return payload.markdown.slice(0, 30000);
+}
 
 /** 보내온 의제를 읽는다. 제목과 내용이 있어야 기획의 근거가 되므로 둘 다 없으면 없는 것으로 본다. */
 function readAgenda(value: unknown): StudioPlanAgenda | null {
@@ -47,15 +133,32 @@ export async function POST(request: Request) {
      * 요청이라, 같은 말을 메모에 한 번 더 적게 할 이유가 없다.
      */
     if (!memo && !agenda) {
-      return NextResponse.json({ error: '기획 메모를 적거나 지역 의제를 골라 주세요.' }, { status: 400 });
+      return NextResponse.json({ error: '프로그램 아이디어를 적거나 주민 아이디어를 골라 주세요.' }, { status: 400 });
+    }
+
+    const conditions = readConditions(body.conditions);
+    const suppliedReferences = typeof body.referencesMarkdown === 'string'
+      ? body.referencesMarkdown.trim().slice(0, 30000)
+      : '';
+    let referencesMarkdown = suppliedReferences;
+    let referenceWarning: string | undefined;
+    if (!referencesMarkdown) {
+      try {
+        referencesMarkdown = await buildReferenceContext(memo, agenda, conditions);
+      } catch (error) {
+        // RAG 검색은 기획안의 품질을 높이는 보조 기능이다. 검색 결과가 없거나
+        // 검색 서버가 잠시 내려가도 사용자의 메모와 조건만으로 생성은 계속한다.
+        referenceWarning = error instanceof ReferenceContextError
+          ? error.message
+          : '유사 프로그램 참고자료를 불러오지 못했습니다.';
+        console.warn('Studio reference context unavailable; continuing without it:', error);
+      }
     }
 
     const prompt = buildStudioPlanPrompt({
       memo,
-      conditions: body.conditions && typeof body.conditions === 'object' ? body.conditions : {},
-      referencesMarkdown: typeof body.referencesMarkdown === 'string'
-        ? body.referencesMarkdown.slice(0, 30000)
-        : undefined,
+      conditions,
+      referencesMarkdown,
       agenda,
     });
 
@@ -75,6 +178,7 @@ export async function POST(request: Request) {
       // 비어 온 항목을 알려 준다. 화면에서 「이 항목은 다시 만들어 주세요」로 안내할 수 있다.
       missingFields: missing,
       model: result.model,
+      referenceWarning,
     });
   } catch (error) {
     /**
@@ -83,6 +187,9 @@ export async function POST(request: Request) {
      * 화면에는 내보내지 않는다. 내부 주소가 사용자에게 보일 이유가 없다.
      */
     console.error('Studio generate-plan route failed:', error, error instanceof Error ? error.cause : undefined);
+    if (error instanceof ReferenceContextError) {
+      return NextResponse.json({ error: error.message }, { status: 502 });
+    }
     return NextResponse.json({ error: '기획서 생성 중 문제가 발생했습니다.' }, { status: 503 });
   }
 }

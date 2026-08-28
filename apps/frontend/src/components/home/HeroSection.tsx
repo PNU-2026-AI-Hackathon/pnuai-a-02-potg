@@ -44,14 +44,14 @@ export default function HeroSection() {
             <li>
               <span aria-hidden="true">01</span>
               <div>
-                <strong>지역 의제 제안</strong>
+                <strong>우리동네 아이디어 제안</strong>
                 <p>주민이 동네에 필요한 변화와 관심사를 나눕니다.</p>
               </div>
             </li>
             <li className="isStudio">
               <span aria-hidden="true">02</span>
               <div>
-                <strong>MOIRA Studio 기획</strong>
+                <strong>MOIRA STUDIO 기획</strong>
                 <p>사서가 주민 의견을 실행 가능한 프로그램으로 구체화합니다.</p>
               </div>
             </li>

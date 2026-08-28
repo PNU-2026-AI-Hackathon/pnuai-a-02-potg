@@ -35,10 +35,25 @@ export default function SiteHeader({
             <Link className={activeMenu === 'about' ? 'isActive' : ''} href="/about">
               모이라 소개
             </Link>
-            <Link href="/#library-finder">우리동네 도서관</Link>
-            <Link className={activeMenu === 'programs' ? 'isActive' : ''} href="/programs">
-              프로그램 게시판
-            </Link>
+            <div className="siteNavDropdown">
+              <Link
+                className={activeMenu === 'programs' ? 'isActive' : ''}
+                href="/programs"
+              >
+                프로그램 게시판
+                <svg
+                  className="siteNavChevron"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path d="m5 7.5 5 5 5-5" />
+                </svg>
+              </Link>
+              <div className="siteNavSubmenu">
+                <Link href="/programs">프로그램 둘러보기</Link>
+                <Link href="/programs/calendar">프로그램 일정</Link>
+              </div>
+            </div>
             <div className="siteNavDropdown">
               <Link
                 className={activeMenu === 'community' ? 'isActive' : ''}
@@ -55,8 +70,8 @@ export default function SiteHeader({
               </Link>
               <div className="siteNavSubmenu">
                 <Link href="/community/library-news">도서관 행사 및 소식</Link>
-                <Link href="/community/ideas">함께 만드는 행사</Link>
-                <Link href="/community/free">동네 광장</Link>
+                <Link href="/community/ideas">우리동네 아이디어</Link>
+                <Link href="/survey">프로그램 수요조사</Link>
               </div>
             </div>
             <Link
@@ -64,11 +79,51 @@ export default function SiteHeader({
               href="/studio/about"
             >
               <span className="siteStudioIcon" aria-hidden="true">✦</span>
-              MOIRA Studio
+              MOIRA STUDIO
             </Link>
           </div>
-          <AuthActions initialUser={user} />
+          <div className="siteNavUtility">
+            <AuthActions initialUser={user} />
+          </div>
         </nav>
+
+        <details className="siteMobileMenu">
+          <summary aria-label="메뉴 열기">
+            <span /><span /><span />
+          </summary>
+          <div className="siteMobileMenuPanel">
+            <nav aria-label="모바일 주요 메뉴">
+              <Link href="/about">모이라 소개</Link>
+              <div className="siteMobileMenuGroup">
+                <Link
+                  className={`siteMobileMenuParent ${activeMenu === 'programs' ? 'isActive' : ''}`}
+                  href="/programs"
+                >
+                  프로그램 게시판
+                </Link>
+                <div className="siteMobileSubmenu">
+                  <Link href="/programs">프로그램 둘러보기</Link>
+                  <Link href="/programs/calendar">프로그램 일정</Link>
+                </div>
+              </div>
+              <div className="siteMobileMenuGroup">
+                <Link
+                  className={`siteMobileMenuParent ${activeMenu === 'community' ? 'isActive' : ''}`}
+                  href="/community"
+                >
+                  우리동네 이야기
+                </Link>
+                <div className="siteMobileSubmenu">
+                  <Link href="/community/library-news">도서관 행사 및 소식</Link>
+                  <Link href="/community/ideas">우리동네 아이디어</Link>
+                  <Link href="/survey">프로그램 수요조사</Link>
+                </div>
+              </div>
+              <Link className="siteStudioLink" href="/studio/about">✦ MOIRA STUDIO</Link>
+            </nav>
+            <AuthActions initialUser={user} />
+          </div>
+        </details>
       </div>
     </header>
   );

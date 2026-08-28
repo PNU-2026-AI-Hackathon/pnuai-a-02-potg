@@ -28,26 +28,25 @@ const serviceSteps = [
     number: '01',
     title: '주민 아이디어',
     description: '주민이 우리 동네에 필요한 문화·교육 프로그램과 지역 의견을 자유롭게 제안합니다.',
+    iconIndex: 0,
   },
   {
     number: '02',
-    title: '지역 의제 도출',
-    description: 'AI가 주민 의견을 분석·분류하여 주요 관심 주제와 지역 의제를 정리합니다.',
+    title: 'MOIRA STUDIO',
+    description: '사서가 주민 의견과 기존 프로그램 사례를 바탕으로 AI 기획안 초안을 만들고 검토·보완합니다.',
+    iconIndex: 2,
   },
   {
     number: '03',
-    title: 'MOIRA Studio',
-    description: '사서가 주민 의견과 기존 프로그램 사례를 바탕으로 AI 기획안 초안을 만들고 검토·보완합니다.',
+    title: '주민 수요조사',
+    description: '기획안을 공개하여 참여 의향, 희망 요일·시간대와 주민 의견을 확인합니다.',
+    iconIndex: 3,
   },
   {
     number: '04',
-    title: '주민 수요조사',
-    description: '기획안을 공개하여 참여 의향, 희망 요일·시간대와 주민 의견을 확인합니다.',
-  },
-  {
-    number: '05',
     title: '프로그램 운영',
     description: '수요조사 결과를 반영해 기획안을 보완하고 실제 도서관 문화·교육 프로그램으로 운영합니다.',
+    iconIndex: 4,
   },
 ];
 
@@ -114,8 +113,8 @@ const featureItems = [
   },
   {
     icon: '⚙️',
-    title: 'AI 기반 프로그램 기획 (MOIRA Studio)',
-    description: '주민 의견과 기존 프로그램 사례를 바탕으로 AI가 문화·교육 프로그램 기획안을 생성하고 사서의 기획을 지원합니다.',
+    title: 'AI 기반 프로그램 기획 (MOIRA STUDIO)',
+    description: '주민 아이디어와 선택한 기획 조건, 기존 프로그램 사례를 바탕으로 AI가 문화·교육 프로그램 기획 초안을 생성합니다.',
   },
   {
     icon: '📈',
@@ -138,7 +137,9 @@ const audienceList = [
   {
     icon: '👥',
     label: '지역 주민',
+    mobileLabel: '지역 주민',
     description: '우리 동네 문화·교육 프로그램을 찾고, 필요한 프로그램을 제안하며 다양한 도서관 서비스에 참여합니다.',
+    mobileDescription: '아이디어를 제안하고, 프로그램 수요조사에 응답하며 지역 도서관 프로그램에 참여해요.',
     items: [
       {
         icon: '▦',
@@ -160,11 +161,13 @@ const audienceList = [
   {
     icon: '🧑‍💻',
     label: '사서 및 프로그램 기획 담당자',
+    mobileLabel: '사서',
     description: '주민 의견을 바탕으로 AI의 도움을 받아 지역 맞춤형 문화·교육 프로그램을 기획하고 운영합니다.',
+    mobileDescription: '주민 의견을 확인하고, MOIRA Studio를 활용해 프로그램을 기획해요.',
     items: [
       {
         icon: 'AI',
-        label: 'MOIRA Studio',
+        label: 'MOIRA STUDIO',
         description: '주민 의견과 기존 프로그램 사례를 분석하여 AI가 프로그램 기획 초안을 생성합니다.',
       },
       {
@@ -197,14 +200,14 @@ export default async function AboutPage() {
               <span className="h1LineBreak">도서관 프로그램이 되는 곳</span>
             </h1>
             <p className="introHeroLead">
-              모이라는 주민이 제안한 프로그램 아이디어와 지역 의견을 AI가 분석해
-              사서의 문화·교육 프로그램 기획을 지원하는 AI 기반 도서관 프로그램
+              모이라는 주민이 제안한 프로그램 아이디어와 사서가 선택한 기획 조건,
+              기존 프로그램 사례를 바탕으로 AI 기획 초안을 생성하는 도서관 프로그램
               특화 플랫폼입니다. 프로그램 수요조사와 통합 정보 제공을 통해
               주민과 도서관이 함께 지역 맞춤형 프로그램을 만들어갑니다.
             </p>
 
             <div className="homeHeroActions">
-              <Link className="uiButton uiButtonPrimary" href="/community/free/write">
+              <Link className="uiButton uiButtonPrimary" href="/community/ideas">
                 우리 동네 아이디어 제안하기
                 <span aria-hidden="true">→</span>
               </Link>
@@ -216,12 +219,12 @@ export default async function AboutPage() {
             <div className="introHeroPills" aria-label="모이라 핵심 키워드">
               <span># 주민 아이디어</span>
               <span># AI 기획 지원</span>
-              <span># MOIRA Studio</span>
+              <span># MOIRA STUDIO</span>
               <span># 프로그램 수요 조사</span>
             </div>
           </div>
 
-          <div className="introHeroVisual" aria-label="MOIRA Studio 목업">
+          <div className="introHeroVisual" aria-label="MOIRA STUDIO 목업">
             <div className="introLibraryMark" aria-hidden="true">
               <svg viewBox="0 0 120 76">
                 <path d="M12 18c18-3 34 1 48 12v38C46 57 30 53 12 56V18Z" />
@@ -233,24 +236,30 @@ export default async function AboutPage() {
             </div>
             <div className="studioMockupShell">
               <div className="studioMockupInner">
-                <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
-                <h2 className="studioMockupTitle">MOIRA STUDIO</h2>
-                <p className="studioMockupSubtitle">
-                  주민의 이야기에서 시작하는 도서관 프로그램 기획을 짧은 메모로 시작하세요.
-                </p>
+                <div className="studioMockupHeader">
+                  <p className="studioMockupEyebrow">LIBRARIAN PLANNING TOOL</p>
+                  <h2 className="studioMockupTitle">
+                    <span aria-hidden="true">✦</span> MOIRA STUDIO
+                  </h2>
+                </div>
 
                 <div className="studioMockupCard">
-                  <div className="studioModeTabs" role="tablist" aria-label="기획 모드">
-                    <button type="button" className="isActive">
-                      프로그램 기획
-                    </button>
-                    <button type="button">지역 의제</button>
+                  <div className="studioMockupExamples">
+                    <div>
+                      <strong><span aria-hidden="true">✦</span> 프로그램 예시 선택</strong>
+                      <small>아이디어를 골라 빠르게 시작해보세요.</small>
+                    </div>
+                    <div className="studioMockupExampleChips" aria-label="프로그램 아이디어 예시">
+                      <span>초등학생 독서 토론</span>
+                      <span>시니어 디지털 교육</span>
+                      <span>가족 주말 프로그램</span>
+                    </div>
                   </div>
 
                   <div className="studioFieldGroup">
-                    <label className="studioFieldLabel">기획 메모</label>
+                    <label className="studioFieldLabel">프로그램 아이디어</label>
                     <div className="studioTextBlock">
-                      예: 초등 고학년과 함께 우리 동네 기억을 수집하는 4회차 프로그램
+                      초등 고학년과 함께 우리 동네 기억을 수집하는 프로그램
                     </div>
                   </div>
 
@@ -270,8 +279,7 @@ export default async function AboutPage() {
                   </div>
 
                   <div className="studioActionBar">
-                    <span>만들고 싶은 프로그램을 한 줄로 적어주세요.</span>
-                    <button type="button">기획안 만들기</button>
+                    <button type="button"><span aria-hidden="true">✦</span> 기획안 만들기 <span aria-hidden="true">→</span></button>
                   </div>
                 </div>
 
@@ -323,13 +331,13 @@ export default async function AboutPage() {
           <div className="pipeline" aria-label="모이라는 이렇게 작동합니다.">
             <span className="pipelineProgress" aria-hidden="true" />
             {serviceSteps.map((step, index) => {
-              const isStudio = step.title === 'MOIRA Studio';
+              const isStudio = step.title === 'MOIRA STUDIO';
 
               return (
                 <div key={step.number} className={`pipelineItem ${isStudio ? 'isStudioHighlight' : ''}`}>
                   <div className="pipelineStep">
                     <span className={`pipelineNumber ${isStudio ? 'isStudioNumber' : ''}`}>
-                      <FlowStepIcon index={index} />
+                      <FlowStepIcon index={step.iconIndex} />
                       <span className="flowStepNumber">{step.number}</span>
                     </span>
                     {index < serviceSteps.length - 1 && (
@@ -341,7 +349,7 @@ export default async function AboutPage() {
                     <h3 className={isStudio ? 'studioHighlightTitle' : ''}>
                       {isStudio ? (
                         <>
-                          <span className="flowStudioBrand">MOIRA Studio</span>
+                          <span className="flowStudioBrand">MOIRA STUDIO</span>
                         </>
                       ) : (
                         step.title
@@ -362,7 +370,7 @@ export default async function AboutPage() {
           <SectionHeading
             eyebrow="KEY FEATURES"
             title="모이라의 주요 기능"
-            description="주민 의견 수렴부터 AI 기반 문화·교육 프로그램 기획, 수요 조사, 프로그램 정보 제공까지 하나의 플랫폼에서 지원합니다."
+            description="주민 아이디어 제안부터 기존 사례를 참고한 AI 프로그램 기획, 수요 조사, 프로그램 정보 제공까지 하나의 플랫폼에서 지원합니다."
           />
           <div className="featureGrid">
             {featureItems.map((item) => (
@@ -392,8 +400,10 @@ export default async function AboutPage() {
                 <div className="audienceCardHeader">
                   <span className="audienceCardIcon" aria-hidden="true">{audience.icon}</span>
                   <div>
-                    <strong>{audience.label}</strong>
-                    <p>{audience.description}</p>
+                    <strong className="audienceDesktopLabel">{audience.label}</strong>
+                    <strong className="audienceMobileLabel">{audience.mobileLabel}</strong>
+                    <p className="audienceDesktopDescription">{audience.description}</p>
+                    <p className="audienceMobileSummary">{audience.mobileDescription}</p>
                   </div>
                 </div>
                 <ul>

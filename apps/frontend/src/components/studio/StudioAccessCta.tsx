@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import type { AuthUser } from '@/lib/auth-config';
+import { isStudioStaff, type AuthUser } from '@/lib/auth-config';
 
 type StudioAccessCtaProps = {
   accountType: AuthUser['accountType'] | null;
@@ -17,7 +17,7 @@ export default function StudioAccessCta({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const isStaff = accountType === 'LIBRARIAN' || accountType === 'ADMIN';
+  const isStaff = isStudioStaff(accountType);
   const isLoggedOut = accountType === null;
 
   function handleAccess() {
@@ -52,7 +52,7 @@ export default function StudioAccessCta({
     <div className={`studioAccessCta ${compact ? 'isCompact' : ''}`}>
       <button className="uiButton studioLandingPrimary" type="button" onClick={handleAccess}>
         <span aria-hidden="true">✦</span>
-        MOIRA Studio 사용하기 →
+        MOIRA STUDIO 사용하기 →
       </button>
       {isModalOpen ? (
         <div
@@ -74,12 +74,12 @@ export default function StudioAccessCta({
             <span className="studioAccessModalIcon" aria-hidden="true">✦</span>
             <p className="uiEyebrow">MOIRA STUDIO</p>
             <h2 id="studio-access-modal-title">
-              {isLoggedOut ? '로그인이 필요합니다' : 'MOIRA Studio 이용 안내'}
+              {isLoggedOut ? '로그인이 필요합니다' : 'MOIRA STUDIO 이용 안내'}
             </h2>
             <p id="studio-access-modal-description">
               {isLoggedOut
-                ? 'MOIRA Studio는 사서와 도서관 프로그램 기획 담당자를 위한 기능입니다. 로그인 후 이용해주세요.'
-                : 'MOIRA Studio는 사서와 도서관 프로그램 기획 담당자를 위한 기능입니다. 사서 계정으로 로그인해주세요.'}
+                ? 'MOIRA STUDIO는 사서와 도서관 프로그램 기획 담당자를 위한 기능입니다. 로그인 후 이용해주세요.'
+                : 'MOIRA STUDIO는 사서와 도서관 프로그램 기획 담당자를 위한 기능입니다. 사서 계정으로 로그인해주세요.'}
             </p>
             <div className="studioAccessModalActions">
               {isLoggedOut ? (
@@ -88,7 +88,7 @@ export default function StudioAccessCta({
                   <button
                     className="isPrimary"
                     type="button"
-                    onClick={() => router.push('/login?next=/studio/about')}
+                    onClick={() => router.push('/login?next=/studio')}
                   >
                     로그인하기
                   </button>

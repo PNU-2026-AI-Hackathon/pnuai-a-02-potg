@@ -20,6 +20,7 @@ type StudioDocumentRow = {
    * 항목 하나만 고치려면 이 구조가 문서와 함께 남아 있어야 한다.
    */
   plan: Prisma.JsonValue | null;
+  surveyResult: Prisma.JsonValue | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -31,6 +32,7 @@ type CreateStudioDocumentBody = {
   conditions?: unknown;
   agenda?: unknown;
   plan?: unknown;
+  surveyResult?: unknown;
 };
 
 type UpdateStudioDocumentBody = {
@@ -38,10 +40,13 @@ type UpdateStudioDocumentBody = {
   content?: string;
   stage?: unknown;
   plan?: unknown;
+  surveyResult?: unknown;
 };
 
 const router = Router();
 const validStages = new Set<StudioDocumentStage>(['기획 중', '수요조사 중', '수요조사 완료', '기획서 확정']);
+const surveyIntentions = ['꼭 참여하고 싶어요', '일정이 맞으면 참여하고 싶어요', '관심은 있지만 참여는 어려워요', '관심이 없어요'];
+const surveyTimeSlots = ['평일 오전', '평일 오후', '평일 저녁', '주말'];
 let ensureTablePromise: Promise<void> | null = null;
 
 router.use(authenticateOptionalJwt);
@@ -79,9 +84,35 @@ function ensureStudioDocumentTable() {
       ALTER TABLE "StudioDocument"
       ADD COLUMN IF NOT EXISTS "plan" JSONB
     `);
+    /**
+     * 로그인하지 않은 사람의 기획서는 ownerId 가 비어 있다. 예전 마이그레이션이 이 열을
+     * NOT NULL 로 묶어 둔 DB가 있어, 그대로 두면 익명 저장이 23502 로 떨어진다.
+     */
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "StudioDocument"
+      ALTER COLUMN "ownerId" DROP NOT NULL
+    `);
+    /**
+     * 주인이 탈퇴해도 문서는 남기고 주인만 지운다. 예전 제약은 CASCADE 였는데,
+     * 그대로면 사람을 지울 때 그 사람이 만든 기획서까지 함께 사라진다.
+     */
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "StudioDocument"
+      ADD COLUMN IF NOT EXISTS "surveyResult" JSONB
+    `);
     await prisma.$executeRawUnsafe(`
       DO $$
       BEGIN
+        IF EXISTS (
+          SELECT 1
+          FROM pg_constraint
+          WHERE conname = 'StudioDocument_ownerId_fkey'
+            AND confdeltype <> 'n'
+        ) THEN
+          ALTER TABLE "StudioDocument"
+          DROP CONSTRAINT "StudioDocument_ownerId_fkey";
+        END IF;
+
         IF NOT EXISTS (
           SELECT 1
           FROM pg_constraint
@@ -143,7 +174,7 @@ function readConditionValue(conditions: Prisma.JsonValue | null, key: string) {
     : '';
 }
 
-function serializeStudioDocument(document: StudioDocumentRow) {
+function serializeStudioDocument(document: StudioDocumentRow, surveyResult: Prisma.JsonValue | null = document.surveyResult) {
   return {
     id: document.id,
     title: document.title,
@@ -156,14 +187,55 @@ function serializeStudioDocument(document: StudioDocumentRow) {
     conditions: document.conditions,
     agenda: document.agenda,
     plan: document.plan,
+    surveyResult,
     createdAt: document.createdAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
   };
 }
 
+async function liveSurveyResult(documentId: string): Promise<Prisma.JsonObject> {
+  type CountRow = { label: string | null; count: bigint };
+  const [intentionRows, timeSlotRows] = await Promise.all([
+    prisma.$queryRaw<CountRow[]>`
+      SELECT intention AS label, COUNT(*)::bigint AS count
+      FROM "StudioDocumentVote"
+      WHERE "studioDocumentId" = ${documentId}
+      GROUP BY intention
+    `,
+    prisma.$queryRaw<CountRow[]>`
+      SELECT "timeSlot" AS label, COUNT(*)::bigint AS count
+      FROM "StudioDocumentVote"
+      WHERE "studioDocumentId" = ${documentId} AND "timeSlot" IS NOT NULL
+      GROUP BY "timeSlot"
+    `,
+  ]);
+
+  const intentionCounts = new Map(intentionRows.map((row) => [row.label, Number(row.count)]));
+  const timeSlotCounts = new Map(timeSlotRows.map((row) => [row.label, Number(row.count)]));
+  const respondents = [...intentionCounts.values()].reduce((sum, count) => sum + count, 0);
+  const choice = (label: string, count: number) => ({
+    label,
+    count,
+    ratio: respondents > 0 ? Math.round((count / respondents) * 100) : 0,
+  });
+  const intentionBreakdown = surveyIntentions.map((label) => choice(label, intentionCounts.get(label) ?? 0));
+  const timeSlotBreakdown = surveyTimeSlots.map((label) => choice(label, timeSlotCounts.get(label) ?? 0));
+
+  return {
+    respondents,
+    totalTarget: respondents,
+    satisfaction: 0,
+    topChoices: [...intentionBreakdown].sort((a, b) => b.count - a.count),
+    intentionBreakdown,
+    timeSlotBreakdown,
+    comments: [],
+    actionPoints: [],
+  };
+}
+
 async function findScopedDocument(documentId: string, scope: { ownerId: string | null; anonymousOwnerId: string | null }) {
   const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+    SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
     FROM "StudioDocument"
     WHERE id = ${documentId}
       AND (
@@ -191,7 +263,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+      SELECT id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
       FROM "StudioDocument"
       WHERE
         (${scope.ownerId}::text IS NOT NULL AND "ownerId" = ${scope.ownerId})
@@ -218,6 +290,7 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
   const conditions = req.body.conditions ?? {};
   const agenda = req.body.agenda ?? null;
   const plan = req.body.plan ?? null;
+  const surveyResult = req.body.surveyResult ?? null;
 
   if (!title || !content) {
     return res.status(400).json({ code: 'REQUIRED_FIELDS_MISSING', error: 'title and content are required.' });
@@ -237,7 +310,7 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
     }
 
     const documents = await prisma.$queryRaw<StudioDocumentRow[]>`
-      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan)
+      INSERT INTO "StudioDocument" (id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult")
       VALUES (
         ${documentId},
         ${scope.ownerId},
@@ -247,9 +320,10 @@ router.post('/', async (req: Request<{}, {}, CreateStudioDocumentBody>, res: Res
         ${stage},
         ${JSON.stringify(conditions)}::jsonb,
         ${agenda === null ? null : JSON.stringify(agenda)}::jsonb,
-        ${plan === null ? null : JSON.stringify(plan)}::jsonb
+        ${plan === null ? null : JSON.stringify(plan)}::jsonb,
+        ${surveyResult === null ? null : JSON.stringify(surveyResult)}::jsonb
       )
-      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
     `;
 
     return res.status(201).json({ document: serializeStudioDocument(documents[0]) });
@@ -274,7 +348,7 @@ router.get('/:documentId', async (req: Request<{ documentId: string }>, res: Res
       return res.status(404).json({ code: 'STUDIO_DOCUMENT_NOT_FOUND', error: 'Studio document not found.' });
     }
 
-    return res.status(200).json({ document: serializeStudioDocument(document) });
+    return res.status(200).json({ document: serializeStudioDocument(document, await liveSurveyResult(document.id)) });
   } catch (error) {
     console.error('Studio document detail lookup failed:', error);
     return res.status(500).json({ code: 'STUDIO_DOCUMENT_DETAIL_FAILED', error: 'Unable to load studio document.' });
@@ -286,6 +360,7 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
   const content = typeof req.body.content === 'string' ? req.body.content.trim() : undefined;
   const stage = req.body.stage;
   const plan = req.body.plan;
+  const surveyResult = req.body.surveyResult;
 
   if (title !== undefined && title.length === 0) {
     return res.status(400).json({ code: 'INVALID_TITLE', error: 'title cannot be empty.' });
@@ -335,8 +410,12 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
       updateFields.push(Prisma.sql`plan = ${plan === null ? null : JSON.stringify(plan)}::jsonb`);
     }
 
+    if (surveyResult !== undefined) {
+      updateFields.push(Prisma.sql`"surveyResult" = ${surveyResult === null ? null : JSON.stringify(surveyResult)}::jsonb`);
+    }
+
     if (updateFields.length === 0) {
-      return res.status(200).json({ document: serializeStudioDocument(currentDocument) });
+      return res.status(200).json({ document: serializeStudioDocument(currentDocument, await liveSurveyResult(currentDocument.id)) });
     }
 
     updateFields.push(Prisma.sql`"updatedAt" = CURRENT_TIMESTAMP`);
@@ -354,10 +433,10 @@ router.patch('/:documentId', async (req: Request<{ documentId: string }, {}, Upd
             AND "anonymousOwnerId" = ${scope.anonymousOwnerId}
           )
         )
-      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "createdAt", "updatedAt"
+      RETURNING id, "ownerId", "anonymousOwnerId", title, content, stage, conditions, agenda, plan, "surveyResult", "createdAt", "updatedAt"
     `);
 
-    return res.status(200).json({ document: serializeStudioDocument(documents[0]) });
+    return res.status(200).json({ document: serializeStudioDocument(documents[0], await liveSurveyResult(documents[0].id)) });
   } catch (error) {
     console.error('Studio document update failed:', error);
     return res.status(500).json({ code: 'STUDIO_DOCUMENT_UPDATE_FAILED', error: 'Unable to update studio document.' });

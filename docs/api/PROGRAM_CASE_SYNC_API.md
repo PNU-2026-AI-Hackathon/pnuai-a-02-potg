@@ -2,7 +2,7 @@
 
 ## 목적과 범위
 
-#67의 금정구 프로그램 크롤링 DTO를 #71의 `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment` 테이블에 저장한다. 이 API는 내부 서버 간 동기화용이며 n8n HTTP Request 노드 연결과 첨부파일 본문 추출은 별도 작업이다.
+#67의 금정구 프로그램 크롤링 DTO를 #71의 `ProgramCase`, `ProgramCaseSession`, `ProgramCaseAttachment` 테이블에 저장한다. 이 API는 내부 서버 간 동기화용이며 첨부파일 본문 추출은 별도 작업이다.
 
 ## 엔드포인트와 인증
 
@@ -16,7 +16,7 @@ X-Internal-Api-Key: <INTERNAL_API_KEY>
 
 ## 요청 형식
 
-n8n 연결 편의를 위해 다음 두 형식을 모두 허용한다.
+내부 배치와 수동 검증 편의를 위해 다음 두 형식을 모두 허용한다.
 
 ```json
 { "programs": [{ "sourceType": "GEUMJEONG_SMALL_LIBRARY", "sourcePostId": "4354" }] }
@@ -83,7 +83,7 @@ nullable 필드는 최신 DTO가 `null`이면 DB도 `null`로 갱신한다. 기�
 
 자식 배열이 비어 있으면 기존 자식만 삭제한다. 중간 단계가 실패하면 해당 프로그램 전체가 롤백되며 다음 프로그램 처리는 계속된다. 349건 전체를 하나의 트랜잭션 또는 제한 없는 동시 요청으로 처리하지 않는다.
 
-첨부파일 전체 교체는 본문 추출 전 초기 적재 단계용이다. 향후 추출 결과를 같은 레코드에 저장하면 전체 삭제 대신 `fileUrl` 기반 갱신과 제거 대상 비교 방식으로 바꿔야 한다.
+첨부파일은 전체 삭제·재생성하지 않습니다. `(programCaseId, fileUrl)` 기준으로 Upsert하며, 같은 URL은 추출 결과와 ID를 보존하고 원본에서 사라진 URL은 `isActive=false`로 전환합니다. 다시 수집되면 같은 행을 활성화합니다.
 
 ## 응답
 
@@ -118,7 +118,7 @@ npm.cmd run dev
 
 ## 2026-07-20 검증 결과
 
-- 검증 파일: `automation/n8n/data/geumjeong-programs-349.json`
+- 검증 파일: `docs/fixtures/geumjeong-programs-349.json`
 - 프로그램 DTO 349건, 회차 20건, 첨부파일 237건
 - 인증 누락·잘못된 키: `401`
 - 잘못된 요청: `400`, 필드 위치 포함
@@ -132,6 +132,6 @@ npm.cmd run dev
 - 프로그램·회차·첨부파일 중복 각각 0건
 - 실제 크롤링 원본 JSON은 커밋하지 않음
 
-## 후속 n8n 연동
+## 외부 수집 배치 연동
 
-n8n HTTP Request 노드는 위 URL에 `POST`하고 `Content-Type: application/json`, `X-Internal-Api-Key` 헤더를 설정해야 한다. 키는 n8n Credential이나 환경변수에서 참조하고 워크플로우 JSON에 평문으로 넣지 않는다. 요청 본문은 최종 프로그램 배열 또는 `{ "programs": 배열 }`을 사용하며 수집 실행 요약 JSON은 전송하지 않는다.
+외부 수집 배치가 이 API를 호출할 때는 위 URL에 `POST`하고 `Content-Type: application/json`, `X-Internal-Api-Key` 헤더를 설정해야 한다. 키는 배포 환경변수나 별도 비밀 관리 도구에서 참조하고 코드·문서·로그에 평문으로 남기지 않는다. 요청 본문은 최종 프로그램 배열 또는 `{ "programs": 배열 }`을 사용하며 수집 실행 요약 JSON은 전송하지 않는다.

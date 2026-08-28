@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import ProgramFavoriteButton from '@/components/programs/ProgramFavoriteButton';
+import { ProgramBoardHero, ProgramFilterPanel } from '@/components/programs/ProgramBoardControls';
 import {
   formatProgramPeriod,
-  getProgramPrototypes,
+  getProgramSummaries,
   programCapacityLabel,
   programRecruitLabel,
   programRecruitStatus,
-  type ProgramPrototype,
+  type ProgramSummary,
 } from '@/lib/program-prototype';
 
 export const dynamic = 'force-dynamic';
@@ -51,7 +53,7 @@ const statusOptions = [
   { value: 'closed', label: '모집 마감' },
 ];
 
-function matchesFilters(program: ProgramPrototype, filters: ProgramFilters, today: Date) {
+function matchesFilters(program: ProgramSummary, filters: ProgramFilters, today: Date) {
   if (filters.status && programRecruitStatus(program, today) !== filters.status) return false;
   if (filters.target && program.targetGroup !== filters.target) return false;
   if (filters.library && program.libraryName !== filters.library) return false;
@@ -71,7 +73,7 @@ type ProgramsPageProps = {
 };
 
 export default async function ProgramsPage({ searchParams }: ProgramsPageProps) {
-  const [params, allPrograms] = await Promise.all([searchParams, getProgramPrototypes()]);
+  const [params, allPrograms] = await Promise.all([searchParams, getProgramSummaries()]);
 
   const filters: ProgramFilters = {
     q: (params.q ?? '').trim(),
@@ -113,19 +115,15 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
     <main className="programPage">
       <section className="uiContainer programShell" aria-labelledby="program-board-title">
         <nav className="communityBreadcrumb" aria-label="현재 위치">
-          <Link href="/">홈</Link><span aria-hidden="true">/</span><span>프로그램 게시판</span>
+          <Link href="/">홈</Link><span aria-hidden="true">/</span>
+          <Link href="/programs">프로그램 게시판</Link><span aria-hidden="true">/</span>
+          <span>프로그램 둘러보기</span>
         </nav>
 
-        <header className="programBoardHero">
-          <div>
-            <p className="programBoardEyebrow">MOIRA LIBRARY · PROGRAM</p>
-            <h1 id="program-board-title">우리 동네에서<br />열리는 프로그램들.</h1>
-            <p>금정구 도서관이 운영한 문화·교육 프로그램을 한곳에서 확인해 보세요.</p>
-          </div>
-        </header>
+        <ProgramBoardHero />
 
         <section className="programSummary" aria-label="프로그램 현황">
-          <div><strong>{programs.length}</strong><span>전체 프로그램</span></div>
+          <div><strong>{programs.length}</strong><span>등록 프로그램</span></div>
           <div><strong>{openCount}</strong><span>모집 중</span></div>
           <div><strong>{libraries}</strong><span>운영 도서관</span></div>
         </section>
@@ -135,40 +133,11 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
           링크 공유가 모두 되고, 페이지를 넘겨도 조건이 따라간다.
           page를 담지 않으므로 조건을 바꾸면 1페이지부터 다시 본다.
         */}
-        <form action="/programs" className="programFilterBar" method="get">
-          <label>
-            <span>접수별</span>
-            <select defaultValue={filters.status} name="status">
-              {statusOptions.map((option) => (
-                <option key={option.value || 'all'} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>대상별</span>
-            <select defaultValue={filters.target} name="target">
-              <option value="">전체 대상</option>
-              {targetOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>도서관</span>
-            <select defaultValue={filters.library} name="library">
-              <option value="">전체 도서관</option>
-              {libraryOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label className="programFilterSearch">
-            <span>프로그램 검색</span>
-            <input defaultValue={filters.q} name="q" placeholder="프로그램명 또는 도서관명" type="search" />
-          </label>
-          {/* 조건을 풀 때도 「전체」로 되돌려 검색을 누르면 된다. 되돌리기 단추를 따로 두지 않는다. */}
-          <button className="uiButton uiButtonPrimary" type="submit">검색</button>
-        </form>
+        <ProgramFilterPanel filters={filters} statusOptions={statusOptions} targetOptions={targetOptions} libraryOptions={libraryOptions} />
 
         <section className="programListSection" aria-labelledby="program-list-title">
           <div className="programListHeading">
-            <h2 id="program-list-title">{hasFilters ? '검색 결과' : '전체 프로그램'}</h2>
+            <h2 id="program-list-title">{hasFilters ? '검색 결과' : '프로그램 둘러보기'}</h2>
             <span>총 {programs.length}건 · {page}/{lastPage} 페이지</span>
           </div>
 
@@ -176,7 +145,15 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
             <p className="programBoardNotice" role="status">
               {hasFilters
                 ? '조건에 맞는 프로그램이 없습니다. 조건을 바꾸거나 지워 보세요.'
-                : <>프로그램 데이터가 아직 준비되지 않았습니다. 백엔드에서 <code>npm run program-board:build -- --profile all</code>을 실행해 주세요.</>}
+                /**
+                 * 흔한 순서대로 안내한다.
+                 *
+                 * 예전에는 이 자리에서 정제 배치부터 돌리라고 했다. 그런데 목록이 비는 흔한
+                 * 이유는 데이터가 없는 것이 아니라 백엔드가 안 떠 있거나, 새 스키마를 받고
+                 * `prisma generate` 를 안 돌려 `programBoardEntry` 가 없는 것이다. 배치를
+                 * 앞세우면 크롤 결과가 없는 컴퓨터에서 몇십 분을 헛돌게 된다.
+                 */
+                : <>프로그램 목록을 받지 못했습니다. 백엔드가 떠 있는지, 스키마를 새로 받았다면 <code>npx prisma generate</code>를 돌렸는지 확인해 주세요. 둘 다 맞다면 DB에 올린 것이 없는 것이니 <code>npm run program-board:publish</code>가 필요합니다.</>}
             </p>
           ) : (
             <div className="programCardGrid">
@@ -202,10 +179,13 @@ export default async function ProgramsPage({ searchParams }: ProgramsPageProps) 
                       <div><dt>교육기간</dt><dd>{formatProgramPeriod(program.programStartDate, program.programEndDate)}</dd></div>
                       <div><dt>모집인원</dt><dd>{programCapacityLabel(program)}</dd></div>
                     </dl>
-                    <a className="programCardLink" href={program.sourceUrl} rel="noreferrer" target="_blank">
-                      공공예약에서 보기 <span aria-hidden="true">↗</span>
-                      <span className="uiSrOnly">새 탭에서 열립니다</span>
-                    </a>
+                    <div className="programCardActions">
+                      <ProgramFavoriteButton sourceId={program.sourceId} />
+                      <a className="programCardLink" href={program.sourceUrl} rel="noreferrer" target="_blank">
+                        공공예약 서비스에서 보기 <span aria-hidden="true">↗</span>
+                        <span className="uiSrOnly">새 탭에서 열립니다</span>
+                      </a>
+                    </div>
                   </article>
                 );
               })}

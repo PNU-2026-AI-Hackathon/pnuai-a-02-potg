@@ -28,16 +28,16 @@ type StudioDocumentCreateResponse = {
 
 const generationSteps = [
   {
-    label: '조건 확인',
-    description: '선택한 분야, 대상, 운영 조건을 점검합니다.',
+    label: '유사 사례 검색',
+    description: '입력 조건과 아이디어를 바탕으로 기존 프로그램 사례를 찾습니다.',
   },
   {
-    label: '기획 구조 구성',
-    description: '기획 배경과 목적, 운영 흐름의 뼈대를 정리합니다.',
+    label: '참고 Context 구성',
+    description: '상위 유사 사례를 기획안 생성용 참고자료로 구성합니다.',
   },
   {
-    label: '세부 운영 내용 작성',
-    description: '회차별 활동과 준비물을 기획서 초안에 배치합니다.',
+    label: 'AI 기획안 생성',
+    description: '입력 조건과 주민 의견, 유사 사례를 반영해 기획안을 작성합니다.',
   },
   {
     label: '기획서 초안 정리',
@@ -56,7 +56,7 @@ const conditionLabels: Record<string, string> = {
   capacity: '모집 인원',
   budget: '예산 범위',
   location: '운영 장소',
-  agenda: '참고한 지역 의제',
+  agenda: '참고한 주민 아이디어',
   example: '참고 사례',
 };
 
@@ -125,14 +125,14 @@ function summarizeConditions(request: StudioGenerateRequest | null) {
     ...conditionEntries,
     request.agenda
       ? {
-          label: '참고한 지역 의제',
+          label: '참고한 주민 아이디어',
           value: request.agenda.title,
         }
       : null,
     // 의제만 골라도 생성되므로 메모가 비어 있을 수 있다. 빈 줄을 보여 주지 않는다.
     request.prompt.trim()
       ? {
-          label: '기획 메모',
+          label: '프로그램 아이디어',
           value: request.prompt,
         }
       : null,
@@ -182,7 +182,7 @@ export default function StudioGenerationLoading() {
         headers: {
           'Content-Type': 'application/json',
         },
-        // 새 경로는 기획 메모를 `memo`로 받는다. 참고 자료와 조건, 의제는 그대로 넘긴다.
+        // 새 경로는 프로그램 아이디어를 `memo`로 받는다. 참고 자료와 조건, 주민 아이디어는 그대로 넘긴다.
         body: JSON.stringify({
           memo: nextRequest.prompt,
           conditions: nextRequest.conditions,
@@ -304,7 +304,7 @@ export default function StudioGenerationLoading() {
       : generationState === 'failed'
         ? errorMessage || '잠시 후 다시 시도하거나 조건 선택 화면에서 입력값을 수정해 주세요.'
         : generationState === 'missing-request'
-          ? '조건 입력 화면에서 기획 메모를 작성한 뒤 다시 생성해 주세요.'
+          ? '조건 입력 화면에서 프로그램 아이디어를 작성한 뒤 다시 생성해 주세요.'
           : '선택한 조건을 바탕으로 기획 배경, 운영 내용, 기대 효과를 정리하는 중입니다.';
 
   return (
@@ -319,13 +319,13 @@ export default function StudioGenerationLoading() {
           <small>홈</small>
         </Link>
         <nav className="studioRailNav" aria-label="작업 메뉴">
-          <Link href="/studio">
+          <Link className="isActive" href="/studio">
             <span aria-hidden="true">+</span>
             새 기획
           </Link>
           <Link href="/studio/documents">
             <span aria-hidden="true">≡</span>
-            작업내역
+            내 기획서
           </Link>
         </nav>
       </aside>

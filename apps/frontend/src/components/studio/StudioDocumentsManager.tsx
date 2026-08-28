@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { formatStudioDate, type StudioDocumentStage, type StudioSavedDocument } from '@/lib/studio-draft';
+import { studioFields, type StudioConditionKey } from './studio-options';
 
 type ManagedStudioDocument = {
   id: string;
@@ -24,15 +25,45 @@ const stageClassName: Record<StudioDocumentStage, string> = {
   '기획서 확정': 'isConfirmed',
 };
 
+const preferredConditionLabels: Partial<Record<StudioConditionKey, Record<string, string>>> = {
+  category: {
+    reading: '독서',
+  },
+  period: {
+    'one-day': '하루 특강',
+    'within-month': '한 달 이내',
+    'within-quarter': '세 달 이내',
+    'over-quarter': '세 달 이상',
+  },
+};
+
+function conditionLabel(key: StudioConditionKey, value?: string) {
+  const normalizedValue = value?.trim();
+
+  if (!normalizedValue || normalizedValue === '-') {
+    return '-';
+  }
+
+  const preferredLabel = preferredConditionLabels[key]?.[normalizedValue];
+  const field = studioFields.find((item) => item.key === key);
+  const optionLabel = field?.options.find((option) => option.value === normalizedValue)?.label;
+
+  if (preferredLabel || optionLabel) {
+    return preferredLabel ?? optionLabel ?? '-';
+  }
+
+  return /[a-z]/i.test(normalizedValue) ? '기타' : normalizedValue;
+}
+
 function normalizeDocument(document: StudioSavedDocument): ManagedStudioDocument {
   return {
     id: document.id,
     title: document.title,
-    stage: document.stage,
+    stage: document.stage === '기획서 확정' ? '수요조사 완료' : document.stage,
     updatedAt: formatStudioDate(document.updatedAt),
-    category: document.category || '-',
-    audience: document.audience || '-',
-    period: document.period || '-',
+    category: conditionLabel('category', document.category),
+    audience: conditionLabel('audience', document.audience),
+    period: conditionLabel('period', document.period),
     preview: document.preview || document.content.replace(/\s+/g, ' ').slice(0, 96),
   };
 }
@@ -82,7 +113,6 @@ export default function StudioDocumentsManager() {
 
   const visibleDocuments = documents;
   const totalCount = visibleDocuments.length;
-  const firstDocumentId = visibleDocuments[0]?.id ?? null;
 
   function startTitleEdit(document: ManagedStudioDocument) {
     setOpenMenuDocumentId(null);
@@ -177,7 +207,7 @@ export default function StudioDocumentsManager() {
           </Link>
           <Link className="isActive" href="/studio/documents">
             <span aria-hidden="true">≡</span>
-            작업내역
+            내 기획서
           </Link>
         </nav>
       </aside>
@@ -185,37 +215,32 @@ export default function StudioDocumentsManager() {
       <aside className="studioHistoryPanel" aria-label="MOIRA STUDIO 문서 관리 메뉴">
         <div className="studioHistoryHeader">
           <div>
-            <strong>문서 관리</strong>
             <small>MOIRA STUDIO</small>
           </div>
+          <span className="studioHistoryPinIcon" aria-hidden="true">◆</span>
         </div>
 
-        <div className="studioHistoryList">
-          <Link className="studioHistoryItem isCurrent" href="/studio/documents">
-            <span>목록</span>
-            <strong>저장된 프로그램 기획서</strong>
-            <small>{totalCount}건을 최근 수정 순으로 확인합니다.</small>
+        <div className="studioDocumentsSidebarBody">
+          <Link className="uiButton uiButtonPrimary studioDocumentsNewButton" href="/studio">
+            <span aria-hidden="true">＋</span>
+            새 기획서
           </Link>
-          <Link className="studioHistoryItem" href={firstDocumentId ? `/studio/document/${firstDocumentId}` : '/studio'}>
-            <span>빠른 이동</span>
-            <strong>{firstDocumentId ? '최근 수정 기획서 열기' : '새 프로그램 기획 시작'}</strong>
-            <small>{firstDocumentId ? '가장 최근에 수정한 문서로 이동합니다.' : '아직 저장된 문서가 없습니다.'}</small>
-          </Link>
-          <Link className="studioHistoryItem" href="/studio">
-            <span>새 작업</span>
-            <strong>새 프로그램 기획 시작</strong>
-            <small>조건을 입력하고 새 초안을 준비합니다.</small>
-          </Link>
-        </div>
 
-        <div className="studioQuickGuide">
-          <strong>진행 단계</strong>
-          <ol>
-            <li>기획 중: 초안을 작성하거나 수정하는 단계입니다.</li>
-            <li>수요조사 중: 참여 수요를 확인하는 단계입니다.</li>
-            <li>수요조사 완료: 조사 결과를 기획서에 반영하는 단계입니다.</li>
-            <li>기획서 확정: 운영 전 최종안으로 확정된 단계입니다.</li>
-          </ol>
+          <div className="studioDocumentsRecentSection">
+            <strong className="studioDocumentsSidebarLabel">최근 기획서</strong>
+            {visibleDocuments.length > 0 ? (
+              <nav className="studioDocumentsRecentList" aria-label="최근 기획서">
+                {visibleDocuments.map((document) => (
+                  <Link className="studioDocumentsRecentItem" href={`/studio/document/${document.id}`} key={document.id}>
+                    <strong>{document.title}</strong>
+                    <small>{document.updatedAt} 수정</small>
+                  </Link>
+                ))}
+              </nav>
+            ) : (
+              <p className="studioDocumentsRecentEmpty">아직 저장된 기획서가 없습니다.</p>
+            )}
+          </div>
         </div>
       </aside>
 
@@ -230,14 +255,7 @@ export default function StudioDocumentsManager() {
             <p>저장된 프로그램 기획서를 확인하고 이어서 편집할 수 있습니다.</p>
           </div>
           <div className="studioDocumentsHeaderActions">
-            <span aria-live="polite">전체 {totalCount}건</span>
-            <button
-              className="uiButton uiButtonSecondary"
-              type="button"
-              onClick={() => void loadDocuments()}
-            >
-              새로고침
-            </button>
+            <span className="studioDocumentsTotal" aria-live="polite">총 {totalCount}건</span>
             <Link className="uiButton uiButtonPrimary" href="/studio">
               새 기획서 작성
             </Link>
@@ -258,11 +276,17 @@ export default function StudioDocumentsManager() {
               <span>기획서</span>
               <span>조건</span>
               <span>진행 단계</span>
-              <span>문서 작업</span>
+              <span>관리</span>
             </div>
 
             {visibleDocuments.map((document) => {
               const isEditing = editingDocumentId === document.id;
+              const conditions = [
+                { label: '분야', value: document.category },
+                { label: '대상', value: document.audience },
+                { label: '기간', value: document.period },
+              ];
+              const hasConfiguredCondition = conditions.some((condition) => condition.value !== '-');
 
               return (
                 <article className="studioDocumentRow" key={document.id}>
@@ -294,25 +318,25 @@ export default function StudioDocumentsManager() {
                       <>
                         <h2>{document.title}</h2>
                         <p>{document.preview}</p>
-                        <small>최근 수정 날짜 : {document.updatedAt}</small>
+                        <small>{document.updatedAt} 수정</small>
                       </>
                     )}
                   </div>
 
-                  <dl className="studioDocumentConditionSummary">
-                    <div>
-                      <dt>분야</dt>
-                      <dd>{document.category}</dd>
-                    </div>
-                    <div>
-                      <dt>대상</dt>
-                      <dd>{document.audience}</dd>
-                    </div>
-                    <div>
-                      <dt>기간</dt>
-                      <dd>{document.period}</dd>
-                    </div>
-                  </dl>
+                  <div className="studioDocumentConditionSummary">
+                    {hasConfiguredCondition ? conditions.map((condition) => (
+                      <span
+                        className="studioDocumentConditionTag"
+                        aria-label={`${condition.label}: ${condition.value === '-' ? '미설정' : condition.value}`}
+                        key={condition.label}
+                        title={condition.value === '-' ? '미설정' : condition.value}
+                      >
+                        {condition.value === '-' ? '미설정' : condition.value}
+                      </span>
+                    )) : (
+                      <span className="studioDocumentConditionTag isAllEmpty">조건 미설정</span>
+                    )}
+                  </div>
 
                   <div>
                     <span className={`studioDocumentStatusBadge ${stageClassName[document.stage]}`}>

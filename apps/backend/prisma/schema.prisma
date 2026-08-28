@@ -54,6 +54,7 @@ model User {
   comments    CommunityComment[]
   postLikes   CommunityPostLike[]
   savedPosts  CommunityPostSave[]
+  favoritePrograms UserFavoriteProgram[]
   studioDocuments StudioDocument[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -289,6 +290,31 @@ model ProgramCaseDocumentChunkEmbedding {
   @@index([provider, model, modelRevision], map: "ProgramCaseChunkEmbedding_modelRevision_idx")
 }
 
+/// MOIRA Studio에서 사용하는 프로그램 단위 검색 프로필.
+/// 크롤 원본의 대표 사례를 그대로 보존해야 하므로 서비스 ProgramCase 생명주기와 분리한다.
+model StudioProgramSearchProfile {
+  id                String   @id @default(uuid())
+  sourceId          Int      @unique
+  sourceUrl         String
+  title             String
+  target            String?
+  libraryName       String?
+  summary           String   @db.Text
+  profileData       Json
+  embeddingText     String   @db.Text
+  contentHash       String
+  provider          String
+  model             String
+  modelRevision     String
+  embeddingVersion  String
+  dimension         Int
+  embedding         Unsupported("vector(1024)")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([provider, model, modelRevision])
+}
+
 model StudioDocument {
   id               String   @id @default(uuid())
   ownerId          String?
@@ -301,10 +327,73 @@ model StudioDocument {
   // 기획서의 항목 구조. 본문은 사람이 읽는 글이라 다시 항목으로 쪼갤 수 없어,
   // 항목 하나만 고치려면 이 구조가 문서와 함께 남아 있어야 한다.
   plan             Json?
+  // 수요조사 결과 요약. 사서가 사전 검토를 끝낸 뒤 반영 여부를 확인하는 데 사용한다.
+  surveyResult     Json?
   owner            User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  votes            StudioDocumentVote[]
 
   @@index([ownerId, updatedAt])
   @@index([anonymousOwnerId, updatedAt])
+}
+
+model StudioDocumentVote {
+  id               String         @id @default(uuid())
+  studioDocumentId String
+  voterKey         String
+  intention        String?
+  timeSlot         String?
+  createdAt        DateTime       @default(now())
+  document         StudioDocument @relation(fields: [studioDocumentId], references: [id], onDelete: Cascade)
+
+  @@unique([studioDocumentId, voterKey])
+  @@index([studioDocumentId, createdAt])
+}
+
+/**
+ * 프로그램 게시판이 보여 주는 정제 결과 한 건.
+ *
+ * 정제는 배치가 통째로 다시 만드는 산출물이라 관계형으로 쪼개지 않고 payload 에 그대로 둔다.
+ * 쪼개면 파이프라인의 출력 모양을 스키마에도 한 번 더 적어야 하고, 규칙이 바뀔 때마다
+ * 두 곳을 같이 고쳐야 한다. 대신 목록 화면이 거르고 세우는 데 쓰는 값만 칼럼으로 꺼내 둔다.
+ *
+ * 날짜를 DateTime 이 아니라 문자열로 두는 것은 원본이 'YYYY-MM-DD' 글자이고 화면도 글자로
+ * 견주기 때문이다. 시각으로 바꾸면 표준시 때문에 하루가 밀릴 수 있다.
+ */
+model ProgramBoardEntry {
+  sourceId         Int      @id
+  seriesKey        String
+  title            String
+  libraryName      String?
+  targetGroup      String?
+  sourceUrl        String
+  occurrenceLabel  String?
+  // 목록 카드가 모집인원을 보여 준다. capacity 가 없을 때 원사이트 표기(capacityText)를
+  // 대신 띄우므로 둘 다 있어야 목록만으로 카드를 그릴 수 있다.
+  capacity         Int?
+  capacityText     String?
+  programStartDate String?
+  programEndDate   String?
+  applyStartDate   String?
+  applyEndDate     String?
+  payload          Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  favoritedBy      UserFavoriteProgram[]
+
+  @@index([seriesKey])
+  @@index([applyStartDate])
+}
+
+model UserFavoriteProgram {
+  userId          String
+  programSourceId Int
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program          ProgramBoardEntry @relation(fields: [programSourceId], references: [sourceId], onDelete: Cascade)
+  createdAt        DateTime           @default(now())
+
+  @@id([userId, programSourceId])
+  @@index([programSourceId])
+  @@index([userId, createdAt])
 }

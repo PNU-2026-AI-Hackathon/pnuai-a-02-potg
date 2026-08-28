@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import CommunityBoardView from '@/components/community/CommunityBoardView';
+import LibraryNewsBoard from '@/components/community/LibraryNewsBoard';
+import { getCurrentUser } from '@/lib/server-auth';
 import {
   getCommunityBoard,
   getCommunityPosts,
@@ -15,12 +16,13 @@ export const metadata: Metadata = {
 };
 
 export default async function LibraryNewsBoardPage() {
-  const posts = await getCommunityPosts(board.slug);
+  const [posts, user] = await Promise.all([getCommunityPosts(board.slug), getCurrentUser()]);
 
   return (
-    <CommunityBoardView
+    <LibraryNewsBoard
       board={board}
       posts={posts}
+      user={user}
     />
   );
 }

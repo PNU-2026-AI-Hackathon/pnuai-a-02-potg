@@ -9,6 +9,7 @@ type ConditionDropdownProps = {
   options: StudioOption[];
   value: string[];
   multiple?: boolean;
+  showDescriptions?: boolean;
   onChange: (value: string[]) => void;
 };
 
@@ -18,6 +19,7 @@ export default function ConditionDropdown({
   options,
   value,
   multiple,
+  showDescriptions = true,
   onChange,
 }: ConditionDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -90,7 +92,14 @@ export default function ConditionDropdown({
         onClick={() => setIsOpen((current) => !current)}
       >
         <span>{buttonText}</span>
-        <span aria-hidden="true">v</span>
+        <svg
+          className="studioDropdownChevron"
+          aria-hidden="true"
+          viewBox="0 0 20 20"
+          fill="none"
+        >
+          <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        </svg>
       </button>
       {isOpen ? (
         <div className="studioDropdownMenu" id={listId} role="listbox" aria-multiselectable={multiple || undefined}>
@@ -108,7 +117,7 @@ export default function ConditionDropdown({
               >
                 <span aria-hidden="true">{isSelected ? '✓' : ''}</span>
                 <strong>{option.label}</strong>
-                {option.description ? <em>{option.description}</em> : null}
+                {showDescriptions && option.description ? <em>{option.description}</em> : null}
               </button>
             );
           })}

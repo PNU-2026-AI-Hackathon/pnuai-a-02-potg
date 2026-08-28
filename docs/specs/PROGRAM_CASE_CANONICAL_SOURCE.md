@@ -6,15 +6,15 @@
 
 입력은 다음 세 종류다.
 
-1. `automation/n8n/data/geumjeong-programs-349.json`의 crawler 최종 DTO
+1. `docs/fixtures/geumjeong-programs-349.json`의 초기 크롤링 DTO
 2. 운영 DB의 `ProgramCase`, `ProgramCaseSession`, 활성 `ProgramCaseAttachment`
 3. Attachment URL에서 내려받고 기존 DB SHA-256으로 검증한 binary snapshot
 
 ## 원본성 경계
 
-- 크롤링 JSON은 n8n의 **최종 DTO**이며 HTML snapshot이 아니다.
-- `ProgramCase.rawText`는 n8n이 HTML, 이미지와 공백을 정리한 lossy flattened text다.
-- `ProgramCaseSession`은 n8n 정규식으로 본문에서 만든 derived record다.
+- 크롤링 JSON은 원천 페이지를 정리한 **초기 DTO**이며 HTML snapshot이 아니다.
+- `ProgramCase.rawText`는 HTML, 이미지와 공백이 정리된 lossy flattened text다.
+- `ProgramCaseSession`은 본문에서 추출한 derived record다.
 - `ProgramCaseAttachment.rawText`와 `cleanedText`는 PDF.js, CLOVA OCR 또는 kordoc가 만든 parser-derived representation이다.
 - binary snapshot만 후속 PDF/OCR/HWP 구조 복원의 기준 원천이다.
 - `fileUrl`은 provenance이며 영구 저장소가 아니다.
@@ -128,9 +128,9 @@ npm.cmd run program-case-source-snapshot -- --validate
 
 실패가 있더라도 개별 상태를 manifest와 validation report에 기록한다. 다음 실행은 이미 검증된 Attachment ID와 binary hash를 확인하여 재사용하고 실패 항목만 다시 시도할 수 있다.
 
-## 후속 이슈 계약
+## 파생 산출물 계약
 
-다음 구조 보존 재추출 이슈는 URL이 아니라 `binarySnapshotRef`가 가리키는 검증 binary를 입력으로 사용한다.
+구조 보존 재추출은 URL이 아니라 `binarySnapshotRef`가 가리키는 검증 binary를 입력으로 사용한다.
 
 - PDF: page와 page source 복원
 - Image/PDF OCR: field, bounding box, confidence 보존
